@@ -1,0 +1,742 @@
+{
+ "cards": [
+  {
+   "name": "Directional Smooth",
+   "id": "9c43fe7b-e306-4d01-b5ab-04a05f555cd0",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Directional Smooth",
+   "status": "current",
+   "summary": "Edge-aware smoothing: CorelDRAW looks at neighbouring pixels of similar colour and smooths most along the direction they run, so flat areas and gradients get cleaner while outlines stay where they are. It reads as a light clean-up (less grain, blotchiness and dithering), not as a visible blur: on the soft PGD photo even Percentage 100 changed nothing visible, in a 1:1 crop too (mean 0.1 levels), so how much grain or dithering it removes is untested.",
+   "use_for": [
+    "cleaning grain or JPEG blotches out of a low-quality client photo before it goes into a layout",
+    "evening out sky or skin gradients without softening the outlines around them",
+    "pre-cleaning a photo before Bitmaps > Quick Trace so fewer specks turn into shapes"
+   ],
+   "avoid": [
+    "Wanting a soft-focus or out-of-focus look: Effects > Blur > Gaussian Blur gives a real blur.",
+    "Stair-stepped edges on line art or a low-res logo: Effects > Blur > Jaggy Despeckle targets those.",
+    "Strong edge-preserving flattening (painted / plastic look) is beyond this effect: try Effects > Blur > Smart Blur at a high Amount, or Photoshop's Filter > Blur > Surface Blur.",
+    "This effect's scripted command string was not applied in a harvest test (the format is proven on other effects): check the bitmap after a scripted run."
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "subtle smoothing",
+    "noise clean-up",
+    "edge-aware smooth",
+    "gradient clean-up",
+    "de-grain",
+    "dither removal"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the smoothing: 0 leaves the bitmap unchanged, 100 applies the full effect",
+     "typical": "50-100"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100
+   },
+   "pairs_with": [
+    "Effects/Sharpen/Unsharp Mask (put crispness back on the outlines afterwards)",
+    "Effects/Noise/Remove Noise",
+    "Bitmaps/Quick Trace"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Directional Smooth', 'DirectionalSmoothEffect Percentage=100')  # shape = a bitmap shape; string built from cmd_template, not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('9c43fe7b-e306-4d01-b5ab-04a05f555cd0')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary stated an unmeasured strength as fact; now hedged"
+   },
+   "verified": {
+    "verdict": "weak",
+    "frame": "gallery/cdr_effect/d76a811dfa0b.png",
+    "crop": "gallery/cdr_effect/d76a811dfa0b_1to1.png",
+    "note": "1:1 crop at Percentage 100: no visible change even at 100 % (mean 0.10 levels from the plate crop, 0.01 % of pixels moved by more than 8; the hairlines, colour-bar edges and dark-red panel are identical), and the 960x540 frame is unchanged too (0.08).",
+    "rerender": false,
+    "second_opinion": "effect, not harness: the 1:1 crop rules out the 2x downsample as the cause; the key is read (Percentage 50 and 100 differ) but the soft plate has no grain or dithering for it to clean. Untested: noise or dither clean-up, which needs a grainy plate.",
+    "previous": {
+     "verdict": "weak",
+     "frame": "gallery/cdr_effect/d76a811dfa0b.png",
+     "note": "At Percentage 100 (the maximum) the frame is practically identical to ref_photo (mean diff 0.08, no pixel changed by more than 8); the effect did apply (Percentage 50 gave 0.08 too), but the soft photo has no grain or dithering to clean, so nothing can be judged; the demo cannot be raised.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-opened at 3x on mid-tone detail, radial lines and type: no visible change (mean diff 0.08). Harness check: the frame is a 960x540 export of the 1920x1080 plate bitmap, so a 1-2 px sharpen / smooth is averaged away by the 2x downsample; the key was read (the probe's lower value gave a smaller change), so this is not a broken effect but an unjudgeable one: rerender as a 1:1 crop of the plate (renderer change, not a demo change)."
+     }
+    }
+   }
+  },
+  {
+   "name": "Feather",
+   "id": "0a76cfa2-35ee-453a-8996-e45237d5793f",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Feather",
+   "status": "current",
+   "summary": "Softens the object's outer edge by fading it to transparency across a band Width wide, so a photo or shape melts into whatever sits behind it instead of ending on a hard border; the interior stays sharp. Mode picks the fall-off profile of that fade (Curved, Linear or Gaussian). The harvest audit showed the key working with no change in bitmap size, unlike Gaussian Blur which grows the bitmap.",
+   "use_for": [
+    "photo dissolving softly into a poster or banner background",
+    "soft-edged cut-out of a portrait or product placed on a coloured panel",
+    "soft light patch or glow made from a feathered vector shape",
+    "blending two photos in a collage without a visible seam"
+   ],
+   "avoid": [
+    "The whole image should look soft, not just its edges: Effects > Blur > Gaussian Blur.",
+    "A rectangular photo feathers into a soft rectangle; for an oval fade, PowerClip it into an ellipse first or use Effects > Creative > Vignette.",
+    "Width over 2000 is accepted by the scripted path (8010 worked in the audit) but stay inside the dialog range 1-2000.",
+    "Over a white page the fade reads as a white haze around the object; judge it over the background it will really sit on.",
+    "A misspelt key is silently ignored: the audit's 'NoSuchKeyWidth' string returned without error and left the pixels unchanged."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Live Feather"
+   },
+   "look": [
+    "feathered edge",
+    "soft edge",
+    "fade to transparent",
+    "dissolve edge",
+    "vignette fade",
+    "soft border"
+   ],
+   "params": [
+    {
+     "name": "Width",
+     "does": "width of the faded band along the edge (logarithmic slider); wider = longer, softer fade into the background",
+     "typical": "20-200 on a full-HD photo"
+    },
+    {
+     "name": "Mode",
+     "does": "fall-off profile of the fade from opaque to transparent: Curved (default), Linear or Gaussian; they differ in how quickly the edge drops away",
+     "typical": "Curved; try Gaussian for the softest edge"
+    }
+   ],
+   "demo_settings": {
+    "Width": 200,
+    "Mode": "Linear"
+   },
+   "pairs_with": [
+    "Object/PowerClip/Place Inside Frame (shape the feather with an ellipse or custom frame)",
+    "Effects/Creative/Vignette",
+    "Effects/Blur/Gaussian Blur"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Feather', 'FeatherEffect Width=200,Mode=Linear')  # shape = a bitmap shape; Width key proven by the 2026-10-04 audit, Mode follows cmd_template but was not applied on its own. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('0a76cfa2-35ee-453a-8996-e45237d5793f')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "added the audit's bad-key behaviour (silently ignored); content otherwise checked and kept"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/573b1b0b5506.png",
+    "crop": "gallery/cdr_effect/573b1b0b5506_1to1.png",
+    "note": "1:1 crop of the bottom-right corner: the right and bottom edges dissolve into white over a wide band (the hairlines, ramp and colour bars thin out into white toward the edge) while everything further in keeps its hard edges: the feathered outer edge described; Mode was ignored (dropped).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/573b1b0b5506.png",
+     "note": "The plate's outer edge fades to transparency over a wide band (Width 200), so on the white page every side melts into white while the interior stays sharp; the PGD type at the bottom is half faded; Mode was ignored by the script (dropped), so only the default fall-off is shown.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Gaussian Blur",
+   "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Gaussian Blur",
+   "status": "current",
+   "summary": "The standard even blur: each pixel is averaged with its neighbours using a bell-shaped (Gaussian) weighting, so detail, type and hairlines soften into a haze; Radius sets how far the blur spreads. From a script even the dialog maximum Radius 250 gives only a light blur on a 1920 px photo: in a 1:1 crop hard edges spread over about 8-10 px and flat tones lift by about 5 levels (black 16 -> 22). The blur spills past the original edge, so the bitmap grows a little (the audit saw 1920x1080 become 1928x1088 at Radius 212.5).",
+   "use_for": [
+    "out-of-focus backdrop behind poster or thumbnail headline type",
+    "frosted-glass panel: blurred copy of the photo PowerClipped into a rounded rectangle",
+    "glow base: blurred duplicate of a logo or shape under the sharp original",
+    "calming a busy photo so overlaid text stays readable"
+   ],
+   "avoid": [
+    "Removing grain while keeping edges: Effects > Blur > Smart Blur or Effects > Noise > Remove Noise.",
+    "Directional speed streaks: Effects > Blur > Motion Blur; spinning blur: Radial Blur; burst from the centre: Zoom.",
+    "Only the outline should soften: Effects > Blur > Feather.",
+    "Radius above 250 is accepted by the scripted path (1010 worked in the audit) but stay inside the dialog range 0.1-250.",
+    "The grown bitmap shifts the object's bounds by a few pixels; re-align after applying if it sits on a grid.",
+    "A misspelt key is not rejected: the audit's 'NoSuchKeyRadius' string still blurred and grew the bitmap with some other radius, with no error, so check the key spelling.",
+    "expecting the scripted Radius to act as pixels: the 2026-10 gallery render at Radius 150 only softened the type and hairlines of a 1920 px photo, and at Radius 250 a 1:1 crop showed edges spread over only 8-10 px (the audit saw the bitmap grow just 4 px a side at Radius 212); for a heavy scripted blur apply it several times or blur a downsampled copy (not tested)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "gaussianBlur",
+    "AI": "Live Adobe PSL Gaussian Blur"
+   },
+   "look": [
+    "soft focus",
+    "blur",
+    "defocus",
+    "haze",
+    "dreamy",
+    "frosted background",
+    "bokeh-free blur"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "blur radius (logarithmic slider, 0.1 steps; the harvest records no unit); larger = softer and wider spread",
+     "typical": "near the default 5 for a light soften; on the harvest test photo Radius 2 and 40 differed only slightly (0.58 over 48 sampled pixels), so a clearly blurred backdrop needs roughly 100-250: judge it in the preview"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 250
+   },
+   "pairs_with": [
+    "Object/PowerClip/Place Inside Frame (frosted panels)",
+    "Uniform Transparency (blurred glow under a sharp copy)",
+    "Effects/Sharpen/Unsharp Mask on the foreground copy"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Gaussian Blur', 'GaussianBlurEffect Radius=250')  # shape = a bitmap shape; Radius key proven by the harvest apply test and the 2026-10-04 audit. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('a0f20985-2078-4629-98ed-ffc91fa4c0bd')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low at small radii, rises with Radius on large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 'in pixels' unit; demo Radius 30 -> 150 and typical range rewritten, because the harvest apply test saw Radius 2 vs 40 differ by only 0.58 on the test photo (30 would barely show); added the audit's bad-key behaviour"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/3552d1b37219.png",
+    "crop": "gallery/cdr_effect/3552d1b37219_1to1.png",
+    "note": "Radius 250 (the dialog maximum): the frame is an even soft focus (type and hairlines blurred, the photo slightly soft) and the 1:1 crop shows the blur clearly: hard edges spread over about 8-10 px, the 1-6 px hairlines fuse into one grey graded band, flat tones lift by about 5 levels (black band 16 -> 22, wall 162,127,76 -> 165,132,81) and a pale fringe shows where the bitmap grew; summary now gives that scale.",
+    "rerender": false,
+    "previous": {
+     "verdict": "weak",
+     "frame": "gallery/cdr_effect/3552d1b37219.png",
+     "note": "At Radius 150 the photo is barely softened (body diff 0.8, mid-tone detail and stripes still sharp) and only the white PGD type and hairlines blur at 4x zoom, far from the 'smooth haze' the card describes; harness check: the scripted Radius does not act as pixels (the harvest audit saw the bitmap grow only 4 px a side at Radius 212), so the demo is raised to the 250 maximum and the gain is expected to be small.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-opened at 2x: only the type and hairlines are softened and the mid-tone detail stays sharp, far less than a Radius-150 Gaussian should give; harness check: the renderer passed Radius=150 as the card says and the bitmap is the 1920 px plate, so the weak blur is the app's Radius scale (the audit saw only 4 px of growth a side at 212), not a plate fault; the 2x downsample also halves what is left. Radius 250 is the dialog maximum, so expect a small gain."
+     }
+    }
+   }
+  },
+  {
+   "name": "Jaggy Despeckle",
+   "id": "ac5e6cb8-a35c-447d-ad28-145b843451d7",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Jaggy Despeckle",
+   "status": "current",
+   "summary": "Spreads pixel colours inside a small Width x Height window (the 1:1 render shows an even, repeatable smear, no random speckle) (1-5; the harvest records no unit) to smooth stair-stepped, jagged edges and isolated specks, mainly on line art and other high-contrast images; the result is a light anti-aliased softening of hard edges, not a blur of the whole picture. On a soft photo it changes little; it shows mostly on crisp type and hairlines.",
+   "use_for": [
+    "smoothing the jagged edges of a low-res logo or icon received as a bitmap",
+    "cleaning stair-stepping on enlarged scanned line art before tracing it",
+    "taking the hard pixel edge off a screenshot or pixel graphic placed in a print layout"
+   ],
+   "avoid": [
+    "A visible soft-focus look: Effects > Blur > Gaussian Blur.",
+    "Photo grain or sensor noise: Effects > Noise > Remove Noise or Effects > Blur > Smart Blur.",
+    "Heavy smoothing is not possible: Width and Height top out at 5.",
+    "A logo that must stay crisp at any size: retrace it as vectors (Bitmaps > Outline Trace) instead of despeckling the bitmap.",
+    "This effect's scripted command string was not applied in a harvest test (format proven on other effects); the bool is written as 1 / 0 like its harvested default, check the result."
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "anti-alias",
+    "smooth jagged edges",
+    "de-jaggy",
+    "despeckle",
+    "soft hard edges",
+    "stair-step removal"
+   ],
+   "params": [
+    {
+     "name": "Width",
+     "does": "horizontal size of the area colours are scattered over (1-5)",
+     "typical": "2-4"
+    },
+    {
+     "name": "Height",
+     "does": "vertical size of that area (1-5)",
+     "typical": "same as Width"
+    },
+    {
+     "name": "Symmetric",
+     "does": "keeps Height equal to Width so the scatter is even in both directions",
+     "typical": "on"
+    }
+   ],
+   "demo_settings": {
+    "Width": 5,
+    "Height": 5,
+    "Symmetric": true
+   },
+   "pairs_with": [
+    "Bitmaps/Outline Trace/Line Art (trace after cleaning)",
+    "Effects/Sharpen/Unsharp Mask",
+    "Effects/Noise/Median"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Jaggy Despeckle', 'JaggyDespeckleEffect Width=5,Height=5,Symmetric=1')  # shape = a bitmap shape; string built from cmd_template, not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('ac5e6cb8-a35c-447d-ad28-145b843451d7')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary invented a px unit for Width / Height; removed"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/98b2b6ca3e6c.png",
+    "crop": "gallery/cdr_effect/98b2b6ca3e6c_1to1.png",
+    "note": "1:1 crop: hard edges are smeared into stepped grey bands (each hairline spreads over about 5 px, the colour-bar edges soften by about a pixel) while the photo moves by about 1 level: a light anti-aliasing of hard edges, not a blur of the picture; the smear is even along each row, not a random scatter (summary adjusted); Symmetric was ignored (dropped).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/98b2b6ca3e6c.png",
+     "note": "As the card says, the soft photo barely changes (body diff 0.8) while the crisp PGD type and hairlines are visibly anti-aliased at 4x zoom (type band diff 15); Symmetric was ignored (dropped).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Low Pass",
+   "id": "8cd90bf8-83bf-4b56-af4a-f27fced595ca",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Low Pass",
+   "status": "current",
+   "summary": "Strips out fine detail and sharp edges (the high-frequency part of the image) and keeps the broad tones and smooth gradients; at high Percentage and Radius the picture turns hazy and blurred. Percentage sets the strength and Radius (1-20) how large an area each pixel is evaluated over; the exact character next to Gaussian Blur was not measured by the harvest.",
+   "use_for": [
+    "hazy, low-detail background plate behind type",
+    "removing fine texture or a halftone screen from a scan before tracing or posterising",
+    "the smooth tone layer of a frequency-separation style edit, paired with High Pass"
+   ],
+   "avoid": [
+    "Precise, large soft-focus control: Effects > Blur > Gaussian Blur (radius up to 250).",
+    "Radius stops at 20, so on a large bitmap the haze stays limited; scale down or use Gaussian Blur.",
+    "Edges must stay crisp: Effects > Blur > Smart Blur.",
+    "This effect's scripted command string was not applied in a harvest test (format proven on other effects): check the result."
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "haze",
+    "detail removal",
+    "low frequency",
+    "soft",
+    "dreamy",
+    "blur"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the effect: how much of the detail is removed (0-100)",
+     "typical": "60-100"
+    },
+    {
+     "name": "Radius",
+     "does": "size of the area around each pixel the filter works over (1-20); bigger = broader haze",
+     "typical": "5-20"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Radius": 20
+   },
+   "pairs_with": [
+    "Effects/Sharpen/High Pass (the opposite: keeps only the detail)",
+    "Effects/Noise/Remove Moiré",
+    "Bitmaps/Quick Trace"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Low Pass', 'LowPassEffect Percentage=100,Radius=20')  # shape = a bitmap shape; string built from cmd_template, not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('8cd90bf8-83bf-4b56-af4a-f27fced595ca')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/fd332b468fbe.png",
+    "crop": "gallery/cdr_effect/fd332b468fbe_1to1.png",
+    "note": "1:1 crop: a strong haze: every edge spreads over about 15 px, the panel detail dissolves, the hairlines merge into one grey bar and the colour-bar edges blur, as described for Percentage 100 / Radius 20.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/fd332b468fbe.png",
+     "note": "The whole photo is hazy and blurred against ref_photo: mid-tone detail, stripes and radial lines lose their detail and the PGD type and hairlines go soft, as the card says for Percentage 100 / Radius 20 (diff 9.6).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Motion Blur",
+   "id": "64d60f36-3c4d-4cbf-a749-5d9889e650b3",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Motion Blur",
+   "status": "current",
+   "summary": "Smears every pixel along one straight line to fake movement or camera shake: Distance sets the streak length, Direction its angle on a compass wheel, and Sampling how pixels beyond the image border are filled. The bitmap grows to hold the streaks (the harvest test went from 1930x1090 at Distance 5 to 2080x1240 at Distance 80).",
+   "use_for": [
+    "speed streaks behind a car, bike or delivery promo",
+    "dynamic action background for a sports or sale poster",
+    "whoosh trail on a blurred duplicate of headline type",
+    "simulated panning shot on a product photo"
+   ],
+   "avoid": [
+    "Spinning motion: Effects > Blur > Radial Blur; burst from the centre: Effects > Blur > Zoom.",
+    "It blurs the subject too: to keep a sharp subject, blur a duplicate and put the sharp copy (PowerClipped to the subject) on top.",
+    "Use paper color can bring a paper-coloured (usually white) fringe into the streaks at the edges of a dark image; Sample nearest edge pixel avoids that.",
+    "Stay inside the dialog range Distance 1-999, Direction 0-360."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "motionBlur"
+   },
+   "look": [
+    "motion blur",
+    "speed",
+    "streak",
+    "movement",
+    "camera shake",
+    "panning",
+    "whoosh"
+   ],
+   "params": [
+    {
+     "name": "Distance",
+     "does": "streak length in pixels (logarithmic slider); longer = faster-looking motion",
+     "typical": "20-150"
+    },
+    {
+     "name": "Direction",
+     "does": "angle of the streak in degrees, set on a compass wheel in 5-degree steps",
+     "typical": "0 or 90; confirm the orientation in the preview, the harvest did not record which way 0 points"
+    },
+    {
+     "name": "Sampling",
+     "does": "how pixels outside the image are treated while streaking: ignored, filled with the paper colour, or repeated from the nearest edge pixel",
+     "typical": "Sample (nearest edge pixel) for photos that fill the frame"
+    }
+   ],
+   "demo_settings": {
+    "Distance": 120,
+    "Direction": 0,
+    "Sampling": "Sample"
+   },
+   "enum_labels": {
+    "Sampling": {
+     "Ignore": "Ignore pixels outside image",
+     "Use": "Use paper color",
+     "Sample": "Sample nearest edge pixel"
+    }
+   },
+   "pairs_with": [
+    "Object/PowerClip/Place Inside Frame (sharp subject over the blurred copy)",
+    "Fountain Transparency (fade the streaks out)",
+    "Effects/Blur/Zoom"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Motion Blur', 'MotionBlurEffect Distance=120,Direction=0,Sampling=Sample')  # shape = a bitmap shape; Distance proven by the harvest apply test (the bitmap grew with Distance); Direction changed in the same test (0 -> 90) so it is not proven on its own; Sampling follows cmd_template but was not applied. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('64d60f36-3c4d-4cbf-a749-5d9889e650b3')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low to medium: grows with Distance",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting note claimed Direction was proven, but the apply test changed Distance and Direction together; now says only Distance is proven"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/e7b2acf08c32.png",
+    "crop": "gallery/cdr_effect/e7b2acf08c32_1to1.png",
+    "note": "1:1 crop: everything smears horizontally (the dark-red panel turns into streaks, the colour bars run into each other, the hairlines keep their rows but blur at their ends) and a pale fringe shows at the right edge where the bitmap grew; Sampling was ignored (dropped).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/e7b2acf08c32.png",
+     "note": "Every part of the plate is smeared into horizontal streaks (Direction 0): mid-tones and stripes dissolve sideways, the colour swatches run into each other and the PGD type streaks to illegible; Sampling was ignored by the script (dropped), which only affects how the border is filled.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Radial Blur",
+   "id": "21c4be11-86ca-407a-9469-48aa7ec2fb4f",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Radial Blur",
+   "status": "current",
+   "summary": "Circular (spin) blur around a centre point: pixels are smeared along arcs, so the middle stays fairly sharp and the outer parts swirl more and more; Amount sets the strength. That it spins rather than bursts outward comes from CorelDRAW's long-standing behaviour (the outward burst is the separate Zoom effect), not from the harvest; the harvest records no centre parameter, so there is no known scripted way to move the centre.",
+   "use_for": [
+    "spinning wheel, fan, turntable or rotor",
+    "vortex or swirl background for a music or gaming poster",
+    "hypnotic, dizzy energy around a central subject"
+   ],
+   "avoid": [
+    "Outward speed burst toward the viewer: Effects > Blur > Zoom.",
+    "Straight-line movement: Effects > Blur > Motion Blur.",
+    "Amount above 100 is accepted by the scripted path (410 worked in the audit) but stay inside the dialog range 1-100.",
+    "An off-centre spin: the harvest has no centre key and does not record a centre control in the dialog; crop or PowerClip so the subject sits in the middle of the bitmap.",
+    "A misspelt key is not rejected: the audit's 'NoSuchKeyAmount' string still changed the pixels (7.79 from the original), with no error, so check the key spelling."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "radialBlur",
+    "AI": "Live PSAdapter_plugin_RdlB"
+   },
+   "look": [
+    "radial blur",
+    "spin blur",
+    "swirl",
+    "rotation",
+    "vortex",
+    "circular motion"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "strength of the circular blur (1-100); higher = longer arcs and stronger swirl toward the edges",
+     "typical": "10-40"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 40
+   },
+   "pairs_with": [
+    "Object/PowerClip/Place Inside Frame (keep a sharp subject in the middle)",
+    "Effects/Blur/Zoom",
+    "Effects/Creative/Vignette"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Radial Blur', 'RadialBlurEffect Amount=40')  # shape = a bitmap shape; Amount key proven by the 2026-10-04 audit. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('21c4be11-86ca-407a-9469-48aa7ec2fb4f')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented claim that the dialog has a centre setting (not harvested); 'a script cannot move the centre' softened to 'no known scripted way'; added the audit's bad-key behaviour"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/b75cd5f5fef6.png",
+    "crop": "gallery/cdr_effect/b75cd5f5fef6_1to1.png",
+    "note": "1:1 crop of the corner: the content is swept into concentric arcs (colour bars, ramp and hairlines are no longer recognisable), the strongest swirl furthest from the centre, the spin blur described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/b75cd5f5fef6.png",
+     "note": "A strong spin blur: the plate is smeared along concentric arcs round the frame centre, the middle keeps a rough shape while the outer parts become swirled rings and the colour strip bends into an arc, the spin (not burst) the card describes.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Smart Blur",
+   "id": "44e9edef-d6a9-4b93-9838-d41889c4f149",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Smart Blur",
+   "status": "current",
+   "summary": "Edge-preserving blur: smooths low-contrast areas such as skin, sky, grain and noise while strong edges and outlines stay crisp, so the image looks cleaner or lightly airbrushed rather than out of focus. Its single setting is labelled Amount in the dialog but stored under the key Detail; the harvest did not measure its strength, so on an already soft photo the change may be modest even at 100.",
+   "use_for": [
+    "skin smoothing on a portrait for a poster or hoarding",
+    "cleaning grain or sensor noise from a photo before print",
+    "flattening textures into cleaner areas before posterising or tracing",
+    "smoothing a sky gradient without softening the skyline"
+   ],
+   "avoid": [
+    "An out-of-focus backdrop: Effects > Blur > Gaussian Blur.",
+    "Pushed hard on faces it gives waxy, plastic skin; keep it moderate on people.",
+    "This effect's scripted command string was not applied in a harvest test (format proven on other effects): check the result."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "smartBlur",
+    "AI": "Live PSAdapter_plugin_SmrB"
+   },
+   "look": [
+    "edge-preserving blur",
+    "skin smoothing",
+    "airbrush",
+    "noise reduction",
+    "clean",
+    "smooth surfaces"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "how strongly low-contrast areas are smoothed (0-100, steps of 5); script key Detail",
+     "typical": "30-70 on faces, up to 100 for noise clean-up"
+    }
+   ],
+   "demo_settings": {
+    "Detail": 100
+   },
+   "pairs_with": [
+    "Effects/Sharpen/Unsharp Mask (crisp the edges afterwards)",
+    "Effects/Noise/Remove Noise",
+    "Bitmaps/Quick Trace"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Smart Blur', 'SmartBlurEffect Detail=100')  # shape = a bitmap shape; string built from cmd_template (key Detail = the dialog's Amount), not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('44e9edef-d6a9-4b93-9838-d41889c4f149')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary stated an unmeasured strength as fact; now hedged"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/cd2f245875ad.png",
+    "crop": "gallery/cdr_effect/cd2f245875ad_1to1.png",
+    "note": "1:1 crop: low-contrast detail in the dark-red wood panel flattens into smooth patches (photo area mean 5 levels, 21 % of its pixels moved by more than 8) while the hairlines are untouched and the colour-bar edges stay sharp: the edge-preserving blur described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/cd2f245875ad.png",
+     "note": "Edge-preserving blur at Amount 100, stronger than the card hedges: low-contrast areas are heavily smoothed (mid-tone detail is lost at 3x zoom, walls and dark areas go flat) while dark outlines, stripe edges and the PGD type stay crisp (type band diff 0.7).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Smooth",
+   "id": "b738367c-a322-4ceb-853d-2de62b23a7e0",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Smooth",
+   "status": "current",
+   "summary": "Light overall smoothing that reduces the difference between neighbouring pixels: dithering patterns, fine noise and harsh pixel-to-pixel jumps fade while the picture stays recognisably sharp. Percentage (0-100) sets the strength; even at 100 it is far gentler than Gaussian Blur and may be hard to see on a soft photo without zooming in.",
+   "use_for": [
+    "removing dithering from an old GIF, a web graphic or a scanned print",
+    "taking the digital harshness off an upscaled image",
+    "a light smoothing pass before posterising or tracing"
+   ],
+   "avoid": [
+    "A visible blur: Effects > Blur > Gaussian Blur.",
+    "Stronger clean-up that still keeps edges: Effects > Blur > Smart Blur.",
+    "Taming over-sharpened edges specifically: Effects > Blur > Soften is aimed at that.",
+    "This effect's scripted command string was not applied in a harvest test (format proven on other effects): check the result at 100 % zoom."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Blur/Blur"
+   },
+   "look": [
+    "subtle smoothing",
+    "dither removal",
+    "light blur",
+    "clean pixels",
+    "de-noise"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the smoothing: 0 = none, 100 = full effect",
+     "typical": "50-100"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100
+   },
+   "pairs_with": [
+    "Effects/Noise/Remove Noise",
+    "Effects/Sharpen/Unsharp Mask",
+    "Bitmaps/Quick Trace"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Smooth', 'SmoothEffect Percentage=100')  # shape = a bitmap shape; string built from cmd_template, not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('b738367c-a322-4ceb-853d-2de62b23a7e0')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/ed02a169d203.png",
+    "crop": "gallery/cdr_effect/ed02a169d203_1to1.png",
+    "note": "1:1 crop: a gentle one-pixel soften: each hairline gains grey edges (16 -> 87 beside a 1-px line) and the colour-bar edges soften slightly while the photo moves by under 1 level: stronger than Soften on the same crop, far gentler than Gaussian Blur, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/ed02a169d203.png",
+     "note": "As the card warns, the photo barely changes at Percentage 100 (body diff 1.9); the change shows on the hard edges: the white PGD type and the hairlines are visibly softened at 2x zoom (type band diff 17.6), a gentle smoothing far weaker than Gaussian Blur.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Soften",
+   "id": "f5cbdd1e-0c40-405d-aa8d-4726c7a3441a",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Soften",
+   "status": "current",
+   "summary": "Tones down harsh edges and abrupt colour transitions across the image while keeping the important detail, a gentle softening rather than a blur. It is a close relative of Smooth: the two differ only subtly, mostly visible at high zoom. Percentage runs 1-100 (no zero setting).",
+   "use_for": [
+    "taking the edge off an over-sharpened or over-processed photo",
+    "softening harsh outlines in a scanned or upscaled image before print",
+    "a gentle finishing pass on a product shot that looks too crunchy"
+   ],
+   "avoid": [
+    "A clearly soft or dreamy look: Effects > Blur > Gaussian Blur.",
+    "Outlines must stay crisp while flat areas clean up: Effects > Blur > Smart Blur.",
+    "Removing dithering or noise patterns: Effects > Blur > Smooth or Effects > Noise > Remove Noise.",
+    "This effect's scripted command string was not applied in a harvest test (format proven on other effects): check the result at 100 % zoom."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Blur/Blur"
+   },
+   "look": [
+    "soften",
+    "gentle softening",
+    "tame harsh edges",
+    "light blur",
+    "less crunchy"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the softening (1-100)",
+     "typical": "40-100"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100
+   },
+   "pairs_with": [
+    "Effects/Sharpen/Adaptive Unsharp (re-sharpen selectively)",
+    "Effects/Blur/Smooth",
+    "Effects/Noise/Remove Noise"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Soften', 'SoftenEffect Percentage=100')  # shape = a bitmap shape; string built from cmd_template, not applied in a harvest test. Menu route on the current selection (bitmap or vector, non-destructive): Application.FrameWork.Automation.InvokeItem('f5cbdd1e-0c40-405d-aa8d-4726c7a3441a')",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it as an editable effect on the object (Properties docker > Effects); the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/4d5e7b164d38.png",
+    "crop": "gallery/cdr_effect/4d5e7b164d38_1to1.png",
+    "note": "1:1 crop: a gentle one-pixel soften (16 -> 75 beside each hairline, the colour-bar edges barely softer) with the photo moving by about half a level: slightly weaker than Smooth, the close relative the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/4d5e7b164d38.png",
+     "note": "A very gentle softening, as the card predicts: the photo is unchanged to the eye and only the PGD type edges are slightly softer at 4x zoom (type band diff 5), weaker than Smooth on the same plate.",
+     "rerender": false
+    }
+   }
+  }
+ ]
+}

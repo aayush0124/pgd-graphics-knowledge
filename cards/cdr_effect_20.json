@@ -1,0 +1,64 @@
+{
+ "cards": [
+  {
+   "name": "Flatten Effects",
+   "id": "6dda0e64-c885-47f8-b046-53407834bc58",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Flatten Effects",
+   "status": "needs_input",
+   "summary": "Bakes the live (non-destructive) bitmap effects on the selected object into it for good: per the CorelDRAW 2024 typelib it 'flattens live bitmap effects by converting an object to a bitmap image', so a vector shape or bitmap carrying an effect stack becomes one plain bitmap that looks the same but no longer has editable effects or editable vector paths. It adds no look of its own and needs a selection (live IsEnabled probe: disabled with nothing selected, enabled with a plain rectangle or a bitmap selected); the harvest does not record which resolution the conversion uses or what it does to an object that has no live effects.",
+   "use_for": [
+    "locking a finished effect stack (blur, glow, texture) before sending artwork to a print shop or a colleague on an older CorelDRAW that cannot read live effects",
+    "speeding up a heavy page where many stacked live bitmap effects slow redraw and export",
+    "freezing an approved poster or social graphic look so later edits cannot shift the effect",
+    "preparing an object for a bitmap-only operation that needs real pixels rather than a live effect"
+   ],
+   "avoid": [
+    "artwork that may still change: flattening throws away the effect settings and the vector paths; duplicate the object first or keep a copy on a hidden layer",
+    "logos, type and other shapes that must stay sharp vectors at any size: the object becomes a resolution-bound bitmap; leave the effects live or use Object > Convert to Bitmap with an explicit resolution when you need control over pixels",
+    "objects with only vector effects (Contour, Blend, Extrude, Envelope, Drop Shadow): the typelib describes this command as acting on live bitmap effects, so it is not the way to break those apart - use Object > Break Apart (or the effect's own separate command) for them",
+    "unattended scripts run on objects you have not checked: the command is enabled for any selected rectangle or bitmap, effects or not, and the harvest does not show whether it then rasterizes a plain object, so check the shape's effect stack first and run it only where there is something to flatten"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Rasterize/Smart Object",
+    "AI": "Object/Rasterize..."
+   },
+   "look": [
+    "bake effects",
+    "flatten effects",
+    "rasterize effects",
+    "merge effect stack",
+    "convert to bitmap",
+    "commit live effects",
+    "destructive"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "any non-destructive bitmap effect from the Effects menu (Gaussian Blur, Effects > Texture > Brick Wall ...) applied first",
+    "Object > Convert to Bitmap (when you need to pick the resolution and colour mode yourself)",
+    "Duplicate (keep an editable copy before flattening)"
+   ],
+   "scripting": "ActiveShape.FlattenEffects()  // or ActiveSelectionRange.FlattenEffects(); no arguments; use it on a shape that carries live bitmap effects (the harvest does not record what it does to one without). Menu route on the current selection (needs one): Application.FrameWork.Automation.InvokeItem(\"6dda0e64-c885-47f8-b046-53407834bc58\")",
+   "scriptable": "yes",
+   "non_destructive": "no: it is the command that ends non-destructive editing; the live effect stack and the vector paths are replaced by a bitmap (Undo is the only way back)",
+   "cost": "one conversion per object; afterwards the file holds pixel data instead of a vector plus effect settings, so file size depends on object size and resolution rather than on the effect settings; redraw of a formerly heavy effect stack typically gets faster",
+   "review": {
+    "by": "adversarial",
+    "changes": "pairs_with named a 'Glow' effect that is not a harvested CorelDRAW effect: now Gaussian Blur and Effects > Texture > Brick Wall. Summary, scripting and avoid claimed the command needs or only acts on a shape that already has live effects; the live IsEnabled probe (work/cdr/enabled_probe.json) shows it disabled with no selection but enabled on a plain rectangle or bitmap, so those claims now say it needs a selection and that the harvest does not record what it does to an object without live effects. Status, equivalents, scripting calls and the empty params/demo_settings checked and kept."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  }
+ ]
+}

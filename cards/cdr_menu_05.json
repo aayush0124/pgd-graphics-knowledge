@@ -1,0 +1,463 @@
+{
+ "cards": [
+  {
+   "name": "Border and Grommet",
+   "id": "eeb7f2b5-f02b-46fc-b6e0-b8108bf04cd1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Border and Grommet",
+   "status": "current",
+   "summary": "Opens the Border and Grommet dialog, CorelDRAW's banner finishing helper: it turns the page (or selected objects) into a banner, can add a border strip around the artwork for hemming or wrapping, and places grommet (eyelet) marks at a set spacing along the edges so the print shop knows where to punch. The exact option names and whether the result lands in a new document were not probed in this harvest, so check the dialog before relying on a specific setting.",
+   "use_for": [
+    "large-format vinyl banners that need eyelet positions marked",
+    "roll-up and fence banners going to a print shop",
+    "adding a bleed / hem border around banner artwork"
+   ],
+   "avoid": [
+    "ordinary page bleed for offset print: set Bleed in Page Size instead",
+    "small-format work with no grommets: a plain border or Page Background is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Needs an open document (enabled in every probe state that had one). In the dialog choose what the banner is made from (the page or the selected objects), whether to add a border and how its edge is filled, then whether to add grommets, which object marks a grommet, and how many / how far apart they sit along each edge. Check the preview, then OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"eeb7f2b5-f02b-46fc-b6e0-b8108bf04cd1\") opens the dialog only (onInvoke BorderAndGrommetDS.OnShowDialog). No object-model call for the banner build is known; scripted substitute: draw the border rectangle and place grommet circles along the edges with Layer.CreateRectangle / Layer.CreateEllipse (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Delete Page",
+   "id": "774e822b-8c4b-4e8e-a233-cecebd9390de",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Delete Page",
+   "status": "needs_input",
+   "summary": "Opens the Delete Page dialog and removes the chosen page, or a run of pages (a Through to page option), together with everything on their local layers. It was disabled in every harvest probe state, including with a document open: its enable binding is CanDeletePage, and CorelDRAW will not delete a document's only page, so it needs a document with two or more pages.",
+   "use_for": [
+    "removing blank or draft pages from a multipage brochure or catalogue",
+    "trimming a range of pages before export to PDF"
+   ],
+   "avoid": [
+    "a one-page document: the command stays disabled",
+    "removing artwork that sits on master layers: it is shared by every page and survives the delete, edit the master layer instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards"
+   },
+   "how": "Set the page number to delete; tick Through to page and set a last page to delete a range in one go. The page navigator's right-click menu offers the same command for the page you clicked.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"774e822b-8c4b-4e8e-a233-cecebd9390de\") opens the dialog. Same job without the dialog: ActiveDocument.DeletePages(StartPage, NumPages) or ActiveDocument.Pages(n).Delete (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Document Options",
+   "id": "c90df3e4-0487-5dae-4313-789a4d1c9c25",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Document Options",
+   "status": "current",
+   "summary": "Opens the document half of CorelDRAW's Options dialog, where settings that belong to this file (not to the app) live: general document information, page size, layout, background, guidelines, grid, rulers and similar pages. Page Size, Page Layout and Page Background in this menu jump straight to single pages of the same dialog. The exact page list in 25.1 was not probed.",
+   "use_for": [
+    "setting up a new print job's page, layout and background in one place",
+    "adding title / author / keyword metadata to a client file",
+    "checking a received file's document-level settings before editing"
+   ],
+   "avoid": [
+    "changing app-wide preferences (workspace, display, save defaults): those are under Tools > Options > CorelDRAW or Global, not here",
+    "a single change such as the page size: the dedicated Layout commands land on the right page directly"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Document Setup..."
+   },
+   "how": "Needs an open document. Pick a page in the dialog's left-hand list (General, Page Size, Layout, Background, guides / grid / rulers ...), change it and OK; the settings are saved with the document.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"c90df3e4-0487-5dae-4313-789a4d1c9c25\") opens the dialog. The individual settings are object-model properties, e.g. ActiveDocument.Keywords and ActiveDocument.Notes (read/write metadata), ActiveDocument.Rulers, ActiveDocument.Grid, ActiveDocument.SetLayout (unverified). Not ActiveDocument.Title: the typelib has it read-only, the name of a document that has not been saved yet.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: dropped ActiveDocument.Title (typelib: read-only name of an unsaved document, not a settable title), added SetLayout; avoid: named the harvested Tools/Options/CorelDRAW and Global items"
+   }
+  },
+  {
+   "name": "Duplicate Page",
+   "id": "5f56e9cf-9d5c-43e0-bebf-ecf43ef3dd2e",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Duplicate Page",
+   "status": "current",
+   "summary": "Opens the Duplicate Page dialog and adds a copy of the current page before or after it, either with its layers only (empty layers, same structure) or with the layers and all their contents, so the new page starts as an exact copy of the artwork.",
+   "use_for": [
+    "making size or colour variants of a layout on separate pages",
+    "a series of social posts or cards that share one design",
+    "keeping an untouched copy of a page before heavy edits"
+   ],
+   "avoid": [
+    "copying a page into another document: copy the objects or use Insert Page there",
+    "a design that should stay identical on every page: put the shared parts on a master layer instead of duplicating them"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards"
+   },
+   "how": "Choose Insert new page Before or After the selected page, then Copy layers only or Copy layers and their contents, and OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"5f56e9cf-9d5c-43e0-bebf-ecf43ef3dd2e\") opens the dialog. The object model has no page-duplicate member in the harvested typelib; substitute: ActiveDocument.InsertPages(1, False, ActivePage.Index) and copy each layer's shapes across (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Go to Page",
+   "id": "c34fb01f-b612-4be1-b2e5-5d3311344034",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Go to Page",
+   "status": "needs_input",
+   "summary": "Opens the Go to Page dialog: type a page number and CorelDRAW makes that page the active one in the drawing window. It changes only which page you are looking at, not the document. Disabled in every harvest probe state (enable binding GoToPageEnable); on a one-page document there is nowhere to go, so it needs two or more pages.",
+   "use_for": [
+    "jumping straight to a page in a long catalogue, book or multipage brochure",
+    "checking a specific page before print or export"
+   ],
+   "avoid": [
+    "a few pages only: the page tabs under the drawing window are quicker",
+    "a one-page document: the command stays disabled"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards"
+   },
+   "how": "Enter the page number and OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"c34fb01f-b612-4be1-b2e5-5d3311344034\") opens the dialog. Same job without it: ActiveDocument.Pages(n).Activate (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Insert Page",
+   "id": "4b29cd5e-cb05-42c6-87f3-d0c4f5770faf",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Insert Page",
+   "status": "current",
+   "summary": "Opens the Insert Page dialog and adds one or more blank pages before or after an existing page. The new pages can take a different size and orientation from the rest of the document, which is how CorelDRAW mixes page sizes in one file.",
+   "use_for": [
+    "adding pages to a brochure, catalogue or presentation",
+    "putting a business card, flyer and poster of different sizes in one file",
+    "adding a back page or cover"
+   ],
+   "avoid": [
+    "a copy of an existing layout: Duplicate Page keeps the artwork",
+    "a folded layout (booklet, tri-fold): set it in Page Layout first so pages pair up correctly"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards",
+    "PS": "Layer/New/Artboard"
+   },
+   "how": "Set the number of pages, Before or After, and the existing page they attach to; optionally pick a page size or type a width / height and orientation for the new pages, then OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4b29cd5e-cb05-42c6-87f3-d0c4f5770faf\") opens the dialog. Same job without it: ActiveDocument.InsertPages(NumberOfPages, BeforePage, Page), ActiveDocument.InsertPagesEx(NumberOfPages, BeforePage, Page, Width, Height) for a different size, or ActiveDocument.AddPages(n) to append (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "On Active Layer",
+   "id": "0738bc2c-ef19-463d-817a-9fbf1a77615b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Insert Page Number/On Active Layer",
+   "status": "current",
+   "summary": "Inserts a live page-number field (text that always shows the number of the page it is on) on the layer that is currently active, with no dialog. On an ordinary local layer the number appears on the current page only; if the active layer is a master layer, every page that uses that master shows its own number.",
+   "use_for": [
+    "numbering a single page or a hand-picked set of pages",
+    "placing a page number inside a specific layer of a layout",
+    "folios on a page that has its own design"
+   ],
+   "avoid": [
+    "numbering a whole document: On All Pages puts one field on the master layer instead of one per page",
+    "typing the number by hand: a static number does not update when pages move"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Make the target layer active in the Objects docker, run the command, then move and style the number like any text. The display style and starting number come from Page Number Settings.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"0738bc2c-ef19-463d-817a-9fbf1a77615b\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "On All Even Pages",
+   "id": "dbaae0c2-158f-40dc-9820-72758cb55345",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Insert Page Number/On All Even Pages",
+   "status": "needs_input",
+   "summary": "Inserts a live page-number field on the even-pages master layer, with no dialog, so every even page (2, 4, 6 ...) shows its own number in the same spot. Disabled in every harvest probe state (enable binding EnableInsertPageNumberEvenMasterLayer, while the odd-pages command was enabled), so it appears to need a document that has at least one even page.",
+   "use_for": [
+    "left-hand folios in a book, magazine or facing-pages brochure",
+    "mirrored page numbers: even pages on the outer left, odd pages on the outer right"
+   ],
+   "avoid": [
+    "a one-page document: the command stays disabled, add a page first",
+    "the same position on every page: On All Pages does it in one step"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Run it on a document with two or more pages, then position and style the number on one even page; the change shows on all of them because the field sits on the even master layer.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"dbaae0c2-158f-40dc-9820-72758cb55345\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "On All Odd Pages",
+   "id": "2b6b5aa4-c1ea-4b6d-bba9-e3676dc98c51",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Insert Page Number/On All Odd Pages",
+   "status": "current",
+   "summary": "Inserts a live page-number field on the odd-pages master layer, with no dialog, so every odd page (1, 3, 5 ...) shows its own number in the same spot; enabled as soon as a document is open, because page 1 is odd.",
+   "use_for": [
+    "right-hand folios in a book, magazine or facing-pages brochure",
+    "mirrored page numbers paired with On All Even Pages"
+   ],
+   "avoid": [
+    "one position for every page: use On All Pages",
+    "a cover page that must stay unnumbered: hide the master layer on that page or number it by hand"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Run it, then move and style the number on one odd page; every odd page follows because the field sits on the odd master layer.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"2b6b5aa4-c1ea-4b6d-bba9-e3676dc98c51\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "On All Pages",
+   "id": "11530b48-1223-46bc-b368-2d7b5e44ca56",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Insert Page Number/On All Pages",
+   "status": "current",
+   "summary": "Inserts a live page-number field on the all-pages master layer, with no dialog, so every page in the document shows its own number in the same position and new pages are numbered automatically.",
+   "use_for": [
+    "numbering a catalogue, report or multipage brochure in one step",
+    "page numbers on proof sheets and presentation pages"
+   ],
+   "avoid": [
+    "facing-page layouts that need numbers on the outer edges: use On All Odd Pages and On All Even Pages",
+    "numbering only some pages: use On Active Layer on a local layer"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Run it, then move and style the number once; the change shows on every page because the field sits on the master layer. Starting number and style (1, 2, 3 / roman / letters) come from Page Number Settings.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"11530b48-1223-46bc-b368-2d7b5e44ca56\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Page Background",
+   "id": "d1080c69-0400-4574-ab7c-39cf119be4b0",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Page Background",
+   "status": "current",
+   "summary": "Opens the Background page of the document options: give the page no background, a solid colour, or a bitmap image (linked or embedded, at its own size or a custom size), and choose whether that background is printed and exported. The background sits behind all artwork and cannot be selected or moved by accident. Disabled while editing PowerClip contents or an in-place object.",
+   "use_for": [
+    "a coloured or photo backdrop for a poster, social post or slide",
+    "a client's letterhead or template image as a locked guide behind the layout",
+    "previewing artwork on the colour it will be printed on"
+   ],
+   "avoid": [
+    "a background that must bleed off the page edge: whether the page background reaches into the bleed was not probed, so draw a rectangle or place the image on a locked layer and extend it into the bleed",
+    "transparent PNG export: switch off print and export of the background, or use No background"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Choose No background, Solid (pick a colour) or Bitmap (Browse for the file, choose Linked or Embedded, Default or Custom size). Tick Print and export background if the backdrop must appear in the output, then OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"d1080c69-0400-4574-ab7c-39cf119be4b0\") opens the dialog. Same job without it: Page.Background = cdrPageBackgroundSolid (or cdrPageBackgroundNone / cdrPageBackgroundBitmap), Page.Color, Page.PrintExportBackground (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: marked the background-vs-bleed behaviour as unprobed instead of stating it"
+   }
+  },
+  {
+   "name": "Page Layout",
+   "id": "0ccf3b2f-50d4-408c-be1c-9b609a74ae24",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Page Layout",
+   "status": "current",
+   "summary": "Opens the Layout page of the document options, which sets how pages are arranged for folding and binding: Full page, Book, Booklet, Tent card, Side-fold card, Top-fold card or Tri-fold brochure, plus facing pages and whether the document starts on a left or right page. A folded layout makes each page one panel of the sheet, so you design panels in reading order.",
+   "use_for": [
+    "greeting cards and invitations (side-fold / top-fold)",
+    "tri-fold brochures and leaflets",
+    "table tent cards",
+    "booklets and magazines with facing pages"
+   ],
+   "avoid": [
+    "imposition for a press sheet with crop marks per panel: use the print layout / imposition tools",
+    "a single flat page: Full page is the default and needs no change"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Pick the layout from the list (the preview shows how panels fold), tick Facing pages for spreads and choose Start on left or right side, then OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"0ccf3b2f-50d4-408c-be1c-9b609a74ae24\") opens the dialog. Same job without it: ActiveDocument.SetLayout(Layout, FacingPages, StartOnRightSide) with a cdrDocLayout value such as cdrDocTriFoldBrochure (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Page Number Settings",
+   "id": "DA0C84BA-8D3F-4F0E-9AA6-E88E2C676332",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Page Number Settings",
+   "status": "current",
+   "summary": "Opens the Page Number Settings dialog, which sets the number the page count starts from and the numbering style (arabic, roman or letters) used by every inserted page-number field. It changes how numbers display, not the order of the pages.",
+   "use_for": [
+    "starting a section at a later page number when it is printed as part of a larger book",
+    "roman numerals for front matter",
+    "lettered pages in an appendix"
+   ],
+   "avoid": [
+    "inserting the numbers themselves: that is Insert Page Number",
+    "renaming the page tabs: use Rename Page"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Set the starting page number and pick the starting style from the list, then OK; existing page-number fields update.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"DA0C84BA-8D3F-4F0E-9AA6-E88E2C676332\") opens the dialog. No object-model call for the start number or style is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed example start numbers (5, 101) that are not in the batch"
+   }
+  },
+  {
+   "name": "Page Size",
+   "id": "0c273c3c-e69c-4eed-a623-44c1edd82234",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Page Size",
+   "status": "current",
+   "summary": "Opens the Page Size page of the document options: pick a preset size or type a width and height, set portrait or landscape, the rendering resolution, and the bleed (with an option to show the bleed area). Artwork is not scaled; the page simply grows or shrinks around it. Disabled while an in-place object is being edited.",
+   "use_for": [
+    "setting A4, A3, letter or custom print sizes",
+    "adding the print shop's bleed for a print-ready flyer or poster",
+    "social post and banner pixel sizes"
+   ],
+   "avoid": [
+    "scaling the artwork to the new size: resize the objects too, the page change does not",
+    "a different size for one page only: use the apply-to-current-page option or Insert Page with its own size"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards",
+    "PS": "Image/Canvas Size"
+   },
+   "how": "Choose a size preset or enter width / height and units, pick orientation, set Bleed and tick Show bleed area if the job is for print, choose whether the size applies to the current page only, then OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"0c273c3c-e69c-4eed-a623-44c1edd82234\") opens the dialog. Same job without it: ActivePage.SetSize(Width, Height), ActivePage.SelectSize(PageSizeName, Landscape), ActivePage.Bleed (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed the 3 mm bleed value, not in the batch"
+   }
+  },
+  {
+   "name": "Rename Page",
+   "id": "d9c0197f-903b-4762-a250-f16998ff1e78",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Rename Page",
+   "status": "current",
+   "summary": "Opens the Rename Page dialog and gives the current page a name, shown on its page tab and in the Objects docker (for example 'Front', 'Back', 'Instagram'). The name is a label only; the page number does not change.",
+   "use_for": [
+    "labelling front / back or panel pages of a print job",
+    "naming size variants (story, post, banner) in one file"
+   ],
+   "avoid": [
+    "changing the printed page number: that is Page Number Settings"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards"
+   },
+   "how": "Type the page name and OK.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"d9c0197f-903b-4762-a250-f16998ff1e78\") opens the dialog. Same job without it: ActivePage.Name = \"Front\" (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Switch Page Orientation",
+   "id": "88ee85c6-a725-479e-b8d1-fe4f6bb28884",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Layout/Switch Page Orientation",
+   "status": "current",
+   "summary": "Swaps the page between portrait and landscape at once, with no dialog: width and height trade places and the artwork stays where it is, unrotated and unscaled, so objects may now hang off the page. Whether it flips every page or only the current one was not probed. Disabled while an in-place object is being edited.",
+   "use_for": [
+    "turning a portrait flyer into a landscape banner or slide layout",
+    "trying a layout in both orientations quickly"
+   ],
+   "avoid": [
+    "rotating the artwork with the page: select it and rotate 90 degrees separately",
+    "pages that need a new size as well: use Page Size"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Object/Artboards/Switch Orientation"
+   },
+   "how": "Run it with a document open; the page flips immediately. Run it again to switch back, or Undo.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"88ee85c6-a725-479e-b8d1-fe4f6bb28884\") toggles; to set a known orientation instead: ActivePage.Orientation = cdrLandscape / cdrPortrait (typelib member, unverified)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unsupported claim that the page-size setting decides all pages vs current page; script_api: added the harvested Page.Orientation property for setting an explicit orientation"
+   }
+  }
+ ]
+}

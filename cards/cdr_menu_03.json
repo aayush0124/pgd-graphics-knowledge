@@ -1,0 +1,798 @@
+{
+ "cards": [
+  {
+   "name": "Acquire",
+   "id": "1d9958bc-2b51-4f49-85fb-93270ec4bd70",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Acquire Image/Acquire",
+   "status": "needs_input",
+   "summary": "Scans or captures an image from the chosen TWAIN or WIA device (scanner, camera) and places it in the drawing as a bitmap. Disabled in every probed state on the harvest machine (no imaging source available), so it only works once a device is connected and a source is selected.",
+   "how": "Hands over to the device driver's own acquire window (scan area, resolution and colour mode come from the driver). Pick the interface first with Select TWAIN Source or Select WIA Source.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1d9958bc-2b51-4f49-85fb-93270ec4bd70\")",
+   "use_for": [
+    "digitise a hand-drawn sketch to trace into vector art",
+    "scan a printed logo, stamp or paper texture straight into a layout"
+   ],
+   "avoid": [
+    "unattended or batch runs: the driver window needs a person; scan to a file and use File/Import (Ctrl+I)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Import/WIA Support"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Select TWAIN Source",
+   "id": "2e3cde6c-409a-46dc-a830-83ea6f42084b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Acquire Image/Select TWAIN Source",
+   "status": "needs_input",
+   "summary": "Toggle (check item) that makes Acquire use the TWAIN driver interface; the check mark shows it is the active interface. Disabled in every probed state here (TWAIN support not available), so it needs a TWAIN driver installed. The harvest flags it as opening a dialog, presumably the TWAIN source picker.",
+   "how": "Choose TWAIN, then pick the device in the source list if one appears; Acquire then talks to that device.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"2e3cde6c-409a-46dc-a830-83ea6f42084b\")",
+   "use_for": [
+    "switch acquisition to an older scanner that ships only a TWAIN driver"
+   ],
+   "avoid": [
+    "WIA-only devices: use Select WIA Source",
+    "automation: the source picker is a driver dialog that needs a person; scan to a file and import it"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: replaced \"nothing to script here\" (contradicted scriptable partial) with the real limit, the driver dialog"
+   }
+  },
+  {
+   "name": "Select WIA Source",
+   "id": "493dda8f-cb6b-41bc-83e9-7c8911c7f1db",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Acquire Image/Select WIA Source",
+   "status": "needs_input",
+   "summary": "Toggle (check item) that makes Acquire use the Windows Image Acquisition (WIA) interface; the check mark shows it is the active interface. Disabled in every probed state here (WIA support not available), and flagged by the harvest as opening a dialog, presumably the WIA device picker.",
+   "how": "Choose WIA, then pick the scanner or camera in the device list if one appears; Acquire then uses it.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"493dda8f-cb6b-41bc-83e9-7c8911c7f1db\")",
+   "use_for": [
+    "route acquisition through the standard Windows driver of a modern scanner or camera"
+   ],
+   "avoid": [
+    "TWAIN-only devices: use Select TWAIN Source",
+    "automation: the device picker is a driver dialog that needs a person; scan to a file and import it"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: named the real automation limit (driver dialog needs a person)"
+   }
+  },
+  {
+   "name": "Close",
+   "id": "eba0aaa3-e562-41c0-af25-afdeb2e809e7",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Close",
+   "status": "current",
+   "summary": "Closes the active document window. If the document has unsaved changes CorelDRAW asks whether to save first; disabled while a background task (save, export, print) is running.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"eba0aaa3-e562-41c0-af25-afdeb2e809e7\"); object model: ActiveDocument.Close (unverified)",
+   "use_for": [
+    "finish a job and free memory between documents in a batch",
+    "close a scratch document an automation created"
+   ],
+   "avoid": [
+    "automation on an unsaved document: the save prompt blocks the script; Save / SaveAs first",
+    "documents another process or person opened: close only documents you created"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Close",
+    "AI": "File/Close"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Close All",
+   "id": "19d68220-e476-4059-acbb-b09fc1a55f25",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Close All",
+   "status": "current",
+   "summary": "Closes every open document window at once (same command as Window > Close All), asking about each one with unsaved changes.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"19d68220-e476-4059-acbb-b09fc1a55f25\"); object model: Do While Application.Documents.Count > 0: Application.Documents(1).Close: Loop (unverified)",
+   "use_for": [
+    "clear the workspace after finishing a batch of files"
+   ],
+   "avoid": [
+    "a shared CorelDRAW session: it also closes documents that belong to someone else; close your own with Close",
+    "automation with unsaved documents: every save prompt blocks the script"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Close All",
+    "AI": "File/Close All"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: a forward loop calling .Close skips every other document; replaced with close-Documents(1)-until-Count-is-0"
+   }
+  },
+  {
+   "name": "Open",
+   "id": "843aa805-6c19-471a-ae66-04bf5d20a617",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Document Management/Open",
+   "status": "hidden",
+   "summary": "Opens a drawing stored in a Microsoft SharePoint document library (Document Management submenu). Hidden in this install: it shows only when SharePoint support is on, and the harvest read IsSupportSharePoint = 0.",
+   "scriptable": "no",
+   "script_api": "FrameWork.Automation.InvokeItem(\"843aa805-6c19-471a-ae66-04bf5d20a617\")",
+   "use_for": [
+    "teams that keep artwork in SharePoint, only where the SharePoint integration is installed"
+   ],
+   "avoid": [
+    "ordinary file opening: use File/Open (Ctrl+O) or Application.OpenDocument"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save",
+   "id": "ada4b2e7-f430-4783-a2ff-d4ab1a559af6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Document Management/Save",
+   "status": "hidden",
+   "summary": "Saves the active document back to a Microsoft SharePoint document library (Document Management submenu). Hidden in this install because SharePoint support is off (harvest read IsSupportSharePoint = 0).",
+   "scriptable": "no",
+   "script_api": "FrameWork.Automation.InvokeItem(\"ada4b2e7-f430-4783-a2ff-d4ab1a559af6\")",
+   "use_for": [
+    "check a drawing back into a SharePoint library, only where that integration is installed"
+   ],
+   "avoid": [
+    "ordinary saving: use the normal Save command or ActiveDocument.Save / SaveAs"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Document Properties",
+   "id": "3324df3f-e302-4946-8ba9-6b1511700818",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Document Properties",
+   "status": "current",
+   "summary": "Opens the Document Properties dialog: editable file metadata (title, subject, author, copyright, keywords, notes, rating) above a read-only inventory of the document (file, pages, objects, text, bitmaps, styles, effects, fills, outlines, fonts).",
+   "how": "Fill the metadata fields you need; read the lower sections as a quick preflight (which fonts, bitmap colour modes and effects the file uses) before handing it over.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"3324df3f-e302-4946-8ba9-6b1511700818\"); object model: ActiveDocument.Metadata.Title / .Subject / .Author / .Copyright / .Keywords / .Notes (unverified). Not ActiveDocument.Title: the typelib marks it read-only, the name of a document not yet saved",
+   "use_for": [
+    "embed author, copyright and keywords before sending a file to a client or stock site",
+    "quick preflight: list the fonts and bitmap colour modes a print file uses"
+   ],
+   "avoid": [
+    "full print preflight: the Publish to PDF / Print preflight tabs check far more"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/File Info",
+    "AI": "File/File Info..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: dropped ActiveDocument.Title (typelib: read-only, name of an unsaved document); metadata fields are on ActiveDocument.Metadata (IVGMetadata Title/Subject/Author/Copyright/Keywords/Notes)"
+   }
+  },
+  {
+   "name": "Download Full Trial",
+   "id": "6fd1d2d5-e174-4414-96e1-e5f0bb2691c9",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Download Full Trial",
+   "status": "hidden",
+   "summary": "Licensing entry that sends the user to download the full desktop trial of CorelDRAW. It is visible only when the app is not the desktop build; this install is the desktop build (the harvest read IsDesktopApp = 1), so it is hidden.",
+   "scriptable": "no",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6fd1d2d5-e174-4414-96e1-e5f0bb2691c9\")",
+   "use_for": [
+    "nothing in a design job; it is an upsell / licensing entry only"
+   ],
+   "avoid": [
+    "any automation: it does no design work"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Exit",
+   "id": "92260708-0893-4fc3-9723-f5a5d0e43af2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Exit",
+   "status": "current",
+   "summary": "Quits CorelDRAW, asking to save any document with unsaved changes. Disabled in full-screen preview and while a save, print, backup or export task is still running.",
+   "shortcut": "Alt+F4",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"92260708-0893-4fc3-9723-f5a5d0e43af2\"); object model: Application.Quit (unverified)",
+   "use_for": [
+    "shut the app down at the end of a session you own"
+   ],
+   "avoid": [
+    "a CorelDRAW instance another agent or person is using: one owner per app; close your own documents instead",
+    "automation with unsaved documents: the save prompts block the quit"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Exit",
+    "AI": "File/Exit"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Export",
+   "id": "d430d269-e79e-4439-b772-f97d07063744",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export",
+   "status": "current",
+   "summary": "Opens the Export dialog to write the current page, all pages or only the selection to another format (PNG, JPEG, TIFF, SVG, EPS, PDF, AI, DXF and more); bitmap formats follow with an options dialog for size, resolution, colour mode, anti-aliasing and transparency. Disabled when there is nothing to export.",
+   "how": "Pick folder, file name and Save as type; tick Selected only to export just the selection. For raster formats set width / height or DPI, colour mode (RGB / CMYK / Grayscale), anti-aliasing and transparent background in the follow-up dialog.",
+   "shortcut": "Ctrl+E",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"d430d269-e79e-4439-b772-f97d07063744\"); object model: ActiveDocument.ExportEx(FileName, Filter, Range, Options).Finish (unverified)",
+   "use_for": [
+    "PNG or JPEG of a poster or social post for the web",
+    "SVG or EPS of a logo for a developer or printer",
+    "a selected element exported as a transparent PNG"
+   ],
+   "avoid": [
+    "many sizes or formats at once: queue them in the Export docker (Add Selection / Add All Pages)",
+    "press-ready PDF: use Publish to PDF with a PDF/X preset"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Export/Export As",
+    "AI": "File/Export/Export As..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Add All Pages",
+   "id": "ea2d4e6b-fc59-4104-8893-2b35db4f96a6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export Docker/Add All Pages",
+   "status": "current",
+   "summary": "Adds one export entry per page of the document to the Export docker list, so every page can be exported in one pass with each entry's own file name, format and size settings.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"ea2d4e6b-fc59-4104-8893-2b35db4f96a6\")",
+   "use_for": [
+    "export every slide of a carousel or every page of a brochure as separate PNG / JPEG files",
+    "one-click re-export of a multi-page social set after edits"
+   ],
+   "avoid": [
+    "a single quick image: File/Export (Ctrl+E) is faster"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Export/Artboards to Files",
+    "AI": "File/Export/Export for Screens..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Add Current Page",
+   "id": "badeac4f-ed6d-4d6a-be57-6f5fabdf09f1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export Docker/Add Current Page",
+   "status": "current",
+   "summary": "Adds the active page as one entry in the Export docker list, where its format, size and file name can be set and exported together with the other queued entries.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"badeac4f-ed6d-4d6a-be57-6f5fabdf09f1\")",
+   "use_for": [
+    "queue only the page you are working on alongside other export entries, e.g. one size variant of a banner"
+   ],
+   "avoid": [
+    "exporting the whole document: use Add All Pages"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Add Selection",
+   "id": "b089d276-55f4-4e25-b5b1-749a609bec7f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export Docker/Add Selection",
+   "status": "needs_input",
+   "summary": "Adds the selected objects as one entry in the Export docker list (with its own file name, format and scale), so individual assets can be exported repeatedly without re-selecting them. Needs a selection.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b089d276-55f4-4e25-b5b1-749a609bec7f\")",
+   "use_for": [
+    "export icons or logo variants from one drawing as separate assets",
+    "re-export an updated asset at several scales"
+   ],
+   "avoid": [
+    "nothing selected: the command is disabled; select the objects first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Object/Collect For Export/As Single Asset"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Office",
+   "id": "CD42798B-A81F-4eba-9CCE-7C035B5D26C1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export For/Office",
+   "status": "current",
+   "summary": "Opens the Export for Office dialog, which saves the drawing as a graphic tuned for Microsoft Office or WordPerfect Office: a PNG for compatibility or an editable metafile for quality, with a choice of desktop printing, commercial printing or presentation optimisation and a size / quality preview.",
+   "how": "Choose the target suite, Compatibility (bitmap, opens everywhere) or Editing (vector, best quality), and the optimisation; check the estimated file size before saving.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"CD42798B-A81F-4eba-9CCE-7C035B5D26C1\"); object model: ActiveDocument.ExportEx(FileName, cdrPNG or cdrEMF, Range, Options).Finish (unverified)",
+   "use_for": [
+    "logo for a client's Word or PowerPoint template",
+    "diagram or chart for a slide deck"
+   ],
+   "avoid": [
+    "web or print delivery: use Export, Export For Web or Publish to PDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added .Finish (ExportEx returns an ICorelExportFilter; nothing is written without it)"
+   }
+  },
+  {
+   "name": "Web",
+   "id": "4b3e61ff-29f6-dda5-412a-066817e75008",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export For/Web",
+   "status": "current",
+   "summary": "Opens the Export For Web dialog: optimise and export the page or selection as JPEG, PNG or GIF with side-by-side previews, quality, palette, transparency, matte and resampling controls, and the estimated file size and download time for each setting.",
+   "how": "Pick a preset or format, compare settings in the split previews, adjust quality / colour count, transparency and matte, set the output size, then Save As.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4b3e61ff-29f6-dda5-412a-066817e75008\"); object model: ActiveDocument.ExportEx(FileName, cdrPNG / cdrJPEG / cdrGIF, Range, Options).Finish (unverified)",
+   "use_for": [
+    "web banner JPEG under a file-size budget",
+    "transparent PNG or GIF icons and buttons"
+   ],
+   "avoid": [
+    "SVG or multi-asset output: use Export or the Export docker",
+    "print files: use Publish to PDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Export/Save for Web",
+    "AI": "File/Export/Save for Web (Legacy)..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added .Finish (ExportEx returns an ICorelExportFilter; nothing is written without it)"
+   }
+  },
+  {
+   "name": "WordPress",
+   "id": "07592ecb-fc86-44c4-8f00-fe4b9ebd6440",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Export For/WordPress",
+   "status": "current",
+   "summary": "Opens the Export for WordPress dialog, which exports the page or selection as a web image (JPEG, PNG or GIF) and uploads it directly to a WordPress site's media library after signing in to that site.",
+   "how": "Choose what to export and the image format / quality, then sign in to the WordPress site and pick where the upload goes.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"07592ecb-fc86-44c4-8f00-fe4b9ebd6440\")",
+   "use_for": [
+    "push a blog header or post graphic straight to a WordPress media library"
+   ],
+   "avoid": [
+    "unattended pipelines: it needs an interactive WordPress sign-in; export to a file and upload through the site"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Import",
+   "id": "785c273f-c462-4f02-9ee4-c354018e0878",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Import",
+   "status": "current",
+   "summary": "Opens the Import dialog to bring a file (photo, vector, PDF, text and more) into the current document; after choosing it you click or drag on the page to place and size it.",
+   "how": "Pick the file and type; the Import button's options let you link the file externally instead of embedding it, or crop / resample a bitmap on the way in. Then click to place at original size or drag a box to size it (Enter centres it on the page).",
+   "shortcut": "Ctrl+I",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"785c273f-c462-4f02-9ee4-c354018e0878\"); object model: ActiveLayer.ImportEx(FileName, Filter, Options).Finish (unverified)",
+   "use_for": [
+    "place a product photo or texture into a layout",
+    "bring a client's AI, PDF or EPS logo into a CorelDRAW file"
+   ],
+   "avoid": [
+    "opening a file to edit on its own: use File/Open (Ctrl+O)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Place Embedded",
+    "AI": "File/Place..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "New",
+   "id": "fa65d0c1-879b-4ef5-9465-af09e00e91ab",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/New",
+   "status": "current",
+   "summary": "Opens the Create a New Document dialog and creates a blank document from its settings. Disabled while CorelDRAW is editing an embedded (in-place) object.",
+   "how": "Set name, preset, page size and orientation, number of pages, primary colour mode (CMYK / RGB), rendering resolution and the colour profiles.",
+   "shortcut": "Ctrl+N",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"fa65d0c1-879b-4ef5-9465-af09e00e91ab\"); object model: Application.CreateDocument() or Application.CreateDocumentEx(CreateOptions) (unverified)",
+   "use_for": [
+    "start a CMYK print flyer",
+    "start a square RGB social post"
+   ],
+   "avoid": [
+    "automation: the dialog blocks; create the document from the object model and set the page size there"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/New",
+    "AI": "File/New..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed sizes not in the batch (A4, 1080 x 1080 px); how: dropped the unverified \"preview mode\" setting"
+   }
+  },
+  {
+   "name": "New from Template",
+   "id": "f8179d03-81a7-47d7-8880-2f75cdef35fa",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/New from Template",
+   "status": "current",
+   "summary": "Opens the template browser to pick a CorelDRAW template (.cdt) from the installed, personal or online collections, and creates a new untitled document based on it.",
+   "how": "Filter by category or style, preview, and open; the template file itself stays untouched.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f8179d03-81a7-47d7-8880-2f75cdef35fa\"); object model: Application.CreateDocumentFromTemplate(TemplatePath) (unverified)",
+   "use_for": [
+    "start a brochure, business card or flyer from a ready layout",
+    "reuse a house template with fixed grids and styles"
+   ],
+   "avoid": [
+    "editing the template itself: open the .cdt with File/Open instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/New from Template..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Open",
+   "id": "f5a570a9-645e-4abb-a70b-6a45e2a18ef2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Open",
+   "status": "current",
+   "summary": "Opens the Open Drawing dialog to load a CorelDRAW file (.cdr) or another supported format (AI, PDF, EPS, SVG, PSD, DXF and more) as a new document window.",
+   "how": "Pick the file; for PDF or AI files an options dialog follows (which pages, text as text or as curves).",
+   "shortcut": "Ctrl+O",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f5a570a9-645e-4abb-a70b-6a45e2a18ef2\"); object model: Application.OpenDocument(FileName) (unverified)",
+   "use_for": [
+    "open a client's .cdr, AI or PDF file to edit",
+    "reopen a saved layout"
+   ],
+   "avoid": [
+    "placing a file into the current layout: use File/Import (Ctrl+I)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Open",
+    "AI": "File/Open..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: narrowed the follow-up options dialog to PDF / AI (PSD and \"layers\" were unsupported claims)"
+   }
+  },
+  {
+   "name": "Open from Cloud",
+   "id": "09360b3d-3317-4375-a128-ca824873441f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Open from Cloud",
+   "status": "current",
+   "summary": "Opens the cloud document browser to open a drawing saved to Corel's cloud storage. Shown only when the corporate cloud features are on and the build is not sandboxed (the harvest did not read that visibility here), and enabled only while the cloud connection is online; it read enabled in every probed state here.",
+   "how": "Sign in if asked, browse the cloud folders and open the file; it opens as a normal document window.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"09360b3d-3317-4375-a128-ca824873441f\")",
+   "use_for": [
+    "open a file a teammate shared through Corel's cloud",
+    "continue a drawing started in CorelDRAW.app"
+   ],
+   "avoid": [
+    "offline or unattended runs: it needs a signed-in, online session; use File/Open on a local copy"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: noted the harvest has no visible_now for this item (visibility unknown); enable condition worded as the binding says (IsCloudOnline)"
+   }
+  },
+  {
+   "name": "Print",
+   "id": "e3f5366a-09aa-4824-96b2-730b8926a3c6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print",
+   "status": "current",
+   "summary": "Opens the Print dialog: printer, page range and copies, plus tabs for layout, colour and separations, prepress marks (crop and registration marks, bleed) and preflight issues. Disabled while editing PowerClip contents, while another print is running, or when there is nothing to print.",
+   "how": "Pick the printer and range; on the Color tab choose composite or separations; on Prepress add crop and registration marks; set the bleed limit on Layout; check the Issues tab before printing.",
+   "shortcut": "Ctrl+P",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e3f5366a-09aa-4824-96b2-730b8926a3c6\"); object model: set ActiveDocument.PrintSettings (Printer, PrintRange, PageRange, Copies ...), then ActiveDocument.PrintSettings.PrintOut (unverified). ActiveDocument.PrintOut is not silent: the typelib describes it as \"Opens the Print dialog box\"",
+   "use_for": [
+    "office proof print of a layout",
+    "colour separations with crop marks for an in-house press"
+   ],
+   "avoid": [
+    "sending files to a commercial printer: use Publish to PDF with a PDF/X preset"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Print",
+    "AI": "File/Print..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: ActiveDocument.PrintOut opens the Print dialog (typelib); silent route is ActiveDocument.PrintSettings.PrintOut; how: bleed limit is a Layout-tab setting, not Prepress"
+   }
+  },
+  {
+   "name": "Create Merged Document",
+   "id": "46c3dff5-f82a-4b67-a68b-8746e6a462af",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print Merge/Create Merged Document",
+   "status": "needs_input",
+   "summary": "Generates a new document in which the print-merge fields are filled in from every record of the merge data, so the merged result can be checked, edited, saved or exported. Enabled only after merge fields exist (disabled in every probed state here).",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"46c3dff5-f82a-4b67-a68b-8746e6a462af\")",
+   "use_for": [
+    "name badges, certificates or ID cards from a spreadsheet",
+    "numbered tickets or labels you want to proof before printing"
+   ],
+   "avoid": [
+    "a document without merge fields: run Create/load Print Merge first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Export/Data Sets as Files"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Create/load Print Merge",
+   "id": "ea816d5e-d45d-499c-8471-a2471db7f10f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print Merge/Create/load Print Merge",
+   "status": "current",
+   "summary": "Starts print-merge setup for the active document: create merge fields (text, numbers, auto-incrementing counters) or load them from a data file such as CSV or TXT, which then become fields you place on the page. In the app this runs the Print Merge wizard; the harvest does not flag a dialog.",
+   "how": "Create new fields or import a data file, check the records, then insert the fields into text on the page.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"ea816d5e-d45d-499c-8471-a2471db7f10f\")",
+   "use_for": [
+    "set up variable data for certificates, badges or invitations",
+    "auto-numbered tickets or labels"
+   ],
+   "avoid": [
+    "one-off documents with a handful of names: duplicate the page and type them"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Import/Variable Data Sets",
+    "AI": "Window/Variables"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Edit Print Merge",
+   "id": "9838344c-b3a5-4779-b5e8-c72e1e8349e6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print Merge/Edit Print Merge",
+   "status": "needs_input",
+   "summary": "Reopens the print-merge setup to edit the existing merge fields and records (add, rename or remove fields, edit the data). Enabled only when the document already has merge fields (disabled in every probed state here).",
+   "how": "Change fields or records in the Print Merge wizard and finish it.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9838344c-b3a5-4779-b5e8-c72e1e8349e6\")",
+   "use_for": [
+    "fix a typo in the merge data",
+    "add a field (e.g. job title) to an existing badge layout"
+   ],
+   "avoid": [
+    "a document without merge fields: use Create/load Print Merge"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Variables/Data Sets",
+    "AI": "Window/Variables"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: dropped the unsupported \"refresh the placed fields\" step"
+   }
+  },
+  {
+   "name": "Print Merged Document",
+   "id": "21dfd614-8aab-4597-9327-ec25eb522ed5",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print Merge/Print Merged Document",
+   "status": "needs_input",
+   "summary": "Prints the document once per merge record with the field values filled in, through the Print dialog. Enabled only when merge fields exist (disabled in every probed state here).",
+   "how": "The Print dialog opens with the merge applied; choose the printer and copies and print. Proof the records first with Create Merged Document.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"21dfd614-8aab-4597-9327-ec25eb522ed5\")",
+   "use_for": [
+    "print a run of personalised invitations, badges or numbered tickets"
+   ],
+   "avoid": [
+    "sending a merge to a print shop: Create Merged Document, then Publish to PDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: dropped the claim that records are chosen in the Print dialog"
+   }
+  },
+  {
+   "name": "Print Preview",
+   "id": "51771ba9-7ada-4863-92f0-37148c401066",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Print Preview",
+   "status": "current",
+   "summary": "Opens the full-window Print Preview, showing the pages as they will print with the current print settings (layout, imposition, separations, printer's marks) and letting you adjust them before printing.",
+   "how": "Check page fit, separations and marks, use the preview tools to reposition or impose, then print or close.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"51771ba9-7ada-4863-92f0-37148c401066\")",
+   "use_for": [
+    "check scaling, tiling or crop marks before a proof print"
+   ],
+   "avoid": [
+    "checking a PDF for a print shop: preview the published PDF instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Publish to PDF",
+   "id": "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Publish to PDF",
+   "status": "current",
+   "summary": "Opens the Publish to PDF dialog and writes a PDF of the document without changing the open file; a PDF preset (e.g. PDF/X, prepress, web, archive) plus Settings control page range, compression, colour, font embedding, bleed and printer's marks. The harvest does not flag the dialog, but the command opens one.",
+   "how": "Choose file name and PDF preset; in Settings set the pages, colour handling (keep CMYK, convert to RGB), compression, bleed and marks, and read the Issues tab before saving.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f5f7cfa8-2c29-4316-969a-47113b1c0a67\"); object model: set ActiveDocument.PDFSettings, then ActiveDocument.PublishToPDF(FileName) (unverified)",
+   "use_for": [
+    "print-ready PDF/X with bleed for a printer",
+    "client proof or multi-page brochure PDF"
+   ],
+   "avoid": [
+    "web images: use Export or Export For Web"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save a Copy",
+    "AI": "File/Save a Copy..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Revert",
+   "id": "90c536e4-a834-4ff7-b60d-2fead6083bfc",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Revert",
+   "status": "needs_input",
+   "summary": "Discards every change since the last save and reloads the saved version of the active document. Enabled only for a document that has been saved to disk and has unsaved changes (disabled in every probed state here).",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"90c536e4-a834-4ff7-b60d-2fead6083bfc\"); object model: ActiveDocument.Revert (unverified)",
+   "use_for": [
+    "throw away a failed round of edits and get back to the last saved layout"
+   ],
+   "avoid": [
+    "undoing just a few steps: use Undo, which keeps the rest of the work"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Revert",
+    "AI": "File/Revert"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

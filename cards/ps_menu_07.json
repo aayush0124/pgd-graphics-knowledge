@@ -1,0 +1,860 @@
+{
+ "cards": [
+  {
+   "name": "Count Tool",
+   "id": "7900",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Count Tool",
+   "status": "current",
+   "summary": "Selects the Count tool (the menu command only activates it, the same as picking it from the Eyedropper flyout). Each click on the image drops a numbered marker and adds one to a running total shown in the options bar; Record Measurements writes the count to the Measurement Log. Enabled with no document open.",
+   "how": "Click each object to number it. Options bar: Count Group (several named groups, each with its own marker colour, marker size and label size), show / hide the group, and Clear to remove the markers. The markers are on-screen annotations, not pixels.",
+   "use_for": [
+    "counting people in a crowd photo or products on a shelf shot for a caption or infographic figure",
+    "numbering points of interest on a reference image while planning a retouch or a layout"
+   ],
+   "avoid": [
+    "numbered callouts that must appear in the artwork: the markers are not part of the image; draw the numbers with shape and type layers",
+    "measuring sizes or distances: use the Ruler tool, or a selection plus Record Measurements"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('countTool')) (verified live: active tool rulerTool -> countTool, Count Options bar shown). Same result from the DOM: app.currentTool = 'countTool' (verified in the PS tool harvest). Markers (members of the PS API harvest, not run): app.activeDocument.countItems.add([x, y]) places one, app.activeDocument.countItems.length reads the total, and app.activeDocument.autoCount(channel, threshold) counts objects automatically.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api said placing / reading count markers had no harvested route; Document.countItems (add, length) and Document.autoCount are in the PS API harvest, and app.currentTool = 'countTool' is verified in the tool harvest"
+   }
+  },
+  {
+   "name": "Place Scale Marker",
+   "id": "2830",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Place Scale Marker",
+   "status": "current",
+   "summary": "Opens the Measurement Scale Marker dialog, then adds a scale bar (a line of a set real-world length, optionally labelled, e.g. '1 cm') to the image as a new layer group, sized from the document's measurement scale (Image > Analysis > Set Measurement Scale). Needs an open document.",
+   "how": "Set Length in the scale's logical units, Font and Font Size, Display Text on or off, Text Position (top or bottom of the bar) and Color (black or white). The marker lands near the lower-left corner as a layer group that can be moved like any layer. Set the measurement scale first, or the bar is measured in pixels.",
+   "use_for": [
+    "a scale bar on a microscope, lab or technical photo for a report or poster",
+    "a real-size reference bar on a product detail shot for a catalogue spec page"
+   ],
+   "avoid": [
+    "a styled scale bar that must match the brand: draw it with a shape layer and a type layer; the marker offers only black or white and one font",
+    "a document whose measurement scale is still the default: the bar would measure pixels; run Set Measurement Scale > Custom first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 2830 is not runnable through runMenuItem). Without the dialog (unverified): draw the bar as a shape layer plus a text layer, sizing it from app.activeDocument.measurementScale (pixelLength / logicalLength).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Record Measurements",
+   "id": "2860",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Record Measurements",
+   "status": "needs_input",
+   "summary": "Writes the current measurement to the Measurement Log panel (opening it if needed), one row per measured item: for a selection, data points such as area, perimeter, height, width, circularity and grey values in the document's measurement-scale units; with a Ruler line or count markers it can log that tool's length / angle or count instead (the harvest's test states had neither, so this is untested). The harvest found it enabled only with an active selection.",
+   "use_for": [
+    "logging the area and perimeter of regions in a technical or scientific image",
+    "collecting dimensions of several selected parts of a product photo for a spec sheet",
+    "exporting the Measurement Log to a text file for a spreadsheet chart"
+   ],
+   "avoid": [
+    "real-world values without a calibrated scale: set Image > Analysis > Set Measurement Scale first, or the log is in pixels",
+    "a quick one-off distance check: the Ruler tool's readout in the options bar and Info panel is faster"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('measurementRecordMeasurements')) (verified live: with a selection active the Measurement Log panel opened; the logged row itself was not read back). DOM alternative (unverified): app.activeDocument.recordMeasurements(MeasurementSource.MEASURESELECTION, dataPoints), where dataPoints is an array of data-point identifiers the harvest does not list; app.measurementLog.exportMeasurements(file) writes the log out.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the Ruler / Count logging was stated as fact but no harvest test state had a ruler line or count markers; marked untested; use_for: the export file format (CSV) is not in the batch; made neutral; script_api: the data-point identifiers 'Area' / 'Perimeter' were invented (the API harvest gives no identifier list); replaced with a placeholder and added the harvested MeasurementLog.exportMeasurements"
+   }
+  },
+  {
+   "name": "Ruler Tool",
+   "id": "2820",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Ruler Tool",
+   "status": "current",
+   "summary": "Selects the Ruler tool. Dragging between two points measures distance and angle (X, Y, W, H, A, L1 and L2 in the options bar and Info panel); Alt-dragging from an end of the line adds a second leg to measure an angle like a protractor, and the options bar's Straighten Layer button rotates the layer so the measured line becomes level. Enabled with no document open.",
+   "how": "Drag along a reference edge (Shift constrains the angle); read the values in the options bar or Info panel. Use Measurement Scale reports in the calibrated units; Clear removes the line, which never prints.",
+   "use_for": [
+    "levelling a tilted horizon or a crooked scanned document along a known straight edge",
+    "checking spacing and alignment between elements of a mockup or banner",
+    "measuring an angle to match the rotation of a pasted product or sign to the scene"
+   ],
+   "avoid": [
+    "straightening and refilling the corners in one step: the Crop tool's Straighten option with Content-Aware fill does both",
+    "dimension lines that must print: the ruler line is not part of the image; draw them with shapes and type"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Measure Tool",
+    "CDR": "Toolbox/Dimension Flyout/Parallel Dimension"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('rulerTool')) (verified live: active tool moveTool -> rulerTool). Same result from the DOM: app.currentTool = 'rulerTool' (verified in the PS tool harvest). Drawing the line has no harvested script route; an existing line can be logged with app.activeDocument.recordMeasurements(MeasurementSource.MEASURERULERTOOL) (in the PS API harvest, not run); to straighten from a script, compute the angle and call app.activeDocument.activeLayer.rotate(-angle, AnchorPosition.MIDDLECENTER) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the 45-degree step figure (not in the batch); script_api: added the tool-harvest-verified app.currentTool route and the harvested MEASURERULERTOOL logging route; 'reading a measurement has no route' narrowed to drawing"
+   }
+  },
+  {
+   "name": "Custom",
+   "id": "2851",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Select Data Points/Custom",
+   "status": "current",
+   "summary": "Opens the Select Data Points dialog, where you tick which values Record Measurements writes to the Measurement Log, grouped by source (common values, selections, Ruler tool, Count tool): for example label, date, scale, count, area, perimeter, circularity, height, width, grey-value mean / median / min / max, integrated density, length and angle. The choice can be saved as a named data-point preset. Needs an open document.",
+   "how": "Tick or untick data points in each group, then Save Preset to reuse the set later; saved presets appear in the Select Data Points submenu next to Custom.",
+   "use_for": [
+    "trimming the log to only area and perimeter before exporting it",
+    "a saved data-point preset for a repeated measurement job, such as checking print dot or defect sizes"
+   ],
+   "avoid": [
+    "taking measurements: this only chooses what is recorded; run Record Measurements afterwards"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 2851 is not runnable through runMenuItem). Without the dialog (unverified): pass only the wanted data-point names to app.activeDocument.recordMeasurements(source, dataPoints).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: the export file format (CSV) is not in the batch; made neutral"
+   }
+  },
+  {
+   "name": "Custom",
+   "id": "2842",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Set Measurement Scale/Custom",
+   "status": "current",
+   "summary": "Opens the Measurement Scale dialog to define how many pixels equal a real-world length (Pixel Length, Logical Length, Logical Units). While it is open the Ruler tool is active, so dragging across an object of known size fills Pixel Length. The Ruler tool, Record Measurements and Place Scale Marker then report in those units. Needs an open document.",
+   "how": "Drag the ruler across a reference of known size in the photo (a ruler, a coin, a tile); Pixel Length fills in. Enter the Logical Length and Logical Units it represents, optionally Save Preset, then OK. The scale is stored with the document.",
+   "use_for": [
+    "calibrating a product photo against a known dimension so parts can be measured in mm",
+    "measuring rooms on a scanned floor plan or drawing in metres",
+    "setting up the scale before placing a scale bar with Place Scale Marker"
+   ],
+   "avoid": [
+    "changing the image's print size or resolution: use Image Size; the measurement scale changes no pixels",
+    "going back to pixel measurements: Set Measurement Scale > Default"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 2842 is not runnable through runMenuItem). Without the dialog (unverified): set app.activeDocument.measurementScale.pixelLength, .logicalLength and .logicalUnits.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the invented example scale '120 pixels = 1 cm' (not in the batch)"
+   }
+  },
+  {
+   "name": "Default",
+   "id": "2841",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Analysis/Set Measurement Scale/Default",
+   "status": "current",
+   "summary": "Resets the document's measurement scale to the default of 1 pixel = 1 pixel, so the Ruler tool, Record Measurements and scale markers report plain pixels again. Runs at once with no dialog; needs an open document.",
+   "use_for": [
+    "clearing a calibration inherited from a duplicated or template document",
+    "returning to pixel measurements for checking web or social layout spacing"
+   ],
+   "avoid": [
+    "setting a real-world scale: use Set Measurement Scale > Custom"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 2841 is not runnable through runMenuItem). Without the menu (unverified): var s = app.activeDocument.measurementScale; s.pixelLength = 1; s.logicalLength = 1; s.logicalUnits = 'pixels' (MeasurementScale's three properties are writable in the PS API harvest; the 'pixels' unit string is not recorded).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the DOM line set bare logicalLength / logicalUnits globals instead of the MeasurementScale properties; rewritten as runnable code"
+   }
+  },
+  {
+   "name": "Apply Data Set",
+   "id": "7800",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Apply Data Set",
+   "status": "needs_input",
+   "summary": "Opens the Apply Data Set dialog, which swaps one data set's values into the document's variable-bound layers (text replacement, pixel replacement from an image file, and layer visibility), with a preview. It stays grey until the document has variables defined and at least one data set (Image > Variables > Define / Data Sets); the harvest found it disabled in every test state.",
+   "how": "Pick a data set from the list (data sets are typed in or imported from a CSV / TXT file in Image > Variables > Data Sets), tick Preview to check the layout, then Apply; the bound layers change in place.",
+   "use_for": [
+    "personalised name badges, certificates or ID cards from a spreadsheet of names and photos",
+    "product price cards or menu boards where only text and the product image change",
+    "checking one record of a data-driven social-post template before exporting all of them"
+   ],
+   "avoid": [
+    "rendering every record to files: File > Export > Data Sets as Files does all data sets in one pass",
+    "a document without variables: define them first in Image > Variables > Define"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Variables"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 7800 is not runnable through runMenuItem). Without the dialog (unverified): apply a record yourself by setting textItem.contents on the text layers, toggling layer.visible and replacing the contents of the image layers.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Apply Image",
+   "id": "1153",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Apply Image",
+   "status": "current",
+   "summary": "Opens the Apply Image dialog, which blends a layer or channel from a source document (this one or another open document of exactly the same pixel size) into the active layer or channel with a blending mode, opacity and optional mask. The result is written into the target's pixels (destructive). The harvest found it grey with a text layer, smart object, group or several layers targeted.",
+   "how": "Source (document), Layer (any layer or Merged) and Channel (the composite or one channel, with Invert); Blending (the layer blend modes plus Add and Subtract, which take Scale and Offset); Opacity; Preserve Transparency; Mask (another layer or channel used as a mask). Preview updates live.",
+   "use_for": [
+    "frequency-separation retouching: Subtract the blurred low-frequency layer from a copy of the photo to build the high-frequency layer",
+    "blending a single colour channel into a layer for a punchy black-and-white conversion",
+    "sharpening or contrast masks built from a channel of the same image"
+   ],
+   "avoid": [
+    "non-destructive blending: put the source on its own layer with a blend mode and opacity instead",
+    "sources of a different pixel size: they are not offered; match them first with Image Size or Canvas Size",
+    "text, smart object or group targets: apply to a pixel layer (rasterize or stamp first)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('applyImageEnum')) opens the dialog (verified live). Without the dialog (unverified): executeAction(charIDToTypeID('AppI'), desc, DialogModes.NO) with 'With' = a 'Clcl' (calculation) object descriptor holding 'T   ' (reference to the source layer / channel) and 'Clcn' (blending mode).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed the Scale 2 / Offset 128 values (not in the batch); script_api: unverified route's keys written as the actual 4-character IDs ('T   ' not 'T')"
+   }
+  },
+  {
+   "name": "Auto Color",
+   "id": "1817",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Auto Color",
+   "status": "current",
+   "summary": "One-step colour correction of the active pixel layer (or selection): Photoshop finds the darkest and lightest colours to set the black and white points and snaps near-neutral midtones to grey, so a colour cast is removed along with a contrast fix. No dialog; it uses the saved Auto Color Correction defaults. The harvest found it grey on text layers, groups and multi-layer selections.",
+   "use_for": [
+    "removing the yellow or green cast from indoor event or office snapshots",
+    "a first-pass neutral correction of product photos before cut-out and layout",
+    "a one-click colour fix step inside a batch action"
+   ],
+   "avoid": [
+    "images whose cast is intended (sunset, candlelight, a graded look): it neutralises it; use a Curves or Levels adjustment layer",
+    "edits that must stay editable: the Auto button in a Curves or Levels adjustment layer runs the same kind of correction non-destructively"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Auto Adjust"
+   },
+   "shortcut": "Ctrl+Shift+B",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('levels'), desc, DialogModes.NO) with desc: autoBlackWhite = true, autoNeutrals = true; verified live (history 'Auto Color'). The scripting DOM has no autoColor() method.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Auto Contrast",
+   "id": "1810",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Auto Contrast",
+   "status": "current",
+   "summary": "One-step contrast boost of the active pixel layer: maps the darkest and lightest tones of the composite to black and white (clipping a small percentage at each end) while moving all channels together, so the image gets punchier without its colours or cast changing. No dialog. The harvest found it grey on text layers, groups and multi-layer selections.",
+   "use_for": [
+    "lifting a flat, hazy photo whose colour is already right",
+    "cleaning up a grey scanned sketch or document so the paper is lighter and the lines darker",
+    "a quick contrast pass on background photos for social posts"
+   ],
+   "avoid": [
+    "removing a colour cast: use Auto Color",
+    "images that already contain pure black and white: almost nothing changes; set the points yourself with Curves or Levels"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Ctrl+Alt+Shift+L",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('levels'), desc, DialogModes.NO) with desc: autoContrast = true; verified live (history 'Auto Contrast'). DOM alternative (unverified): app.activeDocument.activeLayer.autoContrast().",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Auto Tone",
+   "id": "1808",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Auto Tone",
+   "status": "current",
+   "summary": "One-step tonal correction of the active pixel layer: stretches the tonal range so the darkest pixels become black and the lightest white, clipping a small percentage at each end. Each colour channel is stretched separately (per-channel contrast), so a cast can be removed or introduced; the clipping amounts and target colours come from the saved Auto Color Correction defaults. No dialog. The harvest recorded the history step ('Auto Tone') only, not the pixel change.",
+   "use_for": [
+    "quick fix of dull, low-contrast snapshots before they go into a layout",
+    "a starting point before a manual grade on a batch of photos",
+    "one-click tonal clean-up inside a batch action"
+   ],
+   "avoid": [
+    "images where the colour must not shift: use Auto Contrast, which moves all channels together",
+    "photos that already hold pure black and white or are deliberately low-key / high-key: use Curves or Levels by hand"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Auto Adjust"
+   },
+   "shortcut": "Ctrl+Shift+L",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('levels'), desc, DialogModes.NO) with desc: auto = true; verified live (history 'Auto Tone'). DOM alternative (unverified): app.activeDocument.activeLayer.autoLevels().",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: claimed the saved Auto Color Correction defaults pick the algorithm; the menu command keeps its per-channel algorithm and the defaults set clipping / target colours; added that only the history step was recorded"
+   }
+  },
+  {
+   "name": "Calculations",
+   "id": "1900",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Calculations",
+   "status": "current",
+   "summary": "Opens the Calculations dialog, which blends two single channels (from this document or other open documents of the same pixel size) with a blending mode and opacity, and puts the result in a new alpha channel, a new document or a selection. The layers themselves are not changed.",
+   "how": "Source 1 and Source 2: document, layer (or Merged) and channel (including Gray), each with Invert; Blending (layer blend modes plus Add and Subtract with Scale and Offset), Opacity and an optional Mask; Result: New Channel, New Document or Selection.",
+   "use_for": [
+    "building a contrasty channel mask for hair or trees against the sky (e.g. Blue channel multiplied with itself)",
+    "luminosity masks for selective dodge-and-burn or sky grading",
+    "combining two existing alpha channels into one selection"
+   ],
+   "avoid": [
+    "changing the visible pixels: Calculations only makes channels or selections; use Apply Image",
+    "routine subject or sky cut-outs: Select > Subject or Select > Sky is quicker"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('calculation')) opens the dialog (verified live). Without the dialog (unverified): a recorded Calculations step is executeAction(charIDToTypeID('Mk  '), desc, DialogModes.NO) with 'Nw  ' (new) = class 'Chnl' and 'Usng' = a 'Clcl' (calculation) object descriptor naming the two source channels and the blending mode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the unverified route gave the key as 'New'; the char ID is 'Nw  '"
+   }
+  },
+  {
+   "name": "Canvas Size",
+   "id": "1031",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Canvas Size",
+   "status": "current",
+   "summary": "Changes the canvas dimensions without scaling the image: enlarging adds space around the content from the chosen anchor, shrinking crops it. On a Background layer the new area takes the canvas extension colour; on other layers it stays transparent. Verified: 400x300 -> 500x400 centred, a layer moved 50 px right and down.",
+   "how": "Width and Height (absolute, or Relative to add a fixed amount), the 3x3 Anchor grid for where the existing image sits, and Canvas extension color (Foreground, Background, White, Black, Gray or Other) for a Background layer.",
+   "use_for": [
+    "adding a white border or margin around a photo for a print or a framed social post",
+    "extending a landscape image to a taller social-post or story canvas before a Generative Expand or a background fill",
+    "making room above a photo for a headline on a poster"
+   ],
+   "avoid": [
+    "resizing the picture itself: use Image Size",
+    "filling the new area with matching scenery: use the Crop tool's Generative Expand or Content-Aware Fill"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Artboard",
+    "CDR": "Layout/Page Size"
+   },
+   "shortcut": "Ctrl+Alt+C",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('canvasSize'), desc, DialogModes.NO) with desc: Wdth = 500 (#Pxl), Hght = 400 (#Pxl), Hrzn = HrzL Cntr, Vrtc = VrtL Cntr; verified live (400x300 -> 500x400). DOM alternative (unverified): app.activeDocument.resizeCanvas(UnitValue(500, 'px'), UnitValue(400, 'px'), AnchorPosition.MIDDLECENTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed the 4:5 / 9:16 ratios (not in the batch)"
+   }
+  },
+  {
+   "name": "Crop",
+   "id": "1044",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Crop",
+   "status": "needs_input",
+   "summary": "Crops the whole document to the bounding rectangle of the active selection and deletes the pixels outside; a non-rectangular selection crops to its bounds and stays active. Verified: a lasso selection spanning 100,80 to 300,220 cut a 400x300 canvas to 200x140. Grey without a selection.",
+   "use_for": [
+    "cutting the canvas down to a marquee drawn around the subject before export",
+    "trimming a document to the bounds of a product cut-out",
+    "a fixed crop step inside a batch action"
+   ],
+   "avoid": [
+    "crops that need an aspect ratio, straightening or to keep the cropped pixels: use the Crop tool",
+    "removing transparent or solid-colour margins: Image > Trim finds them for you"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Crop Image",
+    "CDR": "Toolbox/Crop Tools/Crop"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('crop'), desc, DialogModes.NO) with desc: Dlt = true (delete cropped pixels); verified live (400x300 -> 200x140 from the selection bounds). DOM alternative (unverified): app.activeDocument.crop([left, top, right, bottom]).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Duplicate",
+   "id": "1134",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Duplicate",
+   "status": "current",
+   "summary": "Opens a small dialog and makes a new, unsaved copy of the whole document (layers, channels and settings) named '<name> copy' with its own fresh history; the original is untouched. Duplicate Merged Layers Only gives a flattened copy instead.",
+   "how": "As: the copy's name. Duplicate Merged Layers Only (offered when the document has layers) flattens the copy.",
+   "use_for": [
+    "trying a destructive step (CMYK, Bitmap mode, a flatten) on a copy while the master stays intact",
+    "making a flattened copy for a quick export or client preview",
+    "starting a size or colour variant of a finished layout"
+   ],
+   "avoid": [
+    "copying one layer: use Layer > Duplicate Layer",
+    "keeping a version on disk: use File > Save As; the duplicate is unsaved until you save it"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('duplicate'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn); verified live (new document 'pgd_mt copy'). DOM alternative (unverified): app.activeDocument.duplicate('name', mergeLayersOnly).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generative Upscale",
+   "id": "1776",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Generative Upscale",
+   "status": "current",
+   "summary": "Opens the Generative Upscale dialog, which enlarges the image with Adobe's cloud AI upscaling, inventing fine detail instead of interpolating pixels. It spends generative credits and needs an internet connection and an Adobe sign-in. The harvest did not run it (credits), so the dialog's options and where the result lands are not recorded here.",
+   "use_for": [
+    "enlarging a small web image or client-supplied photo for a print poster",
+    "taking an AI-generated image up to print resolution",
+    "recovering detail in a tight crop for a large banner"
+   ],
+   "avoid": [
+    "images where invented detail is unacceptable (documentation, product text, labels, faces that must stay exact): use Image Size with Preserve Details 2.0",
+    "offline or credit-free work: Image Size resamples locally"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Bitmaps/Resample"
+   },
+   "shortcut": "Ctrl+Alt+Shift+U",
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: generative, spends credits).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "180°",
+   "id": "2993",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/180°",
+   "status": "current",
+   "summary": "Rotates the whole canvas, every layer included, by 180 degrees: the image is turned upside down and the canvas size stays the same. Verified: a layer at 40,40-200,200 on a 400x300 canvas moved to 200,100-360,260.",
+   "use_for": [
+    "fixing an upside-down scan or phone photo",
+    "turning a finished design head-to-head for a print imposition or a tent card's back panel"
+   ],
+   "avoid": [
+    "rotating one layer: use Edit > Transform > Rotate 180",
+    "a mirror image: Flip Canvas Vertical mirrors, it does not rotate"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Angl = 180 (#Ang); verified live. DOM alternative (unverified): app.activeDocument.rotateCanvas(180).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "90° Clockwise",
+   "id": "2991",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/90° Clockwise",
+   "status": "current",
+   "summary": "Rotates the whole canvas, every layer included, a quarter turn clockwise, swapping width and height. Verified: 400x300 -> 300x400, a layer at 40,40-200,200 moved to 100,40-260,200.",
+   "use_for": [
+    "fixing a portrait photo that opened lying on its side",
+    "turning a landscape banner into a portrait layout to rework it"
+   ],
+   "avoid": [
+    "rotating one layer: use Edit > Transform > Rotate 90 Clockwise",
+    "a tilt of a few degrees: use Image Rotation > Arbitrary or the Ruler tool's Straighten Layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Angl = 90 (#Ang); verified live (400x300 -> 300x400). DOM alternative (unverified): app.activeDocument.rotateCanvas(90).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "90° Counter Clockwise",
+   "id": "2992",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/90° Counter Clockwise",
+   "status": "current",
+   "summary": "Rotates the whole canvas, every layer included, a quarter turn counter-clockwise, swapping width and height. Verified: 400x300 -> 300x400, a layer at 40,40-200,200 moved to 40,200-200,360.",
+   "use_for": [
+    "fixing a photo or scan that came in rotated a quarter turn clockwise",
+    "turning artwork sideways to set a vertical spine or side-panel layout"
+   ],
+   "avoid": [
+    "rotating one layer: use Edit > Transform > Rotate 90 Counter Clockwise",
+    "a tilt of a few degrees: use Image Rotation > Arbitrary"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Angl = -90 (#Ang); verified live (400x300 -> 300x400). DOM alternative (unverified): app.activeDocument.rotateCanvas(-90).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Arbitrary",
+   "id": "2994",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/Arbitrary",
+   "status": "current",
+   "summary": "Opens the Rotate Canvas dialog to rotate the whole canvas by any angle, clockwise or counter-clockwise; the canvas grows to hold the rotated corners, which are filled with the background colour on a Background layer and left transparent on other layers. Verified at 30 degrees: 400x300 -> 497x460.",
+   "how": "Enter the Angle and choose clockwise or counter-clockwise, then OK. Crop away the corner wedges afterwards, or fill them with Content-Aware Fill.",
+   "use_for": [
+    "straightening a scanned page or tilted horizon by a known angle",
+    "tilting a whole composition for a dynamic diagonal poster layout"
+   ],
+   "avoid": [
+    "straightening by eye: use the Ruler tool's Straighten Layer or the Crop tool's Straighten option",
+    "rotating one layer: use Edit > Free Transform"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Angl = 30 (#Ang); verified live with no dialog (400x300 -> 497x460). A positive angle turns clockwise (the 90 Clockwise item uses 90, Counter Clockwise -90). DOM alternative (unverified): app.activeDocument.rotateCanvas(30).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Flip Canvas Horizontal",
+   "id": "2996",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/Flip Canvas Horizontal",
+   "status": "current",
+   "summary": "Mirrors the whole canvas left to right, every layer included; the canvas size is unchanged. Verified: a layer at x 40-200 on a 400 px wide canvas moved to x 200-360.",
+   "use_for": [
+    "mirroring a photo so the subject faces into the text side of a layout",
+    "making a mirrored print for iron-on transfers or reverse-printed window film"
+   ],
+   "avoid": [
+    "images with text, logos or obviously one-sided features: they read backwards after the flip",
+    "flipping one layer: use Edit > Transform > Flip Horizontal"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Reflect...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('flip'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Axis = Ornt Hrzn; verified live. DOM alternative (unverified): app.activeDocument.flipCanvas(Direction.HORIZONTAL).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Flip Canvas Vertical",
+   "id": "2997",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Rotation/Flip Canvas Vertical",
+   "status": "current",
+   "summary": "Mirrors the whole canvas top to bottom, every layer included; the canvas size is unchanged. Verified: a layer at y 40-200 on a 300 px tall canvas moved to y 100-260.",
+   "use_for": [
+    "correcting a film or transparency scan that came in mirrored top to bottom",
+    "making a mirrored half of a symmetrical pattern tile or texture"
+   ],
+   "avoid": [
+    "a water reflection of one object: duplicate that layer and use Edit > Transform > Flip Vertical",
+    "turning the image upside down without mirroring: use Image Rotation > 180"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Reflect...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('flip'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), Axis = Ornt Vrtc; verified live. DOM alternative (unverified): app.activeDocument.flipCanvas(Direction.VERTICAL).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Image Size",
+   "id": "1030",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Image Size",
+   "status": "current",
+   "summary": "Opens the Image Size dialog to change the document's pixel dimensions, print size or resolution. With Resample on, pixels are added or removed with the chosen interpolation; with it off only the print size / ppi relationship changes and no pixels are touched. Verified: width 400 -> 200 px, proportions constrained, bicubic gave 200x150.",
+   "how": "Fit To presets; Width and Height (pixels, percent, inches, cm ...) linked for constrained proportions; Resolution; Scale Styles in the gear menu; Resample method: Automatic, Preserve Details 2.0 or Preserve Details (enlargement, with Reduce Noise), Bicubic Smoother (enlargement), Bicubic Sharper (reduction), Bicubic, Nearest Neighbor (hard edges) or Bilinear.",
+   "use_for": [
+    "downsizing a photo to an exact pixel width for web or social",
+    "setting the print resolution (ppi) with Resample off, so no pixels change",
+    "a modest enlargement with Preserve Details 2.0",
+    "scaling pixel art crisply with Nearest Neighbor"
+   ],
+   "avoid": [
+    "adding space around the image: use Canvas Size",
+    "large enlargements where invented detail is acceptable: Generative Upscale",
+    "resizing one layer: use Edit > Free Transform"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Resample"
+   },
+   "shortcut": "Ctrl+Alt+I",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('imageSize'), desc, DialogModes.NO) with desc: Wdth = 200 (#Pxl), constrainProportions = true, Intr = Intp Bcbc (bicubic); verified live (400x300 -> 200x150). DOM alternative (unverified): app.activeDocument.resizeImage(UnitValue(200, 'px'), null, null, ResampleMethod.BICUBIC).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed the 300 ppi figure (not in the batch)"
+   }
+  },
+  {
+   "name": "16 Bits/Channel",
+   "id": "1162",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/16 Bits/Channel",
+   "status": "current",
+   "summary": "Converts the document to 16 bits per channel, giving thousands of tonal levels per channel instead of 256 without changing how it looks, so strong edits afterwards band and posterize far less. The file roughly doubles in size. Verified on an 8-bit RGB document: EIGHT -> SIXTEEN bits per channel in one history step.",
+   "use_for": [
+    "heavy curves or colour grading on a photo or a smooth gradient sky without banding",
+    "detailed retouching (frequency separation, dodge and burn) with less rounding error",
+    "keeping full depth from a raw photo through to print"
+   ],
+   "avoid": [
+    "final web or social export: those formats are 8-bit; convert at the end or let Export As do it",
+    "work that needs 8-bit-only filters such as the Filter Gallery: apply them on an 8-bit copy"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: Dpth = 16; verified live (8 -> 16 bits/channel). DOM: app.activeDocument.bitsPerChannel = BitsPerChannelType.SIXTEEN (the harvest used this setter to prepare its 8 Bits/Channel test).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "32 Bits/Channel",
+   "id": "1206",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/32 Bits/Channel",
+   "status": "current",
+   "summary": "Converts the document to 32-bit floating point (high dynamic range) per channel, which can hold values brighter than white; Photoshop also switches the colour profile to its linear version (verified: sRGB IEC61966-2.1 -> sRGB IEC61966-2.1 (Linear RGB Profile)). Many filters, adjustments, blend modes and tools are unavailable in 32-bit.",
+   "use_for": [
+    "compositing HDR images or EXR renders from 3D software",
+    "light-based blending in linear space, such as additive glows and realistic blur on bright highlights"
+   ],
+   "avoid": [
+    "ordinary photo retouching or print design: use 16 Bits/Channel",
+    "layer-heavy designs: many adjustment layers and blend modes do not work in 32-bit, and coming back down to 8 or 16 bits goes through HDR Toning"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: Dpth = 32; verified live (8 -> 32 bits, profile switched to its linear version). DOM alternative (unverified): app.activeDocument.bitsPerChannel = BitsPerChannelType.THIRTYTWO.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "8 Bits/Channel",
+   "id": "1161",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/8 Bits/Channel",
+   "status": "current",
+   "summary": "Converts the document to 8 bits per channel (256 levels per channel), halving the size of a 16-bit file and making every filter and common export format available; very smooth gradients can band a little after the conversion. Verified: 16 -> 8 bits with no dialog. Converting down from 32 bits goes through the HDR Toning dialog instead.",
+   "use_for": [
+    "the last step before saving a JPEG or handing files to print, so you control when depth is dropped",
+    "unlocking 8-bit-only filters such as the Filter Gallery",
+    "shrinking a large layered PSD that no longer needs heavy grading"
+   ],
+   "avoid": [
+    "before heavy grading or retouching: stay in 16 bits until the edits are done",
+    "32-bit HDR images: the HDR Toning dialog appears; tone-map deliberately with Image > Adjustments > HDR Toning"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: Dpth = 8; verified live (16 -> 8 bits). DOM alternative (unverified): app.activeDocument.bitsPerChannel = BitsPerChannelType.EIGHT.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Bitmap",
+   "id": "1006",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Bitmap",
+   "status": "needs_input",
+   "summary": "Converts a Grayscale document to Bitmap mode: 1 bit per pixel, only pure black or white, at a chosen output resolution and with a chosen method (50% Threshold, Pattern Dither, Diffusion Dither, Halftone Screen or Custom Pattern). Layers are flattened and the colour profile is dropped (verified: Dot Gain 20% -> none). Grey on RGB documents (disabled in every RGB test state): convert to Grayscale first.",
+   "how": "Output resolution (ppi; usually higher than the input for print line art or halftones) and Method: 50% Threshold (hard cut), Pattern Dither (geometric pattern), Diffusion Dither (grainy error diffusion), Halftone Screen (frequency, angle and dot shape such as Round, Ellipse, Line, Square, Cross, Diamond) or Custom Pattern (a defined pattern used as the screen).",
+   "use_for": [
+    "1-bit line art from a scanned logo or drawing at a high output resolution for print",
+    "a coarse halftone or dither look for a poster, zine or T-shirt",
+    "separation films for screen printing or stamp and engraving artwork"
+   ],
+   "avoid": [
+    "a halftone look that keeps colour and layers: use Filter > Pixelate > Color Halftone on a layer",
+    "colour documents straight away: convert to Image > Mode > Grayscale first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Mode/Black and White (1-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "var o = new BitmapConversionOptions(); o.method = BitmapConversionType.HALFTHRESHOLD; o.resolution = 72; app.activeDocument.changeMode(ChangeMode.BITMAP, o) (verified live on a document first converted with app.activeDocument.changeMode(ChangeMode.GRAYSCALE)).",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: removed the 1200 ppi figure (not in the batch)"
+   }
+  },
+  {
+   "name": "CMYK Color",
+   "id": "1011",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/CMYK Color",
+   "status": "current",
+   "summary": "Converts the document to CMYK using the CMYK working space from Edit > Color Settings (verified: sRGB -> U.S. Web Coated (SWOP) v2; channels Red, Green, Blue -> Cyan, Magenta, Yellow, Black). Bright RGB colours outside the printable gamut (vivid blues, greens, oranges) are clipped and look duller, and converting back to RGB does not restore them.",
+   "use_for": [
+    "print-ready files for offset or digital press when the printer asks for CMYK",
+    "packaging and brochure images that must be checked in CMYK before layout"
+   ],
+   "avoid": [
+    "a press profile other than the working space: use Edit > Convert to Profile and pick profile and intent",
+    "previewing print colour only: View > Proof Colors keeps the file in RGB",
+    "web, social or screen output: keep RGB"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Document Color Mode/CMYK Color",
+    "CDR": "Bitmaps/Mode/CMYK Color (32-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: T = class CMYM (CMYK mode); verified live. DOM alternative (unverified): app.activeDocument.changeMode(ChangeMode.CMYK).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Color Table",
+   "id": "1045",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Color Table",
+   "status": "needs_input",
+   "summary": "Opens the Color Table dialog for an Indexed Color document, showing its palette (up to 256 colours) as swatches: click a swatch to change that colour everywhere in the image, load or save .act tables, switch to a preset table (Custom, Black Body, Grayscale, Spectrum or a system palette) or use the eyedropper to make one colour transparent. Grey unless the document is in Indexed Color mode (disabled in every RGB test state).",
+   "how": "Click a swatch (or drag across several for a ramp) to edit it in the Color Picker; the Table menu switches preset tables; Load / Save exchange .act files; the eyedropper marks a transparent colour.",
+   "use_for": [
+    "recolouring a GIF, icon or pixel-art sprite by editing palette entries",
+    "false-colour (Black Body or Spectrum) rendering of a grayscale image converted to Indexed Color",
+    "locking a retro or limited-colour graphic to an exact palette"
+   ],
+   "avoid": [
+    "RGB documents: convert with Image > Mode > Indexed Color first, or make a limited-palette PNG-8 / GIF at export",
+    "recolouring photos: use Hue/Saturation or a Gradient Map adjustment layer"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 1045 is not runnable through runMenuItem).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

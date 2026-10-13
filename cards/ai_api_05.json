@@ -1,0 +1,652 @@
+{
+ "cards": [
+  {
+   "name": "TextFrameItem",
+   "id": "class:TextFrameItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/TextFrameItem",
+   "status": "current",
+   "summary": "One text object in an Illustrator document: point text, area text (text flowed inside a shape) or type on a path. It holds the string (contents), gives access to its formatting through textRange / characters / words / lines / paragraphs, controls area-text rows and columns, path-text placement and threading to other frames, and can be converted to outlines.",
+   "use_for": [
+    "poster or banner headline filled from data",
+    "batch-replacing copy in templates (names, prices, dates)",
+    "outlining a logo wordmark for print or vector handoff",
+    "multi-column area text for flyers and brochures",
+    "type on a circular badge or seal path",
+    "walking every text frame for a pre-press font / overset check"
+   ],
+   "avoid": [
+    "createOutline when the text must stay editable: the frame is replaced by a GroupItem; work on a copy or keep the .ai master",
+    "formatting long text character by character through characters: slow; set textRange (or a words / paragraphs range) in one go",
+    "rows and columns on point or path text: only area text has them; convertPointObjectToAreaObject first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Scripting commands and classes for Adobe Photoshop/TextItem",
+    "CDR": "VGCore/Text"
+   },
+   "how": "ExtendScript: app.activeDocument.textFrames[i] (every text frame in the document), a layer's textFrames, or story.textFrames for the frames a threaded story runs through; new frames come from the TextFrameItems collection (pointText / areaText / pathText). Formatting sits one level down: textRange.characterAttributes and the characters / words / lines / paragraphs ranges. Position, size, name, opacity and the other geometry come from the PageItem superclass and are not listed on this class. COM: the TextFrame interface of the Illustrator type library.",
+   "key_members": [
+    {
+     "name": "contents",
+     "use": "read / replace the whole string of the frame"
+    },
+    {
+     "name": "kind",
+     "use": "read-only TextType: POINTTEXT, AREATEXT or PATHTEXT; check before using area- or path-only members"
+    },
+    {
+     "name": "textRange",
+     "use": "the full text as a TextRange; the usual door to characterAttributes for whole-frame formatting"
+    },
+    {
+     "name": "characters",
+     "use": "per-character ranges (slow on long text)"
+    },
+    {
+     "name": "words",
+     "use": "per-word ranges, e.g. colour one word of a headline"
+    },
+    {
+     "name": "paragraphs",
+     "use": "per-paragraph ranges for paragraph formatting"
+    },
+    {
+     "name": "lines",
+     "use": "the composed lines, e.g. to count how many lines a headline broke into"
+    },
+    {
+     "name": "story",
+     "use": "the Story this frame belongs to (shared by threaded frames)"
+    },
+    {
+     "name": "textPath",
+     "use": "the path that holds area or path text (resize the box / edit the curve)"
+    },
+    {
+     "name": "anchor",
+     "use": "start of the baseline for point text"
+    },
+    {
+     "name": "columnCount",
+     "use": "area text: number of columns"
+    },
+    {
+     "name": "rowCount",
+     "use": "area text: number of rows"
+    },
+    {
+     "name": "columnGutter",
+     "use": "area text: space between columns"
+    },
+    {
+     "name": "spacing",
+     "use": "path text: spacing setting of type on a path"
+    },
+    {
+     "name": "startTValue",
+     "use": "path text: where the text starts along the path"
+    },
+    {
+     "name": "nextFrame",
+     "use": "the frame this one threads into (linked area text)"
+    },
+    {
+     "name": "orientation",
+     "use": "TextOrientation HORIZONTAL or VERTICAL"
+    },
+    {
+     "name": "antialias",
+     "use": "TextAntialias NONE / SHARP / CRISP / STRONG for raster output of the text"
+    },
+    {
+     "name": "createOutline",
+     "use": "convert the text to vector outlines; returns a GroupItem"
+    },
+    {
+     "name": "convertPointObjectToAreaObject",
+     "use": "turn point text into area text; returns the new TextFrameItem"
+    }
+   ],
+   "gotchas": [
+    "createOutline() returns a GroupItem and the text frame no longer exists afterwards; any variable still pointing at the frame is dead. Copy the frame first when an editable version is needed.",
+    "kind is read-only. Switch between point and area text with convertPointObjectToAreaObject / convertAreaObjectToPointObject and keep using their return value (whether the old reference stays valid is unverified).",
+    "Area-only members (rowCount, columnCount, rowGutter, columnGutter, flowLinksHorizontally, firstBaseline, firstBaselineMin) and path-only members (spacing, startTValue, endTValue) only mean something for that kind; what happens when they are set on the wrong kind (error or silently ignored) is unverified.",
+    "Assigning contents replaces the whole string; the new text takes the formatting of the first character (unverified), so restyle through textRange after assigning.",
+    "Paragraph breaks inside contents are carriage returns (\\r); a \\n written by a script may read back as \\r (unverified).",
+    "Area text that does not fit is overset and this class has no overset flag; detect it by comparing the story's text with what the frame's lines hold (unverified approach) or enlarge the frame.",
+    "anchor is the baseline start for point text, not the top-left corner; to place a frame by its bounding box use the inherited PageItem position.",
+    "A font missing on this machine is substituted when the file opens; createOutline then outlines the substitute, so check fonts before outlining.",
+    "move and duplicate are declared in the 30.2 dictionary with two required parameters (relativeObject, insertionLocation)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar tf = doc.textFrames[0];\ntf.contents = \"SUMMER SALE\";\ntf.textRange.characterAttributes.size = 96;\nif (tf.kind == TextType.AREATEXT) { tf.columnCount = 2; tf.columnGutter = 18; }\nvar outlines = tf.createOutline(); // tf is gone, outlines is a GroupItem",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "View",
+   "id": "class:View",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/View",
+   "status": "current",
+   "summary": "The on-screen view of a document window: zoom factor, the point shown at the centre of the window, view rotation and screen mode. Changing it changes only what is displayed, never the artwork or any export.",
+   "use_for": [
+    "zoom to 100 % or onto an artboard before a window capture or screen recording",
+    "centring the window on a logo for a review screenshot",
+    "resetting a rotated view before handing a file back",
+    "switching screen mode for a clean presentation capture"
+   ],
+   "avoid": [
+    "controlling export size or framing: views do not affect exportFile / imageCapture; use the Document export calls and artboards",
+    "headless or minimised runs: a view belongs to a document window, and the screen may not repaint until app.redraw() (behaviour with no visible window unverified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "VGCore/ActiveView"
+   },
+   "how": "ExtendScript: app.activeDocument.activeView (the view of the current window) or app.activeDocument.views[i]. Set zoom / centerPoint / rotateAngle directly; screen mode through the screenMode property or setScreenMode(ScreenMode.X) with MULTIWINDOW, DESKTOP or FULLSCREEN. COM: the View interface.",
+   "key_members": [
+    {
+     "name": "zoom",
+     "use": "zoom factor of the view (1 = 100 %)"
+    },
+    {
+     "name": "visibleZoom",
+     "use": "the zoom value the user sees in the UI"
+    },
+    {
+     "name": "centerPoint",
+     "use": "document point shown at the centre of the window; set it to pan"
+    },
+    {
+     "name": "bounds",
+     "use": "read-only rectangle of the area currently visible"
+    },
+    {
+     "name": "rotateAngle",
+     "use": "view rotation in degrees (Rotate View); artwork is not rotated"
+    },
+    {
+     "name": "screenMode",
+     "use": "current ScreenMode (MULTIWINDOW, DESKTOP, FULLSCREEN)"
+    },
+    {
+     "name": "setScreenMode",
+     "use": "switch screen mode; returns true on success"
+    },
+    {
+     "name": "parent",
+     "use": "the Document that owns the view"
+    }
+   ],
+   "gotchas": [
+    "zoom is a factor (1 = 100 %, 2 = 200 %), not a percentage.",
+    "visibleZoom can differ from zoom (for example on HiDPI displays or with a display-at-print-size preference) (unverified cause); use visibleZoom when matching the number in the zoom box.",
+    "bounds is read-only: frame an area by setting zoom and centerPoint, then read bounds back to check what is visible.",
+    "Whether centerPoint follows app.coordinateSystem or always uses document coordinates is unverified; read it back after setting.",
+    "rotateAngle only rotates the view; reset it to 0 before a window capture so the screenshot is upright (unverified whether windowCapture follows view rotation).",
+    "ScreenMode has three values (MULTIWINDOW, DESKTOP, FULLSCREEN) and the View > Screen Mode menu has three items (Normal Screen Mode, Full Screen with Menu Bar Mode, Full Screen Mode); pairing them in that order is likely but unverified, so read screenMode back after setting it.",
+    "View changes are not edits: they do not mark the document as modified and are not undo steps (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar r = doc.artboards[0].artboardRect;          // [left, top, right, bottom]\nvar v = doc.activeView;\nv.centerPoint = [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2];\nv.zoom = 1;                                     // 100 %\napp.redraw();",
+   "review": {
+    "by": "adversarial",
+    "changes": "screen-mode gotcha said the 3 ScreenMode values do not map onto the menu; the menu harvest has exactly 3 Screen Mode items, rewrote it as a likely 1:1 pairing (unverified); marked the no-visible-window claim unverified"
+   }
+  },
+  {
+   "name": "Application",
+   "id": "class:Application",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Suite that applies to all applications/Application",
+   "status": "current",
+   "summary": "The running Illustrator itself and the root of every script: the open documents and the active one, the selection, installed fonts, presets, preferences and version info, plus app-level actions such as opening files, running menu commands and recorded actions, undo / redo, clipboard, transformation-matrix maths, workspaces and tool selection.",
+   "use_for": [
+    "entry point of any Illustrator automation (batch export, template fill, pre-press check)",
+    "opening a batch of .ai / .pdf / .svg files",
+    "running a menu command that has no DOM call (executeMenuCommand), e.g. Type > Create Outlines",
+    "playing a recorded action on many files (doScript)",
+    "silencing alerts for unattended runs (userInteractionLevel)",
+    "listing installed fonts and PDF / print presets before an export"
+   ],
+   "avoid": [
+    "the aAT* sequencer members, runAPITest, the begin*AutomationTest calls, getHelloJSONData / getCCXUserJSONData (home screen), reflectCSAW (ActionScript wrapper generator) and openCloudLibraryAssetForEditing / setThumbnailOptionsForCloudLibrary (marked For Internal Use): internal hooks, not for production scripts",
+    "executeMenuCommand when a DOM call exists: it depends on the current selection and fails silently; prefer the DOM (e.g. TextFrameItem.createOutline)",
+    "quit() in a shared pipeline: it closes documents other processes may own"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Suite that applies to all applications/Application",
+    "CDR": "VGCore/Application"
+   },
+   "how": "ExtendScript: the global app object (app.activeDocument, app.documents, app.open(file)). From outside Illustrator: COM ProgID Illustrator.Application (the _Application interface), whose DoJavaScript / DoJavaScriptFile run ExtendScript; that is how a Python or PowerShell pipeline drives Illustrator.",
+   "key_members": [
+    {
+     "name": "activeDocument",
+     "use": "the document in the front window (throws when none is open)"
+    },
+    {
+     "name": "documents",
+     "use": "all open documents; new documents are added through this collection"
+    },
+    {
+     "name": "open",
+     "use": "open a file (optionally forcing RGB / CMYK document colour space)"
+    },
+    {
+     "name": "selection",
+     "use": "what the user has selected in the active document"
+    },
+    {
+     "name": "userInteractionLevel",
+     "use": "DONTDISPLAYALERTS for unattended runs, DISPLAYALERTS to restore"
+    },
+    {
+     "name": "coordinateSystem",
+     "use": "ARTBOARDCOORDINATESYSTEM or DOCUMENTCOORDINATESYSTEM for every position the script reads or writes"
+    },
+    {
+     "name": "executeMenuCommand",
+     "use": "run a menu item by its command string (e.g. \"outline\" = Type > Create Outlines)"
+    },
+    {
+     "name": "doScript",
+     "use": "play an action from the Actions panel: doScript(action, from, dialogs), from = the set name; dialogs defaults to true"
+    },
+    {
+     "name": "loadAction",
+     "use": "load an .aia action set file before doScript"
+    },
+    {
+     "name": "unloadAction",
+     "use": "remove a loaded action set / action afterwards"
+    },
+    {
+     "name": "redraw",
+     "use": "force a screen refresh during a long script"
+    },
+    {
+     "name": "undo",
+     "use": "undo the last transaction"
+    },
+    {
+     "name": "textFonts",
+     "use": "installed fonts; getByName with a PostScript name gives a TextFont"
+    },
+    {
+     "name": "preferences",
+     "use": "Illustrator preferences object"
+    },
+    {
+     "name": "version",
+     "use": "application version string (this harvest was made on 30.2.1.1; the exact string returned is unverified)"
+    },
+    {
+     "name": "PDFPresetsList",
+     "use": "names of available PDF presets"
+    },
+    {
+     "name": "getIsFileOpen",
+     "use": "check whether a file path is already open before opening it"
+    },
+    {
+     "name": "getRotationMatrix",
+     "use": "build a rotation Matrix for a PageItem transform"
+    },
+    {
+     "name": "concatenateScaleMatrix",
+     "use": "add a scale to an existing Matrix; scaleX / scaleY are percentages (default 100)"
+    },
+    {
+     "name": "quit",
+     "use": "quit Illustrator"
+    }
+   ],
+   "gotchas": [
+    "app.activeDocument throws when no document is open; check app.documents.length first.",
+    "selection is normally an array of page items, but while text is being edited with the Type tool it is a TextRange (unverified for 30.2); check typename before looping.",
+    "userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS suppresses most alerts, but some dialogs on open (missing fonts / links, plug-in dialogs) can still block an unattended run (unverified); restore DISPLAYALERTS at the end.",
+    "coordinateSystem changes the meaning of every position and bounds value; set it explicitly at the top of the script instead of trusting the default (default value unverified).",
+    "executeMenuCommand takes the internal command string (\"selectall\", \"outline\"), not the menu label; a wrong string or an empty selection does nothing and raises no error.",
+    "doScript needs the action and set names exactly as in the Actions panel and the set must already be loaded (loadAction); its third argument dialogs defaults to true, so pass false in an unattended run or the action's dialogs can open.",
+    "The matrix helpers (getRotationMatrix, getScaleMatrix, concatenate*Matrix, invertMatrix) return new Matrix objects and change nothing until the matrix is applied to an item; getScaleMatrix / concatenateScaleMatrix take percentages (default 100), not factors.",
+    "Without redraw() the window only updates when the script ends.",
+    "COM member names are capitalised (ActiveDocument, DoJavaScript); ExtendScript uses lowerCamelCase."
+   ],
+   "example": "if (app.documents.length == 0) throw new Error(\"no document open\");\napp.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS;\napp.coordinateSystem = CoordinateSystem.ARTBOARDCOORDINATESYSTEM;\napp.executeMenuCommand(\"selectall\");\napp.executeMenuCommand(\"outline\");   // Type > Create Outlines\napp.redraw();\napp.userInteractionLevel = UserInteractionLevel.DISPLAYALERTS;",
+   "review": {
+    "by": "adversarial",
+    "changes": "version note said 30.2, batch is 30.2.1.1; doScript dialogs argument defaults to true (added to member and gotcha); scale-matrix args are percentages default 100; internal-hooks list corrected (reflectCSAW is a wrapper generator, added the two For Internal Use cloud-library calls)"
+   }
+  },
+  {
+   "name": "Document",
+   "id": "class:Document",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Suite that applies to all applications/Document",
+   "status": "current",
+   "summary": "An open Illustrator file: every artwork collection (layers, pageItems, pathItems, textFrames, groupItems, placed / raster / symbol items), artboards, swatches, gradients, patterns, styles, variables and datasets, plus the calls that save, export, print, rasterize, capture and close it.",
+   "use_for": [
+    "batch export of artboards to PNG / JPEG / SVG / WebP",
+    "saving masters as .ai or PDF",
+    "walking every text frame or path for pre-press checks",
+    "fitting the artboard to a logo before export",
+    "rasterizing vector art in place",
+    "data-driven templates with variables and datasets",
+    "importing character / paragraph styles from a brand master file"
+   ],
+   "avoid": [
+    "changing width, height, rulerUnits or documentColorSpace here: they are read-only; resize through the artboard rect and pick units / colour mode when the document is created",
+    "close() with no argument on a modified document: it prompts and blocks an unattended run; pass SaveOptions.DONOTSAVECHANGES or SAVECHANGES",
+    "cropBox / cropStyle / pageOrigin for layout: legacy single-page settings; use artboards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Suite that applies to all applications/Document",
+    "CDR": "VGCore/Document"
+   },
+   "how": "ExtendScript: app.activeDocument or app.documents[i]; new documents through the Documents collection. Every artwork collection hangs off it (doc.layers, doc.pathItems, doc.textFrames ...) and file output goes through saveAs / exportFile / exportForScreens. COM: the Document interface, where the export call is named Export rather than exportFile.",
+   "key_members": [
+    {
+     "name": "layers",
+     "use": "the layer stack; add or find layers here"
+    },
+    {
+     "name": "activeLayer",
+     "use": "layer that new items go into"
+    },
+    {
+     "name": "pageItems",
+     "use": "all artwork of every type"
+    },
+    {
+     "name": "pathItems",
+     "use": "vector paths; also where new rectangles / ellipses are created"
+    },
+    {
+     "name": "textFrames",
+     "use": "all text frames"
+    },
+    {
+     "name": "groupItems",
+     "use": "groups (including outlined text)"
+    },
+    {
+     "name": "placedItems",
+     "use": "linked images and files (relink, embed, check links)"
+    },
+    {
+     "name": "artboards",
+     "use": "pages of the document; artboardRect sets their size and position"
+    },
+    {
+     "name": "swatches",
+     "use": "document swatches (brand colours)"
+    },
+    {
+     "name": "characterStyles",
+     "use": "named character styles"
+    },
+    {
+     "name": "selection",
+     "use": "current selection in this document"
+    },
+    {
+     "name": "activeView",
+     "use": "the window view (zoom / centre)"
+    },
+    {
+     "name": "saveAs",
+     "use": "save as .ai / .pdf / .eps / .fxg with the matching IllustratorSaveOptions / PDFSaveOptions / EPSSaveOptions / FXGSaveOptions; SVG goes through exportFile"
+    },
+    {
+     "name": "exportFile",
+     "use": "export to an ExportType (PNG24, JPEG, SVG, WEBP, AVIF ...) with matching options"
+    },
+    {
+     "name": "exportForScreens",
+     "use": "Export for Screens: artboards or assets to one ExportForScreensType per call (SE_PNG24, SE_JPEG80, SE_SVG, SE_PDF, SE_WEBP ...), with an optional file-name prefix"
+    },
+    {
+     "name": "close",
+     "use": "close, with SaveOptions to avoid the save prompt"
+    },
+    {
+     "name": "rasterize",
+     "use": "turn art into a raster item in place (source art is disposed)"
+    },
+    {
+     "name": "imageCapture",
+     "use": "write a raster image of a clip rectangle without changing the document"
+    },
+    {
+     "name": "fitArtboardToSelectedArt",
+     "use": "shrink-wrap an artboard to the selection"
+    },
+    {
+     "name": "saved",
+     "use": "dirty flag; true lets close() skip the prompt without writing the file"
+    }
+   ],
+   "gotchas": [
+    "Closing documents in a loop from index 0 skips every other one because app.documents shrinks; loop from the end.",
+    "saveAs / exportFile need a File object and an existing target folder, and the options object must match the format (e.g. ExportOptionsPNG24 with ExportType.PNG24); a mismatch fails with an unhelpful error (unverified wording).",
+    "rasterize disposes the source art (per the dictionary); keep a copy if the vector must survive.",
+    "Artwork created by script picks up the document defaults (defaultFilled, defaultFillColor, defaultStroked, defaultStrokeWidth ...) (unverified for every creation call); set them first or style each new item.",
+    "geometricBounds / visibleBounds cover all artwork, not the artboard; use artboards[i].artboardRect for the page size.",
+    "selection can be a TextRange rather than an array while text is being edited (unverified for 30.2).",
+    "documentColorSpace is read-only: RGB vs CMYK is decided when the document is created or opened.",
+    "exportForScreens builds its own file names and subfolders from the prefix and format (exact naming unverified); find the output on disk instead of assuming the name.",
+    "In a shared pipeline, only close or modify documents your script opened (compare fullName); others may belong to another process."
+   ],
+   "example": "var doc = app.activeDocument;\nvar i = doc.artboards.getActiveArtboardIndex();\ndoc.selectObjectsOnActiveArtboard();\ndoc.fitArtboardToSelectedArt(i);\nvar o = new ExportOptionsPNG24(); o.artBoardClipping = true; o.antiAliasing = true;\ndoc.exportFile(new File(\"E:/out/logo.png\"), ExportType.PNG24, o);\ndoc.close(SaveOptions.DONOTSAVECHANGES);",
+   "review": {
+    "by": "adversarial",
+    "changes": "saveAs listed .svg but the harvest has no SVG save options (only Illustrator/PDF/EPS/FXG); SVG is exportFile. exportForScreens takes a single ExportForScreensType, not several formats. Example fitted artboard 0 after selecting on the active artboard; now uses getActiveArtboardIndex"
+   }
+  },
+  {
+   "name": "CharacterAttributes",
+   "id": "class:CharacterAttributes",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/CharacterAttributes",
+   "status": "current",
+   "summary": "The character-level formatting of a range of text or of a character style: font, size, leading, tracking, kerning method, horizontal / vertical scale, baseline shift, rotation, caps, OpenType features, fill and stroke colour, underline / strike-through and language, plus the Japanese (wari-chu, tate-chu-yoko, aki, tsume) and Middle-Eastern (kashidas, digit set, diacritics) options.",
+   "use_for": [
+    "setting headline font, size, leading and tracking from a brand spec",
+    "recolouring all text to a brand colour",
+    "all-caps or small-caps labels and buttons",
+    "OpenType ligatures, fractions, ordinals and stylistic sets for typographic polish",
+    "outlined-look lettering with strokeColor and strokeWeight",
+    "defining the look of a CharacterStyle"
+   ],
+   "avoid": [
+    "paragraph settings (justification, indents, space before / after): those live in ParagraphAttributes",
+    "repeating the same formatting on many frames: define it once in a CharacterStyle and applyTo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Scripting commands and classes for Adobe Photoshop/TextItem",
+    "CDR": "VGCore/StyleCharacter"
+   },
+   "how": "Never created directly: read characterAttributes from a TextRange (textFrame.textRange, story.textRange, or one item of the characters / words / paragraphs collections, e.g. tf.words[0]) or characterStyle.characterAttributes for a style definition. Story has no characterAttributes of its own. Setting a property applies it to every character in that range. COM: the CharacterAttributes interface.",
+   "key_members": [
+    {
+     "name": "textFont",
+     "use": "the font, as a TextFont from app.textFonts"
+    },
+    {
+     "name": "size",
+     "use": "font size in points"
+    },
+    {
+     "name": "autoLeading",
+     "use": "automatic leading on / off"
+    },
+    {
+     "name": "leading",
+     "use": "line spacing in points (only with autoLeading off)"
+    },
+    {
+     "name": "tracking",
+     "use": "tracking in 1/1000 em (integer)"
+    },
+    {
+     "name": "kerningMethod",
+     "use": "AutoKernType NOAUTOKERN, AUTO, OPTICAL or METRICSROMANONLY"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "horizontal glyph scale in percent (100 = normal)"
+    },
+    {
+     "name": "verticalScale",
+     "use": "vertical glyph scale in percent"
+    },
+    {
+     "name": "baselineShift",
+     "use": "raise / lower characters in points"
+    },
+    {
+     "name": "rotation",
+     "use": "rotate each character in degrees"
+    },
+    {
+     "name": "capitalization",
+     "use": "FontCapsOption NORMALCAPS, SMALLCAPS, ALLCAPS, ALLSMALLCAPS"
+    },
+    {
+     "name": "fillColor",
+     "use": "text colour (assign a Color object)"
+    },
+    {
+     "name": "strokeColor",
+     "use": "colour of the text stroke"
+    },
+    {
+     "name": "strokeWeight",
+     "use": "stroke width of the text"
+    },
+    {
+     "name": "underline",
+     "use": "underline on / off"
+    },
+    {
+     "name": "strikeThrough",
+     "use": "strike-through on / off"
+    },
+    {
+     "name": "ligature",
+     "use": "standard OpenType ligatures"
+    },
+    {
+     "name": "fractions",
+     "use": "OpenType fractions"
+    },
+    {
+     "name": "stylisticSets",
+     "use": "OpenType stylistic sets"
+    },
+    {
+     "name": "language",
+     "use": "language for hyphenation and spelling"
+    }
+   ],
+   "gotchas": [
+    "leading is ignored while autoLeading is true; set autoLeading = false before setting leading.",
+    "textFont takes a TextFont object (app.textFonts.getByName with the PostScript name), not a family-name string; a font that is not installed makes getByName throw.",
+    "fillColor / strokeColor hand back a copy: changing .red on it does not recolour the text (unverified for 30.2); build a Color object (RGBColor, CMYKColor, SpotColor ...) and assign it.",
+    "tracking is a whole number in 1/1000 em; horizontalScale / verticalScale are percentages (100 = normal), not factors.",
+    "Reading a property from a range with mixed formatting returns a single value without warning (unverified which run it comes from).",
+    "alignment is the character alignment of CJK text in its line (StyleRunAlignmentType), not paragraph left / centre / right.",
+    "The Japanese members (Tsume, wariChu*, tateChuYoko*, akiLeft / akiRight, kana, proportionalMetrics, italics, baselineDirection) and the Middle-Eastern ones (kashidas, dirOverride, digitSet, diacVPos / diacXOffset / diacYOffset) only show an effect with the matching composer and script.",
+    "stylisticSets is a single Int32 covering several sets (bit-field encoding unverified).",
+    "OpenType switches (fractions, ordinals, swash, titling ...) do nothing visible when the font lacks that feature."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar ca = tf.textRange.characterAttributes;\nca.textFont = app.textFonts.getByName(\"Montserrat-Bold\");\nca.size = 48; ca.autoLeading = false; ca.leading = 52; ca.tracking = 40;\nvar c = new RGBColor(); c.red = 230; c.green = 30; c.blue = 60;\nca.fillColor = c;\nca.capitalization = FontCapsOption.ALLCAPS;",
+   "review": {
+    "by": "adversarial",
+    "changes": "how implied a Story carries characterAttributes; Story has none in the harvest, so it now says story.textRange"
+   }
+  },
+  {
+   "name": "CharacterStyle",
+   "id": "class:CharacterStyle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/CharacterStyle",
+   "status": "current",
+   "summary": "A named character style from the Character Styles panel: a saved set of CharacterAttributes that is applied to text, so every piece of text using it updates when the style is edited.",
+   "use_for": [
+    "brand typography systems (Headline, Price, Legal) applied the same way across a template",
+    "restyling every price in a catalogue by editing one style",
+    "giving words found by a script the same emphasis",
+    "importing a brand master's styles into working files (Document.importCharacterStyles)"
+   ],
+   "avoid": [
+    "paragraph formatting (justification, indents, spacing): use a ParagraphStyle",
+    "expecting applyTo to wipe hand formatting by default: pass clearingOverrides = true"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "VGCore/Style"
+   },
+   "how": "ExtendScript: app.activeDocument.characterStyles[i] or characterStyles.getByName(\"Headline\"); a new style comes from the document collection, doc.characterStyles.add(\"Headline\"). Define its look through style.characterAttributes, then call style.applyTo(textFrameOrTextRange, clearingOverrides). COM: the CharacterStyle interface.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "style name as shown in the Character Styles panel (settable)"
+    },
+    {
+     "name": "characterAttributes",
+     "use": "the formatting the style stores; set its properties to define the style"
+    },
+    {
+     "name": "applyTo",
+     "use": "apply to a text frame or text range; second argument true clears local overrides"
+    },
+    {
+     "name": "clear",
+     "use": "remove all attributes from the style definition"
+    },
+    {
+     "name": "add",
+     "use": "listed on the class; in practice styles are created via doc.characterStyles.add(name)"
+    },
+    {
+     "name": "remove",
+     "use": "delete the style from the document"
+    },
+    {
+     "name": "removeAll",
+     "use": "listed on the class as Deletes all elements; what it does on a single style is unverified, use doc.characterStyles.removeAll() to clear the collection"
+    },
+    {
+     "name": "parent",
+     "use": "the owning Document"
+    }
+   ],
+   "gotchas": [
+    "The dictionary lists add() on this class with no parameters, but new styles are made through the document collection: doc.characterStyles.add(name).",
+    "applyTo(text, false) keeps local overrides, so hand-formatted text can look unchanged; pass true to make the text match the style exactly.",
+    "characterStyles[0] is the default [Normal Character Style]; whether it can be renamed or removed by script is unverified.",
+    "clear() empties the style's own attributes; it does not take the style off the text that uses it.",
+    "Only the attributes set on the style are imposed; the rest come from the paragraph style or local formatting of the text.",
+    "getByName on the collection needs the exact style name and throws when it is missing.",
+    "Removing a style that is applied to text: whether the text keeps its look as local formatting is unverified; re-apply a replacement style first."
+   ],
+   "example": "var doc = app.activeDocument;\nvar st = doc.characterStyles.add(\"Price\");\nst.characterAttributes.size = 36;\nst.characterAttributes.tracking = -10;\nst.characterAttributes.capitalization = FontCapsOption.ALLCAPS;\nst.applyTo(doc.textFrames[0].textRange, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "removeAll was described as delete all elements without saying it is an inherited collection method; now points at doc.characterStyles.removeAll() and marks the per-style effect unverified"
+   }
+  }
+ ]
+}

@@ -1,0 +1,368 @@
+{
+ "cards": [
+  {
+   "name": "Blend Tool",
+   "id": "Adobe Blend Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Blend Tool",
+   "status": "current",
+   "summary": "Builds a live blend between two or more objects: Illustrator generates intermediate copies that morph shape, fill and stroke from one object to the next along a straight spine. The blend stays editable, so moving or recolouring an end object rebuilds every step.",
+   "how": "Click the first object (on its fill or path), then click each following object in order; every click extends the blend. Clicking a specific anchor point on each object pairs those points and controls twisting. Double-click the tool (or Object > Blend > Blend Options...) to set Spacing (Smooth Color, Specified Steps or Specified Distance) and Orientation (align to page or to path), before or after blending. Reshape the spine with the Direct Selection Tool, or swap it for any drawn path with Object > Blend > Replace Spine; Object > Blend > Expand turns the steps into separate objects.",
+   "shortcut": "W",
+   "scriptable": "partial",
+   "script_api": "Activation: app.selectTool(\"Adobe Blend Tool\") (the harvest read it back live with app.getSelectedToolName()). The clicks cannot be replayed, but the result can: select two or more paths (pageItem.selected = true) and run app.executeMenuCommand(\"Path Blend Make\"); app.executeMenuCommand(\"Path Blend Expand\") breaks the blend into objects. The DOM has no property for steps or spacing and \"Path Blend Options\" only opens the modal dialog, so the step count comes from the Blend Options already set (or a recorded action played with app.doScript).",
+   "use_for": [
+    "smooth colour shading between two shapes on logos and vector illustrations",
+    "line-art patterns from blended strokes: stripes, waves, contour and guilloche lines",
+    "3D-look extruded headline type made from many stepped copies",
+    "evenly spaced dots or icons along a curve (Specified Steps plus Replace Spine)"
+   ],
+   "avoid": [
+    "a simple colour transition inside one shape: use a gradient, it is lighter and prints cleaner",
+    "identical copies in a row, ring or grid with no morph: use Object > Repeat or Object > Transform > Transform Each...",
+    "objects with very different anchor counts twist mid-blend: click matching anchor points or add points first",
+    "very high step counts on complex art bloat the file and slow export; Smooth Color can generate far more steps than needed on large shapes"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Effect Tools/Blend"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Blob Brush",
+   "id": "Adobe Blob Brush Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Brush Tool",
+   "status": "current",
+   "summary": "Paints with a round or oval tip but leaves a filled, closed path with no stroke, shaped like the swept footprint of the brush, instead of a stroked line. Overlapping blob strokes with the same fill and appearance merge into one shape, so solid forms can be inked and built up like a marker drawing.",
+   "how": "Pick a colour and drag to paint; [ and ] change the tip size. Double-click the tool for Blob Brush Tool Options: Keep Selected, Merge Only with Selection, Fidelity (accurate to smooth), and the tip's Size, Angle and Roundness, each of which can follow tablet pressure. A new stroke merges only with overlapping paths that have the same fill, no stroke and sit next to it in the stacking order; turn on Merge Only with Selection to limit merging to selected art. Sculpt the result with the Eraser Tool, or clean it with Object > Path > Simplify...",
+   "shortcut": "Shift+B",
+   "scriptable": "partial",
+   "script_api": "Activation: app.selectTool(\"Adobe Blob Brush Tool\") (the harvest read it back live with app.getSelectedToolName()); the painting gesture itself has no scripted form. Scripted substitute for the result: draw the stroke as a path (doc.pathItems.add() + setEntirePath, or pathItems.ellipse for dabs) with a round-cap stroke, convert it with app.executeMenuCommand(\"OffsetPath v22\") (Outline Stroke), then select the overlapping shapes, group them with app.executeMenuCommand(\"group\") (Effect > Pathfinder needs a group, layer or type object; on loose paths Illustrator raises the harvested alert 'Pathfinder effects should usually be applied to groups, layers or type objects.' and nothing merges), apply app.executeMenuCommand(\"Live Pathfinder Add\") and finish with app.executeMenuCommand(\"expandStyle\").",
+   "use_for": [
+    "hand-inked lettering and brush-style logo marks that end as clean filled shapes",
+    "comic and cartoon inking or flat colour areas, with overlapping strokes merged into one path",
+    "rough icon or character silhouettes later refined with the Eraser or Smooth tools",
+    "adding bulk to an existing filled shape by painting onto it in the same colour"
+   ],
+   "avoid": [
+    "variable-width line art that must stay an editable stroke: use the Paintbrush Tool with a calligraphic or art brush",
+    "precise geometric shapes: draw with the shape tools and combine with the Shape Builder",
+    "painting across art of another colour or with a stroke: it will not merge, and may hide what is underneath",
+    "drawing with a mouse at an accurate fidelity: outlines come out jittery and point-heavy; smooth the fidelity or simplify afterwards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "paintbrushTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the merge recipe ran Live Pathfinder Add on the bare selection; added the harvested app.executeMenuCommand(\"group\") first, since Effect > Pathfinder needs a group, layer or type object (an ungrouped selection gets a warning and no merge); second pass: reworded that note to the alert text recorded in the ai_effect harvest (requires of Live Pathfinder Add) instead of the overstated 'only act on'"
+   }
+  },
+  {
+   "name": "Paintbrush Tool",
+   "id": "Adobe Brush Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Brush Tool",
+   "status": "current",
+   "summary": "Draws a freehand path and strokes it with the brush chosen in the Brushes panel (calligraphic, scatter, art, pattern or bristle), so one drag gives a brush-styled line. The path stays editable and the brush is a live stroke appearance that can be swapped or removed later.",
+   "how": "Choose a brush in the Brushes panel (Window > Brushes, F5), set the stroke colour and weight, then drag. Hold Alt after you start dragging to close the path when you release. Double-click the tool for Paintbrush Tool Options: Fidelity (accurate to smooth), Fill New Brush Strokes, Keep Selected and Edit Selected Paths (drawing within the set pixel distance of a selected path redraws it). With a pressure tablet, calligraphic and bristle brushes vary with pressure. Change the look afterwards by picking another brush with the path selected; stroke weight scales the brush.",
+   "shortcut": "B",
+   "scriptable": "partial",
+   "script_api": "Activation: app.selectTool(\"Adobe Brush Tool\") (the harvest read it back live with app.getSelectedToolName()). A script cannot replay the drag but can build the same object: create the path with doc.pathItems.add() and pathItem.setEntirePath([[x, y], ...]), set strokeColor / strokeWidth, then apply a brush with doc.brushes.getByName(\"<brush name>\").applyTo(pathItem) (Brush.applyTo). New brushes load from a file with doc.brushes.add(file).",
+   "use_for": [
+    "hand-drawn illustration line work with calligraphic or art brushes",
+    "brush-lettered script headlines and signatures that stay editable paths",
+    "decorative borders, stitches and dotted trails with pattern or scatter brushes along a freehand path",
+    "painterly poster strokes and textures with bristle brushes"
+   ],
+   "avoid": [
+    "solid filled shapes that should merge and be sculpted: use the Blob Brush",
+    "precise curves: draw with the Pen Tool or Curvature Tool, then apply the brush to the path",
+    "large amounts of bristle-brush art: the semi-transparent strokes slow redraw and flatten badly for print; keep them few or rasterize",
+    "files for apps that do not read Illustrator brushes: run Object > Expand Appearance before export"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "paintbrushTool",
+    "CDR": "Toolbox/Drawing Tools/Artistic Media"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Area Graph Tool",
+   "id": "Adobe Area Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws an area chart: each data series becomes a filled band under its line across the categories, and the bands are stacked so the top edge shows the running total. The graph is a live grouped object tied to its data sheet. The stacking behaviour is from knowledge of Illustrator's graph types, not checked live (the harvest could not probe this id).",
+   "how": "Drag a rectangle to set the plot size (Alt-drag from the centre, Shift-drag for a square) or click and type Width and Height. In the Graph Data window that opens, categories (usually dates) go down the first column, series names across the first row and values in the cells; the column order sets the stacking order. Type, paste or import tab-delimited text, then click Apply. Object > Graph > Type... sets axis ticks and legend placement; Object > Graph > Data... reopens the sheet. Recolour a band with the Group Selection Tool (click once for the band, again to add its legend box).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Area Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "traffic or revenue volume over time broken down by channel",
+    "energy mix or population share across years",
+    "a soft volume band behind a headline figure in an infographic"
+   ],
+   "avoid": [
+    "reading exact values of the upper series: they sit on top of the others; use the Line Graph Tool",
+    "series that cross zero or include negative numbers: stacked areas become misleading",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Bar Graph Tool",
+   "id": "Adobe Bar Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a horizontal bar chart: bars run left to right with lengths set by the values, one bar per data series inside each category, and the category labels stacked down the vertical axis. The graph is a live grouped object tied to its data sheet.",
+   "how": "Drag a rectangle for the plot size (Alt-drag from the centre, Shift-drag for a square) or click and type Width and Height. In the Graph Data window, categories go down the first column, series names across the first row, values in the cells; type, paste or import tab-delimited text, then click Apply. Put numeric labels such as years in quotes so they are read as labels. Object > Graph > Type... sets Bar Width, Cluster Width and where the value axis sits (top, bottom or both); Object > Graph > Data... reopens the sheet. Recolour a series with the Group Selection Tool (click a bar, click again to add the rest of its series).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Bar Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "ranking charts (top cities, products, players) with long category names",
+    "survey results where the answer text is the label",
+    "horizontal infographic bars for tall story or mobile formats"
+   ],
+   "avoid": [
+    "time series: readers expect time to run left to right; use the Column Graph Tool or Line Graph Tool",
+    "parts of a total: use the Stacked Bar Graph Tool or Pie Graph Tool",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Column Graph Tool",
+   "id": "Adobe Column Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a column chart: vertical columns whose heights show the values, grouped by category with one column per data series side by side. It is the default tool of the graph flyout; the graph is a live grouped object tied to its data sheet, so new numbers redraw it.",
+   "how": "Drag a rectangle for the plot size (Alt-drag from the centre, Shift-drag for a square) or click and type Width and Height. The Graph Data window opens: categories down the first column, series names across the first row, values in the cells; type, paste or import tab-delimited text, then click Apply. Put numeric labels such as years in quotes. Object > Graph > Type... sets Column Width, Cluster Width, tick marks and the legend; Object > Graph > Data... reopens the sheet; Object > Graph > Column... swaps plain columns for a saved graph design. Recolour a series with the Group Selection Tool (click a column, click again to add its whole series).",
+   "shortcut": "J",
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Column Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "comparing sales, budget or survey numbers across a few categories in a report or infographic",
+    "year-over-year comparison with two or three series side by side",
+    "pictograph charts where columns are replaced by stacked icons (Object > Graph > Column...)"
+   ],
+   "avoid": [
+    "many categories or long labels: the Bar Graph Tool reads better horizontally",
+    "showing parts of a total: use the Stacked Column Graph Tool or Pie Graph Tool",
+    "trends over many time points: use the Line Graph Tool",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Line Graph Tool",
+   "id": "Adobe Line Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a line chart: each data series becomes a line of straight segments joining its values across the categories (usually time points), with square markers at the points by default, to show trends and change.",
+   "how": "Drag a rectangle for the plot size (Alt-drag from the centre, Shift-drag for a square) or click and type Width and Height. In the Graph Data window, categories (dates) go down the first column and each further column is one line, named in the first row; click Apply. Object > Graph > Type... holds the line options: Mark Data Points, Connect Data Points, Edge-to-Edge Lines and Draw Filled Lines with a Line Width. Object > Graph > Marker... replaces the markers with saved artwork; Object > Graph > Data... reopens the sheet. Restyle a line with the Group Selection Tool.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Line Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "stock, traffic or temperature trends over months or years",
+    "comparing the growth of two or three series on one time axis",
+    "small trend lines in an annual report spread or dashboard poster"
+   ],
+   "avoid": [
+    "a few unordered categories: the Column Graph Tool reads better",
+    "unevenly spaced dates: categories are spaced evenly, hiding gaps in time; use the Scatter Graph Tool with real x values",
+    "smooth curved lines: points are joined by straight segments; build a curved chart by hand if the look needs it",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Pie Graph Tool",
+   "id": "Adobe Pie Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws pie charts: each row of data becomes one circle cut into wedges whose angles are proportional to each value's share of that row's total, with a legend naming the wedges.",
+   "how": "Drag a rectangle for the size (Shift-drag keeps it square) or click and type Width and Height. In the Graph Data window, each row is one pie (label in the first column) and each column is a wedge named in the first row; click Apply. Object > Graph > Type... sets Legend (standard legend, legends in wedges, or none), Position (Ratio sizes several pies by their totals, Even, Stacked) and Sort order of the wedges. Pull a wedge out with the Direct Selection Tool; for a donut look, place a circle in the background colour over the centre.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Pie Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "market-share or budget-split infographics with two to six slices",
+    "survey answer shares in a report or social card",
+    "several pies side by side (one per year or region) sized by their totals with Position: Ratio"
+   ],
+   "avoid": [
+    "many small slices or close values: angles are hard to compare; use the Bar Graph Tool",
+    "values that are not parts of one whole, or negative numbers: a pie cannot show them",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Radar Graph Tool",
+   "id": "Adobe Radar Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a radar (web) chart in a circular layout: the categories become spokes radiating from a centre and each data series is a closed polygon joining its values on those spokes, so the shapes compare several attributes at once. Which data rows map to spokes was not checked live (the harvest could not probe this id).",
+   "how": "Drag a rectangle for the size (Shift-drag keeps it square) or click and type Width and Height. In the Graph Data window, category labels go down the first column (one spoke each) and each series is a column named in the first row; click Apply and check the spoke order. Object > Graph > Type... sets the value-axis ticks and the marker and line options; Object > Graph > Data... reopens the sheet. Recolour or fill a series polygon with the Group Selection Tool.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Radar Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "skill or attribute profiles (player stats, product feature scores)",
+    "comparing two or three products across five to eight criteria",
+    "brand-personality or survey score webs in a pitch deck"
+   ],
+   "avoid": [
+    "fewer than three or more than about ten categories: the polygon stops reading",
+    "precise value comparison: polygon area exaggerates differences; use the Bar Graph Tool",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Scatter Graph Tool",
+   "id": "Adobe Scatter Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a scatter plot: each pair of numbers becomes a marker placed on two value axes (x and y), with no category axis, to show correlation, clusters or spread. The y-first column order below is from knowledge of Illustrator, not checked live (the harvest could not probe this id).",
+   "how": "Drag a rectangle for the plot size or click and type Width and Height. In the Graph Data window, enter y values in the first column and x values in the second; each further pair of columns is another series, named in the first row. The window's Switch X/Y button swaps the two axes. Click Apply. Object > Graph > Type... sets Mark Data Points and Connect Data Points (lines between points in entry order) plus axis ticks; Object > Graph > Marker... replaces the square markers with artwork.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Scatter Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "correlation charts such as price against rating or spend against reach",
+    "positioning maps (competitor landscape) where both axes are values",
+    "time series with uneven intervals, using real dates as x numbers"
+   ],
+   "avoid": [
+    "comparing named categories: use the Column Graph Tool or Bar Graph Tool",
+    "hundreds of points: every marker is a separate object and the file gets heavy; plot in a data tool and place the vector result",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Stacked Bar Graph Tool",
+   "id": "Adobe Stacked Bar Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a stacked horizontal bar chart: each category is a single bar split into segments, one per data series, so the bar's length is the category total and the segments show what it is made of.",
+   "how": "Drag a rectangle for the plot size (Alt-drag from the centre) or click and type Width and Height. In the Graph Data window, categories go down the first column and each series is a column named in the first row; every row becomes one bar. Enter percentages that add up to 100 for equal-length composition bars. Click Apply. Object > Graph > Type... sets Bar Width, Cluster Width and the value-axis position; Object > Graph > Data... reopens the sheet. Recolour a segment series with the Group Selection Tool.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Stacked Bar Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "100 percent composition bars for survey or market-share splits",
+    "progress or time-budget bars split into phases",
+    "comparing composition across many categories with long labels"
+   ],
+   "avoid": [
+    "comparing one series across categories: only the first segment shares a baseline; use the Bar Graph Tool",
+    "rows that mix positive and negative values: the bar no longer reads as a total",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Stacked Column Graph Tool",
+   "id": "Adobe Stacked Column Graph Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Column Graph Tool",
+   "status": "current",
+   "summary": "Draws a stacked column chart: each category is one vertical column built from segments, one per data series, so the column height is the category total and the segments show its parts.",
+   "how": "Drag a rectangle for the plot size (Alt-drag from the centre) or click and type Width and Height. In the Graph Data window, categories go down the first column and each series is a column named in the first row; every row becomes one stacked column. Put numeric labels such as years in quotes. Click Apply. Object > Graph > Type... sets Column Width, Cluster Width, tick marks and the legend; Object > Graph > Data... reopens the sheet. Recolour a segment series with the Group Selection Tool (click a segment, click again to add the series).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest records no invoke for this id (the selectTool probe never reached it), so even activation is unverified; app.selectTool(\"Adobe Stacked Column Graph Tool\") is the untested candidate. The DOM cannot create graphs (GraphItems has no add()). A script can only reuse a graph drawn by hand: duplicate the GraphItem, bind it to a Variable of kind VariableKind.GRAPH through GraphItem.contentVariable, load data sets with doc.importVariables(xmlFile) and show one with DataSet.display(). app.executeMenuCommand(\"editGraphData\") only opens the modal Graph Data window.",
+   "use_for": [
+    "revenue split by product line per quarter with the total height visible",
+    "budget breakdown per department across years",
+    "survey answers split into groups for each question"
+   ],
+   "avoid": [
+    "comparing one series across categories: only the bottom segment shares a baseline; use the Column Graph Tool",
+    "rows that mix positive and negative values: the column no longer reads as a total",
+    "a single total split once: the Pie Graph Tool is clearer",
+    "ungrouping the graph before the data is final: it becomes plain shapes and the Data window stops working"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

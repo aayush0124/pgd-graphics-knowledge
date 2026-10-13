@@ -1,0 +1,437 @@
+{
+ "cards": [
+  {
+   "name": "Custom",
+   "id": "custom",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/Custom",
+   "status": "needs_input",
+   "summary": "Build-your-own convolution filter: you type integer weights into a 5x5 grid (the centre cell is the pixel itself), and each pixel becomes the weighted sum of its neighbours divided by Scale plus Offset. The same dialog can sharpen, blur, emboss or detect edges depending on the kernel. The harvest could not run it from a script: executeAction failed both with no settings and with one value per key, so it needs a full kernel as input.",
+   "use_for": [
+    "a bespoke sharpen kernel (centre 5, the four direct neighbours -1) when Unsharp Mask's halo is not the look wanted",
+    "directional emboss or relief on texture or type (weights that sum to 0, Offset 128 for a mid-grey base)",
+    "edge-detect / outline passes for a graphic line-art treatment",
+    "saving a kernel (.acf) once and reapplying the identical treatment by hand across a set of images"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest's executeAction(DialogModes.NO) failed both with no settings ('program error') and with one value per declared key ('settings in the file are invalid'); a full 25-integer Matrix list was not tried, so treat it as not scriptable until proven and use Emboss, High Pass, Unsharp Mask or Find Edges instead",
+    "kernels whose weights sum to 0 with Offset 0: the result is almost black; set Offset around 128 or use Scale to bring it back to a readable range",
+    "Scale smaller than the sum of the weights: the image blows out to white; set Scale to the weight sum for a brightness-neutral result",
+    "large blurs: a 5x5 kernel can only blur a couple of pixels; use Gaussian Blur",
+    "a soft or heavily compressed source frame: sharpening kernels mostly amplify compression noise; check at 100 % zoom"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Custom/User Defined"
+   },
+   "look": [
+    "convolution kernel",
+    "custom sharpen",
+    "emboss",
+    "relief",
+    "edge detect",
+    "outline",
+    "custom blur"
+   ],
+   "params": [
+    {
+     "name": "Matrix",
+     "does": "the 5x5 kernel of integer weights, read row by row (25 values); the centre weight is the pixel itself, the rest its neighbours",
+     "typical": "sharpen: centre 5, up/down/left/right -1, rest 0; emboss: -1 0 1 diagonal pattern with Offset 128; no per-cell range was harvested"
+    },
+    {
+     "name": "Scale",
+     "does": "divisor applied to the weighted sum",
+     "typical": "the sum of the weights (so overall brightness is kept), or 1 when the weights sum to 0"
+    },
+    {
+     "name": "Offset",
+     "does": "value added to the scaled result, shifting the whole output lighter or darker",
+     "typical": "0 for sharpen / blur kernels, about 128 for emboss or edge kernels that sum to 0"
+    }
+   ],
+   "pairs_with": [
+    "Emboss / High Pass / Unsharp Mask (scriptable stand-ins for the common kernels)",
+    "Desaturate before an edge or emboss kernel (avoids colour fringes)",
+    "Threshold after an edge kernel (crisp black-and-white line art)",
+    "Fade or a reduced layer opacity (tames an aggressive kernel)"
+   ],
+   "scripting": "event 'custom' (keys matrix: integer list, scale: integer, offset: integer); the harvest's executeAction(stringIDToTypeID(\"custom\"), d, DialogModes.NO) failed with and without values. Untested form: var m = new ActionList(); /* 25 x m.putInteger(w) row by row */ var d = new ActionDescriptor(); d.putList(stringIDToTypeID(\"matrix\"), m); d.putInteger(stringIDToTypeID(\"scale\"), 1); d.putInteger(stringIDToTypeID(\"offset\"), 0); executeAction(stringIDToTypeID(\"custom\"), d, DialogModes.NO); // verify before relying on it, or open the dialog with DialogModes.ALL for a person",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object Filter menu filters become editable Smart Filters (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light per pixel (one 5x5 kernel); headless cost unknown because the scripted run failed",
+   "review": {
+    "by": "adversarial",
+    "changes": "params Matrix: removed the invented '-999 to 999 per cell' dialog range (never harvested); summary: replaced the unsupported 'with no kernel entered it does nothing useful' with what the harvest shows (both scripted runs failed, so it needs a full kernel); avoid: the soft-source entry no longer names the gallery test plate this needs_input item is never rendered on. Status needs_input, scriptable no, keys, untested 25-integer ActionList form and the CDR User Defined equivalent checked and kept."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: needs a full 5x5 kernel; executeAction failed without one in the harvest (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "name": "High Pass",
+   "id": "highPass",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/High Pass",
+   "status": "current",
+   "summary": "Keeps only the detail finer than Radius and turns everything else into flat 50 % grey, so the picture becomes a grey relief where only edges, outlines and texture show (with faint colour fringes). Mostly used on a duplicate layer set to Overlay / Soft Light / Linear Light to sharpen or add clarity, or as the detail layer in frequency separation.",
+   "use_for": [
+    "controllable sharpening of a press or product photo: duplicate, High Pass 1-4 px, set the copy to Overlay or Soft Light",
+    "punchy 'clarity' or gritty texture on portraits, metal and architecture for posters (larger radius on a blended copy)",
+    "the detail (high-frequency) layer of frequency-separation skin retouching, paired with a Gaussian-blurred base",
+    "extracting edges before Threshold to turn a photo into stamp or line art"
+   ],
+   "avoid": [
+    "using the grey result on its own as a final image: it is meant to be blended; alone it looks washed-out grey",
+    "large radii on a copy in Overlay: thick light/dark halos round every edge; keep 1-4 px for sharpening and lower the opacity",
+    "colour fringes on the blended copy: desaturate the High Pass layer first",
+    "a very small radius on a soft or low-resolution frame: almost nothing survives and the result is plain grey; it needs about 10 px or more to show the figures"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/High Pass"
+   },
+   "look": [
+    "grey relief",
+    "edges only",
+    "detail extraction",
+    "sharpening layer",
+    "clarity",
+    "texture pop",
+    "frequency separation",
+    "embossed grey"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "size (px) of detail kept: below it detail is kept, broader shading becomes 50 % grey; bigger keeps more of the shapes and tones",
+     "typical": "1-4 px for sharpening, 8-20 px for clarity or frequency separation, 20-60 px for a heavy gritty look"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 15
+   },
+   "pairs_with": [
+    "Overlay / Soft Light / Linear Light blend mode on the High Pass copy (sharpening, clarity)",
+    "Desaturate (removes colour fringes from the detail layer)",
+    "Gaussian Blur on a second copy (frequency-separation base layer)",
+    "Threshold (line art from the high-pass result)",
+    "Convert for Smart Filters (keeps Radius editable)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putUnitDouble(stringIDToTypeID(\"radius\"), stringIDToTypeID(\"pixelsUnit\"), 15); executeAction(stringIDToTypeID(\"highPass\"), d, DialogModes.NO);  // radius 0.1-1000 px (harvest clamp); omitting it reuses the last-used value",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; applied to a Smart Object it becomes an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: harvest 508 ms on a 480x270 test layer with the key omitted, i.e. the last-used 0.1 px (includes call overhead); time at larger radii was not measured",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: the 508 ms timing was at the last-used 0.1 px, not a fixed default, and the unsupported 'grows modestly with radius' was removed; avoid: soft-source entry made generic instead of naming the test plate. Range 0.1-1000 px, key, event, demo 15 px and the CDR Sharpen/High Pass equivalent checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/5e0302918b61.png",
+    "crop": "gallery/ps_filter/5e0302918b61_1to1.png",
+    "note": "Flat 50 % grey everywhere with only edges, outlines and texture left as a grey relief with faint colour fringes along the block borders.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "HSB/HSL",
+   "id": "'HsbP'",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/HSB/HSL",
+   "status": "current",
+   "summary": "Converts the pixel values between RGB and HSB or HSL and stores the result in the red, green and blue channels (red = hue, green = saturation, blue = brightness or lightness), so with RGB in and HSB/HSL out the picture shows as a garish false-colour image. Its real job is a round trip: convert to HSB/HSL, edit a single channel (hue, saturation or lightness), then run it again in reverse to get back to RGB.",
+   "use_for": [
+    "selecting or masking by saturation or lightness: convert, copy the green (saturation) or blue channel into a mask, then undo",
+    "editing just the hue or saturation as a greyscale channel (Levels, Curves, blur) and converting back to RGB",
+    "acid / psychedelic false-colour artwork for a music poster or glitch graphic",
+    "separating the colour signal from the brightness for texture or noise clean-up on one component"
+   ],
+   "avoid": [
+    "CMYK, Lab, Grayscale or Indexed documents: the harvest shows it is enabled only in RGB mode (8 and 16-bit); convert to RGB first",
+    "blurring or levelling the hue channel: hue wraps round at red (both ends of the channel are red), so reds break into noise and seams",
+    "treating the false-colour output as a finished colour grade without checking: the colours depend on the hue numbers, not on any palette; for a controlled look use Gradient Map or Hue/Saturation",
+    "scripts that omit a key: Photoshop then reuses the last-used Input / Output mode (harvest), so always send both",
+    "scripts that call it by stringID: no stringID is registered for the event; use charIDToTypeID('HsbP')"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "false colour",
+    "psychedelic",
+    "acid colours",
+    "channel scramble",
+    "colour space conversion",
+    "neon false colour",
+    "glitch colour"
+   ],
+   "params": [
+    {
+     "name": "Input mode",
+     "does": "how the current pixel values are read: as RGB (normal image) or as already-converted HSB / HSL data",
+     "typical": "RGBColor for the first pass; HSBColorEnum or HSLColor on the return pass"
+    },
+    {
+     "name": "Output mode",
+     "does": "what the pixels are converted into: HSB (hue, saturation, brightness), HSL (hue, saturation, lightness) or back to RGB",
+     "typical": "HSBColorEnum or HSLColor on the first pass; RGBColor to convert back"
+    }
+   ],
+   "demo_settings": {
+    "Input mode": "RGBColor",
+    "Output mode": "HSBColorEnum"
+   },
+   "enum_labels": {
+    "RGBColor": "RGB color",
+    "HSBColorEnum": "HSB color",
+    "HSLColor": "HSL color (charID 'HSLC', stringID registered at run time, no terminology label)"
+   },
+   "pairs_with": [
+    "HSB/HSL again with Input and Output swapped (returns to RGB)",
+    "Channels panel: Load Channel as Selection on green or blue (saturation / brightness masks)",
+    "Levels, Curves or Median on a single channel while converted",
+    "Gradient Map (a controlled alternative for false-colour looks)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putEnumerated(stringIDToTypeID(\"input\"), stringIDToTypeID(\"colorSpace\"), stringIDToTypeID(\"RGBColor\")); d.putEnumerated(stringIDToTypeID(\"output\"), stringIDToTypeID(\"colorSpace\"), stringIDToTypeID(\"HSBColorEnum\")); executeAction(charIDToTypeID(\"HsbP\"), d, DialogModes.NO);  // event has no stringID (harvest); HSL value: charIDToTypeID(\"HSLC\"); only RGBColor / HSBColorEnum / HSLColor are accepted",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it should apply as a Smart Filter like other Filter-menu plug-ins (not probed by the harvest)",
+   "cost": "medium: harvest 1560 ms on a 480x270 test layer, the slowest of the Other filters the harvest timed (Custom never ran); a per-pixel conversion with no radius, so it scales with image size only",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: 'slowest of the Other filters' qualified to the filters the harvest actually timed (Custom has no timing). charID event 'HsbP', input/output keys, the three accepted colorSpace values, RGB-only modes, demo RGBColor -> HSBColorEnum and the empty equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/058e3a09c73e.png",
+    "note": "Garish false-colour frame in greens, blues and cyans (hue in red, saturation in green, brightness in blue), the type turned blue, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Maximum",
+   "id": "maximum",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/Maximum",
+   "status": "current",
+   "summary": "Morphological dilate: each pixel takes the lightest value found within Radius, so light areas spread and dark detail shrinks. White type and hairlines get bolder and merge, thin dark lines thin out or vanish, and at larger radii the image breaks into blocky (or rounded) light patches; on a mask it expands the white, visible area.",
+   "use_for": [
+    "expanding a layer mask or alpha channel by a few pixels (spread the visible area, close small holes in white)",
+    "fattening white type or a white logo on a dark background for a bold outline / sticker base",
+    "removing thin dark wires, scratches or dust from a light background",
+    "a blocky, posterised light-patch texture for an abstract background"
+   ],
+   "avoid": [
+    "photographic sharpening or cleanup on faces: it smears highlights into square blobs; use Median or Dust & Scratches",
+    "large radii on photos: the image turns into flat light blocks; use 1-3 px for mask work",
+    "shrinking a mask: Maximum grows the white; use Minimum to choke it",
+    "script values outside the dialog range: the harvest's range probe was inconclusive (1e6 and -1e6 were refused and the last-used value kept), so no range is known: always send radius; the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "AI_Dilate_3",
+    "CDR": "Effects/Noise/Maximum"
+   },
+   "look": [
+    "dilate",
+    "spread highlights",
+    "bold white type",
+    "blocky light patches",
+    "expand mask",
+    "thin dark lines vanish",
+    "morphology"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "how far (px) each pixel looks for a lighter neighbour; bigger = more spreading of light areas",
+     "typical": "1-3 px for masks and cleanup, 6-15 px for a bold graphic or blocky look on a 1080p frame"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 8
+   },
+   "pairs_with": [
+    "Minimum after Maximum (closing: fills small dark gaps without growing the shape overall)",
+    "Gaussian Blur (softens the blocky edges it leaves)",
+    "Threshold or Levels on a mask (crisp edge after spreading)",
+    "Select and Mask / layer masks"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putUnitDouble(stringIDToTypeID(\"radius\"), stringIDToTypeID(\"pixelsUnit\"), 8); executeAction(stringIDToTypeID(\"maximum\"), d, DialogModes.NO);  // harvest also declares a preserveShape key (Squareness / Roundness in the dialog) whose values were not probed; omitted keys reuse the last-used value",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; applied to a Smart Object it becomes an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: harvest 395 ms on a 480x270 test layer at radius 1 (includes call overhead); time grows with radius (general behaviour, not measured)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the invented '1-100 px' safe range (the harvest has no radius range; its probe read back 1 for every value) and told scripts to read the radius back instead; cost: 'grows with radius' marked as general behaviour, not measured. Key, event, default 1 px, demo 8 px, preserveShape note and the AI SVG-filter / CDR Noise equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/e77a31599e99.png",
+    "crop": "gallery/ps_filter/e77a31599e99_1to1.png",
+    "note": "Light areas spread into blocky light squares: the white type swells into a solid slab and the hairlines merge into one white bar while thin dark lines vanish; the stale read-back (radius 1) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid: stale descriptor"
+   }
+  },
+  {
+   "name": "Minimum",
+   "id": "minimum",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/Minimum",
+   "status": "current",
+   "summary": "Morphological erode: each pixel takes the darkest value found within Radius, so dark areas spread and light detail shrinks. Dark lines and outlines get bolder, white type and hairlines thin out or disappear, and at larger radii the image breaks into blocky (or rounded) dark patches; on a mask it chokes the white, visible area.",
+   "use_for": [
+    "choking a layer mask or alpha channel by a few pixels (removes fringe and halo at a cut-out edge)",
+    "thickening black line art, ink or scanned drawings",
+    "the photo-to-pencil-sketch trick: inverted desaturated copy set to Color Dodge, then Minimum 1-3 px to bring the lines back",
+    "removing small white specks or noise from a dark area"
+   ],
+   "avoid": [
+    "large radii on photos: dark suits and shadows swallow the image in blocky dark patches; use 1-3 px for mask and line work",
+    "white type or thin light detail you need to keep: it thins out and vanishes first",
+    "growing a mask: Minimum shrinks the white; use Maximum to spread it",
+    "script values outside the dialog range: the harvest's range probe was inconclusive (1e6 and -1e6 were refused and the last-used value kept), so no range is known: always send radius; the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "AI_Erode_3",
+    "CDR": "Effects/Noise/Minimum"
+   },
+   "look": [
+    "erode",
+    "spread shadows",
+    "thicken dark lines",
+    "ink",
+    "pencil sketch",
+    "blocky dark patches",
+    "choke mask",
+    "morphology"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "how far (px) each pixel looks for a darker neighbour; bigger = more spreading of dark areas",
+     "typical": "1-3 px for masks, sketch lines and line art, 6-15 px for a heavy blocky look on a 1080p frame"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 8
+   },
+   "pairs_with": [
+    "Maximum after Minimum (opening: removes small light specks without shrinking the shape overall)",
+    "Color Dodge blend + Invert + Desaturate (pencil-sketch technique)",
+    "Gaussian Blur (softens the blocky edges it leaves)",
+    "Layer masks / Select and Mask (edge choke)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putUnitDouble(stringIDToTypeID(\"radius\"), stringIDToTypeID(\"pixelsUnit\"), 8); executeAction(stringIDToTypeID(\"minimum\"), d, DialogModes.NO);  // harvest also declares a preserveShape key (Squareness / Roundness in the dialog) whose values were not probed; omitted keys reuse the last-used value",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; applied to a Smart Object it becomes an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: harvest 355 ms on a 480x270 test layer at radius 1 (includes call overhead); time grows with radius (general behaviour, not measured)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the invented '1-100 px' safe range (the harvest has no radius range; its probe read back 1 for every value) and told scripts to read the radius back instead; cost: 'grows with radius' marked as general behaviour, not measured. Key, event, default 1 px, demo 8 px, preserveShape note and the AI SVG-filter / CDR Noise equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/bd164fdac82c.png",
+    "crop": "gallery/ps_filter/bd164fdac82c_1to1.png",
+    "note": "Dark areas spread into blocky dark squares: the white type and the hairlines vanish into the black band and dark outlines thicken; the stale read-back (radius 1) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid: stale descriptor"
+   }
+  },
+  {
+   "name": "Offset",
+   "id": "offset",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Other/Offset",
+   "status": "current",
+   "summary": "Slides the whole layer Horizontal pixels right and Vertical pixels down inside the canvas; the uncovered strip is filled per Fill: wrapped round from the opposite edge, repeated edge pixels (long streaks), or transparent / background colour. Offsetting by half the size with Wrap Around swaps the quadrants and puts the tile seams in the middle of the frame.",
+   "use_for": [
+    "making seamless tiles and patterns: offset half the width and height with Wrap Around, heal the seams in the centre, then define the pattern",
+    "checking whether a texture or pattern tiles cleanly",
+    "RGB-split / misregistration glitch: offset one colour channel a few pixels in the Channels panel",
+    "streaked, smeared-edge backgrounds with Repeat Edge Pixels"
+   ],
+   "avoid": [
+    "simply moving a layer in a layout: use the Move tool or a transform, which keeps the content intact instead of wrapping or cropping it",
+    "Repeat Edge Pixels on photos with busy edges: it smears long coloured streaks across the uncovered area",
+    "script values beyond the canvas: the harvest's range probe was inconclusive (it read the result descriptor, which for this filter reports the last-used 0 / 0, not the applied values), so keep each offset within the image's width / height and always send all three keys"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Distort/Offset"
+   },
+   "look": [
+    "seamless tile",
+    "wrap around",
+    "shifted image",
+    "split quadrants",
+    "edge smear",
+    "pattern tile",
+    "rgb split"
+   ],
+   "params": [
+    {
+     "name": "Horizontal",
+     "does": "pixels to shift right (negative = left)",
+     "typical": "half the width for tile-making; 3-10 px on a single channel for an RGB-split glitch"
+    },
+    {
+     "name": "Vertical",
+     "does": "pixels to shift down (negative = up)",
+     "typical": "half the height for tile-making; 0-10 px for a glitch"
+    },
+    {
+     "name": "Fill",
+     "does": "what fills the area the shift uncovers: background (transparent on a layer, background colour on the Background layer), repeat (edge pixels stretched across), wrap (content from the opposite edge)",
+     "typical": "wrap for tiles; repeat for streaks; background for a clean shift"
+    }
+   ],
+   "demo_settings": {
+    "Horizontal": 960,
+    "Vertical": 540,
+    "Fill": "wrap"
+   },
+   "enum_labels": {
+    "background": "Set to Transparent (layer) / Set to Background (Background layer)",
+    "repeat": "Repeat Edge Pixels",
+    "wrap": "Wrap Around"
+   },
+   "pairs_with": [
+    "Spot Healing Brush / Clone Stamp (hide the centred seams of a tile)",
+    "Edit > Define Pattern (save the finished tile)",
+    "Channels panel (offset a single channel for an RGB split)",
+    "Convert for Smart Filters (keeps the offset editable)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"horizontal\"), 960); d.putInteger(stringIDToTypeID(\"vertical\"), 540); d.putEnumerated(stringIDToTypeID(\"fill\"), stringIDToTypeID(\"fillMode\"), stringIDToTypeID(\"wrap\")); executeAction(stringIDToTypeID(\"offset\"), d, DialogModes.NO);  // fill: background | repeat | wrap; omitted keys reuse the last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; applied to a Smart Object it becomes an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: harvest 420 ms on a 480x270 test layer (includes call overhead); a plain pixel shift, independent of the offset size",
+   "review": {
+    "by": "adversarial",
+    "changes": "none: keys, integer types, fill enum (background / repeat / wrap, default wrap), inconclusive range note, demo 960/540 wrap (swaps the quadrants on the 1920x1080 plate) and the CDR Distort/Offset equivalent match the batch."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/53a610e925bb.png",
+    "note": "Shifted by half the width and height with Wrap Around: the four quadrants are swapped and the seams cross in the middle of the frame; the stale read-back (0 / 0) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid: stale descriptor"
+   }
+  }
+ ]
+}

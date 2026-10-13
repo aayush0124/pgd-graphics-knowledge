@@ -1,0 +1,1386 @@
+{
+ "cards": [
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Press-photo frame with caption strip",
+   "id": "recipe:news_editorial:press_photo_frame",
+   "app": "multi",
+   "status": "current",
+   "summary": "A news photo sits in a clean white border with a soft shadow, and a dark strip under it carries the caption and the photo credit.",
+   "use_for": [
+    "news explainer cards and carousels",
+    "article hero images on social",
+    "archive-photo call-outs in videos"
+   ],
+   "avoid": [
+    "cropping or retouching the photo's content to fit the frame: crop only, never alter what it shows",
+    "a caption strip over the picture's key area: put it below the image, or over a quiet edge",
+    "dropping the credit: the strip is where the source and photographer go"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "insetFrame",
+          "paintType": "solidColor",
+          "size": 14,
+          "color": "#FFFFFF",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "On the photo layer: an Inside stroke keeps the corners square (Outside rounds them, as the verified card notes)."
+        },
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 40,
+          "useGlobalAngle": false,
+          "localLightingAngle": 120,
+          "distance": 8,
+          "chokeMatte": 0,
+          "blur": 18
+         },
+         "note": "Soft lift off the background, falling down-right."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Layer > New Fill Layer > Solid Color for the caption strip (#111111), sized to the photo width under its bottom edge (selection set first with doc.selection.select)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Color Overlay",
+       "settings": {
+        "mode": "normal",
+        "color": "#111111",
+        "opacity": 90
+       },
+       "note": "Optional: keeps the strip colour editable as a style when the strip is a shape layer instead."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "makeMask",
+       "note": "Place the photo, draw a rectangle over it at the crop, select both, Make Clipping Mask."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "A second rectangle the same size behind it: white fill, or no fill with a 10 pt white stroke, as the border."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 4,
+        "vert": 4,
+        "blur": 10,
+        "opac": 0.4,
+        "blnd": 1
+       },
+       "note": "On the border rectangle: soft shadow right and down (verified direction for positive values)."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "Caption strip: a dark rectangle (#111111) under the photo, then the caption and credit as point type on it."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "vector:PowerClip",
+       "settings": {
+        "CenterInContainer": 0
+       },
+       "note": "Put the photo inside a rectangle frame (photo.AddToPowerClip(frame, 0)) with a white 0.1 in outline. Untested: PowerClip is a needs_input card with no render test (apply call confirmed: content.AddToPowerClip(frame, 0))."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 40,
+        "Feather": 12,
+        "OffsetX": 0.06,
+        "OffsetY": -0.06,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "Soft shadow on the frame, down-right."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "note": "Caption strip: Layer.CreateRectangle2 under the frame, Fill.ApplyUniformFill dark grey, then CreateArtisticText for caption and credit."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Write the caption and the credit from the photo's own metadata or the agency's caption; check both before publishing."
+   ],
+   "built_from": [
+    "frameFX",
+    "dropShadow",
+    "6300",
+    "solidFill",
+    "makeMask",
+    "class:PathItem",
+    "Live Adobe Drop Shadow",
+    "vector:PowerClip",
+    "vector:DropShadow",
+    "class:Shape"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Quote card with speaker cut-out",
+   "id": "recipe:news_editorial:quote_card_cutout",
+   "app": "multi",
+   "status": "current",
+   "summary": "A speaker is cut out of their photo and set on a tinted, softened background with a thin white outline, next to their quote in large type with the name and date.",
+   "use_for": [
+    "quote cards for interviews, talks and statements",
+    "explainer slides that attribute a claim",
+    "podcast and panel promos"
+   ],
+   "avoid": [
+    "putting words in someone's mouth: use the exact quote, the date and the source",
+    "text over the face: keep the quote beside the cut-out, never across it",
+    "a hard white outline on a rough automatic cut-out: refine the mask edge first or the outline shows every flaw"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Duplicate the photo layer: the top copy becomes the cut-out, the bottom copy the background."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1461",
+       "note": "Select > Subject on the top copy (verified: selection created; reads the active layer)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1158",
+       "note": "Layer Mask > Reveal Selection: non-destructive cut-out (verified mask added)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "outsetFrame",
+          "paintType": "solidColor",
+          "size": 6,
+          "color": "#FFFFFF",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "Thin white outline around the cut-out (follows the mask)."
+        },
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 35,
+          "useGlobalAngle": false,
+          "localLightingAngle": 120,
+          "distance": 8,
+          "chokeMatte": 0,
+          "blur": 20
+         },
+         "note": "Lifts the speaker off the background, down-right."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "gaussianBlur",
+       "target": "bottom copy",
+       "settings": {
+        "radius": 30
+       },
+       "note": "Bottom copy: blur it into a soft backdrop (verified: smooth haze, detail gone)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Color Overlay",
+       "settings": {
+        "mode": "multiply",
+        "color": "#1F3A5F",
+        "opacity": 70
+       },
+       "note": "Also on the bottom copy: a dark tint so white quote type reads on it."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 5,
+        "vert": 5,
+        "blur": 12,
+        "opac": 0.35,
+        "blnd": 1
+       },
+       "note": "Place a cut-out PNG made in Photoshop (Illustrator cannot cut out a photo by script): soft shadow right and down."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe PSL Gaussian Blur",
+       "settings": {
+        "blur": 40
+       },
+       "note": "On a copy of the full photo behind it: strong blur for the backdrop (verified render: whole object goes soft)."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "A dark rectangle over the blurred backdrop in Multiply at 70 % so the quote type reads."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 100,
+        "Feather": 3,
+        "OffsetX": 0,
+        "OffsetY": 0,
+        "Color": "#FFFFFF",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 0
+       },
+       "note": "On the placed cut-out PNG (made in Photoshop): a white zero-offset shadow with a small feather draws a soft white rim round the speaker."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+       "settings": {
+        "Radius": 30
+       },
+       "note": "On a copy of the full photo behind: Gaussian Blur for the backdrop (verified)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Uniform",
+       "settings": {
+        "Value": 30
+       },
+       "note": "A dark rectangle over the backdrop at transparency 30 (about 70 % opaque) for contrast."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Check the automatic cut-out edge (hair, hands, glasses) and fix the mask by hand before adding the outline.",
+    "Verify the quote word for word against the source and add the speaker's name, role and date."
+   ],
+   "built_from": [
+    "1135",
+    "1461",
+    "1158",
+    "frameFX",
+    "dropShadow",
+    "gaussianBlur",
+    "solidFill",
+    "Live Adobe Drop Shadow",
+    "Live Adobe PSL Gaussian Blur",
+    "MULTIPLY",
+    "vector:DropShadow",
+    "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+    "vector:Transparency:Uniform"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Breaking-news strap",
+   "id": "recipe:news_editorial:breaking_strap",
+   "app": "multi",
+   "status": "current",
+   "summary": "A bold lower-third bar: a saturated colour band with a slight gradient and shadow, a contrasting label box at the left and the headline in white.",
+   "use_for": [
+    "breaking and live update graphics",
+    "lower thirds and chyrons for video explainers",
+    "headline bands on social cards"
+   ],
+   "avoid": [
+    "using 'breaking' styling for old or routine news: label it 'update' or 'explainer'",
+    "more than one line of text in the strap: it stops reading at a glance",
+    "low-contrast colour pairs: white on saturated red or deep blue, never on yellow"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Solid Color fill layer for the bar (#C8102E), a full-width rectangle at the lower third."
+      },
+      {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Gradient Overlay",
+         "settings": {
+          "mode": "overlay",
+          "opacity": 35,
+          "type": "linear",
+          "angle": 90,
+          "scale": 100,
+          "reverse": false,
+          "align": true
+         },
+         "note": "Default black-to-white gradient in Overlay at 35 %: the bar lightens toward the top and darkens toward the bottom (verified: white at the top at angle 90)."
+        },
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 45,
+          "useGlobalAngle": false,
+          "localLightingAngle": 90,
+          "distance": 4,
+          "chokeMatte": 0,
+          "blur": 10
+         },
+         "note": "Shadow straight below the bar (light from the top)."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Second fill layer for the label box (#FFFFFF) at the left end, with the label in the bar colour."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2202",
+       "note": "Optional: Edit > Transform > Skew the label box a few degrees for a dynamic slant."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "doc.pathItems.rectangle(...) for the bar and the label box; fill the bar with a red-to-dark-red GradientColor at 90 degrees."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 0,
+        "vert": 4,
+        "blur": 8,
+        "opac": 0.45,
+        "blnd": 1
+       },
+       "note": "On the bar: shadow straight down (horz 0)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "note": "Layer.CreateRectangle2 for the bar and the label box."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Fill",
+       "note": "Bar: ApplyFountainFill linear at 90 degrees from dark red to red; label: ApplyUniformFill white."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 45,
+        "Feather": 8,
+        "OffsetX": 0,
+        "OffsetY": -0.05,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "Shadow straight down under the bar."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "6300",
+    "gradientFill",
+    "dropShadow",
+    "2202",
+    "class:PathItem",
+    "Live Adobe Drop Shadow",
+    "class:Shape",
+    "class:Fill",
+    "vector:DropShadow"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Key-number highlight",
+   "id": "recipe:news_editorial:data_highlight",
+   "app": "multi",
+   "status": "current",
+   "summary": "The one number that matters is pulled out: big type with a coloured glow or keyline, sitting on a hand-drawn highlighter mark.",
+   "use_for": [
+    "statistic cards and explainer slides",
+    "chart call-outs (the latest value, the record)",
+    "thumbnails built around a figure"
+   ],
+   "avoid": [
+    "highlighting a number without its unit, date and source",
+    "glow on light backgrounds: use the keyline or the marker there",
+    "several highlighted numbers on one card: highlight one, keep the rest plain"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "outsetFrame",
+          "paintType": "solidColor",
+          "size": 4,
+          "color": "#111111",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "On the number's type layer: dark keyline."
+        },
+        {
+         "name": "Outer Glow",
+         "settings": {
+          "mode": "screen",
+          "color": "#FFD400",
+          "opacity": 85,
+          "glowTechnique": "softMatte",
+          "chokeMatte": 10,
+          "blur": 28
+         },
+         "note": "Yellow halo, for dark backgrounds (verified: even halo, no offset)."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Marker: a yellow (#FFE14D) Solid Color fill layer behind the number, a slightly rotated rectangle a bit wider than the figure."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Marker layer in Multiply so it tints like a highlighter pen (render matched the Multiply formula)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live Outer Glow",
+       "settings": {
+        "blnd": 2,
+        "blur": 14,
+        "opac": 0.9
+       },
+       "note": "On the number (dark background): yellow halo, colour set in the dialog."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Scribble Fill",
+       "settings": {
+        "Spacing": 3,
+        "Angle": 10,
+        "StrokeWidth": 6,
+        "EdgeOverlap": 2,
+        "Scribbliness": 0.05,
+        "ScribbleVariation": 0.02,
+        "SpacingVariation": 0.5,
+        "EdgeOverlapVariation": 3
+       },
+       "note": "Marker: a yellow rectangle behind the number with Scribble: loose back-and-forth marker strokes (verified hand-scribbled fill)."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "Marker in Multiply."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+       "settings": {
+        "Direction": 1,
+        "Offset": 0.03,
+        "Steps": 1,
+        "BlendType": 0,
+        "FillColor": "#111111",
+        "CornerType": 2
+       },
+       "note": "On the number: one outside contour step in a contrast colour as a keyline (verified sticker / glow look)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Distort:Zipper",
+       "settings": {
+        "Amplitude": 3,
+        "Frequency": 8,
+        "Random": true,
+        "Smooth": true,
+        "Local": false
+       },
+       "note": "Marker: a yellow rectangle behind the number with a smooth, random zipper edge for a hand-drawn wobble. Untested: Random + Smooth was not in the render test."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "State the unit, period and source next to the highlighted number."
+   ],
+   "built_from": [
+    "frameFX",
+    "outerGlow",
+    "6300",
+    "multiply",
+    "Live Outer Glow",
+    "Live Scribble Fill",
+    "MULTIPLY",
+    "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+    "vector:Distort:Zipper"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Map highlight callout",
+   "id": "recipe:news_editorial:map_callout",
+   "app": "multi",
+   "status": "current",
+   "summary": "One region of a map is lifted out: the rest goes grey and darker, the region keeps its colour with a bright outline and glow, and a label box points to it.",
+   "use_for": [
+    "locating a place in a news explainer",
+    "regional data maps (one region in focus)",
+    "route and area call-outs"
+   ],
+   "avoid": [
+    "map sources you have no right to use: draw from an open-licence map and credit it",
+    "disputed borders without a note: say which boundary source the map follows",
+    "glow on the region over a busy satellite image: use the outline only"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2970",
+       "note": "Select the region (doc.selection.select with its outline points, or a path), Layer Via Copy: the region becomes its own layer."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:blackAndWhite",
+       "settings": {
+        "presetKind": "presetKindDefault"
+       },
+       "note": "Black & White adjustment layer between the base map and the region copy: everything below goes grey (verified greyscale, no tint)."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:brightnessEvent",
+       "settings": {
+        "brightness": -40,
+        "center": 0,
+        "useLegacy": false
+       },
+       "note": "Darken the grey map so the region pops (verified Brightness/Contrast layer)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "target": "region layer",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "outsetFrame",
+          "paintType": "solidColor",
+          "size": 4,
+          "color": "#FFFFFF",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "On the region layer: bright outline."
+        },
+        {
+         "name": "Outer Glow",
+         "settings": {
+          "mode": "screen",
+          "color": "#FFD400",
+          "opacity": 70,
+          "glowTechnique": "softMatte",
+          "chokeMatte": 0,
+          "blur": 24
+         },
+         "note": "Soft halo round the region."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "Vector map: set the other regions' opacity to 40 % (pageItem.opacity) or recolour them grey; keep the focus region in full colour on top."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Offset Path",
+       "settings": {
+        "ofst": 3,
+        "jntp": 2,
+        "mlim": 4
+       },
+       "note": "On a copy of the region with no fill and a white stroke: grow it 3 pt so the outline sits just outside the border (verified even growth)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Outer Glow",
+       "settings": {
+        "blnd": 2,
+        "blur": 10,
+        "opac": 0.8
+       },
+       "note": "On the same outline: halo (colour set in the dialog)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 2,
+        "vert": 2,
+        "blur": 4,
+        "opac": 0.4,
+        "blnd": 1
+       },
+       "note": "On the label box: small shadow right and down."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "lens:cdrLensTintedGrayscale",
+       "settings": {
+        "Color1": "#7F7F7F"
+       },
+       "note": "A rectangle over the whole map made into a Tinted Grayscale lens with a neutral grey: the map beneath turns grey (verified monotone in the lens colour)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "80f991a4-4af0-41b1-ad45-eed79600d894",
+       "note": "Duplicate the focus region and bring the copy above the lens so it keeps its colour."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+       "settings": {
+        "Direction": 1,
+        "Offset": 0.03,
+        "Steps": 1,
+        "BlendType": 0,
+        "FillColor": "#FFFFFF",
+        "CornerType": 2
+       },
+       "note": "On the region copy: one white outside contour step as the outline."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 40,
+        "Feather": 4,
+        "OffsetX": 0.03,
+        "OffsetY": -0.03,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "On the label box: small shadow down-right."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Credit the map data source on the graphic."
+   ],
+   "built_from": [
+    "2970",
+    "adjustmentLayer:blackAndWhite",
+    "adjustmentLayer:brightnessEvent",
+    "frameFX",
+    "outerGlow",
+    "class:PathItem",
+    "Live Offset Path",
+    "Live Outer Glow",
+    "Live Adobe Drop Shadow",
+    "lens:cdrLensTintedGrayscale",
+    "80f991a4-4af0-41b1-ad45-eed79600d894",
+    "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+    "vector:DropShadow"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Before / after split",
+   "id": "recipe:news_editorial:before_after_split",
+   "app": "multi",
+   "status": "current",
+   "summary": "Two aligned images share one frame: the left half shows 'before', the right half 'after', divided by a crisp line with small labels.",
+   "use_for": [
+    "change over time (construction, floods, restoration)",
+    "edit and retouch comparisons",
+    "product or policy before/after explainers"
+   ],
+   "avoid": [
+    "images not shot from the same angle and scale: align and crop them first or the comparison misleads",
+    "colour-grading one side differently from the other: treat both the same",
+    "unlabelled halves: always mark which is which and give both dates"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_api",
+       "id": "class:Selection",
+       "note": "Put the 'after' layer above 'before' (aligned), then select the right half: doc.selection.select([[w/2,0],[w,0],[w,h],[w/2,h]])."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1158",
+       "note": "Layer Mask > Reveal Selection on the 'after' layer: only its right half shows."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Divider: a 4 px white Solid Color fill layer on the centre line."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Drop Shadow",
+       "settings": {
+        "mode": "multiply",
+        "color": "#000000",
+        "opacity": 50,
+        "useGlobalAngle": false,
+        "localLightingAngle": 180,
+        "distance": 0,
+        "chokeMatte": 0,
+        "blur": 8
+       },
+       "note": "On the divider: a soft dark edge either side (distance 0) so the line reads on light and dark images. same layerEffects descriptor as any other style on the layer."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "makeMask",
+       "note": "Place both images aligned; draw a rectangle over the right half of 'after', select both, Make Clipping Mask."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "Divider: a vertical white line (4 pt stroke) on the centre; labels as small boxes."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 0,
+        "vert": 0,
+        "blur": 4,
+        "opac": 0.5,
+        "blnd": 1
+       },
+       "note": "On the divider: zero-offset shadow for a soft edge."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "vector:PowerClip",
+       "settings": {
+        "CenterInContainer": 0
+       },
+       "note": "Clip the 'after' image into a rectangle covering the right half, aligned over 'before'. Untested: PowerClip is a needs_input card with no render test (apply call confirmed: content.AddToPowerClip(frame, 0))."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 50,
+        "Feather": 4,
+        "OffsetX": 0,
+        "OffsetY": 0,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "On the white divider line: zero-offset soft shadow."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Align the two images by hand on fixed landmarks before masking (Photoshop: Edit > Auto-Align Layers helps)."
+   ],
+   "built_from": [
+    "class:Selection",
+    "1158",
+    "6300",
+    "dropShadow",
+    "makeMask",
+    "class:PathItem",
+    "Live Adobe Drop Shadow",
+    "vector:PowerClip",
+    "vector:DropShadow"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Document zoom with highlighter",
+   "id": "recipe:news_editorial:document_zoom_highlight",
+   "app": "multi",
+   "status": "current",
+   "summary": "A page or screenshot is dimmed and softened, one passage is shown enlarged in a framed zoom box, and the key line is marked with a yellow highlighter.",
+   "use_for": [
+    "quoting a report, ruling, filing or web page in an explainer",
+    "fact-check graphics that show the source text",
+    "tutorial screenshots"
+   ],
+   "avoid": [
+    "altering the document's words or numbers: zoom and mark only",
+    "highlighting out of context: keep the full sentence in the zoom box",
+    "personal data visible in the screenshot: blur it first (see the privacy blur recipe)"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Duplicate the document layer: the bottom copy is the dimmed page, the top becomes the zoom."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "gaussianBlur",
+       "settings": {
+        "radius": 3
+       },
+       "note": "Bottom copy: a light blur pushes the page back (verified Gaussian Blur)."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "brightnessEvent",
+       "settings": {
+        "brightness": -35,
+        "center": 0,
+        "useLegacy": false
+       },
+       "note": "Bottom copy: darker (verified Brightness/Contrast)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2970",
+       "note": "Top copy: select the passage, Layer Via Copy, then Edit > Free Transform (id 2207) to enlarge it 150-200 %."
+      },
+      {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "insetFrame",
+          "paintType": "solidColor",
+          "size": 6,
+          "color": "#FFFFFF",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "On the zoom layer: square white frame (Inside keeps corners square)."
+        },
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 50,
+          "useGlobalAngle": false,
+          "localLightingAngle": 120,
+          "distance": 10,
+          "chokeMatte": 0,
+          "blur": 24
+         },
+         "note": "Lifts the zoom box, down-right."
+        }
+       ],
+       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Highlighter: a yellow (#FFE14D) fill layer over the key line inside the zoom."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Highlighter in Multiply so the text stays black under the yellow (formula-verified)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "lens:cdrLensMagnify",
+       "settings": {
+        "RateOrMagnification": 2
+       },
+       "note": "A rectangle over the passage made into a Magnify lens, 2x (verified: zoomed copy of the art beneath inside the lens, the rest unchanged); move it beside the passage if the zoom should not cover it."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 50,
+        "Feather": 12,
+        "OffsetX": 0.08,
+        "OffsetY": -0.08,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "On the lens frame: shadow down-right."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Uniform",
+       "settings": {
+        "Value": 40
+       },
+       "note": "Highlighter: a yellow rectangle under the key line (below the lens in the stack so the lens magnifies it too) at transparency 40."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "lens:cdrLensBrighten",
+       "settings": {
+        "RateOrMagnification": -30
+       },
+       "note": "Dim the rest: a page-size rectangle behind the lens and highlighter as a Brighten lens with a negative rate. Untested: the verified frame used +60 (brighten)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "makeMask",
+       "note": "Copy the placed screenshot, clip the copy to the passage (rectangle + Make Clipping Mask), scale it up 150-200 % (pageItem.resize)."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "White 4 pt stroke rectangle on the zoom; a black rectangle at 40 % opacity over the full page beneath it to dim the rest."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 6,
+        "vert": 6,
+        "blur": 12,
+        "opac": 0.5,
+        "blnd": 1
+       },
+       "note": "On the zoom group: shadow right and down."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "Yellow highlighter rectangle over the key line in Multiply."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Choose the passage and the highlighted line by reading the source; keep the document's title, date and page visible or in the caption."
+   ],
+   "built_from": [
+    "1135",
+    "gaussianBlur",
+    "brightnessEvent",
+    "2970",
+    "2207",
+    "frameFX",
+    "dropShadow",
+    "6300",
+    "multiply",
+    "lens:cdrLensMagnify",
+    "vector:DropShadow",
+    "vector:Transparency:Uniform",
+    "lens:cdrLensBrighten",
+    "makeMask",
+    "class:PathItem",
+    "Live Adobe Drop Shadow",
+    "MULTIPLY"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Legibility scrim over a photo",
+   "id": "recipe:news_editorial:text_scrim",
+   "app": "multi",
+   "status": "current",
+   "summary": "A dark gradient rises from the bottom of a photo so white headline type on it stays readable, with a soft shadow on the type itself.",
+   "use_for": [
+    "headlines and captions set on photos",
+    "video lower thirds over footage",
+    "social cards from a single image"
+   ],
+   "avoid": [
+    "darkening the subject itself: keep the scrim on the empty part of the frame",
+    "a hard-edged band: fade it out, or it reads as a separate box"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "6300",
+       "note": "Solid Color fill layer (#000000) above the photo, below the type."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Gradient Overlay",
+       "settings": {
+        "mode": "normal",
+        "opacity": 100,
+        "type": "linear",
+        "angle": 90,
+        "scale": 100,
+        "reverse": false,
+        "align": true
+       },
+       "note": "On the fill layer: gradient from black at the bottom to fully transparent at about 55 % height (stops with an opacity ramp set in the descriptor). same layerEffects descriptor as any other style on the layer."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Drop Shadow",
+       "target": "type layer",
+       "settings": {
+        "mode": "multiply",
+        "color": "#000000",
+        "opacity": 50,
+        "useGlobalAngle": false,
+        "localLightingAngle": 90,
+        "distance": 2,
+        "chokeMatte": 0,
+        "blur": 8
+       },
+       "note": "On the type layer: soft shadow just below the letters."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_api",
+       "id": "class:GradientColor",
+       "note": "A rectangle over the bottom of the photo with a black gradient whose top stop has 0 % opacity (gradientStop.opacity), rotated so it fades upward."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "The scrim in Multiply keeps the photo's colours under it."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 0,
+        "vert": 2,
+        "blur": 5,
+        "opac": 0.5,
+        "blnd": 1
+       },
+       "note": "On the type: soft shadow straight down."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "note": "A black rectangle over the bottom half of the photo."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Fountain",
+       "settings": {
+        "Start": 0,
+        "End": 100,
+        "Type": 1,
+        "Angle": 90.0,
+        "Steps": 0,
+        "EdgePad": 0,
+        "MidPoint": 50,
+        "CenterOffsetX": 0.0,
+        "CenterOffsetY": 0.0
+       },
+       "note": "Linear fountain transparency from opaque at the bottom to clear at the top (verified linear fade; angle 90 runs it vertically, swap Start / End if it fades the wrong way)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 50,
+        "Feather": 6,
+        "OffsetX": 0,
+        "OffsetY": -0.02,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "On the text: soft shadow just below."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "6300",
+    "gradientFill",
+    "dropShadow",
+    "class:GradientColor",
+    "MULTIPLY",
+    "Live Adobe Drop Shadow",
+    "class:Shape",
+    "vector:Transparency:Fountain",
+    "vector:DropShadow"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "news_editorial",
+   "name": "Privacy blur or pixelation",
+   "id": "recipe:news_editorial:privacy_blur",
+   "app": "multi",
+   "status": "current",
+   "summary": "Faces of bystanders, number plates, addresses or personal details in a photo or screenshot are pixelated or blurred beyond recognition and the result is flattened so the original cannot be recovered.",
+   "use_for": [
+    "protecting bystanders, minors and private individuals in news photos",
+    "hiding personal data in screenshots",
+    "number plates and house numbers"
+   ],
+   "avoid": [
+    "light blur or small mosaic cells: faces and text can be recovered; use cells at least a quarter of the face width",
+    "live, reversible effects in the delivered file (smart filters, Illustrator effects, CorelDRAW lenses): flatten or rasterise before export",
+    "forgetting the metadata: strip location and camera data on export"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_api",
+       "id": "class:Selection",
+       "note": "Select each area to hide (doc.selection.select with its corners), a little larger than the face or text."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "mosaic",
+       "settings": {
+        "Cell Size": 32
+       },
+       "note": "Filter > Pixelate > Mosaic: square blocks of one averaged colour (verified). Scale the cell to the area: 20-40 px on a face."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "gaussianBlur",
+       "settings": {
+        "radius": 12
+       },
+       "note": "Then a blur over the same selection removes the block edges that can be de-pixelated."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1141",
+       "note": "Layer > Flatten Image before export so no unblurred layer or smart object survives."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "makeMask",
+       "note": "Copy the placed image and clip the copy to the area to hide."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe PSL Gaussian Blur",
+       "settings": {
+        "blur": 40
+       },
+       "note": "Strong blur on the clipped copy (verified: whole object goes soft)."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Rasterize 8 menu item",
+       "note": "Object > Rasterize the image together with the blurred copy (doc.rasterize(...)): the live effect would otherwise keep the original pixels in the file."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "defc5eef-4402-4c64-8837-aa8c2e635456",
+       "settings": {
+        "Width": 30
+       },
+       "note": "On a cropped copy of the area (a separate bitmap over the original): Pixelate with large square cells (verified with Width 40; the script dropped Mode and Height, so only Square mode applies)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+       "note": "Convert to Bitmap of the photo plus the pixelated patch, so the hidden detail is gone from the file."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Decide what must be hidden by looking at every face, plate, screen and document in the image.",
+    "Check the exported file at 100 % and strip its metadata."
+   ],
+   "built_from": [
+    "class:Selection",
+    "mosaic",
+    "gaussianBlur",
+    "1141",
+    "makeMask",
+    "Live Adobe PSL Gaussian Blur",
+    "Rasterize 8 menu item",
+    "defc5eef-4402-4c64-8837-aa8c2e635456",
+    "c44919b9-e389-4c0d-8a54-8e6e3fcfade3"
+   ],
+   "confidence": "high"
+  }
+ ]
+}

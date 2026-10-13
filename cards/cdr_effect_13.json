@@ -1,0 +1,641 @@
+{
+ "cards": [
+  {
+   "name": "Brighten",
+   "id": "lens:cdrLensBrighten",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Brighten",
+   "status": "current",
+   "summary": "A lens: a closed shape that shows everything beneath it (vectors and bitmaps) brightened by a percentage rate; a negative rate darkens the view instead. Only the view through the lens changes, the art underneath is untouched.",
+   "use_for": [
+    "lighten a band or box behind dark headline type so it reads over a busy photo",
+    "spotlight / highlight window on one part of a product shot, map or chart",
+    "darken a panel (negative rate) behind white type on a light photo"
+   ],
+   "avoid": [
+    "brightening a whole bitmap for good: Effects/Adjust/Brightness/Contrast/Intensity is the direct adjustment",
+    "high rates wash the area towards flat white and lose detail; 30-60 keeps texture",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/New Adjustment Layer/Brightness/Contrast"
+   },
+   "look": [
+    "brightened window",
+    "light box",
+    "spotlight",
+    "washed-out panel",
+    "dodge",
+    "darkened panel"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "Brighten rate in percent: positive values lighten what is seen through the lens, negative values darken it (sign behaviour from general knowledge of the Lens docker, not tested in this harvest)",
+     "typical": "30 to 60 to lighten, -30 to -60 to darken"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 60
+   },
+   "pairs_with": [
+    "headline type set over the lens area",
+    "Uniform Transparency on a white box (a softer alternative)",
+    "IVGEffectLens.Freeze before handing the file to print"
+   ],
+   "scripting": "fx = s.CreateLens(6, 60)  # s = a closed shape over the art; Type 6 = cdrLensBrighten. RateOrMagnification 60 = brighten 60 %; Color1, Color2, ColorMapPalette are not used by Brighten (left at None, None, 0). Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows when the lens sits over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/33b2072ce04e.png",
+    "note": "Inside the lens circle the photo is washed out lighter and the orange box turns pale peach (255,122,26 -> about 255,200,165), while everything outside the lens is unchanged.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Color Add",
+   "id": "lens:cdrLensColorAdd",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Color Add",
+   "status": "current",
+   "summary": "A lens that adds its colour to everything beneath it the way coloured light adds: dark areas take on the lens colour, whites stay white and the whole view shifts brighter towards that hue. Rate sets how much colour is added.",
+   "use_for": [
+    "coloured stage-light wash over a photo for a concert, club or festival poster",
+    "neon-tinted window or band behind text",
+    "warm or cool light cast over one area of a layout"
+   ],
+   "avoid": [
+    "a plain see-through tint: the Transparency lens or Toolbox/Transparency/Uniform Transparency is simpler",
+    "light or white artwork barely changes because whites cannot get brighter; Color Limit (a darkening filter) shows there",
+    "Color1 left as None: the harvest does not say which colour the lens then uses; always pass a colour",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Linear Dodge (Add)",
+    "AI": "Screen"
+   },
+   "look": [
+    "coloured light",
+    "additive tint",
+    "gel light",
+    "neon wash",
+    "colour cast",
+    "glow tint"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "how much of the lens colour is added to the colours beneath, in percent; higher = stronger, brighter cast",
+     "typical": "40 to 80"
+    },
+    {
+     "name": "Color1",
+     "does": "the lens colour, i.e. the colour of the light being added",
+     "typical": "a saturated hue: green, red, magenta, cyan, blue (pick one the art beneath lacks)"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 80,
+    "Color1": "#00FF00"
+   },
+   "pairs_with": [
+    "dark photo areas or a dark page background (where added light shows most)",
+    "Brighten lens for a white-light version"
+   ],
+   "scripting": "fx = s.CreateLens(4, 80, app.CreateRGBColor(0, 255, 0))  # s = a closed shape over the art; Type 4 = cdrLensColorAdd. RateOrMagnification 80 (%), Color1 = green via Application.CreateRGBColor; Color2 and ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo Color1 #FF0000 -> #00FF00 (and the scripting line): red adds nothing to the vector plate's orange box and yellow circle end, whose red channel is already 255; green changes every plate object"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/10649c60c507.png",
+    "note": "Inside the lens green is added like light: the orange box becomes yellow (255,122,26 -> 255,255,26), the photo turns bright lime, the zigzag turns green and white areas stay white.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Color Limit",
+   "id": "lens:cdrLensColorLimit",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Color Limit",
+   "status": "current",
+   "summary": "A lens that works like a coloured camera filter: only black and the lens colour pass through, so the view beneath becomes shades of that colour, whites turn into the lens colour and hues unlike it go dark. Rate sets how strongly the filter applies.",
+   "use_for": [
+    "one-colour filtered band over a photo for a poster or thumbnail",
+    "pushing a busy background area into the brand colour behind text",
+    "red-filter or night-vision style looks"
+   ],
+   "avoid": [
+    "keeping the original colours readable: use the Transparency or Color Add lens",
+    "at a high rate with a pure hue, everything off that hue drops to near black; lower the rate or pick a lighter colour",
+    "Color1 left as None: the harvest does not say which colour the lens then uses; always pass a colour",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Multiply",
+    "AI": "Window/Transparency/Blending Mode/Multiply"
+   },
+   "look": [
+    "colour filter",
+    "gel filter",
+    "monochrome tint",
+    "multiply tint",
+    "red filter",
+    "night vision"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "filter strength in percent: at full strength only black and the lens colour come through, lower values let more of the original colours show",
+     "typical": "50 to 100"
+    },
+    {
+     "name": "Color1",
+     "does": "the filter colour: whites become this colour, other hues darken towards black",
+     "typical": "a brand or mood colour; lighter colours keep more detail"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 90,
+    "Color1": "#00FF00"
+   },
+   "pairs_with": [
+    "white type over the filtered area",
+    "Tinted Grayscale lens when the image should keep all its tones"
+   ],
+   "scripting": "fx = s.CreateLens(3, 90, app.CreateRGBColor(0, 255, 0))  # s = a closed shape over the art; Type 3 = cdrLensColorLimit. RateOrMagnification 90 (%), Color1 = green via Application.CreateRGBColor; Color2 and ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.AI 'Multiply' -> its blend-mode path (the bare name also matches an AI graphic style preset)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/4046625d6d60.png",
+    "note": "Inside the lens only green passes: the photo becomes dark shades of green, the orange box turns dark green (26,122,0) and the light grey strip turns pure green; the white page itself is not an object and stays white.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Custom Color Map",
+   "id": "lens:cdrLensCustomColorMap",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Custom Color Map",
+   "status": "current",
+   "summary": "A lens that recolours everything beneath it onto a range between two colours you pick (Color1 = from, Color2 = to), by tone, so the view reads like a gradient map or duotone; the route between the two colours can be direct or run clockwise / counter-clockwise round the rainbow. Which end of the range takes the shadows was not tested here: swap the colours if it comes out inverted.",
+   "use_for": [
+    "duotone photo panels in brand colours for posters and social cards",
+    "psychedelic rainbow remap for a music or festival graphic",
+    "unifying mixed photos and artwork in one colour range"
+   ],
+   "avoid": [
+    "fine control over the tonal ramp (curve, midpoints): convert the bitmap with Bitmaps/Mode/Duotone (8-bit)",
+    "ColorMapPalette 3 (cdrCustomFountainFillBlend) is in the enum, but what a lens does with it is untested; use 0, 1 or 2",
+    "Color1 / Color2 left as None: the harvest does not say which colours the lens then uses; pass both",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/New Adjustment Layer/Gradient Map"
+   },
+   "look": [
+    "gradient map",
+    "duotone",
+    "colour remap",
+    "false colour",
+    "rainbow map",
+    "two-tone"
+   ],
+   "params": [
+    {
+     "name": "Color1",
+     "does": "the From colour: one end of the colour range the tones are mapped onto",
+     "typical": "a dark colour such as navy or deep purple"
+    },
+    {
+     "name": "Color2",
+     "does": "the To colour: the other end of the range",
+     "typical": "a light, warm colour such as amber or pale yellow"
+    },
+    {
+     "name": "ColorMapPalette",
+     "does": "the route between the two colours: 0 direct blend, 1 rainbow clockwise round the hue wheel, 2 rainbow counter-clockwise (the Lens docker calls these Forward / Reverse rainbow; which is which is unverified)",
+     "typical": "0 for a duotone, 1 or 2 for a rainbow remap"
+    }
+   ],
+   "demo_settings": {
+    "Color1": "#1A0A6B",
+    "Color2": "#FFB000",
+    "ColorMapPalette": 0
+   },
+   "enum_labels": {
+    "ColorMapPalette": {
+     "0": "cdrDirectFountainFillBlend: direct blend from Color1 to Color2",
+     "1": "cdrRainbowCWFountainFillBlend: rainbow, clockwise round the hue wheel",
+     "2": "cdrRainbowCCWFountainFillBlend: rainbow, counter-clockwise",
+     "3": "cdrCustomFountainFillBlend: custom fountain blend (effect on a lens untested)"
+    }
+   },
+   "pairs_with": [
+    "Tinted Grayscale lens (one-colour version)",
+    "type in one of the two map colours for a matched layout"
+   ],
+   "scripting": "fx = s.CreateLens(10, 50, app.CreateRGBColor(26, 10, 107), app.CreateRGBColor(255, 176, 0), 0)  # s = a closed shape over the art; Type 10 = cdrLensCustomColorMap. RateOrMagnification 50 (the typelib default) is passed only to reach the colour arguments (not used by this type); Color1 = from colour, Color2 = to colour, ColorMapPalette 0 = direct (fx.Lens.FromColor / ToColor later). Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting RateOrMagnification 0 -> 50 (typelib default, matches demo_settings); CW/CCW enum values no longer asserted to be Forward/Reverse rainbow (not in the harvest)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/e4c949eb0aca.png",
+    "note": "Inside the lens tones are mapped from Color1 (deep violet) for the darks to Color2 (amber) for the lights: the light grey strip turns amber (240,165,7), mid tones such as the orange box go brown, so with these colours the first colour takes the shadows.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Fish Eye",
+   "id": "lens:cdrLensFishEye",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Fish Eye",
+   "status": "current",
+   "summary": "A lens that bulges the view beneath it as if seen through a fisheye or convex glass: the centre is enlarged and pushed outward while the rim compresses; a negative rate pinches inward instead. Only the view inside the lens shape is distorted, the art underneath is unchanged.",
+   "use_for": [
+    "bulging magnifier bubble over a product feature or a spot on a map",
+    "comic or funhouse distortion on a face, logo or headline",
+    "pinched tunnel look (negative rate) for a playful poster"
+   ],
+   "avoid": [
+    "reshaping the vector objects themselves: use an envelope or the distort tools, or Effects/3D Effects/Sphere on a bitmap",
+    "small rates read as a barely visible wobble; go to 100 or more",
+    "square or long thin lens shapes give an odd distortion; a circle or ellipse reads as a real lens",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Distort/Spherize",
+    "AI": "Effect/Warp/Fisheye"
+   },
+   "look": [
+    "fisheye",
+    "bulge",
+    "bubble",
+    "convex lens",
+    "pinch",
+    "spherize",
+    "barrel distortion"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "distortion strength in percent: positive bulges / magnifies the centre, negative shrinks / pinches it",
+     "typical": "100 to 400 for a bulge, -100 to -300 for a pinch"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 300
+   },
+   "pairs_with": [
+    "a circular lens shape with a thin outline for a glass-bubble callout",
+    "Magnify lens for an undistorted zoom"
+   ],
+   "scripting": "fx = s.CreateLens(1, 300)  # s = a closed shape over the art; Type 1 = cdrLensFishEye. RateOrMagnification 300 (%); Color1, Color2, ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Apply-tested in the harvest (effect_type 9). UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "moderate over bitmaps (the view is resampled on every redraw); light on vectors",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/3c5881e14e75.png",
+    "note": "Inside the lens the view bulges: a mid-tone area of the photo is enlarged toward the centre and the orange box is pushed out into a thin bent crescent against the lens rim, a strong convex fisheye at rate 300.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Heat Map",
+   "id": "lens:cdrLensHeatMap",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Heat Map",
+   "status": "current",
+   "summary": "A lens that turns the view beneath it into a false-colour infrared / thermal-camera picture: tones are mapped onto a small fixed palette of warm (white, yellow, orange, red) and cool (blue, violet, cyan) colours. A palette rotation shifts which tones read warm or cool.",
+   "use_for": [
+    "thermal-camera or predator-vision look on a photo for a tech, sci-fi or gaming poster",
+    "'hot zone' panel in a data-art or infographic layout",
+    "loud pop-art colour band over a portrait"
+   ],
+   "avoid": [
+    "a colour ramp you choose yourself: use the Custom Color Map lens",
+    "anything that must read as real temperature data: it is purely a colour mapping of tones",
+    "whether CreateLens's RateOrMagnification sets the palette rotation is not verified; IVGEffectLens has its own PaletteRotation property, so set fx.Lens.PaletteRotation after creating the lens if the rate has no effect",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/New Adjustment Layer/Gradient Map"
+   },
+   "look": [
+    "heat map",
+    "thermal",
+    "infrared",
+    "false colour",
+    "predator vision",
+    "psychedelic"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "for Heat Map most likely the palette rotation in percent (which tones come out warm vs cool); the mapping of this argument is not verified, see avoid",
+     "typical": "0 for the standard thermal look; other values rotate the palette so different tones come out warm or cool"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 0
+   },
+   "pairs_with": [
+    "dark, high-contrast photos (more tonal steps, more colours)",
+    "bold white type over the heat-map band"
+   ],
+   "scripting": "fx = s.CreateLens(8, 0)  # s = a closed shape over the art; Type 8 = cdrLensHeatMap. RateOrMagnification 0 (palette rotation, mapping unverified; fx.Lens.PaletteRotation = 0 to be sure); Color1, Color2, ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Apply-tested in the harvest (effect_type 9). UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "params typical: dropped the unharvested claim that about 50 swaps warm and cool"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/335f3ec8b3cb.png",
+    "note": "Inside the lens the photo and shapes turn false-colour thermal: walls magenta and violet, dark areas blue and cyan, the small bright highlights yellow-orange, the orange box magenta.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Invert",
+   "id": "lens:cdrLensInvert",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Invert",
+   "status": "current",
+   "summary": "A lens that shows everything beneath it in complementary colours, like a photo negative inside the lens shape: light becomes dark and each hue swaps to its opposite. It has no strength or colour setting.",
+   "use_for": [
+    "negative-photo window or stripe across a poster image",
+    "type or shapes that flip colour where they cross light and dark areas",
+    "x-ray or 'reveal' effect in a split before / after design"
+   ],
+   "avoid": [
+    "inverting a whole bitmap for good: Effects/Transform/Invert Colors",
+    "CorelDRAW describes the result as complementary CMYK colours, so it may not match an RGB negative exactly",
+    "RateOrMagnification, Color1, Color2 and ColorMapPalette do nothing for Invert (the Lens docker has no settings for it, from general knowledge); the demo passes only the default rate",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/New Adjustment Layer/Invert",
+    "AI": "Difference"
+   },
+   "look": [
+    "negative",
+    "inverted colours",
+    "x-ray",
+    "photo negative",
+    "inverse"
+   ],
+   "params": [],
+   "demo_settings": {
+    "RateOrMagnification": 50
+   },
+   "pairs_with": [
+    "a bold shape or wide type outline used as the lens",
+    "Fish Eye or Magnify lenses in the same layout"
+   ],
+   "scripting": "fx = s.CreateLens(5)  # s = a closed shape over the art; Type 5 = cdrLensInvert. No settings: s.CreateLens(5) uses the defaults (RateOrMagnification 50, None, None, 0), which Invert ignores. Returns IVGEffect (type 9); edit later via fx.Lens. Apply-tested in the harvest (effect_type 9). UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/2ddab882b5aa.png",
+    "note": "Inside the lens everything shows in complementary colours like a negative: the orange box turns blue (0,133,229), the light grey strip near black, the photo bluish; this frame is byte-identical to the Lens card's frame, whose demo picked Invert.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Magnify",
+   "id": "lens:cdrLensMagnify",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Magnify",
+   "status": "current",
+   "summary": "A lens that enlarges the view beneath it by a magnification factor, like a magnifying glass: the lens shape shows a zoomed-in copy of the art under it instead of its own fill, while the art itself stays unchanged.",
+   "use_for": [
+    "magnifying-glass callout on a detail of a map, chart, product or document",
+    "zoom inset in infographics and how-to instructions",
+    "oversized detail as a playful focal point on a poster"
+   ],
+   "avoid": [
+    "the typelib default RateOrMagnification 50 means 50x for Magnify: pass a small factor such as 2 to 4",
+    "over bitmaps the enlarged pixels soften and turn blocky at high factors; place a higher-resolution image underneath",
+    "a callout that must keep showing the same spot when the lens moves: use the viewpoint (IVGEffectLens.UseViewPoint, ViewPointX, ViewPointY) or Freeze",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "magnifying glass",
+    "zoom",
+    "loupe",
+    "callout",
+    "enlarged detail",
+    "detail inset"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "for Magnify the magnification factor (times enlarged), not a percentage",
+     "typical": "2 to 4"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 3
+   },
+   "pairs_with": [
+    "a circle lens with a thick outline and a handle shape for a magnifying-glass icon",
+    "a drop shadow under the lens shape so the callout lifts off the page"
+   ],
+   "scripting": "fx = s.CreateLens(0, 3)  # s = a closed shape over the art; Type 0 = cdrLensMagnify. RateOrMagnification 3 = 3x (fx.Lens.Magnification later); Color1, Color2, ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Apply-tested in the harvest (effect_type 9). UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; moderate over large bitmaps (resampled each redraw)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/947dce77b814.png",
+    "note": "Inside the lens a 3x zoomed copy of the art beneath appears (the plant and dark-red block magnified, a big slice of the box's outline across the orange), while the art outside the lens is unchanged.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Tinted Grayscale",
+   "id": "lens:cdrLensTintedGrayscale",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Tinted Grayscale",
+   "status": "current",
+   "summary": "A lens that turns everything beneath it into greyscale tinted with the lens colour, giving a one-hue monotone: a blue lens shows the view in shades of blue, a brown one gives a sepia look.",
+   "use_for": [
+    "monotone brand-colour photo panels for posters and social cards",
+    "sepia or vintage band with a brown lens colour",
+    "knocking a background area back to one quiet colour so foreground type pops"
+   ],
+   "avoid": [
+    "two-colour duotones or a controlled tonal ramp: use the Custom Color Map lens or Bitmaps/Mode/Duotone (8-bit)",
+    "a light lens colour gives a weak, washed-out result; pick a mid or dark colour",
+    "RateOrMagnification has no effect here (the Lens docker offers only the colour, from general knowledge)",
+    "Color1 left as None: the harvest does not say which colour the lens then uses; always pass a colour",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/New Adjustment Layer/Black & White"
+   },
+   "look": [
+    "monotone",
+    "tinted black and white",
+    "sepia",
+    "cyanotype",
+    "single-colour photo",
+    "colour wash"
+   ],
+   "params": [
+    {
+     "name": "Color1",
+     "does": "the tint colour; the greyscale tones are rendered in shades of it",
+     "typical": "a mid or dark colour: navy, brown, deep red, brand colour"
+    }
+   ],
+   "demo_settings": {
+    "Color1": "#0038B8"
+   },
+   "pairs_with": [
+    "type in the same hue for a matched monotone layout",
+    "Custom Color Map lens for a two-colour version"
+   ],
+   "scripting": "fx = s.CreateLens(7, 50, app.CreateRGBColor(0, 56, 184))  # s = a closed shape over the art; Type 7 = cdrLensTintedGrayscale. RateOrMagnification 50 is the default and is passed only to reach Color1 (tint = blue via Application.CreateRGBColor); Color2 and ColorMapPalette unused. Created live in the harvest audit with every optional argument omitted (IVGEffect type 9, Lens.Type read back 7); the tint argument itself was not tested. Edit later via fx.Lens. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light on vectors; redraw slows over large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: removed 'Not apply-tested for this type', which contradicted the live audit that created the lens (only the tint argument is untested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/c0509fafba61.png",
+    "note": "Inside the lens the photo and the orange box become a blue monotone (greyscale tinted with #0038B8), a cyanotype-like look, while the outside keeps its colours.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Transparency",
+   "id": "lens:cdrLensTransparency",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Transparency",
+   "status": "current",
+   "summary": "A lens that makes its shape look like tinted glass: the objects beneath show through, mixed with the lens colour according to Rate (percent transparency).",
+   "use_for": [
+    "coloured glass panel behind text on a photo",
+    "tint band or colour veil in a brochure or flyer layout",
+    "editing legacy files that already use transparency lenses"
+   ],
+   "avoid": [
+    "most new work: a coloured shape with Toolbox/Transparency/Uniform Transparency gives the same look, and the Transparency tool also offers fountain / pattern transparency and merge modes",
+    "rate direction (higher = more see-through) is from general knowledge of the Lens docker, not tested here",
+    "Color1 left as None: the harvest does not say which colour the lens then uses; always pass a colour",
+    "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "tinted glass",
+    "see-through",
+    "colour overlay",
+    "semi-transparent panel",
+    "colour veil"
+   ],
+   "params": [
+    {
+     "name": "RateOrMagnification",
+     "does": "how transparent the lens is, in percent: higher shows more of what is beneath, lower more of the lens colour",
+     "typical": "30 to 70"
+    },
+    {
+     "name": "Color1",
+     "does": "the glass colour",
+     "typical": "a brand colour or a dark tone for a scrim behind text"
+    }
+   ],
+   "demo_settings": {
+    "RateOrMagnification": 40,
+    "Color1": "#00B0FF"
+   },
+   "pairs_with": [
+    "white or dark type over the tinted area",
+    "Brighten lens for an untinted lightening"
+   ],
+   "scripting": "fx = s.CreateLens(9, 40, app.CreateRGBColor(0, 176, 255))  # s = a closed shape over the art; Type 9 = cdrLensTransparency. RateOrMagnification 40 (% transparency), Color1 = cyan via Application.CreateRGBColor; Color2 and ColorMapPalette unused. Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: Uniform Transparency itself has no fountain / pattern options; reworded to the Transparency tool"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d812af7c00fa.png",
+    "note": "The lens reads as cyan tinted glass at 40 %: the photo and orange box show through mixed with #00B0FF (the box turns grey-teal), the outside unchanged.",
+    "rerender": false
+   }
+  }
+ ]
+}

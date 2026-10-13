@@ -1,0 +1,1679 @@
+{
+ "cards": [
+  {
+   "name": "DocumentConversionOptions",
+   "id": "class:DocumentConversionOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/DocumentConversionOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Abstract base type of the options object passed as the second argument of Document.changeMode(). It has no members of its own in the 27.4 harvest; a script creates one of its subclasses instead: IndexedConversionOptions (to Indexed Color) or BitmapConversionOptions (to Bitmap), which both list it as their superclass.",
+   "use_for": [
+    "knowing which options object to build before a scripted Image > Mode change",
+    "typing the options argument of doc.changeMode() for Indexed Color or Bitmap conversions"
+   ],
+   "avoid": [
+    "never instantiate it directly: create IndexedConversionOptions or BitmapConversionOptions",
+    "RGB / CMYK / Grayscale / Lab conversions need no options object; for a profile-controlled CMYK conversion use Document.convertProfile instead"
+   ],
+   "equivalents": {},
+   "how": "Never reached on its own: it is only the declared type of the optional options parameter of Document.changeMode(destinationMode, options). Pass new IndexedConversionOptions() with ChangeMode.INDEXEDCOLOR, or new BitmapConversionOptions() with ChangeMode.BITMAP.",
+   "key_members": [
+    {
+     "name": "DocumentConversionOptions",
+     "use": "no harvested members (extra.members is empty, no COM type matched): set properties on the subclass IndexedConversionOptions or BitmapConversionOptions"
+    }
+   ],
+   "gotchas": [
+    "there is nothing to set on the base class itself; its subclasses carry every option",
+    "the options argument of changeMode is optional; left out, Photoshop uses its default conversion settings (unverified which defaults)",
+    "Bitmap mode needs a Grayscale document first, as in the UI; changeMode from RGB straight to ChangeMode.BITMAP fails (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar opts = new IndexedConversionOptions(); // a DocumentConversionOptions subclass\nopts.palette = PaletteType.LOCALSELECTIVE;\nopts.colors = 64;\ndoc.changeMode(ChangeMode.INDEXEDCOLOR, opts);",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DocumentInfo",
+   "id": "class:DocumentInfo",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/DocumentInfo",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The File > File Info metadata of one document: title, author, caption, headline, keywords, copyright status and notice, owner URL, credit, source, location, job name, instructions, urgency, plus read-only EXIF. Values are embedded in the file (IPTC / XMP) on the next save.",
+   "use_for": [
+    "stamping copyright notice, credit and owner URL into delivered JPEGs and PSDs",
+    "adding title, caption and keywords for stock-photo or DAM submission",
+    "reading EXIF camera data to sort or route images in a batch",
+    "carrying job name and instructions through a print or agency pipeline"
+   ],
+   "avoid": [
+    "custom or non-IPTC fields: write them through XMPMetadata.rawData",
+    "metadata for one layer only: use Layer.xmpMetadata"
+   ],
+   "equivalents": {
+    "CDR": "Metadata"
+   },
+   "how": "app.activeDocument.info (Document.info) returns this object. Assign strings directly; keywords and supplementalCategories take arrays of strings, copyrighted takes a CopyrightedType and urgency an Urgency value.",
+   "key_members": [
+    {
+     "name": "title",
+     "use": "document title"
+    },
+    {
+     "name": "author",
+     "use": "creator / byline"
+    },
+    {
+     "name": "authorPosition",
+     "use": "the author's job title"
+    },
+    {
+     "name": "caption",
+     "use": "description text"
+    },
+    {
+     "name": "captionWriter",
+     "use": "who wrote the caption"
+    },
+    {
+     "name": "headline",
+     "use": "short headline"
+    },
+    {
+     "name": "keywords",
+     "use": "array of keyword strings; assign a whole new array"
+    },
+    {
+     "name": "copyrighted",
+     "use": "CopyrightedType.COPYRIGHTEDWORK, PUBLICDOMAIN or UNMARKED"
+    },
+    {
+     "name": "copyrightNotice",
+     "use": "the copyright line"
+    },
+    {
+     "name": "ownerUrl",
+     "use": "URL of the copyright / licensing info"
+    },
+    {
+     "name": "credit",
+     "use": "credit line"
+    },
+    {
+     "name": "source",
+     "use": "original source / owner"
+    },
+    {
+     "name": "instructions",
+     "use": "processing instructions"
+    },
+    {
+     "name": "jobName",
+     "use": "job identifier"
+    },
+    {
+     "name": "city",
+     "use": "location: city (with provinceState, country)"
+    },
+    {
+     "name": "country",
+     "use": "location: country"
+    },
+    {
+     "name": "creationDate",
+     "use": "creation date, a string"
+    },
+    {
+     "name": "urgency",
+     "use": "Urgency.NONE, LOW, TWO, THREE, FOUR, NORMAL, SIX, SEVEN, HIGH"
+    },
+    {
+     "name": "exif",
+     "use": "read-only EXIF entries of camera files"
+    }
+   ],
+   "gotchas": [
+    "keywords and supplementalCategories are arrays: build a new array and assign it; pushing onto the array you read does not write back (unverified)",
+    "exif is read-only and only filled for files that carried EXIF (the harvest says JPEG / digital photos); its shape is an array of [tag, value] pairs (unverified)",
+    "copyrighted and urgency take enum values, not strings",
+    "nothing reaches disk until the document is saved; Export As / Save for Web can strip metadata depending on their own metadata setting (unverified)"
+   ],
+   "example": "var info = app.activeDocument.info;\ninfo.title = \"Monsoon Sale Poster\";\ninfo.author = \"Studio Name\";\ninfo.copyrighted = CopyrightedType.COPYRIGHTEDWORK;\ninfo.copyrightNotice = \"\\u00A9 2026 Studio Name\";\ninfo.keywords = [\"poster\", \"sale\", \"monsoon\"];",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "urgency key_member listed 'TWO ... SEVEN', implying a FIVE value; replaced with the harvested enum (NORMAL sits between FOUR and SIX)"
+   }
+  },
+  {
+   "name": "GalleryBannerOptions",
+   "id": "class:GalleryBannerOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GalleryBannerOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Banner text of the old Web Photo Gallery (site name, photographer, contact info, date, banner font and HTML font size 1-7), set through GalleryOptions.bannerOptions for app.makePhotoGallery(). obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy CS3-era gallery scripts"
+   ],
+   "avoid": [
+    "any new web gallery: export images with Export As and lay out the page in HTML instead"
+   ],
+   "equivalents": {},
+   "how": "new GalleryBannerOptions(), fill it, assign it to GalleryOptions.bannerOptions and pass that GalleryOptions to app.makePhotoGallery(inputFolder, outputFolder, options).",
+   "key_members": [
+    {
+     "name": "siteName",
+     "use": "site title (COM default: Adobe Web Photo Gallery)"
+    },
+    {
+     "name": "photographer",
+     "use": "photographer name in the banner"
+    },
+    {
+     "name": "contactInfo",
+     "use": "contact line"
+    },
+    {
+     "name": "date",
+     "use": "date text"
+    },
+    {
+     "name": "font",
+     "use": "GalleryFontType: ARIAL, COURIERNEW, HELVETICA, TIMESNEWROMAN"
+    },
+    {
+     "name": "fontSize",
+     "use": "HTML font size 1-7 (COM default 3), not points"
+    }
+   ],
+   "gotchas": [
+    "deprecated API: makePhotoGallery is marked DEPRECATED in the harvest (unverified whether it throws or silently does nothing in 2026)",
+    "fontSize is an HTML size step 1-7, not a point size"
+   ],
+   "example": "var b = new GalleryBannerOptions();\nb.siteName = \"Client Proofs\";\nb.photographer = \"Studio Name\";\nb.font = GalleryFontType.ARIAL;\nvar g = new GalleryOptions();\ng.bannerOptions = b; // legacy only",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GalleryCustomColorOptions",
+   "id": "class:GalleryCustomColorOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GalleryCustomColorOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Colour scheme of the old Web Photo Gallery HTML pages: page background, banner, text, link, active-link and visited-link colours, each an RGBColor, set through GalleryOptions.customColorOptions. obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy gallery scripts"
+   ],
+   "avoid": [
+    "styling a web page today: write the CSS yourself; Photoshop no longer builds galleries"
+   ],
+   "equivalents": {},
+   "how": "new GalleryCustomColorOptions(); assign RGBColor objects (for example a SolidColor's rgb) to its six properties, then set it as GalleryOptions.customColorOptions.",
+   "key_members": [
+    {
+     "name": "backgroundColor",
+     "use": "page background"
+    },
+    {
+     "name": "bannerColor",
+     "use": "banner strip colour"
+    },
+    {
+     "name": "textColor",
+     "use": "body text colour"
+    },
+    {
+     "name": "linkColor",
+     "use": "link colour"
+    },
+    {
+     "name": "activeLinkColor",
+     "use": "link colour while clicked"
+    },
+    {
+     "name": "visitedLinkColor",
+     "use": "visited link colour"
+    }
+   ],
+   "gotchas": [
+    "the properties take RGBColor objects (COM marks them put-by-reference), not hex strings; pass solidColor.rgb",
+    "deprecated API, see GalleryOptions"
+   ],
+   "example": "var c = new SolidColor();\nc.rgb.hexValue = \"1A1A1A\";\nvar cc = new GalleryCustomColorOptions();\ncc.backgroundColor = c.rgb;\nvar g = new GalleryOptions();\ng.customColorOptions = cc; // legacy only",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GalleryImagesOptions",
+   "id": "class:GalleryImagesOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GalleryImagesOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Settings for the large per-image pages of the old Web Photo Gallery: resize on/off, pixel dimension and which side to constrain, JPEG quality 0-12, border, numeric links, and which File Info text (file name, caption, credits, title, copyright) to print under each image. obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy gallery scripts"
+   ],
+   "avoid": [
+    "batch-resizing images for the web today: Image Processor / Export As or a Document.resizeImage script"
+   ],
+   "equivalents": {},
+   "how": "new GalleryImagesOptions(), then GalleryOptions.imagesOptions = it.",
+   "key_members": [
+    {
+     "name": "resizeImages",
+     "use": "resize the images (COM default true)"
+    },
+    {
+     "name": "dimension",
+     "use": "target size in pixels (COM default 350)"
+    },
+    {
+     "name": "resizeConstraint",
+     "use": "GalleryConstrainType: CONSTRAINWIDTH, CONSTRAINHEIGHT, CONSTRAINBOTH"
+    },
+    {
+     "name": "imageQuality",
+     "use": "JPEG quality 0-12 (COM default 5)"
+    },
+    {
+     "name": "border",
+     "use": "border pixels between images, 0-99"
+    },
+    {
+     "name": "numericLinks",
+     "use": "add numbered links between pages"
+    },
+    {
+     "name": "includeFilename",
+     "use": "print the file name"
+    },
+    {
+     "name": "caption",
+     "use": "print the File Info caption"
+    },
+    {
+     "name": "includeCredits",
+     "use": "print the credit line"
+    },
+    {
+     "name": "includeTitle",
+     "use": "print the title"
+    },
+    {
+     "name": "includeCopyright",
+     "use": "print the copyright notice"
+    },
+    {
+     "name": "font",
+     "use": "GalleryFontType of the label text"
+    },
+    {
+     "name": "fontSize",
+     "use": "HTML font size 1-7"
+    }
+   ],
+   "gotchas": [
+    "imageQuality uses the old 0-12 JPEG scale, not 0-100",
+    "deprecated API, see GalleryOptions"
+   ],
+   "example": "var im = new GalleryImagesOptions();\nim.dimension = 1200;\nim.resizeConstraint = GalleryConstrainType.CONSTRAINBOTH;\nim.imageQuality = 10;\nvar g = new GalleryOptions();\ng.imagesOptions = im; // legacy only",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GalleryOptions",
+   "id": "class:GalleryOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GalleryOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Top-level options for app.makePhotoGallery(): layout style (COM default 'Centered Frame 1 - Basic'), e-mail address, .htm vs .html, UTF-8, sub-folder scan, size attributes, metadata, and the five nested option objects (banner, images, thumbnails, colours, security). obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy Web Photo Gallery scripts"
+   ],
+   "avoid": [
+    "new web galleries or proof sites: export images with Export As and build the page outside Photoshop"
+   ],
+   "equivalents": {},
+   "how": "new GalleryOptions(); set its strings / booleans and nested option objects, then app.makePhotoGallery(inputFolder, outputFolder, options).",
+   "key_members": [
+    {
+     "name": "layoutStyle",
+     "use": "gallery template name"
+    },
+    {
+     "name": "emailAddress",
+     "use": "e-mail shown on the pages"
+    },
+    {
+     "name": "useShortExtension",
+     "use": ".htm (true) or .html"
+    },
+    {
+     "name": "useUTF8Encoding",
+     "use": "write UTF-8 pages"
+    },
+    {
+     "name": "includeSubFolders",
+     "use": "scan sub-folders of the input folder"
+    },
+    {
+     "name": "addSizeAttributes",
+     "use": "write width / height attributes on img tags"
+    },
+    {
+     "name": "preserveAllMetadata",
+     "use": "keep all metadata in the JPEGs"
+    },
+    {
+     "name": "bannerOptions",
+     "use": "a GalleryBannerOptions"
+    },
+    {
+     "name": "imagesOptions",
+     "use": "a GalleryImagesOptions"
+    },
+    {
+     "name": "thumbnailOptions",
+     "use": "a GalleryThumbnailOptions"
+    },
+    {
+     "name": "customColorOptions",
+     "use": "a GalleryCustomColorOptions"
+    },
+    {
+     "name": "securityOptions",
+     "use": "a GallerySecurityOptions"
+    }
+   ],
+   "gotchas": [
+    "the gallery templates (layoutStyle names) shipped with old Photoshop versions; none are expected in 2026 (unverified)",
+    "deprecated: makePhotoGallery is marked DEPRECATED in the harvest"
+   ],
+   "example": "var g = new GalleryOptions();\ng.layoutStyle = \"Centered Frame 1 - Basic\";\ng.includeSubFolders = false;\ng.imagesOptions = new GalleryImagesOptions();\ng.thumbnailOptions = new GalleryThumbnailOptions();\napp.makePhotoGallery(Folder(\"~/proofs\"), Folder(\"~/proofs_web\"), g); // DEPRECATED",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GallerySecurityOptions",
+   "id": "class:GallerySecurityOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GallerySecurityOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Watermark ('security') text the old Web Photo Gallery stamped over each image: which text (custom, file name, copyright, caption, credit, title), font, size, colour, opacity, position and rotation. obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy gallery scripts"
+   ],
+   "avoid": [
+    "watermarking exports today: add a text or logo layer, lower its opacity, and export; or record an action"
+   ],
+   "equivalents": {},
+   "how": "new GallerySecurityOptions(), then GalleryOptions.securityOptions = it.",
+   "key_members": [
+    {
+     "name": "content",
+     "use": "GallerySecurityType: NONE, CUSTOMTEXT, FILENAME, COPYRIGHT, CAPTION, CREDIT, TITLE"
+    },
+    {
+     "name": "text",
+     "use": "the custom watermark text (with CUSTOMTEXT)"
+    },
+    {
+     "name": "font",
+     "use": "GalleryFontType"
+    },
+    {
+     "name": "fontSize",
+     "use": "size, minimum 1 (COM default 36)"
+    },
+    {
+     "name": "textColor",
+     "use": "an RGBColor"
+    },
+    {
+     "name": "opacity",
+     "use": "percent (COM default 100)"
+    },
+    {
+     "name": "textPosition",
+     "use": "GallerySecurityTextPositionType: CENTERED, UPPERLEFT, LOWERLEFT, UPPERRIGHT, LOWERRIGHT"
+    },
+    {
+     "name": "textRotate",
+     "use": "GallerySecurityTextRotateType: ZERO, CLOCKWISE45, CLOCKWISE90, COUNTERCLOCKWISE45, COUNTERCLOCKWISE90"
+    }
+   ],
+   "gotchas": [
+    "content defaults to no watermark (COM: NoSecurity); text is used only with GallerySecurityType.CUSTOMTEXT",
+    "deprecated API, see GalleryOptions"
+   ],
+   "example": "var s = new GallerySecurityOptions();\ns.content = GallerySecurityType.CUSTOMTEXT;\ns.text = \"PROOF\";\ns.opacity = 40;\ns.textRotate = GallerySecurityTextRotateType.COUNTERCLOCKWISE45;\nvar g = new GalleryOptions(); g.securityOptions = s; // legacy only",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GalleryThumbnailOptions",
+   "id": "class:GalleryThumbnailOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/GalleryThumbnailOptions",
+   "status": "obsolete",
+   "confidence": "high",
+   "summary": "Thumbnail index page of the old Web Photo Gallery: thumbnail size preset or pixel dimension, grid columns and rows, border, and which labels (file name, caption, credits, title, copyright) to show. obsolete: the harvest marks this class 'Deprecated, the make photo gallery method has moved to Bridge', Application.makePhotoGallery is described as DEPRECATED, and the 27.4 menus have no Web Photo Gallery command; expect the call to fail or do nothing (unverified which).",
+   "use_for": [
+    "reading or maintaining legacy gallery scripts"
+   ],
+   "avoid": [
+    "contact sheets today: File > Automate > Contact Sheet II (a shipped script) or a Bridge / Lightroom export"
+   ],
+   "equivalents": {},
+   "how": "new GalleryThumbnailOptions(), then GalleryOptions.thumbnailOptions = it.",
+   "key_members": [
+    {
+     "name": "size",
+     "use": "GalleryThumbSizeType: SMALL, MEDIUM, LARGE, CUSTOM"
+    },
+    {
+     "name": "dimension",
+     "use": "thumbnail size in pixels (COM default 75)"
+    },
+    {
+     "name": "columnCount",
+     "use": "grid columns (COM default 5)"
+    },
+    {
+     "name": "rowCount",
+     "use": "grid rows (COM default 3)"
+    },
+    {
+     "name": "border",
+     "use": "border pixels around thumbnails, 0-99"
+    },
+    {
+     "name": "includeFilename",
+     "use": "label with the file name"
+    },
+    {
+     "name": "caption",
+     "use": "label with the caption"
+    },
+    {
+     "name": "includeCredits",
+     "use": "label with credits"
+    },
+    {
+     "name": "includeTitle",
+     "use": "label with the title"
+    },
+    {
+     "name": "includeCopyright",
+     "use": "label with the copyright"
+    },
+    {
+     "name": "font",
+     "use": "GalleryFontType of labels"
+    },
+    {
+     "name": "fontSize",
+     "use": "HTML font size 1-7"
+    }
+   ],
+   "gotchas": [
+    "dimension presumably applies only with size = GalleryThumbSizeType.CUSTOM (unverified)",
+    "deprecated API, see GalleryOptions"
+   ],
+   "example": "var t = new GalleryThumbnailOptions();\nt.size = GalleryThumbSizeType.CUSTOM;\nt.dimension = 160;\nt.columnCount = 4; t.rowCount = 3;\nvar g = new GalleryOptions();\ng.thumbnailOptions = t; // legacy only",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HistoryState",
+   "id": "class:HistoryState",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/HistoryState",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One entry of a document's History panel, a recorded step or a snapshot. A script reads its name, checks whether it is a snapshot, and jumps back to it by assigning it to Document.activeHistoryState; it can also be the History Brush source or the source of Selection.fill().",
+   "use_for": [
+    "reverting to a clean state after rendering each variant in a batch script",
+    "before / after comparisons by switching states",
+    "restoring part of an image: fill a selection from an earlier state",
+    "setting the History Brush source for a scripted touch-up"
+   ],
+   "avoid": [
+    "undoing a whole script in one step: wrap it in Document.suspendHistory",
+    "keeping versions after the file closes: history is lost on close; save copies or use layer comps"
+   ],
+   "equivalents": {},
+   "how": "app.activeDocument.historyStates[i] or historyStates.getByName(name); the current one is Document.activeHistoryState and the History Brush source is Document.activeHistoryBrushSource. Assigning a state to activeHistoryState is the same as clicking it in the History panel.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "label shown in the History panel (command name or snapshot name)"
+    },
+    {
+     "name": "snapshot",
+     "use": "true for a snapshot at the top of the panel"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"HistoryState\""
+    }
+   ],
+   "gotchas": [
+    "every member is read-only: states cannot be renamed or deleted through this class",
+    "state names are localized command names ('Open' only in an English UI): match by index or by a snapshot you named (unverified for every locale)",
+    "the list is capped by Preferences.numberOfHistoryStates; old states drop off and references to them become invalid (unverified)",
+    "after jumping back, running any command discards the later states unless Preferences.nonLinearHistory is on",
+    "there is no DOM method to create a snapshot; it takes an Action Manager 'make snapshot' call (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar clean = doc.activeHistoryState;   // remember\ndoc.activeLayer.applyGaussianBlur(8);  // try a variant\n// ... export the variant here ...\ndoc.activeHistoryState = clean;        // revert",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IndexedConversionOptions",
+   "id": "class:IndexedConversionOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/IndexedConversionOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for a scripted Image > Mode > Indexed Color: palette type, number of colours, forced colours, transparency, dither type and amount, exact-colour protection and matte. Passed to doc.changeMode(ChangeMode.INDEXEDCOLOR, options); the result is a single-layer image limited to a colour table of at most 256 colours, with optional dither noise.",
+   "use_for": [
+    "GIF or PNG-8 style limited-palette graphics and icons",
+    "retro, pixel-art or posterized 8-bit looks with visible dither",
+    "reducing colours before screen-print or embroidery previews",
+    "web-safe or system-palette conversions for legacy targets"
+   ],
+   "avoid": [
+    "a layered master you still need to edit: convert a duplicate, indexed mode keeps a single layer",
+    "photographic web output: Export As PNG-24 / JPEG keeps full colour"
+   ],
+   "equivalents": {
+    "CDR": "StructPaletteOptions"
+   },
+   "how": "var o = new IndexedConversionOptions(); set palette (PaletteType), colors, dither (DitherType) and the rest, then app.activeDocument.changeMode(ChangeMode.INDEXEDCOLOR, o). The harvested description says it converts an RGB image.",
+   "key_members": [
+    {
+     "name": "palette",
+     "use": "PaletteType: EXACT, MACOSPALETTE, WINDOWSPALETTE, WEBPALETTE, UNIFORM, LOCALPERCEPTUAL, LOCALSELECTIVE, LOCALADAPTIVE, MASTERPERCEPTUAL, MASTERSELECTIVE, MASTERADAPTIVE, PREVIOUSPALETTE"
+    },
+    {
+     "name": "colors",
+     "use": "number of colours in the table; settable only for some palette types"
+    },
+    {
+     "name": "forced",
+     "use": "ForcedColors to force in: NONE, BLACKWHITE, PRIMARIES, WEB"
+    },
+    {
+     "name": "transparency",
+     "use": "keep transparent areas transparent (GIF transparency)"
+    },
+    {
+     "name": "dither",
+     "use": "DitherType: NONE, DIFFUSION, PATTERN, NOISE"
+    },
+    {
+     "name": "ditherAmount",
+     "use": "1-100, only with DitherType.DIFFUSION"
+    },
+    {
+     "name": "preserveExactColors",
+     "use": "keep colours already in the table free of dither; diffusion only"
+    },
+    {
+     "name": "matte",
+     "use": "MatteType to fill anti-aliased edges against transparency: NONE, FOREGROUND, BACKGROUND, WHITE, BLACK, SEMIGRAY, NETSCAPE"
+    }
+   ],
+   "gotchas": [
+    "PaletteType.EXACT works only when the image already has 256 colours or fewer (unverified error text)",
+    "colors is ignored or rejected for fixed palettes such as EXACT, the system palettes and WEBPALETTE (the harvest says it is settable only for some palette types)",
+    "ditherAmount and preserveExactColors apply only when dither = DitherType.DIFFUSION",
+    "the source should be 8-bit RGB or Grayscale; Indexed Color is unavailable for 16/32-bit documents (unverified error when scripted)",
+    "indexed mode leaves one layer and blocks most filters and adjustments: convert last, on a copy"
+   ],
+   "example": "var doc = app.activeDocument;\nvar o = new IndexedConversionOptions();\no.palette = PaletteType.LOCALSELECTIVE;\no.colors = 32;\no.dither = DitherType.DIFFUSION;\no.ditherAmount = 60;\no.transparency = true;\ndoc.changeMode(ChangeMode.INDEXEDCOLOR, o);",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed equivalents.AI ExportOptionsGIF: it writes a GIF file at export time, while this class changes the document's mode in place (AI's own ExportOptionsGIF card maps to PS ExportOptionsSaveForWeb); CDR StructPaletteOptions kept"
+   }
+  },
+  {
+   "name": "Layer",
+   "id": "class:Layer",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/Layer",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The shared base of ArtLayer and LayerSet: what every entry in the Layers panel has (name, visibility, opacity, blend mode, lock, bounds, links, stacking order, translate / rotate / resize, duplicate, delete). doc.layers and doc.activeLayer return objects of this family; typename says whether it is an ArtLayer or a LayerSet group.",
+   "use_for": [
+    "renaming, hiding and restacking layers in template automation",
+    "setting opacity and blend mode of a texture, overlay or shadow layer",
+    "reading bounds to centre or align a logo or product on the canvas",
+    "scaling and rotating a placed asset; duplicating a layer for variants"
+   ],
+   "avoid": [
+    "pixel / text / adjustment work (filters, kind, textItem): use the ArtLayer object",
+    "walking children of a group: use LayerSet.layers"
+   ],
+   "equivalents": {
+    "AI": "Layer",
+    "CDR": "Layer"
+   },
+   "how": "app.activeDocument.layers[i], doc.layers.getByName(name), doc.activeLayer, or a LayerSet's layers. Each object is really an ArtLayer or a LayerSet; these members work on both. The harvest found no COM interface named Layer: COM / VBScript callers get ArtLayer or LayerSet objects.",
+   "key_members": [
+    {
+     "name": "typename",
+     "use": "\"ArtLayer\" or \"LayerSet\": branch on it before kind-specific calls"
+    },
+    {
+     "name": "name",
+     "use": "name in the Layers panel"
+    },
+    {
+     "name": "visible",
+     "use": "eye toggle"
+    },
+    {
+     "name": "opacity",
+     "use": "master opacity 0-100"
+    },
+    {
+     "name": "blendMode",
+     "use": "BlendMode value: NORMAL, MULTIPLY, SCREEN, OVERLAY, PASSTHROUGH (groups) ..."
+    },
+    {
+     "name": "allLocked",
+     "use": "lock / unlock everything"
+    },
+    {
+     "name": "bounds",
+     "use": "[left, top, right, bottom] UnitValues, including layer effects"
+    },
+    {
+     "name": "boundsNoEffects",
+     "use": "the same rectangle without layer-style effects"
+    },
+    {
+     "name": "id",
+     "use": "unique layer ID; key for Action Manager references"
+    },
+    {
+     "name": "itemIndex",
+     "use": "Photoshop's own index (groups not counted), as Action Manager uses"
+    },
+    {
+     "name": "translate",
+     "use": "move by deltaX, deltaY"
+    },
+    {
+     "name": "rotate",
+     "use": "rotate by degrees around an AnchorPosition (default MIDDLECENTER)"
+    },
+    {
+     "name": "resize",
+     "use": "scale by percent horizontal / vertical around an anchor"
+    },
+    {
+     "name": "move",
+     "use": "restack relative to another layer: ElementPlacement.PLACEBEFORE, PLACEAFTER, PLACEATEND"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the layer, optionally placed relative to another object"
+    },
+    {
+     "name": "remove",
+     "use": "delete the layer"
+    },
+    {
+     "name": "link",
+     "use": "link with another layer"
+    },
+    {
+     "name": "unlink",
+     "use": "break the link"
+    },
+    {
+     "name": "linkedLayers",
+     "use": "layers linked to this one"
+    },
+    {
+     "name": "xmpMetadata",
+     "use": "per-layer XMP packet (XMPMetadata)"
+    }
+   ],
+   "gotchas": [
+    "the harvested description of bounds is wrong (it talks about layer sets); it returns [l, t, r, b] UnitValues in the current ruler units: set app.preferences.rulerUnits = Units.PIXELS or use .as(\"px\")",
+    "a Background layer cannot be moved, rotated, made transparent or restacked; make it a normal layer first with ArtLayer.isBackgroundLayer = false",
+    "resize / rotate on a plain pixel layer resamples each time, so repeated scaling softens it; convert to a smart object first for repeated transforms",
+    "the omv marks duplicate's arguments as required, while the COM ArtLayer interface marks Duplicate's RelativeObject / InsertionLocation optional (there is no COM Layer interface); layer.duplicate() with no arguments is common (unverified on 27.4)",
+    "moveToEnd has no harvested description ('...'); it presumably moves the layer to the bottom of the given LayerSet (unverified)"
+   ],
+   "example": "app.preferences.rulerUnits = Units.PIXELS;\nvar doc = app.activeDocument, lyr = doc.activeLayer;\nvar b = lyr.boundsNoEffects;                  // [l, t, r, b]\nvar w = b[2].as(\"px\") - b[0].as(\"px\");\nlyr.translate((doc.width.as(\"px\") - w) / 2 - b[0].as(\"px\"), 0); // centre horizontally\nlyr.opacity = 80;\nlyr.blendMode = BlendMode.MULTIPLY;",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "duplicate gotcha credited 'the COM type library' although the harvest has no COM Layer interface; reworded to the COM ArtLayer.Duplicate signature it actually comes from"
+   }
+  },
+  {
+   "name": "LayerComp",
+   "id": "class:LayerComp",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/LayerComp",
+   "status": "current",
+   "confidence": "high",
+   "summary": "A saved state in the Layer Comps panel that records, per layer, visibility, position and appearance (layer style), so one PSD can hold several layouts or variants. A script applies a comp to switch the document to it, recaptures it after edits, or removes it.",
+   "use_for": [
+    "exporting several layout variants (sizes, colourways, languages) from one PSD",
+    "presenting design options to a client from a single file",
+    "app or web mockups with alternate screens"
+   ],
+   "avoid": [
+    "variants that differ in text or pixel content: comps do not record those; keep each version on its own layer",
+    "one file per comp without code: File > Export > Layer Comps to Files (a shipped script)"
+   ],
+   "equivalents": {},
+   "how": "app.activeDocument.layerComps[i] or layerComps.getByName(name); create one with doc.layerComps.add(name, comment, appearance, position, visibility). apply() puts the document's layers into the comp's recorded state.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "comp name"
+    },
+    {
+     "name": "comment",
+     "use": "description shown in the panel"
+    },
+    {
+     "name": "visibility",
+     "use": "this comp records layer visibility"
+    },
+    {
+     "name": "position",
+     "use": "this comp records layer position"
+    },
+    {
+     "name": "appearance",
+     "use": "this comp records layer styles"
+    },
+    {
+     "name": "selected",
+     "use": "read-only: the comp is selected in the panel"
+    },
+    {
+     "name": "apply",
+     "use": "switch the document to this comp"
+    },
+    {
+     "name": "recapture",
+     "use": "overwrite the comp with the current layer state"
+    },
+    {
+     "name": "resetFromComp",
+     "use": "described as 'resets the layer comp state to the document state'"
+    },
+    {
+     "name": "remove",
+     "use": "delete the comp"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"LayerComp\""
+    }
+   ],
+   "gotchas": [
+    "visibility, position and appearance are 'what this comp records' flags (COM: 'use layer visibility'); the omv text for visibility ('the layer comp is visible') is misleading",
+    "recapture() overwrites the comp with whatever the layers show now: apply the comp first if you only meant to refresh it",
+    "editing a layer's pixels or text changes it in every comp",
+    "the omv's add / remove / removeAll are missing from the COM type library, which has Delete and ChildLayerCompState instead (harvest diff); create comps through the LayerComps collection",
+    "what resetFromComp does in UI terms is unclear (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nfor (var i = 0; i < doc.layerComps.length; i++) {\n  var comp = doc.layerComps[i];\n  comp.apply();\n  var f = new File(\"~/Desktop/\" + comp.name + \".png\");\n  doc.saveAs(f, new PNGSaveOptions(), true);\n}",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LayerSet",
+   "id": "class:LayerSet",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/LayerSet",
+   "status": "current",
+   "confidence": "high",
+   "summary": "A layer group (folder in the Layers panel) holding ArtLayers and nested LayerSets. It inherits everything from Layer (name, opacity, blend mode, move, translate ...) and adds its children (layers, artLayers, layerSets), the channels it affects, and merge() to flatten the group into one ArtLayer.",
+   "use_for": [
+    "organising generated layers into named groups (Logo, Copy, Background) in a template",
+    "moving, hiding or fading a whole lockup at once",
+    "recursively walking a PSD to find layers by name or kind",
+    "merging a finished group before export"
+   ],
+   "avoid": [
+    "looking for pixel or text members on a group: they live on its ArtLayer children",
+    "flattening the whole document: use Document.flatten / mergeVisibleLayers"
+   ],
+   "equivalents": {
+    "AI": "Layer"
+   },
+   "how": "doc.layerSets[i], doc.layerSets.getByName(name), or any entry of doc.layers whose typename is \"LayerSet\". Create a group with doc.layerSets.add(), or nest one with group.layerSets.add().",
+   "key_members": [
+    {
+     "name": "layers",
+     "use": "all children (ArtLayers and LayerSets) in panel order, index 0 = top"
+    },
+    {
+     "name": "artLayers",
+     "use": "only the ArtLayer children"
+    },
+    {
+     "name": "layerSets",
+     "use": "only the nested groups; .add() creates a nested group"
+    },
+    {
+     "name": "merge",
+     "use": "merge the group, returns the new ArtLayer"
+    },
+    {
+     "name": "enabledChannels",
+     "use": "component channels the group affects (Advanced Blending channels)"
+    },
+    {
+     "name": "add",
+     "use": "listed by the omv on the class itself; create groups via doc.layerSets.add() instead"
+    },
+    {
+     "name": "parent",
+     "use": "the Document or the enclosing LayerSet"
+    },
+    {
+     "name": "typename",
+     "use": "\"LayerSet\""
+    }
+   ],
+   "gotchas": [
+    "doc.artLayers lists only top-level art layers: recurse through each LayerSet's layers to reach every layer",
+    "add is omv-only (missing from the COM type library per the harvest diff); use the LayerSets collection's add()",
+    "a new group's blend mode is BlendMode.PASSTHROUGH; setting NORMAL isolates its children's blend modes",
+    "merge() returns the new ArtLayer and the group is gone; hidden children are discarded (unverified)",
+    "enabledChannels must be a list of component channels (harvest), not alpha channels"
+   ],
+   "example": "function walk(set, pad) {\n  for (var i = 0; i < set.layers.length; i++) {\n    var l = set.layers[i];\n    $.writeln(pad + l.name + \" [\" + l.typename + \"]\");\n    if (l.typename == \"LayerSet\") walk(l, pad + \"  \");\n  }\n}\nwalk(app.activeDocument, \"\");",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "MeasurementLog",
+   "id": "class:MeasurementLog",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/MeasurementLog",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The Measurement Log panel (Window > Measurement Log): the table of rows recorded by Image > Analysis > Record Measurements. A script exports rows to a file or deletes them; rows are added with Document.recordMeasurements().",
+   "use_for": [
+    "batch-measuring areas, perimeters or counts across product, scan or scientific images",
+    "exporting selection dimensions for a QA or print-spec report"
+   ],
+   "avoid": [
+    "simple width / height of a layer or selection: read Layer.bounds or Selection.bounds instead"
+   ],
+   "equivalents": {},
+   "how": "app.measurementLog (an Application member, not per document). exportMeasurements(file, range, dataPoints) writes rows; deleteMeasurements(range) removes them. range is MeasurementRange.ALLMEASUREMENTS or ACTIVEMEASUREMENTS.",
+   "key_members": [
+    {
+     "name": "exportMeasurements",
+     "use": "write rows to a file; optional range and dataPoints filter the rows / columns"
+    },
+    {
+     "name": "deleteMeasurements",
+     "use": "delete rows (default: the selected rows)"
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "\"MeasurementLog\""
+    }
+   ],
+   "gotchas": [
+    "exportMeasurements without a file opens a Save dialog (per the harvest), which blocks an unattended script: always pass a File",
+    "the default range is the selected rows, which may be none in a script: pass MeasurementRange.ALLMEASUREMENTS",
+    "the log belongs to the Application, so rows recorded from several documents mix (unverified)",
+    "values follow the document's MeasurementScale; set it before recording",
+    "the exported file is comma-separated text (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.selection.select([[0, 0], [200, 0], [200, 100], [0, 100]]);\ndoc.recordMeasurements();\nvar log = app.measurementLog;\nlog.exportMeasurements(new File(\"~/Desktop/measure.csv\"), MeasurementRange.ALLMEASUREMENTS);\nlog.deleteMeasurements(MeasurementRange.ALLMEASUREMENTS);",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "MeasurementScale",
+   "id": "class:MeasurementScale",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/MeasurementScale",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The document's measurement scale (Image > Analysis > Set Measurement Scale): how many pixels (pixelLength) equal how many logical units (logicalLength, labelled by logicalUnits), so Record Measurements and the Ruler tool report real-world sizes.",
+   "use_for": [
+    "measuring real-world sizes on scanned plans, maps or product photos",
+    "quantifying areas on scanned proofs or microscope images"
+   ],
+   "avoid": [
+    "changing print size or resolution: that is Document.resizeImage; the scale only relabels measurements"
+   ],
+   "equivalents": {},
+   "how": "app.activeDocument.measurementScale; set pixelLength, logicalLength and logicalUnits.",
+   "key_members": [
+    {
+     "name": "pixelLength",
+     "use": "pixel length of the reference (integer)"
+    },
+    {
+     "name": "logicalLength",
+     "use": "real-world length those pixels equal"
+    },
+    {
+     "name": "logicalUnits",
+     "use": "unit label string, e.g. \"cm\", \"mm\", \"ft\""
+    },
+    {
+     "name": "name",
+     "use": "scale name"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"MeasurementScale\""
+    }
+   ],
+   "gotchas": [
+    "it never resamples or changes resolution; only measurement readouts change",
+    "logicalUnits is a free text label (harvested type string), not a Units enum value",
+    "whether setting name saves a reusable scale preset is unverified"
+   ],
+   "example": "var s = app.activeDocument.measurementScale;\ns.pixelLength = 236;   // a 2 cm reference bar is 236 px long\ns.logicalLength = 2;\ns.logicalUnits = \"cm\";\napp.activeDocument.recordMeasurements();",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary stated an invented scale (236 px = 2 cm) as if it were data; replaced with the three members that define it"
+   }
+  },
+  {
+   "name": "PicturePackageOptions",
+   "id": "class:PicturePackageOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/PicturePackageOptions",
+   "status": "obsolete",
+   "confidence": "medium",
+   "summary": "Options for app.makePicturePackage(): the package layout (several copies of photos on one sheet, like passport or wallet prints), resolution, colour mode, flatten, and label text (content, custom text, font, size, colour, opacity, position, rotation). The DOM still lists it, but the 27.4 menu harvest has no Picture Package command (the command appears to have been dropped from Photoshop; unverified), so the call is not expected to work (unverified).",
+   "use_for": [
+    "reading legacy scripts that built passport / ID photo sheets"
+   ],
+   "avoid": [
+    "photo sheets today: duplicate and translate layers on a print-size canvas with a script, or lay them out in InDesign"
+   ],
+   "equivalents": {},
+   "how": "new PicturePackageOptions(), then app.makePicturePackage(inputFiles, options) with an array of File objects.",
+   "key_members": [
+    {
+     "name": "layout",
+     "use": "layout name string"
+    },
+    {
+     "name": "resolution",
+     "use": "output ppi"
+    },
+    {
+     "name": "mode",
+     "use": "NewDocumentMode: GRAYSCALE, RGB, CMYK, LAB, BITMAP"
+    },
+    {
+     "name": "flatten",
+     "use": "flatten the result"
+    },
+    {
+     "name": "content",
+     "use": "PicturePackageTextType label: NONE, USER, FILENAME, COPYRIGHT, CAPTION, CREDIT, ORIGIN"
+    },
+    {
+     "name": "text",
+     "use": "custom label text"
+    },
+    {
+     "name": "font",
+     "use": "GalleryFontType"
+    },
+    {
+     "name": "fontSize",
+     "use": "label size"
+    },
+    {
+     "name": "opacity",
+     "use": "label opacity 0-100"
+    },
+    {
+     "name": "textColor",
+     "use": "an RGBColor"
+    },
+    {
+     "name": "textPosition",
+     "use": "GallerySecurityTextPositionType"
+    },
+    {
+     "name": "textRotate",
+     "use": "GallerySecurityTextRotateType"
+    }
+   ],
+   "gotchas": [
+    "no Picture Package command exists in the 27.4 menus (harvest), so makePicturePackage is expected to fail (unverified)",
+    "layout names referred to the old Layouts preset folder, which current installs do not ship (unverified)",
+    "the text members reuse the Web Photo Gallery 'security text' enums"
+   ],
+   "example": "var o = new PicturePackageOptions();\no.resolution = 300;\no.mode = NewDocumentMode.RGB;\no.flatten = true;\no.content = PicturePackageTextType.NONE;\napp.makePicturePackage([new File(\"~/Desktop/id.jpg\")], o); // legacy, expected to fail",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary asserted the feature 'left Photoshop after CS3', a version fact not in the batch; reworded as unverified"
+   }
+  },
+  {
+   "name": "Preferences",
+   "id": "class:Preferences",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/Preferences",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The scriptable part of Edit > Preferences: app-wide settings such as ruler and type units (which also set the unit every DOM number is read and written in), resampling method, history depth and history log, file-saving behaviour, grid / guide style, cache levels and RAM use.",
+   "use_for": [
+    "forcing pixel units at the start of every layout script, then restoring the user's units",
+    "choosing the default resampling method for scripted resizes",
+    "raising history depth or turning on the history log for audit trails",
+    "standardising grid and guide settings on a studio machine"
+   ],
+   "avoid": [
+    "per-document settings (resolution, colour profile, mode): those live on the Document",
+    "leaving preferences changed after a script: always restore them"
+   ],
+   "equivalents": {
+    "AI": "Preferences"
+   },
+   "how": "app.preferences (Application.preferences). Read a value, store it, set the new one, and restore it in a finally block.",
+   "key_members": [
+    {
+     "name": "rulerUnits",
+     "use": "Units the DOM uses for every length: PIXELS, INCHES, CM, MM, POINTS, PICAS, PERCENT"
+    },
+    {
+     "name": "typeUnits",
+     "use": "TypeUnits for type sizes: PIXELS, MM, POINTS"
+    },
+    {
+     "name": "pointSize",
+     "use": "PointType: PostScript (72 pt/in) or traditional points"
+    },
+    {
+     "name": "interpolation",
+     "use": "ResampleMethod used when resampling"
+    },
+    {
+     "name": "numberOfHistoryStates",
+     "use": "history depth (harvest: 1-100)"
+    },
+    {
+     "name": "nonLinearHistory",
+     "use": "allow non-linear history"
+    },
+    {
+     "name": "createFirstSnapshot",
+     "use": "snapshot new documents automatically"
+    },
+    {
+     "name": "useHistoryLog",
+     "use": "turn the history log on / off"
+    },
+    {
+     "name": "saveLogItems",
+     "use": "SaveLogItemsType: where the log goes"
+    },
+    {
+     "name": "saveLogItemsFile",
+     "use": "log file when saving to a text file"
+    },
+    {
+     "name": "editLogItems",
+     "use": "EditLogItemsType: how detailed the log is"
+    },
+    {
+     "name": "maximizeCompatibility",
+     "use": "QueryStateType for the PSD Maximize Compatibility question"
+    },
+    {
+     "name": "askBeforeSavingLayeredTIFF",
+     "use": "ask before saving layered TIFF"
+    },
+    {
+     "name": "useLowerCaseExtension",
+     "use": "lower-case file extensions"
+    },
+    {
+     "name": "recentFileListLength",
+     "use": "recent files list length 0-30"
+    },
+    {
+     "name": "gridStyle",
+     "use": "GridLineStyle of the grid"
+    },
+    {
+     "name": "gridSubDivisions",
+     "use": "grid subdivisions"
+    },
+    {
+     "name": "guideStyle",
+     "use": "GuideLineStyle of guides"
+    },
+    {
+     "name": "maxRAMuse",
+     "use": "max percent of RAM for Photoshop"
+    },
+    {
+     "name": "imageCacheLevels",
+     "use": "cache levels 1-8"
+    }
+   ],
+   "gotchas": [
+    "preferences are global and persist after the script ends: save rulerUnits / typeUnits and restore them in a finally block",
+    "rulerUnits changes the unit of every number the DOM takes or returns (bounds, translate, selection points)",
+    "textFontSize, iconPreview, fullSizePreview, macOSThumbnail, windowsThumbnail and appendExtension exist only in the ExtendScript DOM, not the COM type library (harvest diff)",
+    "maxRAMuse, imageCacheLevels and plug-in folder changes take effect only after a restart (unverified)",
+    "several members date from old versions (pixelDoubling, useVideoAlpha, colorChannelsInColor) and may have no visible effect in 2026 (unverified)"
+   ],
+   "example": "var oldUnits = app.preferences.rulerUnits;\napp.preferences.rulerUnits = Units.PIXELS;\ntry {\n  var w = app.activeDocument.width.value;  // now in px\n  // ... pixel-based layout work ...\n} finally {\n  app.preferences.rulerUnits = oldUnits;\n}",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PresentationOptions",
+   "id": "class:PresentationOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/PresentationOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Options for app.makePDFPresentation() (File > Automate > PDF Presentation, present in the 27.4 menus): a full-screen presentation or a plain multi-page PDF, auto-advance and interval (1-60 s), looping, transition effect, magnification, file-name captions, and the PDFSaveOptions used to write the file.",
+   "use_for": [
+    "one-PDF portfolio or client proof from a folder of images",
+    "self-running full-screen slideshow PDF for a kiosk or pitch",
+    "a multi-page PDF of design variations for review"
+   ],
+   "avoid": [
+    "documents with real layout (captions, grids, body text): build them in InDesign or on Illustrator artboards",
+    "variants of one layered PSD: File > Export > Layer Comps to PDF"
+   ],
+   "equivalents": {},
+   "how": "var o = new PresentationOptions(); set it, then app.makePDFPresentation(inputFiles, outputFile, o) where inputFiles is an array of File objects.",
+   "key_members": [
+    {
+     "name": "presentation",
+     "use": "true = full-screen presentation, false = multi-page document"
+    },
+    {
+     "name": "autoAdvance",
+     "use": "advance slides automatically"
+    },
+    {
+     "name": "interval",
+     "use": "seconds per slide 1-60, only with autoAdvance"
+    },
+    {
+     "name": "loop",
+     "use": "restart after the last page"
+    },
+    {
+     "name": "transition",
+     "use": "TransitionType: DISSOLVE, WIPELEFT, BOXIN, RANDOM, NONE ..."
+    },
+    {
+     "name": "magnification",
+     "use": "MagnificationType: ACTUALSIZE or FITPAGE"
+    },
+    {
+     "name": "includeFilename",
+     "use": "print each file name"
+    },
+    {
+     "name": "PDFFileOptions",
+     "use": "a PDFSaveOptions controlling compression and compatibility"
+    }
+   ],
+   "gotchas": [
+    "PDFFileOptions is upper-case 'PDF' (case-sensitive name)",
+    "interval is ignored unless autoAdvance is true",
+    "transitions only play in viewers that honour full-screen PDF transitions (unverified)",
+    "inputFiles must be File objects; a Folder is not accepted (unverified)"
+   ],
+   "example": "var files = Folder(\"~/Desktop/portfolio\").getFiles(/\\.(jpg|png|psd)$/i);\nvar o = new PresentationOptions();\no.presentation = false;            // multi-page PDF\no.includeFilename = true;\no.PDFFileOptions = new PDFSaveOptions();\napp.makePDFPresentation(files, new File(\"~/Desktop/portfolio.pdf\"), o);",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Selection",
+   "id": "class:Selection",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/Selection",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The active pixel selection (marching ants) of a document. A script makes it (polygon select, selectAll, load from a channel), changes it (feather, expand, contract, smooth, grow, similar, border, invert), uses it (fill, stroke, copy, cut, clear, store to a channel, make a work path), and can move or scale either the selected pixels or only the outline.",
+   "use_for": [
+    "colour washes, vignettes and frames on a defined region (fill / stroke / selectBorder)",
+    "isolating a product area to copy into a template",
+    "saving masks as alpha channels for later reuse",
+    "turning a selection into a path for a vector mask or clipping path"
+   ],
+   "avoid": [
+    "subject / sky masks: those are Select Subject / Select Sky menu commands or Action Manager, not this class",
+    "destructive cuts on a master: convert the selection to a layer mask instead"
+   ],
+   "equivalents": {},
+   "how": "app.activeDocument.selection (Document.selection). select(points, type, feather, antiAlias) takes an array of [x, y] corners; SelectionType.REPLACE, EXTEND, DIMINISH or INTERSECT combines it with the existing selection.",
+   "key_members": [
+    {
+     "name": "select",
+     "use": "select a polygon from [[x, y], ...] corners"
+    },
+    {
+     "name": "selectAll",
+     "use": "select the whole layer"
+    },
+    {
+     "name": "deselect",
+     "use": "drop the selection"
+    },
+    {
+     "name": "invert",
+     "use": "inverse selection"
+    },
+    {
+     "name": "bounds",
+     "use": "bounding box [l, t, r, b]; throws when nothing is selected"
+    },
+    {
+     "name": "solid",
+     "use": "true when the selection is a plain rectangle"
+    },
+    {
+     "name": "feather",
+     "use": "soften the edge by a radius"
+    },
+    {
+     "name": "expand",
+     "use": "grow the edge outward"
+    },
+    {
+     "name": "contract",
+     "use": "shrink the edge inward"
+    },
+    {
+     "name": "smooth",
+     "use": "clean stray pixels, radius 0-100"
+    },
+    {
+     "name": "selectBorder",
+     "use": "keep only a band of the given width along the edge"
+    },
+    {
+     "name": "grow",
+     "use": "add adjacent pixels within tolerance 0-255"
+    },
+    {
+     "name": "fill",
+     "use": "fill with a SolidColor or HistoryState, blend mode and opacity"
+    },
+    {
+     "name": "stroke",
+     "use": "stroke with a colour, width and StrokeLocation INSIDE / CENTER / OUTSIDE"
+    },
+    {
+     "name": "copy",
+     "use": "copy; copy(true) copies merged"
+    },
+    {
+     "name": "clear",
+     "use": "delete the selected pixels"
+    },
+    {
+     "name": "store",
+     "use": "save into a Channel"
+    },
+    {
+     "name": "load",
+     "use": "load from a Channel"
+    },
+    {
+     "name": "makeWorkPath",
+     "use": "convert to a work path with a tolerance"
+    },
+    {
+     "name": "translateBoundary",
+     "use": "move only the outline, not the pixels"
+    }
+   ],
+   "gotchas": [
+    "reading bounds with no active selection throws: wrap it in try/catch to test whether anything is selected",
+    "select() corners follow the ruler units (unverified); set app.preferences.rulerUnits = Units.PIXELS first",
+    "translate / rotate / resize move or scale the selected pixels; translateBoundary / rotateBoundary / resizeBoundary change only the outline",
+    "fill, stroke, cut and clear act on the active layer: they fail on a locked layer or a LayerSet (unverified error text)",
+    "store() needs an existing Channel: create it with doc.channels.add() first"
+   ],
+   "example": "app.preferences.rulerUnits = Units.PIXELS;\nvar sel = app.activeDocument.selection;\nsel.select([[100, 100], [500, 100], [500, 400], [100, 400]]);\nsel.feather(12);\nvar c = new SolidColor(); c.rgb.hexValue = \"FF6A00\";\nsel.fill(c, ColorBlendMode.MULTIPLY, 70);\nsel.deselect();",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFont",
+   "id": "class:TextFont",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/TextFont",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One installed font as Photoshop sees it: display name, PostScript name, family and style, all read-only. Read from app.fonts; its postScriptName is the string TextItem.font expects.",
+   "use_for": [
+    "setting a brand font on text layers by family and style",
+    "checking that a template's fonts are installed before a batch run",
+    "building a font list or specimen sheet"
+   ],
+   "avoid": [
+    "changing the font of part of a text layer: TextItem.font applies to the whole layer; per-range styling needs Action Manager"
+   ],
+   "equivalents": {
+    "AI": "TextFont"
+   },
+   "how": "app.fonts[i] or app.fonts.getByName(name) (TextFonts collection); loop app.fonts to match family + style, then assign postScriptName to a layer's textItem.font.",
+   "key_members": [
+    {
+     "name": "postScriptName",
+     "use": "the name TextItem.font takes, e.g. \"Montserrat-Bold\""
+    },
+    {
+     "name": "name",
+     "use": "display name"
+    },
+    {
+     "name": "family",
+     "use": "family name, e.g. \"Montserrat\""
+    },
+    {
+     "name": "style",
+     "use": "style name, e.g. \"Bold Italic\""
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "\"TextFont\""
+    }
+   ],
+   "gotchas": [
+    "TextItem.font needs the PostScript name, not the display name; a wrong name falls back to a substitute font or throws (unverified which)",
+    "app.fonts holds every installed font (often thousands): loop once and cache what you need",
+    "whether getByName matches the display name or the PostScript name is unverified: compare postScriptName in a loop when it matters",
+    "Adobe Fonts that are not activated are not listed (unverified)"
+   ],
+   "example": "var want = null;\nfor (var i = 0; i < app.fonts.length; i++) {\n  var f = app.fonts[i];\n  if (f.family == \"Montserrat\" && f.style == \"Bold\") { want = f; break; }\n}\nif (want) app.activeDocument.activeLayer.textItem.font = want.postScriptName;",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed equivalents.CDR FontList: it is the list of installed font names, the counterpart of the TextFonts collection (ps_api_02 already maps it there); CorelDRAW has no single-font object; AI TextFont kept"
+   }
+  },
+  {
+   "name": "TextItem",
+   "id": "class:TextItem",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/TextItem",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The text of a type layer (artLayer.textItem): its contents plus every character and paragraph setting that applies to the whole layer (font, size, colour, tracking, leading, scaling, case, faux styles, anti-aliasing, alignment, indents, hyphenation, justification spacing, point vs paragraph box, warp), and convertToShape() / createPath() to turn it into vectors.",
+   "use_for": [
+    "poster and banner headlines filled from data (localisation, prices, dates)",
+    "personalised certificates, name cards and badges",
+    "arc or flag warped titles for badges and labels",
+    "converting a headline to a shape layer for logo work"
+   ],
+   "avoid": [
+    "mixed styling inside one layer (one bold word): every property here hits the whole layer; use Action Manager text style ranges or separate layers",
+    "long multi-style body copy: InDesign or Illustrator handle per-character styles and threading"
+   ],
+   "equivalents": {
+    "AI": "TextFrameItem",
+    "CDR": "Text"
+   },
+   "how": "Make a text layer with var l = doc.artLayers.add(); l.kind = LayerKind.TEXT; then l.textItem. On an existing layer, textItem is valid only when its kind is LayerKind.TEXT.",
+   "key_members": [
+    {
+     "name": "contents",
+     "use": "the text; use \\r for a new paragraph"
+    },
+    {
+     "name": "font",
+     "use": "PostScript font name (see TextFont.postScriptName)"
+    },
+    {
+     "name": "size",
+     "use": "font size, a UnitValue / number in type units"
+    },
+    {
+     "name": "color",
+     "use": "a SolidColor"
+    },
+    {
+     "name": "position",
+     "use": "text origin [x, y]"
+    },
+    {
+     "name": "kind",
+     "use": "TextType.POINTTEXT or PARAGRAPHTEXT"
+    },
+    {
+     "name": "width",
+     "use": "paragraph box width (paragraph text only)"
+    },
+    {
+     "name": "height",
+     "use": "paragraph box height (paragraph text only)"
+    },
+    {
+     "name": "justification",
+     "use": "Justification: LEFT, CENTER, RIGHT, LEFTJUSTIFIED ... FULLYJUSTIFIED"
+    },
+    {
+     "name": "leading",
+     "use": "line spacing (with useAutoLeading false)"
+    },
+    {
+     "name": "useAutoLeading",
+     "use": "use the font's auto leading"
+    },
+    {
+     "name": "tracking",
+     "use": "letter spacing, -1000 to 10000"
+    },
+    {
+     "name": "capitalization",
+     "use": "Case: normal / all caps / small caps"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "character width percent 0-1000"
+    },
+    {
+     "name": "antiAliasMethod",
+     "use": "AntiAlias: NONE, SHARP, CRISP, STRONG, SMOOTH"
+    },
+    {
+     "name": "fauxBold",
+     "use": "synthetic bold"
+    },
+    {
+     "name": "warpStyle",
+     "use": "WarpStyle: ARC, ARCH, BULGE, FLAG, WAVE, FISH, RISE, SQUEEZE, TWIST ..."
+    },
+    {
+     "name": "warpBend",
+     "use": "warp bend -100 to 100"
+    },
+    {
+     "name": "convertToShape",
+     "use": "turn the text layer into a shape layer"
+    },
+    {
+     "name": "createPath",
+     "use": "make a work path from the letter outlines"
+    }
+   ],
+   "gotchas": [
+    "every property applies to the whole layer; there is no per-character API in the DOM",
+    "font takes the PostScript name; a display name like \"Montserrat Bold\" does not match",
+    "width / height work only for paragraph text: set kind = TextType.PARAGRAPHTEXT first",
+    "position is the text origin (first baseline for point text), not the top-left of the bounds; align with the layer's bounds instead",
+    "after a Free Transform scale, size reports the untransformed size (unverified on 27.4)",
+    "the omv spells the hanging punctuation member hangingPuntuation; COM calls it HangingPunctuation (harvest diff)",
+    "convertToShape is one-way: the text is no longer editable"
+   ],
+   "example": "app.preferences.rulerUnits = Units.PIXELS; // position is read in ruler units\nvar doc = app.activeDocument;\nvar lyr = doc.artLayers.add();\nlyr.kind = LayerKind.TEXT;\nvar t = lyr.textItem;\nt.contents = \"MONSOON SALE\\r50% OFF\";\nt.font = \"Montserrat-Bold\"; t.size = 72; t.justification = Justification.CENTER;\nt.position = [doc.width.as(\"px\") / 2, 300];",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example set position from doc.width.as('px') but position is read in the current ruler units; added app.preferences.rulerUnits = Units.PIXELS as the first line"
+   }
+  },
+  {
+   "name": "XMPMetadata",
+   "id": "class:XMPMetadata",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/XMPMetadata",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The raw XMP packet (an XML string) attached to a document (doc.xmpMetadata) or to one layer (layer.xmpMetadata). Reading or replacing rawData reaches any metadata namespace (Dublin Core, rights, Camera Raw settings, custom fields), beyond what DocumentInfo exposes.",
+   "use_for": [
+    "auditing or copying rights and licensing metadata across a batch",
+    "tagging documents or layers with pipeline IDs (job, version, source) that travel inside the PSD",
+    "backing up and restoring Camera Raw settings",
+    "writing custom namespaces that File Info cannot show"
+   ],
+   "avoid": [
+    "plain title / author / keywords / copyright: DocumentInfo is simpler and safer"
+   ],
+   "equivalents": {},
+   "how": "app.activeDocument.xmpMetadata.rawData (or someLayer.xmpMetadata.rawData). For structured edits load the AdobeXMPScript library (new ExternalObject(\"lib:AdobeXMPScript\")), parse rawData with new XMPMeta(rawData), change properties, serialize() and assign the string back to rawData.",
+   "key_members": [
+    {
+     "name": "rawData",
+     "use": "the whole XMP packet as XML text; read or replace"
+    },
+    {
+     "name": "parent",
+     "use": "the Document or Layer it belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "\"XMPMetadata\""
+    }
+   ],
+   "gotchas": [
+    "the harvested class description (a Camera Raw .xmp sidecar) undersells it: Document.xmpMetadata is the whole embedded packet and Camera Raw settings are one part of it",
+    "assigning malformed XML to rawData throws or damages metadata: edit through XMPMeta, not string replacement",
+    "layer XMP is private to that layer and does not show in File Info (unverified)",
+    "nothing reaches disk until the document is saved"
+   ],
+   "example": "var doc = app.activeDocument;\nvar xmp = doc.xmpMetadata.rawData;          // whole packet as XML text\nvar hasRights = xmp.indexOf(\"xmpRights:\") >= 0;\nvar f = new File(\"~/Desktop/\" + doc.name + \".xmp\");\nf.encoding = \"UTF-8\";\nf.open(\"w\"); f.write(xmp); f.close();",
+   "source": "ps_api_04 agent (omv + COM typelib harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

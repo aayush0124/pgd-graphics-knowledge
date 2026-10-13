@@ -1,0 +1,776 @@
+{
+ "cards": [
+  {
+   "name": "Video Cache",
+   "id": "2920",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Purge/Video Cache",
+   "status": "current",
+   "summary": "Frees the memory Photoshop holds for cached video and timeline frames (the frames rendered for Timeline playback). Nothing in the document changes; the purge cannot be undone and playback has to re-cache afterwards. Enabled with or without a document open.",
+   "use_for": [
+    "releasing RAM after scrubbing a long video or frame-animation timeline before a heavy edit or export",
+    "recovering responsiveness when Photoshop warns it is low on memory during video work"
+   ],
+   "avoid": [
+    "routine still-image work: there is usually nothing in this cache to free; Purge > All or Histories frees more",
+    "the middle of a timeline review: playback has to rebuild every cached frame"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest (no menuItemType or AM event matches). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2920}); ExtendScript app.runMenuItem(2920) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Redo",
+   "id": "132",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Redo",
+   "status": "current",
+   "summary": "Re-applies the step that was last undone, moving one state forward in the History. It is greyed out until something has been undone (the harvest saw it disabled in every fresh scratch state).",
+   "use_for": [
+    "bringing back an edit after undoing too far while comparing before and after",
+    "stepping forward again through several undone steps one at a time"
+   ],
+   "avoid": [
+    "after making a new edit following an undo: the undone states are discarded and there is nothing to redo; use the History panel or a snapshot to keep alternatives"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Redo",
+    "CDR": "Edit/Redo %s"
+   },
+   "shortcut": "Ctrl+Shift+Z",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('select'), d, DialogModes.NO) where d.putReference(charIDToTypeID('null'), ref) and ref.putEnumerated(charIDToTypeID('HstS'), charIDToTypeID('Ordn'), charIDToTypeID('Nxt ')) (harvest-verified 2026-10-04; Redo and Step Forward share this route).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Remote Connections",
+   "id": "1613",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Remote Connections",
+   "status": "current",
+   "summary": "Opens the Remote Connections dialog, where you allow other apps or devices on the network to connect to and drive Photoshop through its built-in connection server, identified by a service name and protected by a password. It is a network setting, not an image command.",
+   "how": "Turn on Enable Remote Connections, set the Service Name and a Password the connecting app must use, then OK. Leave it off when nothing needs to connect.",
+   "use_for": [
+    "pairing a companion or remote-control app that talks to Photoshop over the local network",
+    "letting an external tool or plug-in server connect to a running Photoshop session"
+   ],
+   "avoid": [
+    "shared or public networks: anyone with the password can send commands; keep it disabled when not needed",
+    "local automation on the same machine: run scripts or UXP plug-ins directly instead of opening a network port"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found (the harvest did not run it: it is a preferences-type network setting). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 1613}); ExtendScript app.runMenuItem(1613) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Search",
+   "id": "5957",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Search",
+   "status": "current",
+   "summary": "Opens Photoshop's in-app search (the Discover panel), which finds tools, panels, menu commands, help articles, tutorials and quick actions (Adobe Stock or Lightroom photo results in 27.4: unverified). It works with or without a document open; much of the content comes from the web.",
+   "use_for": [
+    "finding where a command or panel lives without hunting through the menus",
+    "pulling up a tutorial or quick action for a task while working"
+   ],
+   "avoid": [
+    "offline work: help, tutorials and Stock results need a connection",
+    "automation: it is an interactive web panel with nothing to script; look commands up in PGD instead"
+   ],
+   "confidence": "medium",
+   "shortcut": "Ctrl+F",
+   "scriptable": "no",
+   "script_api": "No script route found (the harvest did not run it: it opens the Discover panel). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5957}); ExtendScript app.runMenuItem(5957) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only); summary: Stock / Lightroom search marked unverified (batch only says it opens the Discover panel)"
+   }
+  },
+  {
+   "name": "Sky Replacement",
+   "id": "2260",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Sky Replacement",
+   "status": "current",
+   "summary": "Detects the sky in a photo and swaps in another sky, masking the foreground (buildings, trees, hair) automatically and shifting the foreground light and colour to match. The result lands as a new editable layer group (sky layer, masks, colour adjustments) or a single duplicated, flattened layer.",
+   "how": "Pick a sky from the presets (or import your own sky image), then adjust Shift Edge and Fade Edge to fix the mask boundary; Brightness, Temperature, Scale and Flip for the new sky; Lighting Mode, Lighting Adjustment and Color Adjustment to blend the foreground; Output to New Layers (editable) or Duplicate Layer. The Sky Move and Sky Brush tools in the dialog reposition the sky and extend or shrink its area.",
+   "use_for": [
+    "replacing a blown-out or grey sky in real-estate, travel or product-on-location photos",
+    "giving a campaign set a consistent sunset or blue-sky mood across several shots",
+    "quick key-visual comps before a full manual composite"
+   ],
+   "avoid": [
+    "skies broken up by fine detail (dense foliage, wire fences, hair against the sky): check the mask edge closely and refine with the Sky Brush or a manual mask",
+    "images without a clear sky region or with reflections of the sky (water, glass): the reflections keep the old sky; composite those by hand",
+    "unattended pipelines: the harvest only opened the dialog (DialogModes.ALL) and recorded no no-dialog descriptor, so a person has to pick the sky and click OK"
+   ],
+   "confidence": "high",
+   "scriptable": "partial",
+   "script_api": "executeAction(stringIDToTypeID('skyReplacement'), undefined, DialogModes.ALL) (harvest-verified: opens the Sky Replacement dialog; needs a pixel layer with content, an active selection or a smart object layer).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'a script cannot choose a sky' overstated the harvest (it recorded no no-dialog descriptor)"
+   }
+  },
+  {
+   "name": "Step Backward",
+   "id": "1961",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Step Backward",
+   "status": "hidden",
+   "summary": "Moves one state back in the History, the same multi-step undo the Undo command now performs. The harvest found the menu item hidden from the Edit menu in this version, and disabled in every scratch state, even those where Undo was enabled (so the cause is not an empty History); its script route still works.",
+   "use_for": [
+    "walking back through several edits one at a time (via Undo or the History panel in this version)"
+   ],
+   "avoid": [
+    "looking for it in the Edit menu: it is hidden; use Undo, which steps back repeatedly, or click a state in the History panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Undo",
+    "CDR": "Edit/Undo %s"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('select'), d, DialogModes.NO) where d.putReference(charIDToTypeID('null'), ref) and ref.putEnumerated(charIDToTypeID('HstS'), charIDToTypeID('Ordn'), charIDToTypeID('Prvs')) (harvest-verified 2026-10-04 on the 'filled' fixture: stepping back over its last state, a Deselect, brought the 40,40,200,200 selection back).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: verification said the selection disappeared; the harvest shows sel null -> 40,40,200,200; summary: 'no history to step back through' contradicted the batch (Undo was enabled in the same states)"
+   }
+  },
+  {
+   "name": "Step Forward",
+   "id": "1962",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Step Forward",
+   "status": "hidden",
+   "summary": "Moves one state forward in the History after stepping back, the same job Redo performs. The harvest found the menu item hidden from the Edit menu in this version.",
+   "use_for": [
+    "re-applying undone steps one at a time (via Redo or the History panel in this version)"
+   ],
+   "avoid": [
+    "looking for it in the Edit menu: it is hidden; use Redo or click the later state in the History panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Redo",
+    "CDR": "Edit/Redo %s"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('select'), d, DialogModes.NO) where d.putReference(charIDToTypeID('null'), ref) and ref.putEnumerated(charIDToTypeID('HstS'), charIDToTypeID('Ordn'), charIDToTypeID('Nxt ')) (harvest-verified 2026-10-04; same route as Redo).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Stroke",
+   "id": "1043",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Stroke",
+   "status": "current",
+   "summary": "Paints a solid-colour line of a set pixel width along the edge of the active selection (or around the content of the active layer when nothing is selected), directly into the layer's pixels.",
+   "how": "Width in pixels and Color; Location Inside, Center or Outside the edge; Blending Mode and Opacity of the painted line; Preserve Transparency to paint only where the layer already has pixels.",
+   "use_for": [
+    "a quick keyline or frame around a selected area on a flat image",
+    "outlining a selection-based shape for a sticker, badge or cut-out border",
+    "drawing a border around the whole canvas (Select All, then stroke Inside)"
+   ],
+   "avoid": [
+    "anything that may change later: the stroke is baked into pixels; use the Stroke layer style or a shape layer's stroke for an editable outline",
+    "type, shape and smart object layers: they have no editable pixels, so stroke a new pixel layer above or use the Stroke layer style",
+    "very thin strokes on curved selections when crisp vector edges matter: they antialias; use a vector stroke",
+    "a group or several selected layers: Stroke was disabled in the harvest's group and multi-layer states; select one pixel layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Stroke",
+    "CDR": "Toolbox/Outline Pen/Outline Pen"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('stroke'), d, DialogModes.NO) with d: Wdth (integer px, e.g. 4), Lctn StrL Insd (harvest; Cntr / Otsd for Center / Outside unverified), Opct (% e.g. 100), Md BlnM Nrml, Clr RGBC {Rd, Grn, Bl} (harvest-verified 2026-10-04: history 'Stroke'). DOM (unverified): app.activeDocument.selection.stroke(color, width, StrokeLocation.INSIDE, ColorBlendMode.NORMAL, 100, false).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Cntr/Otsd location codes are not in the batch, marked unverified; avoid: added the harvested group / multi-layer disabled states"
+   }
+  },
+  {
+   "name": "Toggle Last State",
+   "id": "133",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Toggle Last State",
+   "status": "current",
+   "summary": "Switches between the current History state and the one before it, so pressing it repeatedly flips back and forth between before and after the last edit (the single-level undo of older Photoshop).",
+   "use_for": [
+    "a quick before/after check of the last adjustment or retouch stroke",
+    "showing a client the effect of one change by flipping between the two states"
+   ],
+   "avoid": [
+    "undoing several steps: it only ever flips between two states; use Undo or the History panel",
+    "scripts: the harvest's undoEvent candidate undid once and was then refused, so it cannot toggle"
+   ],
+   "confidence": "high",
+   "shortcut": "Ctrl+Alt+Z",
+   "scriptable": "no",
+   "script_api": "No confirmed route. The harvest's candidate executeAction(stringIDToTypeID('undoEvent')) stepped back once and a second call was refused ('Undo is not currently available'). Emulate the toggle with the history-state select event, ordinal Prvs then Nxt (unverified). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 133}); ExtendScript app.runMenuItem(133) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Toolbar",
+   "id": "5983",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Toolbar",
+   "status": "current",
+   "summary": "Opens the Customize Toolbar dialog, where you choose which tools appear in the toolbar, how they are grouped into flyouts, and which go to the hidden Extra Tools slot; the layout can be saved as a preset. It changes the workspace only, not the document.",
+   "how": "Drag tools between the Toolbar list and the Extra Tools column, or between groups; Restore Defaults, Clear Tools, and Save Preset / Load Preset manage layouts. Options at the bottom hide extra controls such as the colour swatches and quick mask buttons.",
+   "use_for": [
+    "a lean toolbar for a retouching, compositing or teaching workspace",
+    "putting a frequently used tool on the top level instead of a flyout",
+    "sharing one toolbar layout across a team via a saved preset"
+   ],
+   "avoid": [
+    "fixing a missing tool when the cause is a workspace: reset the workspace first, then customise"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Toolbars/New Toolbar...",
+    "CDR": "Tools/Options/Customization"
+   },
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest (no menuItemType or AM event matches). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5983}); ExtendScript app.runMenuItem(5983) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Again",
+   "id": "2217",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Again",
+   "status": "current",
+   "summary": "Repeats the last transformation (scale, rotate, skew, distort, perspective, flip or a free transform) on the current layer or selection with the same values. Greyed out until a transform has been committed (the harvest saw it disabled in every fresh scratch state).",
+   "use_for": [
+    "building a radial or stepped repeat: duplicate a layer, then apply the same rotation or offset again",
+    "applying the identical scale or skew to several layers one after another"
+   ],
+   "avoid": [
+    "repeating an older transform: Again only replays the most recent one; re-enter the values or record the transform as an action",
+    "scripts: no route exists for this menu item; replay the transform event with the same descriptor"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Transform Again",
+    "CDR": "Edit/Repeat %s"
+   },
+   "shortcut": "Ctrl+Shift+T",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. Replay the last transform with executeAction(stringIDToTypeID('transform'), sameDescriptor, DialogModes.NO) (unverified). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2217}); ExtendScript app.runMenuItem(2217) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only); avoid: dropped the unsourced 'forgets after an unrelated edit' claim"
+   }
+  },
+  {
+   "name": "Convert warp anchor point",
+   "id": "2255",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Convert warp anchor point",
+   "status": "needs_input",
+   "summary": "A Warp-mode command for the control points of the warp mesh. Judging from its name it converts a selected warp anchor point between point types (for example from a smooth point to a corner point whose handles move independently); exactly what it does in this version is not confirmed. Only works while a Warp transform is active (the harvest found it disabled in every scratch state: plain document, filled layer, selection, text, smart object, group, multi-layer).",
+   "use_for": [
+    "fine-tuning a custom warp mesh around a sharp bend in a label or packaging mockup (as far as known)"
+   ],
+   "avoid": [
+    "relying on it from automation: its behaviour is unconfirmed and it has no script route"
+   ],
+   "confidence": "low",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2255}); ExtendScript app.runMenuItem(2255) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Distort",
+   "id": "2204",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Distort",
+   "status": "current",
+   "summary": "Enters a transform mode where each of the four corner handles moves freely, so the layer or selection can be pulled into any four-sided shape (a free four-corner pin, not limited to symmetrical perspective).",
+   "use_for": [
+    "corner-pinning artwork onto a screen, sign, box side or book cover in a mockup",
+    "matching a flat graphic to a surface photographed at an angle"
+   ],
+   "avoid": [
+    "repeated distorts on a pixel layer: each pass resamples and softens; convert to a smart object first so the distortion stays editable",
+    "curved surfaces: four corners cannot follow a curve; use Warp",
+    "unattended runs: the menu command only opens an interactive mode",
+    "live type layers and groups: Distort was disabled in the harvest's text and group states; convert the type to a smart object or shape first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Free Distort",
+    "CDR": "Object/Perspective/Add Perspective"
+   },
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('distort')) (harvest candidate from a terminology label match, not run: it would only enter the interactive Distort mode). No confirmed non-interactive call for a four-corner distort. Do not call it from an unattended script: the sibling Puppet Warp candidate put Photoshop into its interactive mode and it stopped answering scripts until force-restarted (harvest 2026-10-04); if used, guard it with a timeout.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested hang risk of entering an interactive transform mode; avoid: added the harvested text / group disabled states"
+   }
+  },
+  {
+   "name": "Flip Horizontal",
+   "id": "2211",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Flip Horizontal",
+   "status": "current",
+   "summary": "Mirrors the active layer (or the selected pixels) left to right around its centre. The canvas itself does not flip.",
+   "use_for": [
+    "turning a model or product so it faces into the layout instead of off the page",
+    "making a mirrored reflection layer under an object"
+   ],
+   "avoid": [
+    "photos containing text, logos, watches or number plates: they read backwards; mask or replace them",
+    "portraits of real people for likeness: faces are asymmetric and look subtly wrong mirrored",
+    "flipping the whole image including all layers: use Image > Image Rotation > Flip Canvas Horizontal"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Reflect...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('flip'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>) and d.putEnumerated(charIDToTypeID('Axis'), charIDToTypeID('Ornt'), charIDToTypeID('Hrzn')) (harvest-verified 2026-10-04: history 'Flip Horizontal'). DOM (unverified): app.activeDocument.activeLayer.resize(-100, 100, AnchorPosition.MIDDLECENTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Flip Vertical",
+   "id": "2212",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Flip Vertical",
+   "status": "current",
+   "summary": "Mirrors the active layer (or the selected pixels) top to bottom around its centre. The canvas itself does not flip.",
+   "use_for": [
+    "building a floor or water reflection under a product shot (flip, move down, fade with a gradient mask)",
+    "re-using a pattern or border element upside down"
+   ],
+   "avoid": [
+    "text and logos: they end up upside down and mirrored",
+    "flipping the whole image including all layers: use Image > Image Rotation > Flip Canvas Vertical"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Reflect...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('flip'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>) and d.putEnumerated(charIDToTypeID('Axis'), charIDToTypeID('Ornt'), charIDToTypeID('Vrtc')) (harvest-verified 2026-10-04: history 'Flip Vertical'). DOM (unverified): app.activeDocument.activeLayer.resize(100, -100, AnchorPosition.MIDDLECENTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Perspective",
+   "id": "2203",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Perspective",
+   "status": "current",
+   "summary": "Enters a transform mode where dragging a corner handle moves the opposite corner on the same side symmetrically, so a rectangle turns into a symmetrical trapezoid, as if tilted away from the viewer.",
+   "use_for": [
+    "giving a flat poster or text block a receding, tilted-plane look",
+    "correcting simple keystoning on a shot of a building or a sign"
+   ],
+   "avoid": [
+    "matching a surface whose corners are not symmetrical: use Distort",
+    "lens-distorted architecture: use Filter > Lens Correction or Perspective Warp for a cleaner fix",
+    "unattended runs: the menu command only opens an interactive mode",
+    "live type layers and groups: Perspective was disabled in the harvest's text and group states; convert the type to a smart object or shape first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Free Transform Tool",
+    "CDR": "Object/Perspective/Add Perspective"
+   },
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('perspective')) (harvest candidate from a terminology label match, not run: it would only enter the interactive Perspective mode). No confirmed non-interactive call. Do not call it from an unattended script: the sibling Puppet Warp candidate put Photoshop into its interactive mode and it stopped answering scripts until force-restarted (harvest 2026-10-04); if used, guard it with a timeout.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested hang risk of entering an interactive transform mode; avoid: added the harvested text / group disabled states"
+   }
+  },
+  {
+   "name": "Remove Warp Split",
+   "id": "2253",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Remove Warp Split",
+   "status": "needs_input",
+   "summary": "A Warp-mode command that deletes the selected split line from a custom warp mesh, merging the cells on either side back together. Only works while a Warp transform is active (the harvest found it disabled in every scratch state: plain document, filled layer, selection, text, smart object, group, multi-layer).",
+   "use_for": [
+    "simplifying a warp mesh after adding a split in the wrong place"
+   ],
+   "avoid": [
+    "undoing a whole warp: press Cancel in the options bar or undo instead"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2253}); ExtendScript app.runMenuItem(2253) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Rotate",
+   "id": "2205",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Rotate",
+   "status": "current",
+   "summary": "Enters a transform mode limited to rotation: dragging around the bounding box turns the layer or selection around its reference point by any angle.",
+   "use_for": [
+    "angling a photo, sticker or label in a collage or social post",
+    "straightening a crooked scanned element by eye"
+   ],
+   "avoid": [
+    "right-angle turns: use Rotate 90° or Rotate 180°, which do not resample pixels",
+    "rotating a pixel layer again and again: each pass softens it; work on a smart object",
+    "straightening a whole photo against a horizon: the Crop tool's Straighten is faster"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Rotate Tool",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('transform'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>), FTcs (freeTransformCenterState) = QCSt Qcsa (centre reference point) and Angl (#Ang, e.g. 30) (harvest-verified 2026-10-04: a 160 px square's bounds grew from 40,40,200,200 to 11,10,229,230). The menu item itself enters the interactive transform box; the harvest ran the same job without UI as executeAction(stringIDToTypeID('transform'), d, DialogModes.NO). DOM (unverified): app.activeDocument.activeLayer.rotate(30, AnchorPosition.MIDDLECENTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: named the harvested charID key FTcs for the centre state"
+   }
+  },
+  {
+   "name": "Rotate 180°",
+   "id": "2208",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Rotate 180°",
+   "status": "current",
+   "summary": "Turns the active layer (or the selected pixels) upside down by exactly 180 degrees, without resampling. The canvas itself does not rotate.",
+   "use_for": [
+    "turning a pattern tile, ornament or icon around for a symmetrical layout",
+    "fixing a single layer that was placed upside down"
+   ],
+   "avoid": [
+    "text and logos you need readable",
+    "rotating the whole document: use Image > Image Rotation"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>) and Angl (#Ang) 180 (harvest-verified 2026-10-04: history 'Rotate'). DOM (unverified): app.activeDocument.activeLayer.rotate(180).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rotate 90° Clockwise",
+   "id": "2209",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Rotate 90° Clockwise",
+   "status": "current",
+   "summary": "Turns the active layer (or the selected pixels) a quarter turn clockwise, without resampling. The canvas keeps its orientation, so a wide layer can end up overhanging a landscape canvas.",
+   "use_for": [
+    "standing a horizontal element up for a vertical banner or story layout",
+    "rotating a side-bar label or vertical caption strip"
+   ],
+   "avoid": [
+    "rotating the whole photo from landscape to portrait: use Image > Image Rotation, which turns the canvas too"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>) and Angl (#Ang) 90 (harvest-verified 2026-10-04: history 'Rotate'). DOM (unverified): app.activeDocument.activeLayer.rotate(90).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rotate 90° Counter Clockwise",
+   "id": "2210",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Rotate 90° Counter Clockwise",
+   "status": "current",
+   "summary": "Turns the active layer (or the selected pixels) a quarter turn counter-clockwise, without resampling. The canvas keeps its orientation.",
+   "use_for": [
+    "setting a spine label or side caption that reads bottom to top",
+    "standing a horizontal element up for a vertical layout"
+   ],
+   "avoid": [
+    "rotating the whole photo: use Image > Image Rotation, which turns the canvas too"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Transform/Rotate...",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('rotateEventEnum'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>) and Angl (#Ang) -90 (harvest-verified 2026-10-04: history 'Rotate'). DOM (unverified): app.activeDocument.activeLayer.rotate(-90).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Scale",
+   "id": "2201",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Scale",
+   "status": "current",
+   "summary": "Enters a transform mode limited to resizing: dragging the bounding-box handles makes the layer or selection larger or smaller, proportionally or not, around its reference point.",
+   "use_for": [
+    "fitting a product cut-out or logo to a layout grid",
+    "shrinking a pasted photo to fit a frame in a collage"
+   ],
+   "avoid": [
+    "enlarging pixel layers much past their size: they go soft; place large or as a smart object",
+    "scaling the whole image or canvas: use Image Size or Canvas Size"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Scale Tool",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('transform'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>), FTcs (freeTransformCenterState) = QCSt Qcsa (centre reference point), Wdth and Hght (#Prc, e.g. 60) (harvest-verified 2026-10-04: bounds 40,40,200,200 -> 72,72,168,168). The menu item itself enters the interactive transform box; the harvest ran the same job without UI as executeAction(stringIDToTypeID('transform'), d, DialogModes.NO). DOM (unverified): app.activeDocument.activeLayer.resize(60, 60, AnchorPosition.MIDDLECENTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: named the harvested charID key FTcs for the centre state"
+   }
+  },
+  {
+   "name": "Skew",
+   "id": "2202",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Skew",
+   "status": "current",
+   "summary": "Enters a transform mode where dragging a side handle slants the layer or selection along that side, turning a rectangle into a parallelogram (shear).",
+   "use_for": [
+    "slanting a text block or banner for a dynamic, sporty headline",
+    "faking a cast shadow by skewing a darkened copy of a cut-out along the ground"
+   ],
+   "avoid": [
+    "real perspective: skew keeps opposite sides parallel; use Perspective or Distort",
+    "italicising type that is still live: use a font's italic or faux italic instead of distorting letterforms"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Shear Tool",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('transform'), d, DialogModes.NO) with d.putReference(charIDToTypeID('null'), <target layer ref>), FTcs (freeTransformCenterState) = QCSt Qcsa (centre reference point) and a Skew object (Pnt) with Hrzn / Vrtc angles (#Ang, e.g. 20 / 0) (harvest-verified 2026-10-04: bounds 40,40,200,200 -> 11,40,229,200). The menu item itself enters the interactive transform box; the harvest ran the same job without UI as executeAction(stringIDToTypeID('transform'), d, DialogModes.NO).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: named the harvested charID key FTcs for the centre state"
+   }
+  },
+  {
+   "name": "Split Warp Crosswise",
+   "id": "2252",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Split Warp Crosswise",
+   "status": "needs_input",
+   "summary": "A Warp-mode command that adds both a horizontal and a vertical split line through the point you click, giving the custom warp mesh more control points there. Only works while a Warp transform is active (the harvest found it disabled in every scratch state: plain document, filled layer, selection, text, smart object, group, multi-layer).",
+   "use_for": [
+    "adding local control to a warp, e.g. bending one corner of a label around a bottle or a fabric fold"
+   ],
+   "avoid": [
+    "simple arcs and bulges: a preset warp style needs no extra splits"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2252}); ExtendScript app.runMenuItem(2252) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Split Warp Horizontally",
+   "id": "2250",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Split Warp Horizontally",
+   "status": "needs_input",
+   "summary": "A Warp-mode command that adds one horizontal split line across the warp mesh at the point you click (a new row of control points), so the area above and below can bend separately; which direction 'Horizontally' refers to is not confirmed by the harvest. Only works while a Warp transform is active (the harvest found it disabled in every scratch state: plain document, filled layer, selection, text, smart object, group, multi-layer).",
+   "use_for": [
+    "controlling the top and bottom of a warped label or banner independently"
+   ],
+   "avoid": [
+    "simple arcs and bulges: a preset warp style needs no extra splits"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2250}); ExtendScript app.runMenuItem(2250) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Split Warp Vertically",
+   "id": "2251",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Split Warp Vertically",
+   "status": "needs_input",
+   "summary": "A Warp-mode command that adds one vertical split line across the warp mesh at the point you click (a new column of control points), so the left and right parts can bend separately; which direction 'Vertically' refers to is not confirmed by the harvest. Only works while a Warp transform is active (the harvest found it disabled in every scratch state: plain document, filled layer, selection, text, smart object, group, multi-layer).",
+   "use_for": [
+    "bending one side of a warped graphic, e.g. the wrap of a label around the edge of a can"
+   ],
+   "avoid": [
+    "simple arcs and bulges: a preset warp style needs no extra splits"
+   ],
+   "confidence": "medium",
+   "scriptable": "no",
+   "script_api": "No script route found by the harvest. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2251}); ExtendScript app.runMenuItem(2251) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only)"
+   }
+  },
+  {
+   "name": "Toggle Guides",
+   "id": "2254",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Toggle Guides",
+   "status": "needs_input",
+   "summary": "Shows or hides the guide lines drawn inside the bounding box while a transform or warp is active. The harvest found it disabled in every scratch state and runMenuItem(stringIDToTypeID('toggleGuides')) failed with a general Photoshop error naming the \"Select\" command, so it appears to work only during an active transform; its exact effect is not confirmed.",
+   "use_for": [
+    "decluttering the view while judging a warp or transform by eye (as far as known)"
+   ],
+   "avoid": [
+    "toggling document guides: that is View > Show > Guides"
+   ],
+   "confidence": "low",
+   "scriptable": "no",
+   "script_api": "No confirmed route: the label-matched candidate app.runMenuItem(stringIDToTypeID('toggleGuides')) failed live ('General Photoshop error occurred ... The command \"Select\" is not currently available'), so that menuItemType may not map to this item (unverified). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2254}); ExtendScript app.runMenuItem(2254) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'runMenuItem refuses this numeric id' overstated the audit (it tried 1017/1192/1135 only); summary/script_api: quoted the real harvest error (general error naming the Select command)"
+   }
+  },
+  {
+   "name": "Warp",
+   "id": "2219",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Transform/Warp",
+   "status": "current",
+   "summary": "Puts a warp mesh over the layer or selection so you can bend it by dragging the grid, its control points and handles, or pick a preset warp style (Arc, Arch, Bulge, Flag, Wave, Fish, Rise, Fisheye, Inflate, Squeeze, Twist and others) with a bend amount.",
+   "use_for": [
+    "wrapping a label or logo around a bottle, mug or can in a product mockup",
+    "bending a flag, ribbon or banner graphic",
+    "curving a headline or badge text after converting it to a smart object"
+   ],
+   "avoid": [
+    "warping a pixel layer more than once: resampling softens it; convert to a smart object so the warp stays editable",
+    "true 3D wraps with heavy foreshortening: build the mockup with a displacement map or 3D-aware tool",
+    "unattended runs: the menu command only opens an interactive mode",
+    "several selected layers or a group: Warp was disabled in the harvest's multi-layer and group states; convert them into one smart object first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Envelope Distort/Make with Warp...",
+    "CDR": "Effects/Envelope"
+   },
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('warp')) (harvest candidate from a terminology label match, not run: it would only enter the interactive Warp mode). A preset style can likely be applied with the transform event carrying a warp descriptor (warpStyle, warpValue) (unverified). Do not call it from an unattended script: the sibling Puppet Warp candidate put Photoshop into its interactive mode and it stopped answering scripts until force-restarted (harvest 2026-10-04); if used, guard it with a timeout.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested hang risk of entering an interactive transform mode; avoid: added the harvested multi-layer / group disabled states"
+   }
+  },
+  {
+   "name": "Undo",
+   "id": "101",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Undo",
+   "status": "current",
+   "summary": "Reverses the last change to the document. Choosing it again keeps stepping further back through the History, one state at a time, up to the history limit set in Preferences.",
+   "use_for": [
+    "backing out of a mistaken brush stroke, transform or adjustment",
+    "stepping back through several edits to compare earlier versions"
+   ],
+   "avoid": [
+    "steps older than the history limit or before the file was reopened: take History snapshots or save versions",
+    "quick before/after comparison of one change: Toggle Last State flips without losing the redo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Undo",
+    "CDR": "Edit/Undo %s"
+   },
+   "shortcut": "Ctrl+Z",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('undoEvent'), new ActionDescriptor(), DialogModes.NO) (harvest-verified 2026-10-04 on the 'filled' fixture: undoing its last state, a Deselect, brought the 40,40,200,200 selection back). History-state route: executeAction(stringIDToTypeID('select'), d, DialogModes.NO) where d.putReference(charIDToTypeID('null'), ref) and ref.putEnumerated(charIDToTypeID('HstS'), charIDToTypeID('Ordn'), charIDToTypeID('Prvs')) (unverified for Undo itself).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: verification said the selection was removed; the harvest shows sel null -> 40,40,200,200 (undoing the fixture's Deselect brought it back)"
+   }
+  }
+ ]
+}

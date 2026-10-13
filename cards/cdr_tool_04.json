@@ -1,0 +1,292 @@
+{
+ "cards": [
+  {
+   "name": "2-Leg Callout",
+   "id": "71ed077c-c0ba-44ce-8969-6d868224249c",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Dimension Flyout/2-Leg Callout",
+   "status": "current",
+   "summary": "Draws a callout: a thin leader line made of two straight legs (one elbow) that runs from a point on the drawing to a text label you type at its end, for pointing at a detail and naming it. It is the 2-leg mode of CorelDRAW's callout tool (the harvest saw the same tool state bcdc494e-d6d5-4263-84e7-43ca6b4b8315 as Callout, 1-Leg Callout and 3-Leg Callout), so the result is an editable callout object rather than loose lines and text.",
+   "how": "Open a document and pick it from the Dimension flyout. Click (or drag from) the point on the object you want to point at, set the elbow, click where the second leg should end, then type the label at the text cursor; pick another tool or press Esc to finish. The callout object (CalloutToolLib.CalloutShape) carries the options that matter: the ending style and its size and fill (none, box, line, line and box, circle, square, circle and square, triangle = cdrCalloutEnding), the text source (typed, or filled from the target's height / width / area / perimeter / name / a property / the clipboard / an increment counter = cdrCalloutTextSource), a gap value, the outline, and an optional halo behind the text. Where each option sits on the property bar was not harvested.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Select the tool: Automation.InvokeItem(\"71ed077c-c0ba-44ce-8969-6d868224249c\") (Application.ActiveTool reads back -1, so there is no cdrTools value for it). Placing the leader points needs pointer input. A script can adjust an existing callout: Shape.Custom returns the IVGCustomShape, which for a callout is CalloutToolLib.ICalloutShape; writable there are Ending, EndingSize, Gap, HasTarget and HaloVisible / HaloOpacity / HaloJustification / HaloWidth, while LeaderCurve, TextShape, Outline, EndingFill and HaloColor return objects you edit through their own members. TextSource and Target are read-only, so the text source and the target object cannot be changed by script. A look-alike can be built from Layer.CreateCurve (leader) plus Layer.CreateArtisticText (label). Layer.CreateCustomShape(TypeID, Parameters) may create a native callout, but the callout TypeID and parameter layout were not harvested: untested.",
+   "use_for": [
+    "labelling parts in a product diagram or exploded view",
+    "naming components on a technical illustration, signage or wayfinding drawing",
+    "infographic annotations that point at a detail and route around other content",
+    "notes on packaging dielines (glue flap, fold, bleed)"
+   ],
+   "avoid": [
+    "a straight one-segment pointer: use 1-Leg Callout (harvested at Other tools/CalloutTool/1-Leg Callout, not in the default toolbox)",
+    "decorative speech bubbles or comic balloons: draw a shape instead, a callout is only a leader line plus text",
+    "a distance between two chosen points or an angle: use Parallel Dimension, Horizontal or Vertical Dimension or Angular Dimension (a callout's text source can only report the target object's own height, width, area or perimeter)",
+    "files headed to Illustrator or Photoshop: the callout object is CorelDRAW-only and arrives as plain curves and text"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api said a script can edit TextSource and Target, but the harvest marks both read-only; now lists the writable ICalloutShape members and says it is reached via Shape.Custom; avoid said a callout cannot show measured values, which contradicts its harvested text sources (height / width / area / perimeter); ending no longer claimed to sit at the text end and the gap no longer claimed to be leader-to-text (neither is in the harvest); 1-Leg Callout noted as outside the default toolbox"
+   }
+  },
+  {
+   "name": "Angular Dimension",
+   "id": "7e764ff0-62ae-ff98-42e3-229b4249403e",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Dimension Flyout/Angular Dimension",
+   "status": "current",
+   "summary": "Draws an angular dimension: two extension lines from a vertex, an arc between them with arrowheads, and a text label showing the measured angle (degrees, degrees with symbol, radians or gradians). The result is a dimension object whose value comes from the snapped points, not typed text.",
+   "how": "Pick it from the Dimension flyout and turn on snapping to objects so points lock to nodes. Click the vertex of the angle, click a point on the first leg, click a point on the second leg, then move the pointer to set the arc radius and label position and click to place it. Property bar options that matter: angular units, precision (decimal places), show units, prefix / suffix, boxed text, leading zero, outline width, arrowheads and text font / size.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Create the same object directly: Layer.CreateAngularDimension(Center, Point1, Point2, TextX, TextY, Precision, ShowUnits, Units, BoxedText, LeadingZero, Prefix, Suffix, OutlineWidth, Arrows, OutlineColor, TextFont, TextSize, TextColor), with IVGSnapPoint arguments from Shape.SnapPoints / Shape.FindSnapPoint or Document.CreateFreeSnapPoint(x, y) and Units a cdrDimensionAngularUnits value. Selecting the tool itself: Application.ActiveToolStateGuid = \"7e764ff0-62ae-ff98-42e3-229b4249403e\" is the activation the harvest recorded (the state then reads 01c74da9-519f-f389-4368-b403356345ba, and the toolbox data source reports that state GUID, not the item GUID); Automation.InvokeItem(\"7e764ff0-62ae-ff98-42e3-229b4249403e\") with the same GUID is the alternative. Application.ActiveTool reads back -1. Do not use Application.ActiveTool = cdrToolAngledDimension: in the harvest's enum probe it left the app on the Pick tool.",
+   "use_for": [
+    "technical and architectural drawings that must state a corner or slope angle",
+    "product and packaging drawings showing a bevel, chamfer or fold angle",
+    "signage and fabrication drawings for bent brackets or angled panels",
+    "geometry diagrams in educational graphics"
+   ],
+   "avoid": [
+    "only checking an angle without leaving an annotation: read it from the Object Properties or transformation values instead of adding a dimension object",
+    "linear lengths: use Parallel Dimension or Horizontal or Vertical Dimension",
+    "artwork exported to Photoshop or other apps: the dimension becomes static lines and text and stops updating"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Dimension Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api credited Automation.InvokeItem as the confirmed selection, but the batch records the activation as Application.ActiveToolStateGuid set to the item GUID; now leads with that, and states that cdrToolAngledDimension left the app on Pick in the harvest's enum probe instead of 'not confirmed'"
+   }
+  },
+  {
+   "name": "Horizontal or Vertical Dimension",
+   "id": "f0a49225-3512-29a5-4f99-678e951261f6",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Dimension Flyout/Horizontal or Vertical Dimension",
+   "status": "current",
+   "summary": "Draws a linear dimension that measures only the horizontal or only the vertical distance between two points, with extension lines, an arrowed dimension line and the measured value as text. Whether it measures the horizontal or the vertical distance is set by where you move the pointer to place the dimension line (above or below the points = horizontal, left or right = vertical), and the value can stay linked to the objects so it updates when they are resized or moved.",
+   "how": "Pick it from the Dimension flyout and turn on snapping to objects. Click the first point, click (or drag to) the second point, move the pointer sideways for a vertical dimension or up/down for a horizontal one to set where the dimension line sits, then click to place the label. Property bar options that matter: dimension style (decimal, fractional, US engineering, US architectural), precision, units (mm, cm, in, ft, pt, picas ...), show units, prefix / suffix, dynamic dimensioning, text position (above, within or below the line, centred, horizontal), extension-line gap and overhang, outline width and arrowheads.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Create the same object directly: Layer.CreateLinearDimension(cdrDimensionHorizontal or cdrDimensionVertical, Point1, Point2, TextCentered, TextX, TextY, Style, Precision, ShowUnits, Units, Placement, HorizontalText, BoxedText, LeadingZero, Prefix, Suffix, OutlineWidth, Arrows, OutlineColor, TextFont, TextSize, TextColor) with IVGSnapPoint ends from Shape.SnapPoints / Shape.FindSnapPoint or Document.CreateFreeSnapPoint(x, y). Selecting the tool itself: Application.ActiveToolStateGuid = \"f0a49225-3512-29a5-4f99-678e951261f6\" is the activation the harvest recorded (the state then reads 6dae63ae-e6cb-7281-4674-327dd00c9b0a, and the toolbox data source reports that state GUID, not the item GUID); Automation.InvokeItem(\"f0a49225-3512-29a5-4f99-678e951261f6\") with the same GUID is the alternative. Application.ActiveTool reads back -1. Do not use Application.ActiveTool = cdrToolHorizontalDimension / cdrToolVerticalDimension: in the harvest's enum probe both left the app on the Pick tool.",
+   "use_for": [
+    "overall width and height callouts on packaging dielines and box nets",
+    "sign, banner and vehicle-wrap production drawings with panel sizes",
+    "floor plans, stand and exhibit layouts",
+    "spec sheets for print or fabrication suppliers"
+   ],
+   "avoid": [
+    "distances along a slanted edge: use Parallel Dimension, this tool reports only the horizontal or vertical component",
+    "the length of each segment along a path: use Segment Dimension",
+    "files that leave CorelDRAW: the dimension is flattened to lines and text and no longer updates"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Dimension Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api credited Automation.InvokeItem as the confirmed selection, but the batch records the activation as Application.ActiveToolStateGuid set to the item GUID; now leads with that, and states that cdrToolHorizontalDimension / cdrToolVerticalDimension left the app on Pick in the harvest's enum probe instead of 'not confirmed'; summary said dragging sideways gives a horizontal dimension, contradicting its own how (sideways pointer = vertical); summary now matches how"
+   }
+  },
+  {
+   "name": "Parallel Dimension",
+   "id": "f1b16e8a-9f6f-05b4-4610-451172f5fff2",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Dimension Flyout/Parallel Dimension",
+   "status": "current",
+   "summary": "Draws a linear dimension that runs parallel to the line between two points, so it reports the true (slanted) straight-line distance at any angle, with extension lines, an arrowed dimension line and the value as text aligned to it. Like the other dimension tools it can stay linked to the snapped objects and update when they change.",
+   "how": "Pick it from the Dimension flyout and turn on snapping to objects. Click the first point, click (or drag to) the second point, pull the pointer away at right angles to offset the dimension line, then click to place the label. Property bar options that matter: dimension style, precision, units, show units, prefix / suffix, dynamic dimensioning, text placement (above / within / below, horizontal or aligned to the line), extension-line gap and overhang, outline width and arrowheads.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Create the same object directly: Layer.CreateLinearDimension(cdrDimensionSlanted, Point1, Point2, TextCentered, TextX, TextY, Style, Precision, ShowUnits, Units, Placement, HorizontalText, BoxedText, LeadingZero, Prefix, Suffix, OutlineWidth, Arrows, OutlineColor, TextFont, TextSize, TextColor) with IVGSnapPoint ends from Shape.SnapPoints / Shape.FindSnapPoint or Document.CreateFreeSnapPoint(x, y); afterwards the result's Shape.Dimension (Precision, Prefix, Suffix, Placement, DynamicText ...) and Shape.Dimension.Linear (Style, Units, TextCentered ...) can be changed. Selecting the tool itself: Application.ActiveToolStateGuid = \"f1b16e8a-9f6f-05b4-4610-451172f5fff2\" is the activation the harvest recorded (the state then reads 01d4cd94-062d-4ebd-4f1c-d11dadeba76b, and the toolbox data source reports that state GUID, not the item GUID); Automation.InvokeItem(\"f1b16e8a-9f6f-05b4-4610-451172f5fff2\") with the same GUID is the alternative. Application.ActiveTool reads back -1. Do not use Application.ActiveTool = cdrToolSlantedDimension: in the harvest's enum probe it left the app on the Pick tool.",
+   "use_for": [
+    "dimensioning angled edges on technical illustrations and product drawings",
+    "diagonal measurements on signage, panels or screens",
+    "dieline flaps and tapered packaging edges",
+    "any spec drawing where the true point-to-point length matters"
+   ],
+   "avoid": [
+    "purely horizontal or vertical measurements where the label should stay axis-aligned: Horizontal or Vertical Dimension constrains the direction for you",
+    "dimensioning several consecutive segments of one curve: Segment Dimension is faster",
+    "artwork exported to other apps: the dimension is flattened to lines and text and stops updating"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Dimension Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api credited Automation.InvokeItem as the confirmed selection, but the batch records the activation as Application.ActiveToolStateGuid set to the item GUID; now leads with that, and states that cdrToolSlantedDimension left the app on Pick in the harvest's enum probe instead of 'not confirmed'; named a non-existent Shape.DimensionLinear; the harvested path is Shape.Dimension.Linear"
+   }
+  },
+  {
+   "name": "Segment Dimension",
+   "id": "4618f6d1-0aef-00ad-4ba8-0b44fb6d219a",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Dimension Flyout/Segment Dimension",
+   "status": "current",
+   "summary": "Dimensions the distance between the end nodes of a curve segment (or between two nodes you pick) without placing the two points by hand: click a segment and CorelDRAW measures it, giving a linear dimension with extension lines and the value as text. Dimensioning several consecutive segments in one pass (marquee-select with auto-chain) is unverified here.",
+   "how": "Pick it from the Dimension flyout. Click a segment of a curve (or marquee-drag across the nodes you want measured), move the pointer to offset the dimension line, then click to place the label. The property bar carries the same dimension options as the linear tools (style, precision, units, show units, prefix / suffix, dynamic dimensioning, text position, outline and arrowheads) plus, unverified, an auto-chain option for consecutive dimensions along a run of segments.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No call measures a segment by itself, but a script gets the same dimensions by walking the curve's nodes and calling Layer.CreateLinearDimension(cdrDimensionSlanted, Point1, Point2, ...) for each pair of node snap points (Shape.SnapPoints / Shape.SnapPointsOfType / Shape.FindSnapPoint). Selecting the tool itself: Application.ActiveToolStateGuid = \"4618f6d1-0aef-00ad-4ba8-0b44fb6d219a\" is the activation the harvest recorded (the state then reads 998d385b-2b7c-49a5-4315-bfe6f8c5b230, and the toolbox data source reports that state GUID, not the item GUID); Automation.InvokeItem(\"4618f6d1-0aef-00ad-4ba8-0b44fb6d219a\") with the same GUID is the alternative. Application.ActiveTool reads back -1.",
+   "use_for": [
+    "dimensioning every side of a dieline, box net or irregular panel quickly",
+    "edge lengths on floor plans and stand layouts drawn as one curve",
+    "fabrication drawings for cut vinyl, laser or CNC parts",
+    "checking and annotating a traced outline segment by segment"
+   ],
+   "avoid": [
+    "distances between separate objects or arbitrary points: use Parallel Dimension or Horizontal or Vertical Dimension",
+    "curved (Bezier) segments where you need the arc length: the dimension reports the straight node-to-node distance",
+    "angles: use Angular Dimension"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Dimension Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api credited Automation.InvokeItem as the confirmed selection, but the batch records the activation as Application.ActiveToolStateGuid set to the item GUID; now leads with that; summary stated multi-segment marquee dimensioning as fact while how marks the auto-chain option unverified; made consistent"
+   }
+  },
+  {
+   "name": "Artistic Media",
+   "id": "5d09b650-fdad-462e-93c0-12859111f480",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Drawing Tools/Artistic Media",
+   "status": "current",
+   "summary": "Draws freehand strokes as vector brush shapes instead of plain outlines: the path you drag becomes a filled object whose shape follows a chosen stroke style (tapered preset strokes, textured vector brushes, sprayed repeats of objects along the path, calligraphic nib, or pressure-sensitive expression strokes). The result is a media group linked to an editable control path, coloured by its fill.",
+   "how": "Press I (or pick it under Drawing Tools) and choose a mode on the property bar: Preset, Vector Brush, Sprayer, Calligraphic or Expression (the harvest saw Preset, Vector Brush and Expression share the same tool value). Pick the stroke from the list, set width and smoothing (and nib angle for Calligraphic, spray order / spacing / size for Sprayer, pressure and tilt use for Expression), then drag on the page; with a path selected, choosing a stroke applies it to that path. Colour comes from the fill colour, not the outline. Reshape the stroke by editing its control path with the Shape tool.",
+   "shortcut": "I",
+   "scriptable": "no",
+   "script_api": "Select the tool: Application.ActiveTool = 103 (cdrToolDrawNaturalPen), confirmed by the 2026-10-04 audit (state 5f85ccba-041c-11d4-b32e-00a0c9e8a837; the same value also covers the Preset, Vector Brush and Expression modes), or Automation.InvokeItem(\"5d09b650-fdad-462e-93c0-12859111f480\"). No harvested call lays down a media stroke: a script can draw the control path (Layer.CreateCurve / Layer.CreateCurveSegment2) and give it an outline, and can detect existing strokes via SelectionInformation.IsNaturalMediaGroup / NaturalMediaControlShape; applying a stroke to a path is otherwise done through the Artistic Media docker (Effects/Artistic Media, 5fc0becf-f73a-442b-81d6-3089e17ab44c).",
+   "use_for": [
+    "brush-lettered headlines and signatures with tapered, calligraphic strokes",
+    "hand-drawn illustration line work with varying weight",
+    "ornamental borders, swashes and dividers",
+    "sprayed leaves, stars or confetti along a path for posters and greeting cards"
+   ],
+   "avoid": [
+    "plotter, vinyl-cut, laser or embroidery output: strokes become heavy filled shapes with many nodes, use a plain outline from the Freehand or Bezier tool",
+    "precise uniform-weight line art: use an outline with a fixed width",
+    "files sent to Illustrator or as PDF for editing: the live stroke is flattened to filled curves (Sprayer output to many separate objects)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Brush Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LiveSketch",
+   "id": "c63176a6-c802-42c3-8b71-a758f99539ea",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Drawing Tools/LiveSketch",
+   "status": "current",
+   "summary": "A sketching tool that turns rough freehand strokes into clean, smooth Bezier curves: strokes drawn close together in time and space are analysed and merged into a single curve, so you can sketch over a line several times and get one tidy vector line. The output is ordinary outlined curves.",
+   "how": "Press S (or pick it under Drawing Tools), ideally with a pen tablet or touch screen. Sketch strokes; after the timer delay the strokes are converted and merged. Property bar options that matter: Timer (how long it waits before converting, so quick successive strokes combine), Include curves (new strokes can join existing curves), the distance from curve within which strokes are merged, creating single curves, pen pressure and a preview mode that shows the stroke before it is adjusted. Re-sketch over a curve to adjust it.",
+   "shortcut": "S",
+   "scriptable": "no",
+   "script_api": "Selecting the tool works: Automation.InvokeItem(\"c63176a6-c802-42c3-8b71-a758f99539ea\") (Application.ActiveTool reads back -1). The stroke analysis needs live pointer input and has no harvested call. A script can only build the end result directly: create curves with Layer.CreateCurve / Layer.CreateCurveSegment2 and smooth them with NodeRange.Smoothen or PointRange.Smoothen.",
+   "use_for": [
+    "concept sketches and logo thumbnails that need to become usable vectors",
+    "hand-drawn illustration line art with a natural feel",
+    "loose doodle-style icons and decorative line drawings",
+    "tracing over a placed photo or scan by hand"
+   ],
+   "avoid": [
+    "precise geometry or technical shapes: use the Bezier / Pen tools or shape tools",
+    "long mouse-drawn sketches: it accepts mouse input but is built for pen and touch strokes; for clean mouse work use the Freehand or Bezier tool",
+    "strokes you want kept separate but drawn quickly near each other: lower the timer or turn off Include curves, or use the Freehand tool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Freehand Tool",
+    "PS": "Freeform Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid said mouse input gives poor results; reworded to say it accepts a mouse but is built for pen and touch"
+   }
+  },
+  {
+   "name": "Painterly Brush",
+   "id": "6307aedb-2d41-4342-8585-880f6a7eed41",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Drawing Tools/Painterly Brush",
+   "status": "current",
+   "summary": "Paints pixel-based (bitmap) brushstrokes inside the vector document using Corel Painter brush variants shipped with CorelDRAW (categories such as Acrylics, Airbrushes, Charcoal, Digital Effects and Fluid, harvested under Content/Painter/Brushes/CorelDRAW), giving textured, natural-media marks like chalk, acrylic or airbrush. The result is raster, not editable vector paths; exactly how strokes are grouped into bitmap objects was not checked.",
+   "how": "Press J (or pick it under Drawing Tools), choose a brush category and variant on the property bar, set size and opacity, pick a colour and paint by dragging; a pressure-sensitive stylus (pressure, tilt, bearing, rotation) gives the most natural strokes. The tool is enabled with a bitmap selected as well as on an empty page. Use the Pick tool afterwards to move or scale the painted result like any bitmap.",
+   "shortcut": "J",
+   "scriptable": "no",
+   "script_api": "Selecting the tool works: Automation.InvokeItem(\"6307aedb-2d41-4342-8585-880f6a7eed41\") (Application.ActiveTool reads back -1; the harvest saw tool state 4df4f476-d900-4f7f-bed4-134c3e358fce). Painting needs live pointer input and has no harvested call. A script can only place pre-painted pixels: Layer.CreateBitmap2(x, y, Width, Height, Image, ImageAlpha) or an import.",
+   "use_for": [
+    "painterly textures and accents on posters, book covers and greeting cards",
+    "hand-painted backgrounds or washes behind vector type",
+    "adding chalk, charcoal or airbrush shading to a vector illustration",
+    "loose brush marks and decorative swashes with real-media texture"
+   ],
+   "avoid": [
+    "anything that must scale freely or be cut / plotted: strokes are bitmaps, use Artistic Media for vector brush strokes",
+    "spot-colour or screen-print separations that need clean vector edges",
+    "large heavily painted areas in CorelDRAW: a raster editor such as Photoshop or Corel PHOTO-PAINT handles big painting jobs, layers and blending better"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Brush Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Smart Drawing",
+   "id": "66816bbe-aba7-49b5-b3f2-760fa2544eae",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Drawing Tools/Smart Drawing",
+   "status": "current",
+   "summary": "Converts freehand strokes into clean shapes and smooth curves: a rough rectangle, ellipse, triangle, arrow or similar sketch is recognised and replaced by the matching precise shape, and strokes it does not recognise are smoothed into curves.",
+   "how": "Press Shift+S (or pick it under Drawing Tools) and draw the shape freehand in one stroke (a short pause lets you continue with another stroke before recognition). Property bar options that matter: Shape recognition level (how eagerly it snaps a sketch to a shape, from none to highest), Smart smoothing level (how much unrecognised strokes are smoothed) and outline width. Undo, or set recognition to none, if it turns a stroke into the wrong shape.",
+   "shortcut": "Shift+S",
+   "scriptable": "no",
+   "script_api": "Selecting the tool works: Automation.InvokeItem(\"66816bbe-aba7-49b5-b3f2-760fa2544eae\") (Application.ActiveTool reads back -1). Shape recognition needs live pointer input and has no harvested call. A script simply creates the clean shape it would produce: Layer.CreateRectangle2, Layer.CreateEllipse2 or Layer.CreateCurve.",
+   "use_for": [
+    "quick wireframes, flowcharts and diagram boxes drawn with a stylus",
+    "rough page layouts and thumbnails that come out as editable shapes",
+    "whiteboard-style explainer graphics",
+    "sketching icon bases before refining with the Shape tool"
+   ],
+   "avoid": [
+    "shapes that need exact sizes or positions: use the Rectangle, Ellipse or Polygon tools and type values on the property bar",
+    "organic hand-drawn lines you want kept loose: it may snap them to geometric shapes, use LiveSketch or the Freehand tool",
+    "mouse-heavy precise work: it is tuned for quick pen gestures"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Shaper Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

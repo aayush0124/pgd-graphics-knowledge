@@ -1,0 +1,219 @@
+{
+ "cards": [
+  {
+   "name": "Common Shape",
+   "id": "5e1f702f-94be-48e0-ae02-c4e41fadff54",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Property Bar/Common Shapes/Common Shape",
+   "status": "current",
+   "summary": "A bar button (listed on the Create Object bar, not on the live toolbox) that makes the Common Shapes tool active, the same tool as Toolbox/Shape Tools/Common Shapes. With it you pick a ready-made glyph (basic shapes, arrows, flowchart symbols, banners, callouts) on the property bar and drag it out as a perfect shape whose glyph handle reshapes it, e.g. arrow-head depth or callout tail.",
+   "how": "Open a document, click the button (or the toolbox's Common Shapes tool), choose a glyph from the property bar's shape picker, then drag on the page. Drag the shape's glyph handle(s) to change its proportions; fill and outline come from the normal fill / outline controls. Convert to Curves when you need free node editing; the glyph handle is lost after that.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: Application.FrameWork.Automation.InvokeItem \"5e1f702f-94be-48e0-ae02-c4e41fadff54\" switches to the Common Shapes tool (the harvest read back Application.ActiveTool = 123, a value outside the cdrTools enum). Drawing the shape itself is a mouse drag; a script can draw the same outline as plain curves with IVGLayer.CreateCurve / CreatePolygon2 / CreateRectangle2. IVGLayer.CreateCustomShape(TypeID, Parameters) exists but the TypeID for a common shape is not in the harvest, so creating a live common shape by script is unverified.",
+   "use_for": [
+    "flowchart boxes and decision diamonds for a process diagram",
+    "quick arrows for an infographic or instruction sheet",
+    "ribbon banners and badges behind a sale label",
+    "speech-bubble callouts on a poster or comic panel"
+   ],
+   "avoid": [
+    "when the shape needs custom node edits: draw with the Pen / Bezier tool or convert to curves first",
+    "for regular polygons and stars with an exact side count: use the Polygon or Star tool",
+    "for arrowheads on a line: use outline arrowheads instead of a filled arrow glyph"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "customShapeTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed two keys not in the batch from how (Ctrl constrain, Ctrl+Q for Convert to Curves)"
+   }
+  },
+  {
+   "name": "Anchor Editing",
+   "id": "60f47f20-3051-4b9b-49d8-1cc38f59846f",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Connector Tools/Anchor Editing",
+   "status": "current",
+   "summary": "Edits the connector anchors on objects, the points where connector lines attach. You can add, move, delete and set the direction of anchors so connectors leave or enter a box at an exact spot instead of the default anchor positions.",
+   "how": "Pick the tool from the Connector Tools flyout, click an object to show its anchors, double-click the object where you want a new anchor, drag an anchor to move it, select one and remove it with the property bar's delete-anchor button, and set its direction on the property bar so right-angle connectors leave that side. Connected lines follow the edited anchors.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"60f47f20-3051-4b9b-49d8-1cc38f59846f\". Instead of the tool a script can work on the shape's snap-point collection (IVGShape.SnapPoints, an IVGSnapPoints): AddUserSnapPoint(PositionX, PositionY, Direction, UseDirection) / AddUserSnapPointEx(ID, PositionX, PositionY, Direction, UseDirection), and IVGSnapPoint.Move(OffsetX, OffsetY), Delete, Direction, UsesDirection; IVGLayer.CreateConnectorEx can then attach to those points. That these user snap points are exactly the tool's anchors is likely but not confirmed by the harvest.",
+   "use_for": [
+    "org charts and flowcharts where a connector must leave a box at a specific side",
+    "network or wiring diagrams with several lines entering one symbol at fixed points",
+    "tidying connector routing in a process infographic"
+   ],
+   "avoid": [
+    "for editing the nodes of an ordinary curve: use the Shape tool",
+    "on drawings with no connector lines: the anchors have no visible effect on output"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "removed keys not in the batch (Delete key, F10 for the Shape tool); add-anchor step no longer claims it must be on the outline; script_api now names IVGSnapPoints as the owner of AddUserSnapPoint / AddUserSnapPointEx with AddUserSnapPointEx's ID argument and Move's offset arguments"
+   }
+  },
+  {
+   "name": "Connector",
+   "id": "2e3be6a6-32fe-43c4-bd7c-afa6747982c3",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Connector Tools/Connector",
+   "status": "current",
+   "summary": "Draws connector lines between objects that stay attached to the objects' anchors when the objects are moved or resized. The line type is set on the property bar: straight, right-angle, or rounded right-angle.",
+   "how": "Pick the tool, choose the connector type on the property bar, then drag from an anchor or node of one object to an anchor or node of another. Outline width, color and arrowheads come from the normal outline controls. Move either object with the Pick tool and the connector re-routes; use Anchor Editing to change where it attaches.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"2e3be6a6-32fe-43c4-bd7c-afa6747982c3\". The result is fully scriptable: IVGLayer.CreateConnectorEx(Type as cdrConnectorType, Start as IVGSnapPoint, End as IVGSnapPoint), IVGLayer.CreateConnector(Start, End), IVGLayer.CreateRightAngleConnector(Start, End, CornerRadius) for a rounded right-angle line, IVGLayer.CreateFreeConnector(x1, y1, x2, y2); take snap points from IVGShape.SnapPoints, read a connector back with IVGShape.Connector (StartPoint, EndPoint, Type).",
+   "use_for": [
+    "flowcharts and decision trees",
+    "org charts",
+    "mind maps and process infographics",
+    "network, wiring and system diagrams that get rearranged later"
+   ],
+   "avoid": [
+    "for decorative lines that should not follow objects: use the 2-Point Line or Bezier tool",
+    "for dimension leaders or labels: use the Dimension / Callout tools",
+    "when exporting to apps that do not understand connectors: the line becomes a plain curve, so finish the layout in CorelDRAW first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Crop",
+   "id": "c3157ceb-770b-4857-8477-419a4ab5451e",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Crop Tools/Crop",
+   "status": "current",
+   "summary": "Drag a rectangle and everything outside it is permanently removed from the selected objects (or from all objects when nothing is selected), vectors and bitmaps alike. The crop box can be moved, resized and rotated before it is applied.",
+   "how": "Optionally select the objects to crop, drag the crop rectangle, adjust it with its handles (click inside it once more to get rotate handles), or type position / size / angle on the property bar, then double-click inside the crop area to apply. Clear Crop Marquee on the property bar removes the box without cropping.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"c3157ceb-770b-4857-8477-419a4ab5451e\". A script gets the same result per object instead: draw a rectangle (IVGLayer.CreateRectangle2) and keep shape.Intersect(rect, False, False), IVGBitmap.Crop cuts a bitmap down to its own clipping path (IVGBitmap.CropEnvelope); whether Intersect leaves a bitmap with such a path is not in the harvest.",
+   "use_for": [
+    "trimming a placed photo to the final frame",
+    "cutting a layout or pattern to exact page or bleed size before export",
+    "removing artwork that hangs off the page edge"
+   ],
+   "avoid": [
+    "when the crop may change later: it is destructive, use a PowerClip frame instead",
+    "on objects you did not mean to touch: with no selection it crops everything on the page, so select first",
+    "for cutting a shape into pieces you keep: use the Knife tool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "cropTool",
+    "AI": "path:Object/Crop Image"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed keys not in the batch (Enter to apply, Esc to cancel); script_api no longer implies IVGBitmap.Crop alone reproduces a rectangle crop (it only cuts to the bitmap's existing clipping path)"
+   }
+  },
+  {
+   "name": "Eraser",
+   "id": "3eca6bde-798a-4b0d-b994-f14f22375a6c",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Crop Tools/Eraser",
+   "status": "current",
+   "summary": "Rubs away parts of the selected vector objects or bitmaps along the nib's path; vectors stay closed, editable curves with the erased area cut out, bitmaps lose the erased pixels. Nib size and shape (round or square) are set on the property bar.",
+   "how": "Select the object(s), press X, set nib thickness and round / square nib on the property bar, then drag across the object to erase freehand; click once and click again at another point to erase in a straight line. Keep Reduce Nodes on so the cut edge does not carry hundreds of nodes.",
+   "shortcut": "X",
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.ActiveTool = 68 (cdrToolEraser) or Application.FrameWork.Automation.InvokeItem \"3eca6bde-798a-4b0d-b994-f14f22375a6c\". The harvest shows ActiveTool then reads back 28, not 68, and neither 28 nor ActiveToolStateGuid \"5f85ccce-041c-11d4-b32e-00a0c9e8a837\" proves the Eraser: ActiveTool = 75 / 76 / 77 / 78 (Rotate, Reflect, Scale, Skew) read back the same 28 and the same state GUID while the toolbox showed Freehand Pick. Confirm with Application.FrameWork.Application.DataContext.GetDataSource(\"AppOrViewDataSource\").GetProperty(\"ActiveTool\") = \"3eca6bde-798a-4b0d-b994-f14f22375a6c\". The stroke itself is a mouse drag; a script gets the same cut by building the eraser path as a closed shape and calling eraserPath.Trim(object, False) (IVGShape.Trim(TargetShape, LeaveSource, LeaveTarget); LeaveSource False removes the cutter).",
+   "use_for": [
+    "knocking a gap or worn spot into a vector logo or badge",
+    "cutting a hand-drawn notch out of a shape",
+    "removing a stray area from an imported bitmap"
+   ],
+   "avoid": [
+    "for precise geometric holes: draw the hole shape and use Trim",
+    "for cutting an object into separate pieces: use the Knife tool",
+    "for hiding part of a photo you may need back later: erasing is destructive, use a PowerClip or a transparency instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "eraserTool",
+    "AI": "Adobe Eraser Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api said ActiveToolStateGuid 5f85ccce-... confirms the Eraser, but the batch shows ActiveTool 75-78 give the same read-back 28 and the same state GUID with the toolbox on Freehand Pick; now confirms through the AppOrViewDataSource ActiveTool GUID (the harvest's own proof). Trim call written with the cutter as caller and LeaveSource False"
+   }
+  },
+  {
+   "name": "Knife",
+   "id": "f2edc14d-75cf-3eb9-4580-4d85629af1f9",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Crop Tools/Knife",
+   "status": "current",
+   "summary": "Slices vector objects, text or bitmaps along a cut line into separate objects you can move apart. The cut can be a 2-point straight line, a freehand stroke or a Bezier path, with an optional gap or overlap between the pieces.",
+   "how": "Pick the tool, choose the cut mode (2-point line, freehand, Bezier) and the cut spread (none, gap or overlap with a width) on the property bar, then draw the cut across the object from outside edge to outside edge; the pieces become separate objects.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"f2edc14d-75cf-3eb9-4580-4d85629af1f9\". A script splits a closed shape with a cutter shape covering one side: piece = shape.Intersect(half, True, True), then half.Trim(shape, False, False) leaves the rest of the shape and removes the cutter; open paths split with IVGSegment.BreakApartAt or IVGNode.BreakApart then IVGShape.BreakApart.",
+   "use_for": [
+    "split-letter and sliced-text headline effects",
+    "cutting a logo or badge into pieces for an exploded look",
+    "dividing a circle into pie wedges for an infographic",
+    "cutting a photo into strips or tiles"
+   ],
+   "avoid": [
+    "for removing an area rather than splitting it: use the Eraser or Crop tool",
+    "for many even slices: duplicate thin rectangles and use Trim / Intersect, it is more precise than hand cuts"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Knife Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api had IVGShape.Trim(half), which trims the cutter by the shape; now shape.Intersect(half, True, True) then half.Trim(shape, False, False)"
+   }
+  },
+  {
+   "name": "Virtual Segment Delete",
+   "id": "11e3cea8-0762-4f22-9e7e-900dd1399a1d",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Crop Tools/Virtual Segment Delete",
+   "status": "current",
+   "summary": "Deletes the piece of a line or outline that runs between two intersections with other lines, the 'virtual segment', leaving the rest of the path in place. Clicking removes one piece; dragging a marquee over several removes them in one go.",
+   "how": "Pick the tool, point at the piece of a line between its crossings with other lines and click to delete it, or drag a marquee over several pieces to delete them together. Closed shapes become open paths after a piece is removed. Works on curves and outlines, not on bitmaps.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"11e3cea8-0762-4f22-9e7e-900dd1399a1d\". A script can do the same in steps: find the crossing points with IVGSegment.GetIntersections, split there with IVGSegment.BreakApartAt, IVGShape.BreakApart the curve and Delete the unwanted piece.",
+   "use_for": [
+    "cleaning overshoots from hand-drawn or traced line art",
+    "removing hidden parts of overlapping lines in technical drawings",
+    "building interlocking or woven-line logos"
+   ],
+   "avoid": [
+    "on filled shapes you want to keep closed: removing a segment opens the path and the fill disappears, use Trim / Shape tool instead",
+    "for cutting objects into pieces: use the Knife tool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Shape Builder Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary said the marquee removes every segment it touches while how said segments inside it; both now say a marquee over several pieces, without the unverified hover-highlight claim"
+   }
+  }
+ ]
+}

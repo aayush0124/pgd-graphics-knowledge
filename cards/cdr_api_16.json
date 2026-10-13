@@ -1,0 +1,418 @@
+{
+ "cards": [
+  {
+   "name": "IVGSegment",
+   "id": "class:IVGSegment",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSegment",
+   "status": "current",
+   "summary": "One piece of a curve object between two neighbouring nodes, either a straight line or a Bezier curve. Through it a script measures the piece (length, bounding box, point, tangent, perpendicular or curvature at an offset, intersections with another segment), reshapes it (line/curve type, control-handle length, angle or position) and edits the path (add a node, break the path apart, copy the piece out as its own curve). It draws nothing itself.",
+   "use_for": [
+    "placing objects along a path: badges, dots or arrowheads at points and tangent angles of a curve",
+    "splitting or adding nodes at exact distances, e.g. dividing a border or die line into equal parts",
+    "smoothing or flattening a drawn path in a batch: turning line segments into curves or setting handle lengths",
+    "measuring cut, stitch or route lengths on signage, packaging dielines and maps",
+    "finding where two paths cross before trimming or placing a marker"
+   ],
+   "avoid": [
+    "rectangles, ellipses, polygons and text that are not curves yet: ConvertToCurves first or the shape has no editable Curve",
+    "reshaping whole objects (scale, rotate, envelope): use the shape transforms or effects, not node-level edits",
+    "editing many segments the same way: use Segments.All / Range and IVGSegmentRange.SetType or AddNode"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Bezier segment object of the VGCore model. A script reaches it from a curve shape: ActiveShape.Curve.Segments(i) (all subpaths), Curve.SubPaths(n).Segments(i) (one subpath), Segments.First / Last, from a node (IVGNode.Segment / NextSegment / PrevSegment) or by walking with Next / Previous. Offsets in the *At methods are read according to an OffsetType of the cdrSegmentOffsetType enum (default 2). Measurements come back in the document's unit.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "line or curve (cdrSegmentType); set it to turn a straight piece into a curve or the reverse"
+    },
+    {
+     "name": "Length",
+     "use": "length of this piece in document units"
+    },
+    {
+     "name": "Index",
+     "use": "position within its subpath (base 1)"
+    },
+    {
+     "name": "AbsoluteIndex",
+     "use": "position within the whole curve; use it with Curve.Segments(i)"
+    },
+    {
+     "name": "StartNode",
+     "use": "node where the segment begins"
+    },
+    {
+     "name": "EndNode",
+     "use": "node where the segment ends"
+    },
+    {
+     "name": "StartingControlPointLength",
+     "use": "length of the handle leaving the start node (curve segments)"
+    },
+    {
+     "name": "StartingControlPointAngle",
+     "use": "direction of the handle leaving the start node"
+    },
+    {
+     "name": "EndingControlPointLength",
+     "use": "length of the handle arriving at the end node"
+    },
+    {
+     "name": "EndingControlPointAngle",
+     "use": "direction of the handle arriving at the end node"
+    },
+    {
+     "name": "SetStartingControlPointPosition",
+     "use": "place the start handle at an exact x, y"
+    },
+    {
+     "name": "SetEndingControlPointPosition",
+     "use": "place the end handle at an exact x, y"
+    },
+    {
+     "name": "GetPointAt",
+     "use": "point on the segment at an offset, returned as an object (easiest from outside VBA)"
+    },
+    {
+     "name": "GetPointPositionAt",
+     "use": "x, y of a point at an offset, returned through ByRef arguments"
+    },
+    {
+     "name": "GetTangentAt",
+     "use": "tangent angle at an offset: rotate an object to follow the path"
+    },
+    {
+     "name": "GetPerpendicularAt",
+     "use": "perpendicular angle at an offset: ticks or labels standing off the path"
+    },
+    {
+     "name": "AddNodeAt",
+     "use": "insert a node at an offset and get it back"
+    },
+    {
+     "name": "BreakApartAt",
+     "use": "cut the path open at an offset"
+    },
+    {
+     "name": "GetIntersections",
+     "use": "crossing points with another segment"
+    },
+    {
+     "name": "GetCopy",
+     "use": "this piece as a separate curve, e.g. to draw it as its own object"
+    }
+   ],
+   "gotchas": [
+    "The default OffsetType 2 is the Bezier parameter (cdrParamSegmentOffset), so Offset 0.5 is not the midpoint by length on a curved segment; pass cdrRelativeSegmentOffset for a fraction of the length or cdrAbsoluteSegmentOffset for a distance from the start node (the enum says inches or the current document unit).",
+    "Lengths and positions are in ActiveDocument.Unit, which in a script is not necessarily the ruler unit; set ActiveDocument.Unit (e.g. cdrMillimeter) before reading or writing numbers (unverified that the default is inches in 25.1).",
+    "AddNodeAt and BreakApartAt change the curve: segment counts and indexes after the edit shift, so loop from the last segment backwards or re-read Curve.Segments (unverified that old Segment references go stale).",
+    "Only curve shapes have an editable Curve; rectangles, ellipses and text need ConvertToCurves first, and Shape.DisplayCurve returns a read-only curve (IVGShape batch), so use it for measuring only.",
+    "A line segment has no handles: set Type to cdrCurveSegment before writing the control-point members (unverified what writing them on a line segment does).",
+    "GetPointPositionAt, GetBoundingBox and the Get*ControlPointPosition methods return through ByRef arguments; from Python / pywin32 those come back as a returned tuple instead, so GetPointAt and BoundingBox are simpler there (unverified).",
+    "GetPeaks, GetBendPoints and FindParamOffset are described only as 'Gets Peaks' / 'Gets bend points' / 'Finds Parametric Offset'; test their outputs before building on them."
+   ],
+   "example": "Dim seg As Segment, ang As Double\nActiveDocument.Unit = cdrMillimeter\nSet seg = ActiveShape.Curve.Segments(1)\nDebug.Print seg.Type, seg.Length\nang = seg.GetTangentAt(0.5, cdrRelativeSegmentOffset)\nseg.AddNodeAt 0.5, cdrRelativeSegmentOffset",
+   "review": {
+    "by": "adversarial",
+    "changes": "Absolute-offset gotcha now states the unit the cdrSegmentOffsetType enum gives. DisplayCurve gotcha changed from an unverified \"copy\" claim to the harvested \"read-only curve\" wording."
+   }
+  },
+  {
+   "name": "IVGSegmentRange",
+   "id": "class:IVGSegmentRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSegmentRange",
+   "status": "current",
+   "summary": "A script-built list of segments from one curve, used to read or change several segments at once: their total length, whether they share a type, converting them all to lines or curves (SetType), adding a node at the middle of each (AddNode), getting their nodes as a node range, or selecting their controlling nodes. Adding to or removing from the range only changes the list, not the curve.",
+   "use_for": [
+    "turning every straight segment of a traced logo or icon into curves in one call before smoothing",
+    "doubling node density on a path (a node in the middle of each segment) before applying a roughen or distortion",
+    "measuring the total length of part of a path, e.g. one side of a dieline",
+    "handing the nodes of chosen segments to a node-range operation via NodeRange"
+   ],
+   "avoid": [
+    "operations on one segment (handles, offsets, intersections): use IVGSegment",
+    "shape-level edits across several objects: use a ShapeRange instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Range (list) object over the segments of one curve. A script gets one from a segment collection: Curve.Segments.All, Segments.Range(Array(1, 3)) or Segments.AllExcluding(Array(...)) (SubPath.Segments works the same way), then grows or trims it with Add / AddRange / Remove / RemoveRange and works on it with SetType, AddNode, NodeRange or the selection methods. Item(i) is base 1 and For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of segments in the range"
+    },
+    {
+     "name": "Item",
+     "use": "segment i of the range (base 1, default member)"
+    },
+    {
+     "name": "Type",
+     "use": "shared segment type, or cdrMixedSegments (2) when lines and curves are both present"
+    },
+    {
+     "name": "Length",
+     "use": "total length of the segments, in document units"
+    },
+    {
+     "name": "SetType",
+     "use": "make every segment in the range a line or a curve"
+    },
+    {
+     "name": "AddNode",
+     "use": "insert a node at the middle of each segment"
+    },
+    {
+     "name": "Add",
+     "use": "append one segment to the list"
+    },
+    {
+     "name": "AddRange",
+     "use": "append all segments of another range"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the i-th entry of the list (not from the curve)"
+    },
+    {
+     "name": "RemoveRange",
+     "use": "drop the segments of another range from this list"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "empty the list"
+    },
+    {
+     "name": "NodeRange",
+     "use": "the nodes that belong to these segments, as a node range"
+    },
+    {
+     "name": "FirstSegment",
+     "use": "first segment in the range"
+    },
+    {
+     "name": "LastSegment",
+     "use": "last segment in the range"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "select the nodes that control these segments"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add those nodes to the current node selection"
+    },
+    {
+     "name": "RemoveFromSelection",
+     "use": "take those nodes out of the node selection"
+    }
+   ],
+   "gotchas": [
+    "Add, AddRange, Remove, RemoveRange and RemoveAll edit only the list; nothing is deleted from the curve. Only SetType and AddNode (and the selection calls) change the document.",
+    "Remove(Index) uses the position inside the range (base 1), not the segment's Index or AbsoluteIndex in the curve.",
+    "Type is read-only on the range and reports cdrMixedSegments (2) when lines and curves are both present; use SetType to write.",
+    "After AddNode the curve has more segments than the range lists; rebuild the range from Curve.Segments before a second pass (unverified).",
+    "Mixing segments from different curves in one range is probably refused or ignored, since Parent is a single curve (unverified).",
+    "CreateSelection selects nodes, which a user only sees while the Shape tool is active (unverified)."
+   ],
+   "example": "Dim sr As SegmentRange\nActiveDocument.Unit = cdrMillimeter\nSet sr = ActiveShape.Curve.Segments.All\nDebug.Print sr.Count, sr.Length, sr.Type\nsr.SetType cdrCurveSegment\nsr.AddNode",
+   "review": {
+    "by": "adversarial",
+    "changes": "Named the mixed value of Type as cdrMixedSegments (2), from the cdr_api_x03 cdrSegmentType enum. Otherwise no change."
+   }
+  },
+  {
+   "name": "IVGSegments",
+   "id": "class:IVGSegments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSegments",
+   "status": "current",
+   "summary": "The read-only collection of all segments of a curve (Curve.Segments) or of one subpath (SubPath.Segments). It lets a script count and walk the pieces of a path and build segment ranges from all, some, or all-but-some of them; it does not add or delete segments itself.",
+   "use_for": [
+    "looping over every segment of a path to measure, decorate or adjust it",
+    "picking the first / last piece of an open path, e.g. to add arrowhead-style ornaments at the ends",
+    "building a segment range of selected pieces (Range / AllExcluding) for a batch SetType or AddNode"
+   ],
+   "avoid": [
+    "adding segments: append them through the subpath (AppendLineSegment / AppendCurveSegment on IVGSubPath) or draw a new curve",
+    "node-level work (cusp / smooth / symmetric nodes): use Curve.Nodes and IVGNode"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Collection object returned by IVGCurve.Segments (every segment in every subpath, in order) and IVGSubPath.Segments (that subpath only), e.g. ActiveShape.Curve.Segments. Item(i) is base 1 and is the default member, so Segments(i) works; For Each works through _NewEnum. Range, All and AllExcluding return an IVGSegmentRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of segments"
+    },
+    {
+     "name": "Item",
+     "use": "segment i (base 1, default member)"
+    },
+    {
+     "name": "First",
+     "use": "first segment"
+    },
+    {
+     "name": "Last",
+     "use": "last segment"
+    },
+    {
+     "name": "All",
+     "use": "segment range holding every segment"
+    },
+    {
+     "name": "Range",
+     "use": "segment range from an array of indexes"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "segment range of every segment except the listed indexes"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each over the collection"
+    },
+    {
+     "name": "Parent",
+     "use": "the curve the collection belongs to"
+    }
+   ],
+   "gotchas": [
+    "Curve.Segments spans all subpaths while SubPath.Segments covers one; Segment.Index counts within the subpath and Segment.AbsoluteIndex within the curve, so index Curve.Segments with AbsoluteIndex.",
+    "Parent is typed as a curve although its description says 'parent subpath'; do not expect an IVGSubPath back.",
+    "Range and AllExcluding take an array of indexes (VBA Array(1, 3)); a bare number is not an array (unverified how pywin32 lists marshal here).",
+    "The collection follows the live curve: after AddNodeAt / BreakApartAt / AddNode the Count and the meaning of each index change (unverified).",
+    "A closed subpath has as many segments as nodes, an open one has one fewer; do not mix Nodes and Segments indexes (unverified)."
+   ],
+   "example": "Dim segs As Segments, s As Segment\nSet segs = ActiveShape.Curve.Segments\nFor Each s In segs\n  Debug.Print s.AbsoluteIndex, s.Type, s.Length\nNext s\nsegs.AllExcluding(Array(1, segs.Count)).SetType cdrCurveSegment",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSelectionInformation",
+   "id": "class:IVGSelectionInformation",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSelectionInformation",
+   "status": "current",
+   "summary": "Read-only report on the document's current selection: how many objects are selected, what kind they are (group, text, bitmap, blend / contour / extrude / drop shadow / distortion / envelope / fitted text / connector and their control objects), what can be done with them (blend, contour, clone, ungroup, copy an effect, apply fill / outline / transparency, lock) and the editing state (text editing, inside PowerClip contents). It also hands back the parts of a compound effect, such as a blend's top and bottom shapes or a drop shadow's control shape.",
+   "use_for": [
+    "guarding a macro: exit cleanly when nothing is selected, text is being edited or the selection is the wrong kind",
+    "reaching the source object behind an effect, e.g. recolouring the control shape of a drop shadow or contour, or the ends of a blend",
+    "routing a batch tool by selection type: artistic vs paragraph text, bitmaps, groups, linked bitmaps",
+    "checking CanCreateBlend / CanApplyContour / CanApplyTransparency before calling the effect so the script does not throw"
+   ],
+   "avoid": [
+    "getting the selected shapes themselves for editing: use ActiveSelectionRange or ActiveDocument.SelectionRange (ActiveDocument.Selection returns one cdrSelectionShape shape, not a range)",
+    "scripts that never select anything (working on ShapeRanges directly): this object only describes the user-visible selection"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Selection-state helper of the VGCore model, reached as ActiveDocument.SelectionInfo (an IVGDocument member); Parent is the document. Every member is a read-only bool, count, type or shape reference describing the selection at the time it is read; nothing on it changes the document.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of selected objects; 0 means nothing selected"
+    },
+    {
+     "name": "FirstShape",
+     "use": "first selected shape"
+    },
+    {
+     "name": "SecondShape",
+     "use": "second selected shape, for two-object operations such as blends"
+    },
+    {
+     "name": "IsEditingText",
+     "use": "True while the user is typing in a text object: skip shape edits"
+    },
+    {
+     "name": "IsOnPowerClipContents",
+     "use": "True while inside PowerClip contents editing"
+    },
+    {
+     "name": "IsGroup",
+     "use": "the selected shape is a group"
+    },
+    {
+     "name": "CanUngroup",
+     "use": "some selected shape can be ungrouped"
+    },
+    {
+     "name": "CanCreateBlend",
+     "use": "the selected shapes can be blended"
+    },
+    {
+     "name": "IsBlendGroup",
+     "use": "the selected shape is a blend group"
+    },
+    {
+     "name": "BlendTopShape",
+     "use": "top end shape of the selected blend"
+    },
+    {
+     "name": "BlendBottomShape",
+     "use": "bottom end shape of the selected blend"
+    },
+    {
+     "name": "BlendPath",
+     "use": "path of a blend that follows a path"
+    },
+    {
+     "name": "IsDropShadowGroup",
+     "use": "the selected shape is a drop shadow group"
+    },
+    {
+     "name": "DropShadowControlShape",
+     "use": "the object that casts the selected drop shadow"
+    },
+    {
+     "name": "IsContourGroup",
+     "use": "the selected shape is a contour group"
+    },
+    {
+     "name": "ContourControlShape",
+     "use": "the object the selected contour is built from"
+    },
+    {
+     "name": "ExtrudeFaceShape",
+     "use": "the face object of the selected extrude"
+    },
+    {
+     "name": "IsArtisticTextSelected",
+     "use": "the selection is artistic text"
+    },
+    {
+     "name": "IsParagraphTextSelected",
+     "use": "the selection is paragraph text"
+    },
+    {
+     "name": "IsBitmapSelected",
+     "use": "some selected shape is a bitmap"
+    }
+   ],
+   "gotchas": [
+    "The VBA type is the coclass SelectionInfo (Dim si As SelectionInfo); there is no SelectionInformation type in the 25.1 type library, only the IVGSelectionInformation interface, so 'As SelectionInformation' does not compile (unverified in the VBA editor).",
+    "Several harvested descriptions are shifted by one line: IsConnector says 'is a fitted text', IsFittedText 'fitted text control', IsFittedTextControl 'natural media control', IsNaturalMediaControl 'natural media group' and IsNaturalMediaGroup 'an envelope'. Go by the member name and test on a real selection before relying on these (unverified which is right).",
+    "CanCloneDropShadow is described as 'blend can be copied' and IsMeshFillSelected / IsMeshFillPresent share one description; the same caution applies.",
+    "The plain Is* members (IsGroup, IsBlendGroup, IsDropShadowGroup ...) describe 'the selected shape'; most *Selected / *Present members (IsBitmapSelected, IsGroupSelected, IsEnvelopePresent ...) describe 'any of the selected shapes'. IsArtisticTextSelected, IsParagraphTextSelected, IsTextSelected and IsOLESelected are exceptions: they are described as 'the selected shape' too. Use the 'any of' members for multi-object selections.",
+    "The control / group getters (BlendTopShape, DropShadowControlShape, ContourGroup ...) are only meaningful when the matching Is* member is True; otherwise expect Nothing (unverified).",
+    "It describes the user-visible selection only: a macro that works on ShapeRanges without selecting must call CreateSelection first, and reading it while Application.Optimization is True may see a stale state (unverified).",
+    "What decides FirstShape vs SecondShape (selection order or stacking order) is not documented (unverified)."
+   ],
+   "example": "Dim si As SelectionInfo\nSet si = ActiveDocument.SelectionInfo\nIf si.Count = 0 Or si.IsEditingText Then Exit Sub\nDebug.Print si.Count, si.IsGroup, si.CanUngroup\nIf si.IsBlendGroup Then Debug.Print si.BlendTopShape.Type, si.BlendBottomShape.Type\nIf si.CanCreateBlend Then si.FirstShape.CreateBlend si.SecondShape",
+   "review": {
+    "by": "adversarial",
+    "changes": "Example declared 'As SelectionInformation', a type the type library does not have; changed to the coclass SelectionInfo (cdr_api_23) and added a gotcha. Fixed the *Selected gotcha: IsArtisticTextSelected, IsParagraphTextSelected, IsTextSelected and IsOLESelected describe 'the selected shape', not 'any of'. avoid now points to ActiveDocument.SelectionRange, because Document.Selection returns a single selection shape."
+   }
+  }
+ ]
+}

@@ -1,0 +1,701 @@
+{
+ "cards": [
+  {
+   "name": "Grain",
+   "id": "adjustmentLayer:grainAdjustment",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Grain",
+   "status": "current",
+   "summary": "Adjustment layer that lays procedural, film-style grain over everything below it without touching the pixels: Amount sets how visible the grain is, Size how big each grain is, Roughness how irregular and clumpy it looks, and the seed picks another random pattern. Its controls and defaults (Size 25, Roughness 50) match the Grain panel of Camera Raw; at the default Amount 0 it does nothing. The harvest has no slider ranges (the descriptor stores any 16-bit integer); 0-100 is the expected dialog range from Camera Raw, not verified.",
+   "use_for": [
+    "filmic texture on a clean digital or AI-generated image so it reads as shot on film",
+    "matching grain across composited elements so a pasted cut-out sits in the background plate",
+    "breaking up banding in smooth skies and gradients before print or video export",
+    "retro poster or editorial photo finish"
+   ],
+   "avoid": [
+    "script values outside the dialog range: the descriptor accepts any 16-bit integer (1e6 read back as 16960) and does not clamp; keep Amount, Size and Roughness inside 0-100",
+    "fine grain on an image shown small (feed thumbnail, mobile): Size near the default 25 disappears when downscaled; raise Size, or use Filter > Noise > Add Noise for coarse digital noise",
+    "grain that must change every frame in a video or GIF: set a different grainSeed per frame"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Artistic/Film Grain",
+    "CDR": "Effects/Noise/Add Noise"
+   },
+   "look": [
+    "film grain",
+    "grainy",
+    "analog film",
+    "noise texture",
+    "gritty",
+    "vintage photo",
+    "35mm"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "strength / visibility of the grain; 0 (default) means no grain",
+     "typical": "15-40 subtle, 60-90 heavy"
+    },
+    {
+     "name": "Size",
+     "does": "size of the individual grain particles",
+     "typical": "25 default; 40-70 for coarse grain that survives downscaling"
+    },
+    {
+     "name": "Roughness",
+     "does": "how uneven the grain is: low = fine and regular, high = irregular and clumpy",
+     "typical": "50 default; 60-80 for a gritty film stock"
+    },
+    {
+     "name": "grainSeed",
+     "does": "random seed of the grain pattern; another value gives another pattern",
+     "typical": "0 default; any integer"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 80,
+    "Size": 60,
+    "Roughness": 70
+   },
+   "pairs_with": [
+    "a Levels or Curves adjustment layer with lifted blacks for a faded film tone",
+    "Hue/Saturation (Colorize or desaturated) for a black-and-white film look",
+    "Photo Filter for a warm vintage cast"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putInteger(s('grainAmount'), 80); a.putInteger(s('grainSize'), 60); a.putInteger(s('grainRoughness'), 70); a.putInteger(s('grainSeed'), 0); var l=new ActionDescriptor(); l.putObject(s('type'), s('grainAdjustment'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: procedural grain recalculated live for the layers below; no pixel data stored",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the Camera Raw comparison now rests on the harvested defaults (Size 25, Roughness 50) instead of an untested behaviour claim; the 0-100 range stays flagged as unverified"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/db3c0197e20f.png",
+    "note": "Strong monochrome grain over the whole frame, clearly visible on the 1:1 crop (mean change 13.6 levels, the noise is the same in all three channels) and still visible at 960x540.",
+    "rerender": false,
+    "crop": "gallery/ps_adjustment/db3c0197e20f_1to1.png"
+   }
+  },
+  {
+   "name": "Hue/Saturation",
+   "id": "adjustmentLayer:hueSaturation",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Hue/Saturation",
+   "status": "current",
+   "summary": "Adjustment layer that shifts the hue, saturation and lightness of everything below, either for the whole image (Master) or for one colour range (Reds, Yellows, Greens, Cyans, Blues, Magentas); with Colorize on it discards the original hues and tints the whole image in one hue, a single-colour monochrome. The master and per-range amounts travel in the Adjustment list (hueSatAdjustmentV2 objects) whose inner keys the harvest did not read.",
+   "use_for": [
+    "recolouring one colour range, e.g. turning a red dress or product blue through the Reds range",
+    "global desaturation or a saturation boost for a mood grade",
+    "single-hue tinted background photo for a poster or social post via Colorize",
+    "toning down one clashing colour in a layout photo"
+   ],
+   "avoid": [
+    "exact brand-colour matching: hue shifts are relative and catch skin tones too; use a Solid Color fill layer in Color blend mode with a mask",
+    "black-and-white conversion with control over how each colour maps to grey: use the Black & White adjustment",
+    "large hue shifts on low-saturation or JPEG-compressed areas band and blotch; mask to the object"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Recolor Artwork...",
+    "CDR": "Effects/Adjust/Hue/Saturation/Lightness"
+   },
+   "look": [
+    "recolour",
+    "hue shift",
+    "desaturate",
+    "saturate",
+    "monochrome tint",
+    "colorize",
+    "colour grade"
+   ],
+   "params": [
+    {
+     "name": "Colorize",
+     "does": "on = replace every hue with one tint (single-colour monochrome); off = shift the existing hues",
+     "typical": "false for corrections, true for a tinted monochrome look"
+    },
+    {
+     "name": "Adjustment",
+     "does": "list of hueSatAdjustmentV2 objects holding the master and per-range hue / saturation / lightness amounts (inner keys not harvested)",
+     "typical": "hueSatAdjustmentV2 (the current format)"
+    },
+    {
+     "name": "Preset Kind",
+     "does": "where the settings come from: the default, a factory or user preset (loaded through Using) or custom values",
+     "typical": "presetKindCustom when a script sets the values"
+    },
+    {
+     "name": "Using",
+     "does": "path of a saved Hue/Saturation preset file to load",
+     "typical": "only with a factory or user preset"
+    }
+   ],
+   "demo_settings": {
+    "Preset Kind": "presetKindCustom",
+    "Colorize": true
+   },
+   "demo_note": "Colorize alone: the plate should turn single-hue monochrome (a tint, or plain grey if the stored colorize saturation is 0); the exact tint of a scripted Colorize without amounts was not tested.",
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    },
+    "adjustment": {
+     "hueSatAdjustment": "HueSatAdjustment",
+     "hueSatAdjustmentV2": "HueSatAdjustment Version 2"
+    }
+   },
+   "pairs_with": [
+    "a layer mask or clipping to one layer to recolour a single object",
+    "Grain for a tinted vintage photo",
+    "Selective Color for fine ink-level tweaks after the big hue move"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putEnumerated(s('presetKind'), s('presetKindType'), s('presetKindCustom')); a.putBoolean(s('colorize'), true); /* amounts: var lst=new ActionList(); lst.putObject(s('hueSatAdjustmentV2'), h); a.putList(s('adjustment'), lst); where h's keys are not harvested */ var l=new ActionDescriptor(); l.putObject(s('type'), s('hueSaturation'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added Preset Kind presetKindCustom so the spec matches the scripting call; avoid: dropped Selective Color as a brand-matching fix (it does not match colours either) and moved the demo-limit note out of avoid (demo_note and scripting already carry it)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/3ec4d2e1574d.png",
+    "note": "Colorize at its default hue gives a red-brown monotone (every colour block becomes a muted red), the single-hue tint the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Invert",
+   "id": "adjustmentLayer:invert",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Invert",
+   "status": "current",
+   "summary": "Adjustment layer that flips every channel value below it to its opposite, giving a photographic negative: lights go dark, darks go light and each colour turns into its complement (red to cyan, blue to yellow). It has no settings.",
+   "use_for": [
+    "photo-negative or X-ray style poster art",
+    "turning black-on-white line art or a scanned sketch into white-on-black",
+    "a colour-negative accent through a mask for a glitch or psychedelic layout",
+    "spotting differences between two aligned versions together with the Difference blend mode"
+   ],
+   "avoid": [
+    "scanned colour film negatives: a plain invert leaves the orange film mask; convert in Camera Raw or with per-channel Curves",
+    "inverting brightness but keeping the hues: set the Invert layer to the Luminosity blend mode",
+    "CMYK documents invert each ink, which looks different from the RGB result"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Invert Colors",
+    "CDR": "Effects/Lens/Invert"
+   },
+   "look": [
+    "negative",
+    "inverted",
+    "photo negative",
+    "x-ray",
+    "complementary colours",
+    "psychedelic"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Threshold or Black & White for a high-contrast negative graphic",
+    "Luminosity blend mode to invert tones only",
+    "a layer mask to invert part of the image"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var l=new ActionDescriptor(); l.putClass(s('type'), s('invert')); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/86375d5e13e9.png",
+    "note": "Full negative: the grey ramp reverses (5..249 to 249..5) and every block turns to its complement (red to cyan, blue to yellow).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Levels",
+   "id": "adjustmentLayer:levels",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Levels",
+   "status": "current",
+   "summary": "Adjustment layer that remaps tones by setting input black point, white point and midtone gamma (and output black / white) for the composite or each channel against a histogram: pulling the black and white points in adds contrast, moving gamma brightens or darkens the midtones, per-channel moves remove colour casts. Auto applies Photoshop's automatic correction. The point values travel in the Adjustment list: one levelsAdjustment per channel with channel, input [black, white], gamma and output [black, white].",
+   "use_for": [
+    "fixing a flat, washed-out photo or video frame by setting black and white points",
+    "neutralising a colour cast with per-channel levels or the grey-point eyedropper",
+    "cleaning a scan of line art or handwriting to solid black on white",
+    "faded, matte blacks for a film look via output levels"
+   ],
+   "avoid": [
+    "shaping one tonal range (S-curve, protecting highlights): use Curves",
+    "big point moves on 8-bit images leave histogram gaps and banding; work in 16-bit or move modestly",
+    "Auto on deliberately dark or bright moody images normalises the range and flattens the mood; set the points by hand",
+    "scripts: \"auto\": true in the make adjustmentLayer descriptor is ignored (the gallery read no auto key back and the layer changed nothing); for an automatic correction run the destructive levels event with autoBlackWhite / autoNeutrals, or set the points in the Adjustment object"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Levels"
+   },
+   "look": [
+    "contrast",
+    "brighten",
+    "darken",
+    "black point",
+    "white point",
+    "gamma",
+    "colour cast fix",
+    "matte blacks",
+    "tonal correction"
+   ],
+   "params": [
+    {
+     "name": "Auto",
+     "does": "true = apply Photoshop's automatic levels correction (the Auto button)",
+     "typical": "true for a quick fix"
+    },
+    {
+     "name": "Adjustment",
+     "does": "levelsAdjustment list, one per channel: channel (reference), input [black, white], gamma, output [black, white]",
+     "typical": "input black about 20 and white about 235 with gamma 1.1 for a flat photo"
+    },
+    {
+     "name": "Preset Kind",
+     "does": "where the settings come from: the default, a factory or user preset (loaded through Using) or custom values",
+     "typical": "presetKindCustom when a script sets the values"
+    },
+    {
+     "name": "Using",
+     "does": "path of a saved Levels preset file to load",
+     "typical": "only with a factory or user preset"
+    }
+   ],
+   "demo_settings": {
+    "Preset Kind": "presetKindCustom",
+    "Adjustment": [
+     {
+      "channel": "composite",
+      "input": [
+       30,
+       220
+      ],
+      "gamma": 1.2
+     }
+    ]
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "Curves for finer tonal shaping after Levels sets the range",
+    "Hue/Saturation after the tones are fixed",
+    "Grain with raised output black for a faded film finish"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putEnumerated(s('presetKind'), s('presetKindType'), s('presetKindCustom')); var lv=new ActionDescriptor(), ch=new ActionReference(); ch.putEnumerated(s('channel'), s('channel'), s('composite')); lv.putReference(s('channel'), ch); var inp=new ActionList(); inp.putInteger(30); inp.putInteger(220); lv.putList(s('input'), inp); lv.putDouble(s('gamma'), 1.2); var adj=new ActionList(); adj.putObject(s('levelsAdjustment'), lv); a.putList(s('adjustment'), adj); var l=new ActionDescriptor(); l.putObject(s('type'), s('levels'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO); /* the structure the gallery rendered (input 30 / 220, gamma 1.2); 'auto' is ignored by make, see avoid */",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added Preset Kind presetKindCustom so the spec matches the scripting call; removed the demo note duplicated in avoid (demo_note keeps it). Demo stays weak: Auto is the only settable switch"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/1f7612ea8438.png",
+    "note": "Levels 30 / 1.2 / 220 applied exactly (frame within 0.6 levels of the formula): plate tones at or below 30 clip to black, at or above 220 to white (pure black pixels 1.6 % -> 9.2 %, pure white 1.5 % -> 4.0 %), mid grey brightens 127 -> 146: more contrast and brighter midtones, no colour shift.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "gallery/ps_adjustment/1f7612ea8438.png",
+     "note": "Untested: frame identical to the plate (diff 0.0): Photoshop dropped \"Auto\" from the make descriptor (index \"dropped\") and read Preset Kind back as default, so no levels change happened; the black / white / gamma points live in the unharvested Adjustment object.",
+     "rerender": false,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "not_rendered",
+      "cause": "harness",
+      "note": "Frame vs ref diff 0.0 confirmed in index.json: nothing was applied, so the effect is untested rather than broken; the card text is not contradicted by the frame."
+     }
+    }
+   }
+  },
+  {
+   "name": "OpenColorIO Transform",
+   "id": "adjustmentLayer:OpenColorIO Transform",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/OpenColorIO Transform",
+   "status": "hidden",
+   "summary": "Adjustment layer that applies an OpenColorIO (OCIO) colour transform, such as a colour-space conversion or a view / look transform from the active OCIO config, to the layers below. The menu item is hidden unless a document using OCIO colour management is open, and the harvest found no adjustment class for it, so its settings and script route are unknown; this description comes from general knowledge of OCIO workflows and was not tested.",
+   "use_for": [
+    "VFX and film pipelines: converting plates between colour spaces (e.g. ACES) inside an OCIO-managed document",
+    "previewing or baking a show look / LUT defined in the studio's OCIO config"
+   ],
+   "avoid": [
+    "ordinary sRGB or print design work: the item does not appear without an OCIO document; use Color Lookup or Curves for creative grading",
+    "scripted pipelines: no harvested event or settings (see scripting)"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "look": [
+    "colour space conversion",
+    "ACES",
+    "OCIO",
+    "LUT",
+    "view transform",
+    "film pipeline"
+   ],
+   "params": [],
+   "pairs_with": [
+    "an OCIO-managed document (prerequisite)"
+   ],
+   "scripting": "No harvested script route: the harvest found no adjustment class for this item; the candidate event 'adjustmentLayerOCIOAdjustment' is unverified. The menu command id is 6650 (visible only with an OCIO document open); running it from a script is untested and would open the dialog.",
+   "scriptable": "no",
+   "non_destructive": "the harvest lists it as a non-destructive adjustment layer; not probed further",
+   "cost": "not probed",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: status hidden (the item appears only with an OCIO-managed document and has no harvested class), so it was not rendered.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "input / status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Photo Filter",
+   "id": "adjustmentLayer:photoFilter",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Photo Filter",
+   "status": "current",
+   "summary": "Adjustment layer that imitates a coloured filter on a camera lens: it blends the filter colour into everything below at the chosen Density, warming (orange), cooling (blue) or tinting the image; with Preserve Luminosity on, the image keeps its brightness so only the colour cast changes.",
+   "use_for": [
+    "warm golden-hour or cool moonlit mood on a photo",
+    "unifying the colour temperature of composited elements",
+    "correcting a cast with the complementary filter, e.g. a blue filter on a tungsten-orange shot",
+    "brand-colour wash across a photo for a social post"
+   ],
+   "avoid": [
+    "exact neutral colour correction: use Curves / Levels with the grey eyedropper or Camera Raw white balance",
+    "a strong graphic two-colour look: use Gradient Map",
+    "script Density past 100%: the descriptor stores any value (1e6 kept as sent) and the harvest records no min / max; stay at or below 100"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Camera/Photo Filter"
+   },
+   "look": [
+    "warm tint",
+    "cool tint",
+    "colour cast",
+    "warming filter",
+    "cooling filter",
+    "golden hour",
+    "moody blue"
+   ],
+   "params": [
+    {
+     "name": "Filter Color",
+     "does": "the filter colour (stored as Lab); the default is an orange warming colour (Lab 67.06 / 32 / 120)",
+     "typical": "orange to warm, a saturated blue such as #006DFF to cool"
+    },
+    {
+     "name": "Density",
+     "does": "strength of the tint in percent",
+     "typical": "25 default; 40-70 for an obvious grade"
+    },
+    {
+     "name": "Preserve Luminosity",
+     "does": "true keeps the brightness so the filter does not darken the image",
+     "typical": "true"
+    }
+   ],
+   "demo_settings": {
+    "Filter Color": "#006DFF",
+    "Density": 60,
+    "Preserve Luminosity": true
+   },
+   "pairs_with": [
+    "Grain and a Levels fade for a vintage photo",
+    "a layer mask to tint only the sky or background",
+    "Hue/Saturation to pull back saturation after a strong filter"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); var c=new ActionDescriptor(); c.putDouble(s('luminance'), 48.3); c.putDouble(s('a'), 19.8); c.putDouble(s('b'), -81.1); a.putObject(s('color'), s('labColor'), c); a.putInteger(s('density'), 60); a.putBoolean(s('preserveLuminosity'), true); /* Lab 48.3 / 19.8 / -81.1 = #006DFF (Photoshop Lab is D50) */ var l=new ActionDescriptor(); l.putObject(s('type'), s('photoFilter'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: Lab for #006DFF recomputed for D50 (48.3 / 19.8 / -81.1); the writer's 49.7 / 30.8 / -79.1 is the D65 value and Photoshop reads it as about #5768FF. Default colour given as the harvested Lab 67.06 / 32 / 120; avoid no longer states an unharvested 1-100% dialog range"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/4c972562b4fa.png",
+    "note": "Blue #006DFF at density 60 pulls the warm photo to a cool lavender cast while the grey ramp keeps its brightness (Preserve Luminosity), as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Posterize",
+   "id": "adjustmentLayer:posterization",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Posterize",
+   "status": "current",
+   "summary": "Adjustment layer that cuts each colour channel down to the set number of brightness Levels, so smooth gradations snap into flat bands of colour; low values give a bold screen-print / pop-art look with hard colour edges (4 levels per RGB channel leave at most 64 colours).",
+   "use_for": [
+    "screen-print or pop-art poster from a photo",
+    "flat-colour base for vector tracing or a limited-palette illustration",
+    "retro comic or stencil look together with Threshold or a halftone",
+    "seeing the tonal zones of a photo, paint-by-numbers style"
+   ],
+   "avoid": [
+    "soft or noisy photos give ragged, speckled band edges: run Filter > Noise > Median or a blur first",
+    "a palette of colours you choose: Posterize picks levels per channel, not your colours; use Gradient Map or Indexed Color",
+    "high values (above about 20) barely change an 8-bit photo; use 2-8 for a visible look"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Transform/Posterize"
+   },
+   "look": [
+    "posterized",
+    "flat colour",
+    "banding",
+    "pop art",
+    "screen print",
+    "limited palette",
+    "cel shaded"
+   ],
+   "params": [
+    {
+     "name": "Levels",
+     "does": "number of brightness levels per channel; fewer levels = fewer, flatter bands",
+     "typical": "4 default; 2-6 for graphic looks, 8-12 for subtle"
+    }
+   ],
+   "demo_settings": {
+    "Levels": 4
+   },
+   "pairs_with": [
+    "a Median or blur pass first for clean band edges",
+    "Gradient Map above it to swap the bands for brand colours",
+    "Threshold on a copy for a black key line"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putInteger(s('levels'), 4); var l=new ActionDescriptor(); l.putObject(s('type'), s('posterization'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/387bcb3670c1.png",
+    "note": "Four levels per channel: hard flat colour bands, the grey ramp in four steps and the blocks snapped to 0/85/170/255 values: the screen-print look.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Selective Color",
+   "id": "adjustmentLayer:selectiveColor",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Selective Color",
+   "status": "current",
+   "summary": "Adjustment layer that changes the amount of cyan, magenta, yellow and black in one colour family at a time (Reds, Yellows, Greens, Cyans, Blues, Magentas, Whites, Neutrals, Blacks) and leaves the rest alone; Relative scales the ink already there, Absolute adds or removes a fixed percentage, so Absolute is stronger. The per-range amounts travel in the Color Correction list, one colorCorrection per family: colors (reds, yellows, greens, cyans, blues, magentas, whites, neutrals, blacks), cyan, magenta, yellowColor, black.",
+   "use_for": [
+    "refining skin tones through Reds / Yellows without touching the background",
+    "making a brand colour richer or nudging it toward a print swatch",
+    "removing a cast from whites or neutrals, or deepening blacks through the Blacks range",
+    "film-style split grade: cool Neutrals / Blacks, warm Whites"
+   ],
+   "avoid": [
+    "big hue swaps: Hue/Saturation moves hue further and faster",
+    "Relative on a colour holding almost none of that ink does nothing; use Absolute",
+    "Reds is a wide family: Reds cyan +50 also pulled red out of the orange (255 -> 196), yellow (255 -> 233) and pink-magenta (224 -> 167) bars in the gallery frame; mask it, or balance with Yellows / Magentas",
+    "read-backs name the Reds family 'radius' (a shared type id); send 'reds'"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Selective Color"
+   },
+   "look": [
+    "colour grade",
+    "ink balance",
+    "skin tone fix",
+    "CMYK correction",
+    "split tone",
+    "teal and orange"
+   ],
+   "params": [
+    {
+     "name": "Method",
+     "does": "relative = changes ink in proportion to what is there; absolute = adds or subtracts a fixed percentage (stronger)",
+     "typical": "relative for subtle work, absolute for a visible shift"
+    },
+    {
+     "name": "Color Correction",
+     "does": "list of per-range ink amounts, one colorCorrection per family: colors (reds, yellows, greens, cyans, blues, magentas, whites, neutrals, blacks), cyan, magenta, yellowColor, black",
+     "typical": "e.g. Reds: less cyan, more yellow for warmer skin"
+    },
+    {
+     "name": "Preset Kind",
+     "does": "where the settings come from: the default, a factory or user preset (loaded through Using) or custom values",
+     "typical": "presetKindCustom when a script sets the values"
+    },
+    {
+     "name": "Using",
+     "does": "path of a saved Selective Color preset file to load",
+     "typical": "only with a factory or user preset"
+    }
+   ],
+   "demo_settings": {
+    "Preset Kind": "presetKindCustom",
+    "Method": "absolute",
+    "Color Correction": [
+     {
+      "colors": "reds",
+      "cyan": 50,
+      "magenta": 0,
+      "yellowColor": 0,
+      "black": 0
+     }
+    ]
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    },
+    "method": {
+     "relative": "relative",
+     "absolute": "absolute"
+    }
+   },
+   "pairs_with": [
+    "Hue/Saturation for the big moves, Selective Color for the fine ink balance",
+    "a layer mask on skin or product",
+    "Levels / Curves to fix tone first"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putEnumerated(s('presetKind'), s('presetKindType'), s('presetKindCustom')); a.putEnumerated(s('method'), s('correctionMethod'), s('absolute')); var cc=new ActionDescriptor(); cc.putEnumerated(s('colors'), s('colors'), s('reds')); cc.putInteger(s('cyan'), 50); cc.putInteger(s('magenta'), 0); cc.putInteger(s('yellowColor'), 0); cc.putInteger(s('black'), 0); var lst=new ActionList(); lst.putObject(s('colorCorrection'), cc); a.putList(s('colorCorrection'), lst); var l=new ActionDescriptor(); l.putObject(s('type'), s('selectiveColor'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added Preset Kind presetKindCustom so the spec matches the scripting call; method enum_labels set to the harvested labels; demo note moved out of avoid (demo_note keeps it). Demo still shows nothing: the Color Correction list is not settable from the harvest"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/a7378549c2c1.png",
+    "note": "Reds cyan +50 (absolute) acts only on red-family colours: the red bar drops 232 -> 137 in red alone (orange, yellow and pink bars lose red too), green / cyan / blue / violet bars and the grey ramp are untouched (difference 0.0), red stripes and the dark-red panel darken (red -30 on red pixels): selective, as described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "gallery/ps_adjustment/a7378549c2c1.png",
+     "note": "Untested: frame identical to the plate (diff 0.0): Method was dropped and Preset Kind read back as default; the per-range CMYK amounts live in the unharvested Color Correction list, which the renderer cannot encode.",
+     "rerender": false,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "not_rendered",
+      "cause": "harness",
+      "note": "Frame vs ref diff 0.0 confirmed in index.json: nothing was applied, so the effect is untested rather than broken; the card text is not contradicted by the frame."
+     }
+    }
+   }
+  },
+  {
+   "name": "Threshold",
+   "id": "adjustmentLayer:thresholdClassEvent",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Threshold",
+   "status": "current",
+   "summary": "Adjustment layer that turns everything below into pure black and white: pixels brighter than the Level become white, darker ones black, with no greys or colour left; a hard stencil / photocopy look.",
+   "use_for": [
+    "stencil, street-art or rubber-stamp graphic from a photo",
+    "preparing a photo or scan for vector tracing, one-colour print or laser engraving",
+    "finding the darkest and lightest points of an image (slide Level to the ends) before Levels / Curves",
+    "clean black-on-white line art from a pencil scan"
+   ],
+   "avoid": [
+    "soft or noisy photos break into blotchy edges; raise contrast, sharpen or blur first",
+    "you need greys as dots: use Filter > Pixelate > Color Halftone or Bitmap mode with a halftone screen",
+    "two colours other than black and white: add a Gradient Map above it"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Transform/Threshold"
+   },
+   "look": [
+    "black and white",
+    "stencil",
+    "high contrast",
+    "photocopy",
+    "two-tone",
+    "graphic",
+    "1-bit"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "brightness cut-off: lighter pixels turn white, darker turn black",
+     "typical": "128 default; 100-160 depending on the image's midtones"
+    }
+   ],
+   "demo_settings": {
+    "Level": 128
+   },
+   "pairs_with": [
+    "a Gaussian Blur or Median pass first for smoother shapes",
+    "Gradient Map above it for a two-colour print",
+    "Image Trace in Illustrator afterwards"
+   ],
+   "scripting": "var s=stringIDToTypeID, d=new ActionDescriptor(), r=new ActionReference(); r.putClass(s('adjustmentLayer')); d.putReference(s('null'), r); var a=new ActionDescriptor(); a.putInteger(s('level'), 128); var l=new ActionDescriptor(); l.putObject(s('type'), s('thresholdClassEvent'), a); d.putObject(s('using'), s('adjustmentLayer'), l); executeAction(s('make'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer, editable, maskable and removable without touching the pixels below",
+   "cost": "low: recalculated live for the layers below; adds no pixel data to the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/003bc975068d.png",
+    "note": "Pure black and white only (242 colours in the frame are all greys from anti-aliasing at the 960 downsample), hard stencil edges, as described.",
+    "rerender": false
+   }
+  }
+ ]
+}

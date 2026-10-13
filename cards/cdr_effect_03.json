@@ -1,0 +1,812 @@
+{
+ "cards": [
+  {
+   "name": "Light",
+   "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Light",
+   "status": "current",
+   "summary": "One-panel tone fix for a bitmap (from the menu also any object, kept as a non-destructive effect): Brightness and Contrast act on the whole tonal range and Intensity mainly on the lighter tones, while Highlights, Shadows and Midtones lighten or darken only that band. The result is a re-lit photo (opened-up darks, held-back or brightened lights, more or less punch) with no deliberate colour shift.",
+   "use_for": [
+    "opening up dark suits and faces in an event photo placed on a poster",
+    "making a flat stock or video-frame still punchier for a social post",
+    "holding back a bright wall or sky behind the subject",
+    "evening out the brightness of several photos in one collage or brochure spread"
+   ],
+   "avoid": [
+    "Only brightness / contrast needed: Effects/Adjust/Brightness/Contrast/Intensity is the plain version of the first three sliders.",
+    "Exact control of black point, white point or one channel (matching a print profile): use Effects/Adjust/Levels or Effects/Adjust/Tone Curve.",
+    "A big Shadows lift on a soft, compressed video frame brings up noise and blocky compression in the dark areas; keep it moderate there.",
+    "The scripted command string (SMHEffect ...) works: the 2026-10 gallery render applied it and all six keys changed the pixels.",
+    "Exact slider semantics (in particular Intensity and the sign of Highlights / Shadows) are taken from CorelDRAW's tone-control conventions, not measured in the harvest.",
+    "Strong settings shift saturated hues because each RGB channel is remapped on its own: in the gallery render orange (255,138,0) turned yellow-orange (255,210,0) and purple turned lilac; keep the sliders moderate on brand colours.",
+    "Highlights alone barely holds back light tones when Brightness / Intensity / Midtones are raised: in the gallery render Highlights -45 still let light grey go 244 -> 255, and swinging it to +42 changed the frame by only ~3 levels on average; recover a bright background with Levels or Tone Curve instead."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Camera Raw Filter"
+   },
+   "look": [
+    "brighten",
+    "darken",
+    "contrast boost",
+    "lift shadows",
+    "recover highlights",
+    "midtone brightness",
+    "exposure fix",
+    "punchy photo",
+    "relight"
+   ],
+   "params": [
+    {
+     "name": "Brightness",
+     "does": "shifts every tone lighter (+) or darker (-)",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "Contrast",
+     "does": "spreads tones apart (+, punchier) or squeezes them together (-, flatter, faded)",
+     "typical": "+10 to +40 for a dull photo"
+    },
+    {
+     "name": "Intensity",
+     "does": "CorelDRAW's intensity control: brightens (+) or dims (-) the lighter part of the image while the darks hold more",
+     "typical": "0 to +25"
+    },
+    {
+     "name": "Highlights",
+     "does": "lightens (+) or darkens (-) only the brightest band; negative values recover a bright background",
+     "typical": "-50 to 0"
+    },
+    {
+     "name": "Shadows",
+     "does": "lightens (+) or deepens (-) only the darkest band; positive values open up dark clothing and backlit faces",
+     "typical": "+20 to +60"
+    },
+    {
+     "name": "Midtones",
+     "does": "lightens (+) or darkens (-) the middle greys without moving black and white much",
+     "typical": "-20 to +25"
+    }
+   ],
+   "demo_settings": {
+    "Brightness": 10,
+    "Contrast": 35,
+    "Intensity": 15,
+    "Highlights": -45,
+    "Shadows": 70,
+    "Midtones": 20
+   },
+   "pairs_with": [
+    "Effects/Adjust/Vibrance",
+    "Effects/Adjust/White Balance",
+    "Effects/Adjust/Levels",
+    "Effects/Adjust/Auto Adjust"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Light\", \"SMHEffect Brightness=10,Contrast=35,Intensity=15,Highlights=-45,Shadows=70,Midtones=20\")  ' needs a bitmap shape; dialog / Properties-docker route: Application.FrameWork.Automation.InvokeItem(\"b6f2f97d-bf1b-42cd-be9b-4b90eee26481\"); command string applied in the gallery render, all six keys read",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-pixel tone remap, near instant on a 1920x1080 bitmap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested); summary said Intensity acts on the whole tonal range, contradicting its own param text (lighter part, darks hold)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/ee4415536775.png",
+    "note": "Re-rendered 2026-10-13, byte-identical to the earlier frame: the whole photo is strongly re-lit against ref_photo (mid grey 128 -> 199, black 11 -> 23, dark areas and dark-red blocks opened up, wall much brighter); side effect: the orange swatch shifts to yellow-orange and the whites clip to 255.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/ee4415536775.png",
+     "note": "Whole photo strongly re-lit vs ref_photo: mid grey 128 -> 199, black 11 -> 23, dark areas and dark-red blocks opened up, wall much brighter; side effect: orange swatch shifts to yellow-orange and whites clip to 255.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Replace Colors",
+   "id": "e7220ca7-5cae-448a-a021-a80decc3ddba",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Replace Colors",
+   "status": "needs_input",
+   "summary": "Swaps one colour in an image for another: ColorItem is the colour to change (usually eyedropped from the image), ReplaceColorItem the colour to put in its place, Smoothness how far the change spreads into similar neighbouring shades, and Hue / Saturation / Lightness fine-tune the replaced colour. Shading inside the swapped area is kept unless Single color is ticked, which floods the matched area with one flat colour.",
+   "use_for": [
+    "recolouring a product, garment or car in a photo to show a colour variant",
+    "matching a red element in a stock photo to the brand colour of a flyer",
+    "turning one accent colour in a scanned logo or illustration into another",
+    "quick colour-variant mock-ups of packaging or merchandise"
+   ],
+   "avoid": [
+    "Needs the dialog or Properties docker: the 2026-10 gallery render dropped ColorItem, ReplaceColorItem and Smoothness (no pixel changed when they were varied; SingleColor=1 voided the command), so the effect ran on its stored colours and the red-to-blue demo did not happen; the 2026-10-04 audit also found Smoothness ignored.",
+    "The target colour also lives in skin, wood or a podium (reds and oranges in a portrait): the swap bleeds into them; lower Smoothness or apply it to a clipped copy of just the object.",
+    "Vector artwork with flat fills: change the fills themselves (Edit/Find and Replace) so the colour stays an exact swatch.",
+    "Rotating every hue in the image at once: use Effects/Adjust/Hue/Saturation/Lightness.",
+    "Single color is described from the matching option in the legacy dialog; its exact behaviour in this version was not measured."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "replaceColor",
+    "AI": "Edit/Edit Colors/Recolor Artwork..."
+   },
+   "look": [
+    "replace color",
+    "recolor",
+    "color swap",
+    "change color",
+    "colour variant",
+    "hue swap",
+    "product recolor"
+   ],
+   "params": [
+    {
+     "name": "ColorItem",
+     "does": "the source colour to find in the image (eyedropper or colour picker)",
+     "typical": "the object colour, sampled from the image"
+    },
+    {
+     "name": "ReplaceColorItem",
+     "does": "the colour the matched area becomes",
+     "typical": "brand or variant colour"
+    },
+    {
+     "name": "Single color",
+     "does": "on: the matched area becomes one flat colour; off: the replacement keeps the original light and shade",
+     "typical": "off for photos"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how widely and softly the replacement spreads into shades near the source colour (low = only near-exact matches, hard edge; high = wide, soft blend)",
+     "typical": "30-70"
+    },
+    {
+     "name": "Hue",
+     "does": "rotates the hue of the replaced colour",
+     "typical": "-30 to +30 for a tweak"
+    },
+    {
+     "name": "Saturation",
+     "does": "makes the replaced colour more (+) or less (-) intense",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "Lightness",
+     "does": "makes the replaced colour lighter (+) or darker (-)",
+     "typical": "-20 to +20"
+    }
+   ],
+   "demo_settings": {
+    "ColorItem": "#E8202A",
+    "ReplaceColorItem": "#1E3FFF",
+    "SingleColor": false,
+    "Smoothness": 80
+   },
+   "pairs_with": [
+    "Effects/Adjust/Hue/Saturation/Lightness",
+    "Effects/Adjust/Selective Color",
+    "Object/PowerClip/Place Inside Frame"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Replace Colors\", \"ReplaceColorsV2Effect SingleColor=0,Smoothness=80,Hue=0,Saturation=0,Lightness=0\")  ' the template has no keys for the source / replacement colours and the audit found Smoothness ignored; reliable route = dialog / Properties docker via Application.FrameWork.Automation.InvokeItem(\"e7220ca7-5cae-448a-a021-a80decc3ddba\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-pixel colour-range remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested); pairs_with 'PowerClip (...)' -> harvested path Object/PowerClip/Place Inside Frame; Find and Replace given as its harvested path Edit/Find and Replace"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check. Its earlier frame (judged broken) was deleted from the gallery by the live chain when the card turned needs_input; a copy is kept at work/cdr/effect_gallery/pre_fix/27fbe09ef586.png.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "gallery/cdr_effect/27fbe09ef586.png",
+     "note": "Frame almost identical to ref_photo (mean diff 1.0): the red swatch stays red, only dark olive tones in the dark areas drift faintly to maroon (G -12) from the stored default colours, because ColorItem / ReplaceColorItem / Smoothness were dropped and cannot be set by the command string; status set to needs_input.",
+     "rerender": false
+    },
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Replace Colors (Legacy)",
+   "id": "f9ea7cda-4d99-4ffd-9958-2ee7af210ac4",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Replace Colors (Legacy)",
+   "status": "hidden",
+   "summary": "The older Replace Colors dialog: every pixel near the Input colour (how near is set by Range) is shifted towards the Output colour, with Hue / Saturation / Lightness offsets, an option to leave greys untouched and an option to flood the range with one flat output colour. It is defined in CorelDRAW's UI file but not shown in the live Effects > Adjust menu; the current Replace Colors replaces it.",
+   "use_for": [
+    "reproducing a colour swap from an older CorelDRAW file or workflow",
+    "recolouring an object in a photo while protecting neutral greys and whites (Ignore grayscale)"
+   ],
+   "avoid": [
+    "Not in the live menu: use Effects/Adjust/Replace Colors for new work.",
+    "Ranges and defaults were not read (its data source only exists while the dialog is open), so the slider limits on this card are unknown; stay with moderate values.",
+    "The colour keys InColorItem / OutColorItem are not in the command template, so a script cannot choose the colours; the command string itself was not applied in a test."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "replaceColor",
+    "AI": "Edit/Edit Colors/Recolor Artwork..."
+   },
+   "look": [
+    "replace color",
+    "recolor",
+    "color swap",
+    "legacy",
+    "colour variant"
+   ],
+   "params": [
+    {
+     "name": "Input",
+     "does": "the source colour to replace (key InColorItem)",
+     "typical": "sampled from the object"
+    },
+    {
+     "name": "Output",
+     "does": "the new colour (key OutColorItem)",
+     "typical": "brand or variant colour"
+    },
+    {
+     "name": "Ignore grayscale",
+     "does": "leaves neutral pixels (greys, white, black) alone even when they fall in the range",
+     "typical": "on for photos with white highlights"
+    },
+    {
+     "name": "Single output color",
+     "does": "replaces the whole range with one flat colour instead of keeping its shading",
+     "typical": "off"
+    },
+    {
+     "name": "Hue",
+     "does": "hue offset applied to the replaced pixels",
+     "typical": "small, around 0"
+    },
+    {
+     "name": "Saturation",
+     "does": "saturation offset applied to the replaced pixels",
+     "typical": "small, around 0"
+    },
+    {
+     "name": "Lightness",
+     "does": "lightness offset applied to the replaced pixels",
+     "typical": "small, around 0"
+    },
+    {
+     "name": "Range",
+     "does": "how far from the Input colour a pixel can be and still be replaced (tolerance)",
+     "typical": "moderate; limits not harvested"
+    }
+   ],
+   "demo_settings": {
+    "InColorItem": "#E8202A",
+    "OutColorItem": "#1E3FFF",
+    "IgnoreGrayscale": true,
+    "SingleColor": false,
+    "Range": 40
+   },
+   "pairs_with": [
+    "Effects/Adjust/Hue/Saturation/Lightness"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Replace Colors (Legacy)\", \"ReplaceColorsEffect IgnoreGrayscale=1,SingleColor=0,Hue=0,Saturation=0,Lightness=0,Range=40\")  ' no keys for the input / output colours; dialog route Application.FrameWork.Automation.InvokeItem(\"f9ea7cda-4d99-4ffd-9958-2ee7af210ac4\") (item hidden from the live menu)",
+   "scriptable": "partial",
+   "non_destructive": "not established: the harvest's requires line says these effects are non-destructive from the menu in CorelDRAW 2024, but this one is not in the live menu (only InvokeItem or the command string reach it) and the harvest does not record whether those routes stack or bake the pixels",
+   "cost": "low: per-pixel colour-range remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> not established (hidden from the live menu, so the 'non-destructive from the menu' line does not apply)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'hidden', only current cards are rendered), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status hidden); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Sample & Target",
+   "id": "d7796c2b-22d6-4126-8de0-c38fefce0028",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Sample & Target",
+   "status": "needs_input",
+   "summary": "Colour correction by example: eyedrop a shadow, a midtone and / or a highlight in the image (source swatches) and choose the colour each should become (target swatches); CorelDRAW remaps the tones so the samples land on their targets, which removes a colour cast and sets the black and white points. It works on all RGB channels together or one channel at a time.",
+   "use_for": [
+    "removing a yellow or green cast from an indoor event photo by sampling a white shirt or grey wall",
+    "setting true black and white in a flat scanned photo before print",
+    "matching the neutrals of photos shot under different light in one layout"
+   ],
+   "avoid": [
+    "Needs sampled colours: the source swatches come from eyedropper clicks on the image and their value format (LowSourceItem ... HighTargetItem, enums with no harvested values) is unknown, so it cannot be set from a spec; use the dialog.",
+    "No neutral reference in the image: use Effects/Adjust/White Balance or Effects/Adjust/Color Balance instead.",
+    "Flat vector colours give nothing useful to sample; recolour the fills directly.",
+    "The command string was not applied in a test."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "levels"
+   },
+   "look": [
+    "neutralize color cast",
+    "set black point",
+    "set white point",
+    "gray point",
+    "eyedropper correction",
+    "color correction",
+    "tone match"
+   ],
+   "params": [
+    {
+     "name": "Channel",
+     "does": "edits all RGB channels together (0) or the Red (1), Green (2) or Blue (3) channel alone",
+     "typical": "0 RGB Channels"
+    },
+    {
+     "name": "Adjust all channels",
+     "does": "applies the sample-to-target correction to every channel at once rather than only the channel picked in Channel",
+     "typical": "on"
+    },
+    {
+     "name": "Shadows",
+     "does": "turns on the shadow sample / target pair (key UseLow)",
+     "typical": "on when setting the black point"
+    },
+    {
+     "name": "LowSourceItem",
+     "does": "shadow colour sampled from the image",
+     "typical": "the darkest neutral area"
+    },
+    {
+     "name": "LowTargetItem",
+     "does": "colour the sampled shadow should become",
+     "typical": "near black"
+    },
+    {
+     "name": "Midtones",
+     "does": "turns on the midtone pair (key UseMid)",
+     "typical": "on for cast removal"
+    },
+    {
+     "name": "MidSourceItem",
+     "does": "midtone colour sampled from the image",
+     "typical": "a mid-grey wall, suit or card"
+    },
+    {
+     "name": "MidTargetItem",
+     "does": "colour the sampled midtone should become",
+     "typical": "neutral mid grey"
+    },
+    {
+     "name": "Highlights",
+     "does": "turns on the highlight pair (key UseHigh)",
+     "typical": "on when setting the white point"
+    },
+    {
+     "name": "HighSourceItem",
+     "does": "highlight colour sampled from the image",
+     "typical": "white shirt, paper or wall"
+    },
+    {
+     "name": "HighTargetItem",
+     "does": "colour the sampled highlight should become",
+     "typical": "near white"
+    }
+   ],
+   "enum_labels": {
+    "Channel": {
+     "0": "RGB Channels",
+     "1": "Red Channel",
+     "2": "Green Channel",
+     "3": "Blue Channel"
+    }
+   },
+   "pairs_with": [
+    "Effects/Adjust/Levels",
+    "Effects/Adjust/Vibrance",
+    "Effects/Adjust/Tone Curve"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Sample & Target\", \"SampleTargetBalanceEffect Channel=0,AdjustAll=1,UseLow=1,LowSourceItem=<?>,LowTargetItem=<?>,UseMid=1,MidSourceItem=<?>,MidTargetItem=<?>,UseHigh=1,HighSourceItem=<?>,HighTargetItem=<?>\")  ' source / target value format not harvested; dialog route Application.FrameWork.Automation.InvokeItem(\"d7796c2b-22d6-4126-8de0-c38fefce0028\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-channel tone remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input', only current cards are rendered), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Selective Color",
+   "id": "13786fec-a2f8-4b4e-ac68-59b4805466c8",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Selective Color",
+   "status": "needs_input",
+   "summary": "Changes the cyan, magenta, yellow and black mix inside one colour family (Reds, Yellows, Greens, Cyans, Blues, Magentas) or one tonal band (Shadows, Midtones, Highlights) while leaving the other colours alone. Relative mode scales the amount already there, Absolute adds or removes a fixed percentage, so Absolute gives the bigger shift.",
+   "use_for": [
+    "making a red flag, product or sign warmer or cooler while blues and greens stay put",
+    "cleaning a muddy sky (add cyan, remove black in Blues / Cyans)",
+    "a colour-graded look: tint shadows cool and highlights warm",
+    "pre-press tweaks to how one colour family will print in CMYK"
+   ],
+   "avoid": [
+    "Swapping one colour for a completely different one: use Effects/Adjust/Replace Colors.",
+    "Shifting all colours at once: use Effects/Adjust/Hue/Saturation/Lightness or Color Balance.",
+    "The command string does not work: in the 2026-10 gallery render 'SelectiveClrEffect Spectrum=Reds,Mode=Absolute,Cyan=0,Magenta=-100,Yellow=30,Black=0' (and the index-enum and no-Spectrum forms) changed no pixel; set Spectrum, Mode and the ink sliders in the dialog or Properties docker.",
+    "Large Absolute moves on a soft video frame can posterize the targeted colour.",
+    "Skin tones sit in the Reds / Yellows families, so a Reds or Yellows move also shifts faces; mask or clip to the object when people are in shot."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "selectiveColor"
+   },
+   "look": [
+    "selective color",
+    "shift one color",
+    "color grade",
+    "cmyk tweak",
+    "warmer reds",
+    "cleaner sky",
+    "split toning"
+   ],
+   "params": [
+    {
+     "name": "Spectrum",
+     "does": "which colour family or tonal band the sliders act on",
+     "typical": "Reds, Blues or Shadows"
+    },
+    {
+     "name": "Mode",
+     "does": "Relative scales the existing ink amount; Absolute adds or subtracts a fixed percentage (stronger)",
+     "typical": "Relative for subtle, Absolute for a visible shift"
+    },
+    {
+     "name": "Cyan",
+     "does": "adds (+) or removes (-) cyan in the chosen range; removing cyan warms reds, adding it cools",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "Magenta",
+     "does": "adds or removes magenta in the range; removing it from Reds pushes them towards orange / yellow",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "Yellow",
+     "does": "adds or removes yellow in the range",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "Black",
+     "does": "darkens (+) or lightens (-) the range",
+     "typical": "-20 to +20"
+    }
+   ],
+   "demo_settings": {
+    "Spectrum": "Reds",
+    "Mode": "Absolute",
+    "Cyan": 0,
+    "Magenta": -100,
+    "Yellow": 30,
+    "Black": 0
+   },
+   "pairs_with": [
+    "Effects/Adjust/Vibrance",
+    "Effects/Adjust/Tone Curve",
+    "Effects/Adjust/Hue/Saturation/Lightness"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Selective Color\", \"SelectiveClrEffect Cyan=0,Magenta=-100,Yellow=30,Black=0,Mode=Absolute,Spectrum=Reds\")  ' one Spectrum per call; dialog route Application.FrameWork.Automation.InvokeItem(\"13786fec-a2f8-4b4e-ac68-59b4805466c8\"); this command string changed no pixel in the 2026-10 gallery render; use the dialog route",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-pixel colour remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested); use_for claimed a Reds move leaves skin alone (skin lies in Reds/Yellows); rewritten, added the skin caveat to avoid"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: gallery/cdr_effect/failed.json says \"ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried\" (Spectrum=Reds/0, Mode=Absolute/1, Magenta=-100); Absolute Magenta -100 on Reds is not a no-op, so the scripted route is the cause; status set to needs_input.",
+     "rerender": false
+    },
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Tone Curve",
+   "id": "dcd97877-e11d-451f-afb5-ae8d305bf63d",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Tone Curve",
+   "status": "needs_input",
+   "summary": "CorelDRAW's curves: reshapes the input-to-output tone curve for the composite RGB or for the Red, Green or Blue channel alone, either by dragging nodes (Curve, Straight or Freehand style) or from a single Gamma value. An S-curve adds contrast, lifting the middle brightens midtones, and bending one channel tints the image.",
+   "use_for": [
+    "adding contrast to a flat photo with an S-curve",
+    "a faded / matte film look by lifting the black end of the curve",
+    "cross-processed or tinted looks by bending single channels",
+    "quick midtone brighten or darken with the Gamma style"
+   ],
+   "avoid": [
+    "The command string does not work: in the 2026-10 gallery render every ToneCurveEffect form tried (Gamma style 2.5, with and without EditStyle / CurveStyle / node keys) changed no pixel; set the curve in the dialog or Properties docker.",
+    "A simple overall brighten: Effects/Adjust/Light or Levels is quicker to set.",
+    "Steep single-channel bends clip the saturated colour blocks and band smooth gradients.",
+    "Which way the Gamma value moves the midtones (above 1 = lighter is CorelDRAW's Gamma convention) was not measured in the harvest; check the first render."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "curves"
+   },
+   "look": [
+    "curves",
+    "s-curve",
+    "contrast",
+    "faded matte",
+    "film look",
+    "color grade",
+    "channel tint",
+    "midtone brighten"
+   ],
+   "params": [
+    {
+     "name": "Auto Tone Curve",
+     "does": "lets CorelDRAW build a corrective curve automatically (key AutoAdjust)",
+     "typical": "off for creative looks"
+    },
+    {
+     "name": "Presets",
+     "does": "loads a saved curve; the live list read only Default. CorelDRAW also ships .crv curve files (Custom Data/Tonecrve: brighten, darken, lighten, posgamma, neggamma, solarize ...), harvested as presets; whether this list loads them was not checked",
+     "typical": "Default"
+    },
+    {
+     "name": "Channel",
+     "does": "which curve is edited: 0 RGB composite, 1 Red, 2 Green, 3 Blue (key ActiveChannel)",
+     "typical": "0 for contrast, single channels for tints"
+    },
+    {
+     "name": "Style",
+     "does": "how the curve is edited: 0 Curve (smooth nodes), 1 Straight, 2 Freehand, 3 Gamma (key EditStyle)",
+     "typical": "0 Curve, or 3 Gamma for a one-number midtone move"
+    },
+    {
+     "name": "Gamma",
+     "does": "in Gamma style, bends the curve to lighten or darken midtones while black and white stay put (1.0 = no change)",
+     "typical": "0.6-1.6"
+    },
+    {
+     "name": "X",
+     "does": "input level (0-255) of the selected node (key XCoordinate)",
+     "typical": "64 / 192 for an S-curve"
+    },
+    {
+     "name": "Y",
+     "does": "output level (0-255) of the selected node (key YCoordinate)",
+     "typical": "a little below / above X for an S-curve"
+    },
+    {
+     "name": "CurveStyle",
+     "does": "radio-button view of the same edit style as Style",
+     "typical": "match Style"
+    }
+   ],
+   "demo_settings": {
+    "AutoAdjust": false,
+    "ActiveChannel": "0",
+    "EditStyle": "3",
+    "CurveStyle": "Gamma",
+    "Gamma": 2.5
+   },
+   "enum_labels": {
+    "ActiveChannel": {
+     "0": "RGB Channels",
+     "1": "Red Channel",
+     "2": "Green Channel",
+     "3": "Blue Channel"
+    },
+    "EditStyle": {
+     "0": "Curve",
+     "1": "Straight",
+     "2": "Freehand",
+     "3": "Gamma"
+    }
+   },
+   "pairs_with": [
+    "Effects/Adjust/Levels",
+    "Effects/Adjust/Vibrance",
+    "Effects/Adjust/Selective Color"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Tone Curve\", \"ToneCurveEffect AutoAdjust=0,ActiveChannel=0,EditStyle=3,Gamma=2.5,CurveStyle=Gamma\")  ' only Gamma style / auto / one node via XCoordinate,YCoordinate; full curves via the dialog: Application.FrameWork.Automation.InvokeItem(\"dcd97877-e11d-451f-afb5-ae8d305bf63d\"); this command string changed no pixel in the 2026-10 gallery render; use the dialog route",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: lookup-table remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested); Presets 'only Default is harvested' was wrong: the preset harvest has 10 Custom Data/Tonecrve .crv curves; now says the live list held only Default and names those files"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: gallery/cdr_effect/failed.json says \"ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried\" (EditStyle=3, CurveStyle=Gamma/3, Gamma=2.5, also AutoAdjust=0,Gamma=2.5 alone); Gamma 2.5 is far from the 1.0 no-op, so the scripted route is the cause; status set to needs_input.",
+     "rerender": false
+    },
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Vibrance",
+   "id": "88a3c602-700d-4427-9a66-292ce4e6a883",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Vibrance",
+   "status": "current",
+   "summary": "Raises (or lowers) colour intensity with priority on the dull, low-saturation colours, so muted areas gain colour while already-vivid colours move less and clip less; the separate Saturation slider changes every colour by the same amount.",
+   "use_for": [
+    "livening up a dull photo for a social post without blowing out the already-vivid colours",
+    "bringing back colour in a hazy or washed-out video frame",
+    "a muted, desaturated editorial look with negative values"
+   ],
+   "avoid": [
+    "Vivid colours (the saturated strip, the red stripes) barely move with Vibrance alone; to push them use the Saturation slider or Effects/Adjust/Hue/Saturation/Lightness.",
+    "Full black and white: use Effects/Adjust/Desaturate or Black & White.",
+    "High values on a compressed video frame amplify colour noise and blocky artefacts.",
+    "Skin-tone protection (as in Photoshop's Vibrance) is not documented by the harvest; on portraits watch faces at high values."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "vibrance",
+    "AI": "Saturate3"
+   },
+   "look": [
+    "vibrant",
+    "saturated",
+    "colour pop",
+    "muted",
+    "desaturated look",
+    "vivid"
+   ],
+   "params": [
+    {
+     "name": "Vibrance",
+     "does": "smart saturation: boosts (+) or mutes (-) mainly the less-saturated colours",
+     "typical": "+20 to +60"
+    },
+    {
+     "name": "Saturation",
+     "does": "uniform saturation change for all colours",
+     "typical": "-20 to +20"
+    }
+   ],
+   "demo_settings": {
+    "Vibrance": 100,
+    "Saturation": 30
+   },
+   "pairs_with": [
+    "Effects/Adjust/Light",
+    "Effects/Adjust/White Balance",
+    "Effects/Adjust/Tone Curve"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Vibrance\", \"VibranceEffect Vibrance=100,Saturation=30\")  ' dialog route Application.FrameWork.Automation.InvokeItem(\"88a3c602-700d-4427-9a66-292ce4e6a883\"); command string applied in the gallery render, both keys read",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-pixel saturation remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested); removed the unharvested skin-tone-protection claim (Photoshop behaviour) from summary and use_for; added a caveat"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/c0de4f4f689d.png",
+    "note": "Colours clearly richer than ref_photo while greys stay exact: beige wall (169,138,87) -> (187,140,46) goes gold, warm mid-tones orange, red / green / purple swatches reach full saturation; the muted wall gains more saturation than the already-vivid swatches.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "White Balance",
+   "id": "887e31fa-734d-435f-b982-73c1448e906a",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/White Balance",
+   "status": "current",
+   "summary": "Removes or adds a colour cast: Temperature moves the image along the blue-to-amber axis and Tint along the green-to-magenta axis. Temperature has a -1 to 1 slider and a 2000-9500 K spinner (default 5000 K) that appear to be two views of one setting.",
+   "use_for": [
+    "neutralising the yellow cast of an indoor press-event photo",
+    "warming a cold outdoor shot for a festive poster",
+    "matching the colour temperature of photos combined in one layout",
+    "a deliberate cool or warm mood for a campaign visual"
+   ],
+   "avoid": [
+    "A cast that differs between shadows and highlights: use Effects/Adjust/Sample & Target or Color Balance.",
+    "Direction measured in the 2026-10 gallery render: Temperature 8500 K (Tint +30) gave a strong cool blue-cyan cast (mid grey 128 -> 93,134,153), so a higher Kelvin value cools the image and values below 5000 K warm it; the render leans green as well, but Tint's own direction was not separated from the temperature move.",
+    "Setting both TemperatureSlider and Temperature in one command may make one override the other; prefer one of them.",
+    "The command string works: applied in the gallery render, Temperature and Tint both changed the pixels."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Camera Raw Filter"
+   },
+   "look": [
+    "white balance",
+    "warm",
+    "cool",
+    "colour temperature",
+    "remove color cast",
+    "tint",
+    "amber",
+    "blue tone"
+   ],
+   "params": [
+    {
+     "name": "Temperature (TemperatureSlider)",
+     "does": "temperature as a -1 to 1 slider (0 = no change), one end bluer, the other more amber",
+     "typical": "-0.3 to +0.3"
+    },
+    {
+     "name": "Temperature (Temperature)",
+     "does": "the same temperature as a Kelvin value, 2000-9500 K in 100 K steps (5000 = neutral default)",
+     "typical": "4000-6500 K"
+    },
+    {
+     "name": "Tint",
+     "does": "shifts along the green-magenta axis to fix fluorescent or LED casts",
+     "typical": "-20 to +20"
+    }
+   ],
+   "demo_settings": {
+    "Temperature": 8500,
+    "Tint": 30
+   },
+   "pairs_with": [
+    "Effects/Adjust/Vibrance",
+    "Effects/Adjust/Light",
+    "Effects/Adjust/Sample & Target"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"White Balance\", \"TintTempEffect Temperature=8500,Tint=30\")  ' dialog route Application.FrameWork.Automation.InvokeItem(\"887e31fa-734d-435f-b982-73c1448e906a\"); command string applied in the gallery render, both keys read",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: per-pixel colour remap",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/e11f26454288.png",
+    "note": "Warm indoor plate turned cool vs ref_photo: grey strip goes blue (mid grey 128 -> 93,134,153, white -> 233,248,255), beige wall turns grey-green, yellow swatch goes lime: a clear colour-cast shift.",
+    "rerender": false
+   }
+  }
+ ]
+}

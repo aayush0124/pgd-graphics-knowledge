@@ -1,0 +1,494 @@
+{"cards": [
+ {
+  "name": "Zoom Tool",
+  "id": "Adobe Zoom Tool",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": "Toolbar (Default)/flyout of Adobe Zoom Tool",
+  "status": "current",
+  "summary": "Navigation tool that changes the magnification of the document window: a click zooms in around the clicked point, an Alt-click zooms out, and a drag zooms into the area you drag over. It changes only the view; artwork size, artboards and exports are untouched.",
+  "use_for": [
+   "inspecting anchor points, joins and corner shapes up close before handing off a logo",
+   "checking hairlines, small type and trim marks on a print layout",
+   "framing one part of a large poster, banner or packaging dieline while editing it"
+  ],
+  "avoid": [
+   "resizing artwork: zoom never changes object size; use the Scale Tool or Object > Transform > Scale...",
+   "judging print size by eye at a random zoom: use View > Actual Size, or View > Fit Artboard in Window to see the whole page",
+   "selecting it from a script: the harvest probe (app.selectTool(\"Adobe Zoom Tool\") then app.getSelectedToolName()) raised a PARM error, so tool selection is unverified; set the view's zoom and centerPoint instead"
+  ],
+  "confidence": "high",
+  "equivalents": {
+   "PS": "zoomTool",
+   "CDR": "Toolbox/Zoom Tools/Zoom"
+  },
+  "how": "Press Z (or pick the tool in the toolbar, where it shares a flyout slot with the Hand Tool and Rotate View Tool in the Basic toolbar). Click to zoom in centred on the click, Alt-click to zoom out. Dragging zooms to the dragged area; with animated zoom on (GPU preview) a left / right drag scrubs the zoom continuously instead. Double-clicking the tool's toolbar icon jumps to Actual Size (the same as View > Actual Size). The tool only moves the view, so it is safe to use at any time.",
+  "shortcut": "Z",
+  "scriptable": "yes",
+  "script_api": "Tool selection is unverified: in the harvest, app.getSelectedToolName() after app.selectTool(\"Adobe Zoom Tool\") raised Error 1346458189 ('PARM'), and the batch records no invoke. The job itself is scriptable through the View object: app.activeDocument.activeView.zoom sets the zoom factor (visibleZoom is the factor the user sees) and app.activeDocument.activeView.centerPoint = [x, y] centres the view on a point; app.executeMenuCommand(\"zoomin\") / (\"zoomout\") / (\"actualsize\") / (\"fitin\") run the View menu steps.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '100%' (not in the batch) replaced by Actual Size / View > Actual Size; earlier adversarial pass: avoid/script_api: the PARM error is attributed as the batch states (getSelectedToolName() after selectTool()), not to selectTool alone, and selection is called unverified rather than unavailable; script_api: dropped the invented 'zoom = 4 (4 = 400%)' mapping, noted visibleZoom from the ai_api harvest"
+  }
+ },
+ {
+  "name": "Perspective Grid",
+  "id": "Perspective Grid Tool",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": "Toolbar (Default)/flyout of Perspective Grid Tool",
+  "status": "current",
+  "summary": "Shows the document's perspective grid (one-, two- or three-point) and lets you reshape it on the canvas by dragging its widgets: vanishing points, horizon line, ground level, plane extents and grid cell size. Shapes drawn with the drawing tools while the grid is visible are drawn straight onto the active plane, so flat vector art comes out foreshortened toward the vanishing points.",
+  "use_for": [
+   "packaging and product mock-ups: labels and panels on a box seen at an angle",
+   "city, street or interior illustrations built in true one-, two- or three-point perspective",
+   "signage, billboard and storefront visuals with text running along a wall",
+   "3D-feeling headline or floor typography for posters"
+  ],
+  "avoid": [
+   "photos and raster images: raster art does not take perspective on the grid; distort a photo in Photoshop instead (Edit > Perspective Warp or Filter > Vanishing Point)",
+   "several independent perspectives in one file: a document has one perspective grid, so build the second scene in its own document and paste the expanded result",
+   "files going to apps or print RIPs that need plain paths: type and symbols attached to the grid stay live; expand them (Object > Expand...) before handoff; shapes drawn on the grid are already ordinary paths",
+   "a quick slanted look on one object: the Free Distort effect or the Free Transform tool is faster than setting up a grid"
+  ],
+  "confidence": "high",
+  "equivalents": {
+   "PS": "Vanishing Point",
+   "CDR": "Draw in Perspective"
+  },
+  "how": "Press Shift+P (or pick it from the toolbar flyout it shares with Perspective Selection); the grid appears with the plane-switching widget in the corner of the window. Drag the round handles to move the left / right vanishing points, the horizon line and the ground level, drag the plane extent handles to grow or shrink each plane, and drag the grid-cell handle to change cell size. Pick a preset (one-, two- or three-point) under View > Perspective Grid, or Edit > Perspective Grid Presets... / View > Perspective Grid > Define Grid... for exact values. Click a face of the plane-switching widget to choose the active plane, then draw with the Rectangle Tool, Pen and similar tools: the shapes land on that plane in perspective. Lock the grid (View > Perspective Grid > Lock Grid) once it is set so a stray drag does not move it.",
+  "shortcut": "Shift+P",
+  "scriptable": "partial",
+  "script_api": "app.selectTool(\"Perspective Grid Tool\") selects the tool (verified live in the harvest), but dragging the grid widgets cannot be scripted. Document methods cover the rest: showPerspectiveGrid() / hidePerspectiveGrid(), selectPerspectivePreset(name) to switch to a preset such as \"[2P-Normal View]\", importPerspectiveGridPreset() / exportPerspectiveGridPreset() for custom grids saved from Define Grid, and setPerspectiveActivePlane(PerspectiveGridPlaneType.LEFTPLANE / RIGHTPLANE / FLOORPLANE / NOPLANE) before placing art.",
+  "review": {
+   "by": "adversarial",
+   "changes": "use_for: 'isometric-looking' removed (the grid builds perspective, not isometric projection); avoid: 'perspective art stays live' narrowed to attached type and symbols, and the wrong 'Object > ... / Create Outlines' path replaced by Object > Expand..."
+  }
+ },
+ {
+  "name": "Perspective Selection",
+  "id": "Perspective Selection Tool",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": "Toolbar (Default)/flyout of Perspective Grid Tool",
+  "status": "current",
+  "summary": "Selection tool for the perspective grid: dragging a flat object onto the grid attaches it to the active plane (it is foreshortened to fit), and dragging, scaling or Alt-dragging objects already on a plane moves, resizes or duplicates them while keeping them in perspective. It does nothing useful while no perspective grid is shown.",
+  "use_for": [
+   "putting a finished flat logo, label or poster onto the side of a box or building",
+   "sliding windows, tiles or signs along a wall so they shrink correctly toward the vanishing point",
+   "repeating fence posts, columns or floor tiles in perspective by Alt-dragging copies",
+   "resizing art that is already on a plane without breaking the perspective"
+  ],
+  "avoid": [
+   "ordinary selection and moving: off the grid it behaves like a clumsy Selection Tool; use the Selection Tool (V) instead",
+   "raster images, gradient meshes and envelope objects: they do not attach to a plane; keep them flat or warp them in Photoshop",
+   "editing the shape of perspective art point by point: switch to the Direct Selection tool, or release it with Object > Perspective > Release with Perspective, edit, and re-attach",
+   "type you still need to retype: it stays editable, but edit it through Object > Perspective > Edit Text rather than with the Type tool on the grid"
+  ],
+  "confidence": "high",
+  "equivalents": {
+   "PS": "Vanishing Point",
+   "CDR": "Edit Perspective Group"
+  },
+  "how": "Show the grid (Shift+P switches to the Perspective Grid tool and shows it), then press Shift+V for Perspective Selection. Pick the target face on the plane-switching widget, drag a flat object onto the grid and release: it is attached to that plane in perspective. Drag attached objects to move them along their plane, drag bounding-box handles to scale in perspective, Alt-drag to leave a copy, and Shift-drag to constrain the move. Object > Perspective > Attach to Active Plane attaches a selection to the active plane without dragging, but leaves its appearance unchanged (it is not foreshortened; drag it onto the grid with this tool for that), and Move Plane to Match Object moves the plane to an object's position.",
+  "shortcut": "Shift+V",
+  "scriptable": "partial",
+  "script_api": "app.selectTool(\"Perspective Selection Tool\") selects the tool (verified live in the harvest); the drags themselves cannot be scripted. To put art on a plane by script: app.activeDocument.showPerspectiveGrid(), app.activeDocument.setPerspectiveActivePlane(PerspectiveGridPlaneType.LEFTPLANE), then pageItem.bringInPerspective(x, y, PerspectiveGridPlaneType.LEFTPLANE) on each item. Moving or scaling an item afterwards while keeping it in perspective has no DOM call in the harvest.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: Attach to Active Plane no longer reads as equal to dragging on (it does not foreshorten the art)"
+  }
+ },
+ {
+  "name": "Blend Mode - Color",
+  "id": "Adobe Blend Mode Color",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, judging by its name and its place among the blend-mode commands, sets the selected objects' blending mode to Color, the same as choosing Color in the Transparency panel. Color keeps the luminance of the artwork underneath and takes the hue and saturation of the selected object, so it tints what is below while keeping its light and dark detail. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "tinting a grayscale or monochrome illustration with one colour shape on top",
+   "colouring a black-and-white texture or halftone without losing its tonal detail",
+   "quick duotone-style colour washes over vector art for posters"
+  ],
+  "avoid": [
+   "spot-colour print jobs: Illustrator does not blend spot colours in Color mode; convert to process or build the tint another way",
+   "pure white or black areas underneath: Color keeps their luminance, so they stay white or black and the colour barely shows there; use Multiply or Overlay for a visible wash",
+   "artwork for EPS, PDF/X-1a or older RIPs: the blend has to be flattened; check it in Window > Flattener Preview before sending",
+   "relying on the command in a pipeline: it has no default shortcut and is not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "color",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Color' in Edit > Keyboard Shortcuts... (Tools list), select one or more objects, groups or layers' contents, and press the key. The same result comes from Window > Transparency > blending mode menu > Color. Use the Transparency panel's Isolate Blending on a group to keep the colour from reaching art outside the group. In CorelDRAW the nearest look is a Uniform Transparency on the top object with merge mode Color (cdrMergeColor).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "The batch has no invoke for this id (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Color: for each item in app.activeDocument.selection, item.blendingMode = BlendModes.COLORBLEND.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof); earlier adversarial pass: avoid: corrected the reason white / black areas stay untinted (Color keeps the underlying luminance; the hue comes from the top object, so 'no hue to keep' was wrong)"
+  }
+ },
+ {
+  "name": "Blend Mode - Color Burn",
+  "id": "Adobe Blend Mode Color Burn",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Color Burn, as in the Transparency panel. Color Burn darkens the colours underneath toward the selected object's colour by raising contrast, giving deep, saturated, burnt-in shadows; a white object changes nothing. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "rich, saturated shadows and vignettes over flat colour illustrations",
+   "burnt, aged or grunge texture overlays on posters and labels",
+   "making a colour shape punch darker into a background without going muddy grey"
+  ],
+  "avoid": [
+   "subtle shading: Color Burn quickly clips to near-black and oversaturates; use Multiply at a lower opacity",
+   "light pastel artwork underneath where a soft tone is wanted: the contrast jump looks harsh; use Multiply or Soft Light",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "colorBurn",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Color Burn' in Edit > Keyboard Shortcuts... (Tools list), select the overlay object(s) and press the key; or pick Color Burn in the Window > Transparency panel's blending mode menu. Lower the opacity in the same panel to tame it. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Burn (cdrMergeBurn).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Color Burn: item.blendingMode = BlendModes.COLORBURN for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Color Dodge",
+  "id": "Adobe Blend Mode Color Dodge",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Color Dodge, as in the Transparency panel. Color Dodge brightens the colours underneath toward the selected object's colour by lowering contrast, giving hot, glowing highlights that blow out toward white; a black object changes nothing. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "glows, light flares and neon highlights on dark poster backgrounds",
+   "rim light and sparkle accents on illustrations",
+   "bright, burnt-out light leaks over colour artwork"
+  ],
+  "avoid": [
+   "gentle lightening: Color Dodge blows highlights out fast; use Screen or Lighten, or lower the opacity",
+   "artwork over white or very light backgrounds: there is nothing left to brighten, so the object disappears",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "colorDodge",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Color Dodge' in Edit > Keyboard Shortcuts... (Tools list), select the glow or highlight object(s) and press the key; or pick Color Dodge in the Window > Transparency panel. A soft gradient or blurred shape (Effect > Blur) on top gives the most convincing glow. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Dodge (cdrMergeDodge).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Color Dodge: item.blendingMode = BlendModes.COLORDODGE for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Darken",
+  "id": "Adobe Blend Mode Darken",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Darken, as in the Transparency panel. Darken compares the selected object with what is underneath channel by channel and keeps the darker value, so parts of the object lighter than the background vanish and darker parts show. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "dropping the white background out of dark line art or scanned ink placed over colour",
+   "letting dark shapes or type sit on a busy background while light areas drop away",
+   "overlapping flat colour shapes where only the darker colour should win"
+  ],
+  "avoid": [
+   "a true shading effect: Darken does not multiply tones, it only picks the darker one; use Multiply for shadows",
+   "objects lighter than the background everywhere: they become invisible; use Normal or Multiply",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "darken",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Darken' in Edit > Keyboard Shortcuts... (Tools list), select the object(s) and press the key; or pick Darken in the Window > Transparency panel. In CorelDRAW the nearest look is a Uniform Transparency with merge mode If Darker (cdrMergeIfDarker).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Darken: item.blendingMode = BlendModes.DARKEN for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Difference",
+  "id": "Adobe Blend Mode Difference",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Difference, as in the Transparency panel. Difference subtracts the darker of the two colours from the lighter one per channel: a white object inverts what is underneath, a black object changes nothing, and colours in between give strong, often psychedelic negative-like results. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "inverted, negative-style type or shapes that flip colour where they cross other art",
+   "op-art, psychedelic and glitch poster graphics",
+   "checking alignment: two copies of the same art in Difference turn black where they match exactly"
+  ],
+  "avoid": [
+   "spot-colour print jobs: Illustrator does not blend spot colours in Difference mode; use process colours",
+   "brand colours that must stay exact: the result colour depends on what is underneath and is hard to predict; use Normal with a chosen colour",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "difference",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Difference' in Edit > Keyboard Shortcuts... (Tools list), select the object(s) and press the key; or pick Difference in the Window > Transparency panel. A white object over mixed art gives a clean inversion. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Difference (cdrMergeDifference).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Difference: item.blendingMode = BlendModes.DIFFERENCE for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Exclusion",
+  "id": "Adobe Blend Mode Exclusion",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Exclusion, as in the Transparency panel. Exclusion works like Difference but with lower contrast: white inverts what is underneath, black changes nothing, and mid tones push the result toward a soft grey, so it looks washed-out rather than harsh. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "softer inverted overlays on type and shapes than Difference gives",
+   "muted, retro or risograph-like colour interactions where shapes overlap",
+   "experimental poster backgrounds with layered translucent colour"
+  ],
+  "avoid": [
+   "spot-colour print jobs: Illustrator does not blend spot colours in Exclusion mode; use process colours",
+   "a punchy, high-contrast inversion: use Difference",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "exclusion",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Exclusion' in Edit > Keyboard Shortcuts... (Tools list), select the object(s) and press the key; or pick Exclusion in the Window > Transparency panel. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Exclusion (cdrMergeExclusion).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Exclusion: item.blendingMode = BlendModes.EXCLUSION for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Hard Light",
+  "id": "Adobe Blend Mode Hard Light",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Hard Light, as in the Transparency panel. Hard Light multiplies where the selected object is darker than 50% grey and screens where it is lighter, like shining a harsh spotlight of the object's colours onto the art below; 50% grey changes nothing. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "strong light-and-shadow overlays on flat illustrations",
+   "adding a contrasty texture or pattern that both darkens and lightens the art underneath",
+   "bold colour washes on posters where Overlay is too subtle"
+  ],
+  "avoid": [
+   "subtle tone work: Hard Light is driven by the top object and looks heavy; use Soft Light or Overlay",
+   "a pure darken or pure lighten: use Multiply or Screen",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "hardLight",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Hard Light' in Edit > Keyboard Shortcuts... (Tools list), select the overlay object(s) and press the key; or pick Hard Light in the Window > Transparency panel, then lower opacity to taste. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Hard Light (cdrMergeHardlight).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Hard Light: item.blendingMode = BlendModes.HARDLIGHT for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Hue",
+  "id": "Adobe Blend Mode Hue",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Hue, as in the Transparency panel. Hue keeps the luminance and saturation of the art underneath and takes only the hue of the selected object, so coloured areas below shift to the object's hue while greys stay grey. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "recolouring already-coloured artwork to a new hue while keeping its shading and saturation",
+   "quick colourway variations of an illustration or pattern",
+   "shifting one region of a multicolour design to a brand hue"
+  ],
+  "avoid": [
+   "colouring grey, black or white art: those have no saturation, so Hue changes nothing visible; use Color mode",
+   "spot-colour print jobs: Illustrator does not blend spot colours in Hue mode; use process colours",
+   "precise recolouring of vector art: Edit > Edit Colors > Recolor Artwork changes the actual swatches and needs no transparency",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "hue",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Hue' in Edit > Keyboard Shortcuts... (Tools list), select the colour object(s) on top and press the key; or pick Hue in the Window > Transparency panel. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Hue (cdrMergeHue).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Hue: item.blendingMode = BlendModes.HUE for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list)"
+  }
+ },
+ {
+  "name": "Blend Mode - Lighten",
+  "id": "Adobe Blend Mode Lighten",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Lighten, as in the Transparency panel. Lighten compares the selected object with what is underneath channel by channel and keeps the lighter value, so parts of the object darker than the background vanish and lighter parts show. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "dropping the black background out of light or glowing artwork placed over colour",
+   "light type or shapes on a dark busy background where dark parts should disappear",
+   "overlapping flat colour shapes where only the lighter colour should win"
+  ],
+  "avoid": [
+   "a glow or brightening effect: Lighten only picks the lighter value; use Screen or Color Dodge",
+   "objects darker than the background everywhere: they become invisible; use Normal",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "lighten",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Lighten' in Edit > Keyboard Shortcuts... (Tools list), select the object(s) and press the key; or pick Lighten in the Window > Transparency panel. In CorelDRAW the nearest look is a Uniform Transparency with merge mode If Lighter (cdrMergeIfLighter).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Lighten: item.blendingMode = BlendModes.LIGHTEN for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Luminosity",
+  "id": "Adobe Blend Mode Luminosity",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Luminosity, as in the Transparency panel. Luminosity is the inverse of Color: it keeps the hue and saturation of the art underneath and takes the light and dark values of the selected object, so a greyscale texture on top imprints its tones onto the colours below. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "laying a greyscale texture, halftone or shading layer over flat colour without greying it",
+   "adding light-and-shadow detail to coloured vector art from a monochrome overlay",
+   "matching the tonal values of one area to another while keeping its colours"
+  ],
+  "avoid": [
+   "tinting art: that is Color mode, the opposite of this one",
+   "spot-colour print jobs: Illustrator does not blend spot colours in Luminosity mode; use process colours",
+   "jobs exported to EPS / PDF/X-1a: the blend is flattened on output; proof it in Window > Flattener Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "luminosity",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Luminosity' in Edit > Keyboard Shortcuts... (Tools list), select the tone object(s) on top and press the key; or pick Luminosity in the Window > Transparency panel. In CorelDRAW the closest look is a Uniform Transparency with merge mode Lightness (cdrMergeLightness), which is near but not identical.",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Luminosity: item.blendingMode = BlendModes.LUMINOSITY for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: flattening proof pointed at Window > Flattener Preview (Object > Flatten Transparency... flattens the art, it is not a proof)"
+  }
+ },
+ {
+  "name": "Blend Mode - Multiply",
+  "id": "Adobe Blend Mode Multiply",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, by its name, sets the selected objects' blending mode to Multiply, as in the Transparency panel. Multiply multiplies the selected object's colour with what is underneath, so the result is always darker, like overlapping transparent inks or marker strokes: white disappears and black stays black. Not verified live: the harvest probe never reached this id.",
+  "use_for": [
+   "shadows and shading shapes over flat illustration colours",
+   "overlapping translucent colour shapes in risograph, screen-print or marker styles",
+   "dropping the white out of scanned line art or textures placed over colour",
+   "simulating overprinting inks on packaging and poster mock-ups"
+  ],
+  "avoid": [
+   "lightening anything: Multiply can only darken; use Screen",
+   "100% K black on top in a CMYK job: in most blending modes a plain black knocks out the colour beneath; use a rich black if it must interact",
+   "real press overprint: Multiply is a transparency blend, not an overprint setting; set Overprint Fill / Stroke in the Attributes panel and check with View > Overprint Preview",
+   "relying on the command in a pipeline: no default shortcut and not verified; set the blending mode directly"
+  ],
+  "confidence": "medium",
+  "equivalents": {
+   "PS": "multiply",
+   "CDR": "vector:Transparency:Uniform"
+  },
+  "how": "Assign a key to 'Blend Mode - Multiply' in Edit > Keyboard Shortcuts... (Tools list), select the object(s) and press the key; or pick Multiply in the Window > Transparency panel. Use Isolate Blending on a group in the Transparency panel to keep the darkening inside the group. In CorelDRAW the nearest look is a Uniform Transparency with merge mode Multiply (cdrMergeMultiply).",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). Set the mode directly, as the ai_blend_mode harvest does for Multiply: item.blendingMode = BlendModes.MULTIPLY for each item in app.activeDocument.selection.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); avoid: dropped the claim that Multiply 'only simulates' overprint on screen (it is a transparency blend that prints, not an overprint setting)"
+  }
+ },
+ {
+  "name": "Blend Mode - Next Mode",
+  "id": "Adobe Blend Mode Next Mode",
+  "app": "AI",
+  "kind": "ai_tool",
+  "path": null,
+  "status": "hidden",
+  "summary": "Keyboard command (no default key, no toolbar or menu entry) that, judging by its name, steps the selected objects' blending mode to the next entry in the Transparency panel's list (Normal, Darken, Multiply, Color Burn, Lighten, ...), so a designer can audition modes with one key. It does not apply any particular look itself; the result depends on the mode it lands on. Whether it wraps from the last mode back to Normal, and how it treats a mixed selection, is not known: the harvest probe never reached this id.",
+  "use_for": [
+   "auditioning blend modes on a texture or colour overlay while looking at the art",
+   "quickly comparing Multiply, Screen, Overlay and similar on a poster element"
+  ],
+  "avoid": [
+   "setting a known mode: jump straight to it with the matching Blend Mode command or the Transparency panel",
+   "scripts and pipelines: the command has no default key and is not verified; set item.blendingMode to the wanted BlendModes value",
+   "mixed selections with different modes: the outcome is unverified; select one object or one group at a time"
+  ],
+  "confidence": "low",
+  "equivalents": {},
+  "how": "Assign a key to 'Blend Mode - Next Mode' in Edit > Keyboard Shortcuts... (Tools list; its sibling Blend Mode - Previous Mode steps back), select the object(s) and press the key repeatedly while watching the canvas and the Window > Transparency panel, which shows the current mode.",
+  "shortcut": null,
+  "scriptable": "yes",
+  "script_api": "No invoke for this id in the batch (the selectTool probe stopped before it). A script can do the same job: read item.blendingMode, find it in [BlendModes.NORMAL, BlendModes.DARKEN, BlendModes.MULTIPLY, BlendModes.COLORBURN, BlendModes.LIGHTEN, BlendModes.SCREEN, BlendModes.COLORDODGE, BlendModes.OVERLAY, BlendModes.SOFTLIGHT, BlendModes.HARDLIGHT, BlendModes.DIFFERENCE, BlendModes.EXCLUSION, BlendModes.HUE, BlendModes.SATURATIONBLEND, BlendModes.COLORBLEND, BlendModes.LUMINOSITY] (the Transparency panel order in the ai_blend_mode harvest) and assign the next one.",
+  "review": {
+   "by": "adversarial",
+   "changes": "how: '(Tools set)' -> '(Tools list)' (a set in that dialog is the shortcut set, not the Tools list); earlier adversarial pass: script_api: mode list written with full BlendModes.* names so it runs as written"
+  }
+ }
+]}

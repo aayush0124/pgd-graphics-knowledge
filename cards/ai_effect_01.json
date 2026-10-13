@@ -1,0 +1,397 @@
+{
+ "cards": [
+  {
+   "name": "Apply Last Effect",
+   "id": "Adobe Apply Last Effect",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Apply Last Effect",
+   "status": "needs_input",
+   "summary": "Re-applies the most recently used effect to the current selection with the same settings and no dialog; the menu label changes to 'Apply <effect name>' once an effect has been used. It has no look of its own: the result is whatever the last effect produces.",
+   "use_for": [
+    "repeating one drop shadow / roughen / glow on several objects picked one after another",
+    "building a set of icons or badges that all need the identical effect",
+    "fast iteration: select the next object, Shift+Ctrl+E"
+   ],
+   "avoid": [
+    "nothing to repeat yet (fresh session, no effect used): the command has nothing to apply - apply the effect from its own menu first",
+    "unattended scripts: the result depends on whatever effect and values were used last in the session, so it is not reproducible - call pageItem.applyEffect with explicit LiveEffect XML instead",
+    "applying the same look to many objects for the long term: save it as a graphic style so later edits update every object"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "lastFilter",
+    "CDR": "Edit/Repeat %s"
+   },
+   "shortcut": "Shift+Ctrl+E",
+   "look": [
+    "repeat effect",
+    "reapply last effect",
+    "same effect again"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Last Effect (same effect, but reopens its dialog to change values)",
+    "Graphic Styles panel (keeps the look reusable after the session)"
+   ],
+   "scripting": "app.executeMenuCommand(\"Adobe Apply Last Effect\")  // acts on app.activeDocument.selection; repeats whatever effect and values were used last",
+   "scriptable": "partial",
+   "non_destructive": "yes when the repeated effect is a live effect: it is added to the selection's appearance and stays editable",
+   "cost": "same as the effect being repeated",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (shortcut, ai_menu id and requires checked against the batch; PS lastFilter and CDR Edit/Repeat %s exist and do the same repeat-without-dialog job)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: listed in gallery/ai_effect/not_rendered.json (status needs_input: repeats the last effect and has no parameters of its own), so there is no frame.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "harness",
+     "note": "Harness check: not_rendered.json lists it by rule (needs_input, never probed); its result is whatever effect ran last, so no fixed demo can exist and the card makes no frame-based claim."
+    },
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "listed in gallery/ai_effect/not_rendered.json (not probed: repeats the last effect, no parameters of its own), so there is no frame to check.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Document Raster Effects Settings",
+   "id": "Live Rasterize Effect Setting",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Document Raster Effects Settings",
+   "status": "current",
+   "summary": "Document-wide settings (resolution 72-2400 ppi, 300 by default in a new RGB document; colour model; transparent or white background; anti-aliasing; clipping mask; padding around the object) that the document's raster-based effects render with - Photoshop Effects, Drop Shadow, Glows, Feather. The Rasterize effect is the exception: it carries its own colour model, anti-aliasing and padding values, and its own resolution unless that is set to 'Use Document Raster Effects Resolution'. It draws nothing by itself; changing it re-renders the raster effects that use it.",
+   "use_for": [
+    "setting 300 ppi before print output so shadows, glows and blurs are not soft or blocky",
+    "dropping to 72 ppi while designing heavy effect stacks so redraw stays fast, then raising it before export",
+    "transparent background so raster effects do not sit on white boxes over other art"
+   ],
+   "avoid": [
+    "on its own it changes nothing visible: a plain vector plate needs at least one raster effect (Drop Shadow, Gaussian Blur ...) for the setting to show",
+    "lowering resolution late in a print job: every raster effect turns soft or blocky - keep 300 ppi (or higher) for print",
+    "values outside 72-2400 ppi: the scripted setter raises an error instead of clamping",
+    "very high resolutions on big documents: redraw and file size grow fast"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "raster effect resolution",
+    "ppi",
+    "pixelated effects",
+    "blocky shadow",
+    "grayscale effects",
+    "print resolution"
+   ],
+   "params": [
+    {
+     "name": "resolution",
+     "does": "ppi every raster effect is rendered at; 72-2400, out of range raises an error",
+     "typical": "300 for print, 72-150 while designing or for screen"
+    },
+    {
+     "name": "colorModel",
+     "does": "colour model of the rendered effects: the document's own, grayscale or 1-bit bitmap",
+     "typical": "RasterizationColorModel.DEFAULTCOLORMODEL"
+    },
+    {
+     "name": "transparency",
+     "does": "true = transparent background behind raster effects, false = white",
+     "typical": true
+    },
+    {
+     "name": "antiAliasing",
+     "does": "smooths the edges of rasterized art",
+     "typical": "true for screen art, false (default) when edges must stay crisp"
+    },
+    {
+     "name": "clippingMask",
+     "does": "creates a clipping mask so a white (non-transparent) background is hidden",
+     "typical": false
+    },
+    {
+     "name": "padding",
+     "does": "space in points added around the object so blurs and shadows are not cut off at the bounding box",
+     "typical": 36
+    },
+    {
+     "name": "convertSpotColors",
+     "does": "converts spot colours to process colours in the rendered result",
+     "typical": true
+    }
+   ],
+   "demo_settings": {
+    "resolution": 72,
+    "colorModel": "RasterizationColorModel.GRAYSCALE",
+    "antiAliasing": false,
+    "transparency": true
+   },
+   "enum_labels": {
+    "colorModel": {
+     "RasterizationColorModel.DEFAULTCOLORMODEL": "document colour mode (RGB or CMYK)",
+     "RasterizationColorModel.GRAYSCALE": "grayscale",
+     "RasterizationColorModel.BITMAP": "1-bit black and white"
+    }
+   },
+   "pairs_with": [
+    "Drop Shadow",
+    "Gaussian Blur",
+    "Outer Glow / Inner Glow",
+    "Feather",
+    "every Photoshop Effect under Effect"
+   ],
+   "scripting": "var r = app.activeDocument.rasterEffectSettings; r.resolution = 72; r.colorModel = RasterizationColorModel.GRAYSCALE; r.antiAliasing = false; r.transparency = true;  // dialog route: app.executeMenuCommand(\"Live Rasterize Effect Setting\")",
+   "scriptable": "yes",
+   "non_destructive": "setting only: raster effects re-render from it, nothing is baked into the art",
+   "cost": "higher resolution = slower redraw and larger files",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary listed Rasterize among the effects that render with the document settings, which contradicts the batch (the Rasterize effect stores its own dpi. / colr / alis / padd / mask): Rasterize now named as the exception; pairs_with 'Rasterize (effect)' replaced by Outer Glow / Inner Glow and Feather, which do use the document settings"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/4d68a85ce585.png",
+    "note": "With the settings at 72 ppi Grayscale and a 6 pt Gaussian Blur as the carrier raster effect (index 'how'), the whole plate comes out blurred and pure grey (maximum chroma 0), so the settings visibly drive the raster effect, as the card says; on their own they draw nothing.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "absent from gallery/ai_effect/index.json, so no frame; a render of the bare plate would also show nothing, since the setting needs a raster effect (Drop Shadow, Gaussian Blur ...) on the art to become visible.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict not_rendered and in-range demo_settings (72 ppi, grayscale; visible only once a raster effect is on the art) agreed; summary no longer says the Rasterize effect always keeps its own resolution - its dialog can use the document raster effects resolution"
+    }
+   }
+  },
+  {
+   "name": "Last Effect",
+   "id": "Adobe Last Effect",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Last Effect",
+   "status": "needs_input",
+   "summary": "Reopens the dialog of the most recently used effect (the menu label changes to '<effect name>...') so it can be applied to the current selection with adjusted settings, starting from the last values. It has no look of its own: the result is whatever the last effect produces.",
+   "use_for": [
+    "applying the same effect to another object with a slightly different amount",
+    "dialling in variations of one effect across a series of objects"
+   ],
+   "avoid": [
+    "nothing used yet in the session: the command has no effect to open - use the effect's own menu entry",
+    "unattended scripts: it opens a modal dialog that blocks a headless run - call pageItem.applyEffect with explicit LiveEffect XML",
+    "editing an effect already on an object: double-click it in the Appearance panel instead, otherwise a second copy of the effect is added"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Alt+Shift+Ctrl+E",
+   "look": [
+    "repeat effect with dialog",
+    "reopen last effect",
+    "effect variation"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Apply Last Effect (same effect, no dialog)",
+    "Appearance panel (edit an existing effect instance)"
+   ],
+   "scripting": "app.executeMenuCommand(\"Adobe Last Effect\")  // opens the last effect's dialog: needs a person to answer it",
+   "scriptable": "partial",
+   "non_destructive": "yes when the reopened effect is a live effect",
+   "cost": "same as the effect being reopened",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (shortcut and ai_menu id checked against the batch; empty equivalents is right: PS Last Filter re-applies without a dialog and has no reopen-dialog item)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: listed in gallery/ai_effect/not_rendered.json (status needs_input: reopens the last effect's dialog, no parameters of its own), so there is no frame.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "harness",
+     "note": "Harness check: not_rendered.json lists it by rule (needs_input); it opens a modal dialog for whatever effect ran last, so no scripted frame can stand for it and the card makes no frame-based claim."
+    },
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "absent from gallery/ai_effect/index.json (not probed: reopens the last effect's dialog, no parameters of its own), so there is no frame to check.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Crop Marks",
+   "id": "Live Trim Marks",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Crop Marks",
+   "status": "current",
+   "summary": "Live effect that draws printer's crop marks around the selected object's bounds: thin hairlines at each corner, set slightly away from the art (the harvest render shows grey hairline pairs at the four corners of a rectangle). It opens no dialog and follows the object when it is moved or resized; it can be removed from the Appearance panel.",
+   "use_for": [
+    "trim marks for one business card, sticker or label placed on a larger sheet",
+    "marking the cut size of a die-cut or packaging panel inside a layout",
+    "multi-up print sheets where each item needs its own marks"
+   ],
+   "avoid": [
+    "marks for the whole page: use the printer's marks in Print / Save As PDF (Marks and Bleed) instead",
+    "when the printer needs plain editable paths: Object > Create Trim Marks makes static lines",
+    "objects whose bounds include a wide stroke or another effect: the marks sit off the real trim line - mark a plain rectangle of the trim size instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "crop marks",
+    "trim marks",
+    "print marks",
+    "corner hairlines",
+    "cut marks"
+   ],
+   "params": [
+    {
+     "name": "styl",
+     "does": "crop-mark style code; 0 (the only harvested value) draws the single corner marks seen in the harvest render. No other value was probed, so what other codes draw is unknown: keep 0",
+     "typical": 0
+    }
+   ],
+   "demo_settings": {
+    "styl": 0
+   },
+   "pairs_with": [
+    "Create Trim Marks (static version)",
+    "Offset Path (mark a bleed-sized box)",
+    "Rectangle (draw the exact trim size, then mark it)"
+   ],
+   "scripting": "pageItem.applyEffect('<LiveEffect name=\"Adobe Trim Marks\"><Dict data=\"I styl 0\"/></LiveEffect>')  // menu route on the selection: app.executeMenuCommand(\"Live Trim Marks\")",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "styl 'does' dropped the first-person, unprobed claim that another value gives Japanese double marks (only 0 is in the batch); summary and the wide-stroke avoid line checked against Effect_Crop_Marks.png (grey hairline pair per corner, aligned to the outer edge of the 6 pt stroke)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/211bbafe2683.png",
+    "note": "Thin grey hairline pairs sit just outside the four corners of the group's bounds while the art itself matches ref.png (mean diff 0.018), as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/ai_effect/211bbafe2683.png",
+     "note": "thin grey hairline pairs (one horizontal, one vertical) appear at the four corners of the whole group's bounding box, set just outside the art, while the plate itself is unchanged from ref.png.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Rasterize",
+   "id": "Live Rasterize",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Rasterize",
+   "status": "current",
+   "summary": "Live effect that makes the object render as pixels at a chosen resolution and colour model while the paths underneath stay editable. A grayscale model drains the colour (colr 6 turns every shape grey and the gradient into a grey ramp, strokes and type stay black); low resolution without anti-aliasing gives stair-stepped edges once the art is output or zoomed above that resolution. The harvested dialog values (72 ppi, colour code 4, anti-aliasing off) changed nothing visible on a flat rectangle exported at 72 ppi.",
+   "use_for": [
+    "deliberate pixel or low-res look on vector art without losing the editable paths",
+    "previewing how art will look once flattened to an image",
+    "making a group render in grayscale for a mono proof while keeping the colour paths"
+   ],
+   "avoid": [
+    "logos and any art that must stay scalable or print crisp: keep it vector, or rasterize at 300 ppi or more",
+    "a permanent embedded image: use Object > Rasterize, or Object > Expand Appearance on this effect",
+    "colour codes other than the harvested 4 and the render-checked 6 (grayscale) are not confirmed on this build: check the result after changing colr"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Rasterize/Layer",
+    "CDR": "Object/Convert to Bitmap"
+   },
+   "look": [
+    "pixelated",
+    "rasterized",
+    "jagged edges",
+    "low-res bitmap look",
+    "grayscale"
+   ],
+   "params": [
+    {
+     "name": "optn",
+     "does": "option code stored with the effect; its meaning is not established by the harvest - send the harvested 0",
+     "typical": 0
+    },
+    {
+     "name": "dpi.",
+     "does": "resolution in ppi the art is rendered at; lower = blockier",
+     "typical": "300 for print, 72 for a visible pixel look"
+    },
+    {
+     "name": "alis",
+     "does": "anti-aliasing: true smooths the pixel edges, false leaves hard stair-stepped edges",
+     "typical": false
+    },
+    {
+     "name": "colr",
+     "does": "colour model + background code. 4 is the harvested value (I read it as RGB with transparent background); by the Illustrator SDK raster-type numbering 0 = RGB on white, 2 = grayscale on white, 3 = 1-bit bitmap, 6 = grayscale transparent; 6 renders grayscale on this build (gallery render), the other SDK codes are not confirmed",
+     "typical": 4
+    },
+    {
+     "name": "padd",
+     "does": "space in points added around the object before rasterizing, so soft edges are not clipped",
+     "typical": 36
+    },
+    {
+     "name": "mask",
+     "does": "creates a clipping mask so a white background does not cover art behind",
+     "typical": false
+    }
+   ],
+   "demo_settings": {
+    "dpi.": 72,
+    "alis": false,
+    "colr": 6
+   },
+   "enum_labels": {
+    "colr": {
+     "4": "RGB, transparent background (harvested value)",
+     "0": "RGB, white background (SDK numbering, unconfirmed)",
+     "2": "grayscale, white background (SDK numbering, unconfirmed)",
+     "3": "1-bit bitmap (SDK numbering, unconfirmed)",
+     "6": "grayscale (confirmed by the gallery render; transparent background per SDK numbering, not visible on a white artboard)"
+    }
+   },
+   "pairs_with": [
+    "Document Raster Effects Settings",
+    "Pixelate effects (Color Halftone, Crystallize, Mezzotint, Pointillize) for a stylised raster texture",
+    "Expand Appearance (bake it into an image)"
+   ],
+   "scripting": "pageItem.applyEffect('<LiveEffect name=\"Adobe Rasterize\"><Dict data=\"I optn 0 I dpi. 72 B alis 0 I colr 6 R padd 36.0 B mask 0\"/></LiveEffect>')  // menu route with dialog: app.executeMenuCommand(\"Live Rasterize\")",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel; Expand Appearance makes it permanent",
+   "cost": "medium: high ppi on large art slows redraw and grows the file",
+   "review": {
+    "by": "adversarial",
+    "changes": "pairs_with named a Mosaic pixelate effect that Illustrator does not have (Effect/Pixelate holds Color Halftone, Crystallize, Mezzotint, Pointillize): corrected; params now include the harvested optn key that the scripting call sends (meaning marked unknown); summary's ambiguous 'render above 72 ppi' replaced; PS equivalent Layer/Rasterize/Shape -> Layer/Rasterize/Layer, since the effect works on any object (type, groups, paths), not only shapes, matching the CDR Convert to Bitmap card; demo colr 6 kept, still flagged as SDK numbering unconfirmed on this build"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/6ab6f9ff8513.png",
+    "note": "The whole plate renders as grey pixels (maximum chroma 0: box mid grey, star dark grey, gradient a grey ramp, strokes and type black), matching the grayscale colour-model claim; at this 72 ppi export the edges look as in the plate.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/ai_effect/6ab6f9ff8513.png",
+     "note": "the whole plate renders in pure grayscale (no pixel has any chroma: orange box mid grey, blue star dark grey, gradient circle a grey ramp, stroke, type and zigzag black), matching the grayscale-model claim; at this 72 ppi export the edges look the same as ref.png, so stair-stepping is not visible here.",
+     "rerender": false
+    }
+   }
+  }
+ ]
+}

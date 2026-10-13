@@ -1,0 +1,3057 @@
+{
+  "cards": [
+    {
+      "name": "DataContext",
+      "id": "class:DataContext",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataContext",
+      "status": "current",
+      "summary": "Corel UI-framework data context (ICUIDataContext, also in CrlFrmWkOM): the object that binds docker / dialog UI to named data sources. A script can list its categories, look up or add a data source, open a framework dialog by GUID, or spawn a temporary child context. It has nothing to do with object data on shapes (that is DataField / DataItem).",
+      "use_for": [
+        "wire a custom add-in docker to a data source object written in VBA or C#",
+        "open a framework dialog by its GUID from an add-in",
+        "inspect which data categories the running workspace exposes"
+      ],
+      "avoid": [
+        "storing per-shape metadata: use Document.DataFields and Shape.ObjectData (DataField / DataItem)",
+        "ordinary drawing macros: nothing in the VGCore drawing model needs it"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDataContext. Reach it through the framework, not through a document: Application.FrameWork (ICUIFrameWork) -> .Application (ICUIApplication) -> .DataContext. AddDataSource registers an object under a name in this context and returns its DataSourceProxy; GetDataSource returns the proxy for an existing name; CreateChildDataContext makes a temporary child scoped to a category list.",
+      "key_members": [
+        {
+          "name": "Categories",
+          "use": "comma-separated list of the categories this context implements"
+        },
+        {
+          "name": "HasCategory",
+          "use": "True when a category is supported; test before relying on one"
+        },
+        {
+          "name": "GetDataSource",
+          "use": "proxy (DataSourceProxy) for a data source by name"
+        },
+        {
+          "name": "AddDataSource",
+          "use": "add an object as a named data source; returns its DataSourceProxy"
+        },
+        {
+          "name": "CreateChildDataContext",
+          "use": "temporary child context, optionally limited to a category list"
+        },
+        {
+          "name": "ShowDialog",
+          "use": "show a framework dialog by its GUID string; returns a bool"
+        }
+      ],
+      "gotchas": [
+        "It comes from the framework type library (also_in CrlFrmWkOM), so the VGCore object model (Application.ActiveDocument ...) never returns it; go through Application.FrameWork.Application.",
+        "Data source names and category strings are defined by the workspace / add-in XML, not by the type library; a wrong name is not listed anywhere in the harvest (unverified what GetDataSource returns for an unknown name: Nothing or an error).",
+        "ShowDialog wants a dialog GUID from the workspace definition, not a caption (unverified which GUIDs are valid in 25.1)."
+      ],
+      "example": "Dim ctx As Object, ds As Object\nSet ctx = Application.FrameWork.Application.DataContext\nDebug.Print ctx.Categories\nSet ds = ctx.GetDataSource(\"MyAddonData\")   ' name your add-in registered\nIf Not ds Is Nothing Then Debug.Print ds.Name",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DataField",
+      "id": "class:DataField",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataField",
+      "status": "current",
+      "summary": "Definition of one object-data field of a document (a column of the Object Data Manager): its name, data type, display format, default value, constraint and width. The values for each shape are DataItem objects that point back to this field.",
+      "use_for": [
+        "tag every shape of a catalogue or signage layout with SKU, price or room number",
+        "define a field once and pre-fill a default so new shapes carry it",
+        "drive a data-merge or a parts-list export from per-object metadata"
+      ],
+      "avoid": [
+        "text that must print: object data is invisible metadata; put printed values in a text shape",
+        "adding values: a DataField is the column, write values with Shape.ObjectData(<field>).Value"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGDataField. Fields belong to the document: ActiveDocument.DataFields(\"Name\") or .Item(index) returns a DataField; DataFields.Add / AddEx / AddEx2 create one. Each shape's value for the field is Shape.ObjectData(\"Name\") (a DataItem).",
+      "key_members": [
+        {
+          "name": "Name",
+          "use": "get / set the field name (the key used by ObjectData(\"...\"))"
+        },
+        {
+          "name": "DataType",
+          "use": "cdrDataType: cdrDataTypeString, cdrDataTypeNumber, cdrDataTypeEvent, cdrDataTypeAction"
+        },
+        {
+          "name": "Format",
+          "use": "display format string applied to values"
+        },
+        {
+          "name": "FormatType",
+          "use": "read-only cdrDataFormatType: general, date/time, linear/angular, numeric"
+        },
+        {
+          "name": "DefaultValue",
+          "use": "value a shape shows until it is given its own"
+        },
+        {
+          "name": "Constraint",
+          "use": "constraint string limiting allowed values"
+        },
+        {
+          "name": "FieldWidth",
+          "use": "column width in the Object Data Manager"
+        },
+        {
+          "name": "AppDefault",
+          "use": "field is added to every new document"
+        },
+        {
+          "name": "DocDefault",
+          "use": "field is a default of this document"
+        },
+        {
+          "name": "SummarizeGroup",
+          "use": "summarise the values of a group's children"
+        },
+        {
+          "name": "Index",
+          "use": "position in the DataFields collection"
+        },
+        {
+          "name": "Reorder",
+          "use": "move the field to a new index"
+        },
+        {
+          "name": "Delete",
+          "use": "remove the field definition"
+        },
+        {
+          "name": "Target",
+          "use": "target filter the data is designated for"
+        },
+        {
+          "name": "ParentName",
+          "use": "parent name used by AddEx2-style structured fields"
+        },
+        {
+          "name": "ElementName",
+          "use": "element name used by AddEx2-style structured fields"
+        }
+      ],
+      "gotchas": [
+        "Delete removes the column, so every shape loses its value for it; there is no per-shape delete here (use DataItem.Clear).",
+        "FormatType is read-only: it follows from the Format / data type you set (unverified exact mapping).",
+        "AppDefault = True makes the field appear in all future documents, which is easy to leave on by accident in a test macro.",
+        "New documents already contain some default fields (Name, Cost, Comments are believed to be there) so check DataFields.IsPresent before Add (unverified list)."
+      ],
+      "example": "Dim f As DataField\nIf ActiveDocument.DataFields.IsPresent(\"SKU\") Then\n    Set f = ActiveDocument.DataFields(\"SKU\")\nElse\n    Set f = ActiveDocument.DataFields.Add(\"SKU\")\nEnd If\nf.DefaultValue = \"TBD\"\nActiveShape.ObjectData(\"SKU\").Value = \"A-1001\"",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DataFields",
+      "id": "class:DataFields",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataFields",
+      "status": "current",
+      "summary": "Collection of all object-data field definitions of one document (the columns of the Object Data Manager). Used to look up, test for, and add fields before writing per-shape values.",
+      "use_for": [
+        "make sure a SKU / price / status field exists before a tagging macro runs",
+        "list the metadata columns of a client file before exporting a parts list",
+        "add typed fields (number, string) with defaults for a data-driven layout"
+      ],
+      "avoid": [
+        "reading a shape's values: use Shape.ObjectData (DataItems), this collection holds only the definitions"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGDataFields. Reach it with ActiveDocument.DataFields (IVGDocument.DataFields). Item takes an index (base 1) or a name and is the default member, so DataFields(\"SKU\") works in VBA. Add takes name plus optional format and default flags; AddEx adds data type, default value, constraint, target and width; AddEx2 also takes a parent and element name.",
+      "key_members": [
+        {
+          "name": "Count",
+          "use": "number of fields defined"
+        },
+        {
+          "name": "Item",
+          "use": "field by base-1 index or by name"
+        },
+        {
+          "name": "IsPresent",
+          "use": "True when a field with that name exists; check before Add"
+        },
+        {
+          "name": "Add",
+          "use": "add a field: Name, optional Format, AppDefault, DocDefault, SummarizeGroup"
+        },
+        {
+          "name": "AddEx",
+          "use": "add a field with DataType, DefaultValue, Constraint, Target, Format and FieldWidth"
+        },
+        {
+          "name": "AddEx2",
+          "use": "like AddEx with a ParentName and ElementName first"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the fields"
+        },
+        {
+          "name": "Parent",
+          "use": "the Document that owns the fields"
+        }
+      ],
+      "gotchas": [
+        "Item is base 1, not base 0.",
+        "Adding a name that already exists is expected to fail; guard with IsPresent (unverified whether it errors or returns the existing field).",
+        "There is no Remove on the collection: delete a field through DataField.Delete."
+      ],
+      "example": "Dim f As DataField\nFor Each f In ActiveDocument.DataFields\n    Debug.Print f.Index, f.Name, f.DataType\nNext f\nIf Not ActiveDocument.DataFields.IsPresent(\"Price\") Then\n    ActiveDocument.DataFields.AddEx \"Price\", cdrDataTypeNumber, \"0\"\nEnd If",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DataItem",
+      "id": "class:DataItem",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataItem",
+      "status": "current",
+      "summary": "One shape's value for one object-data field (a cell of the Object Data Manager). Holds the raw Value, the value formatted with the field's format, and a link to its DataField.",
+      "use_for": [
+        "write a SKU, price or status onto a shape from a spreadsheet import",
+        "read back per-object metadata to build a bill of materials or a price list",
+        "clear stale values before handing a template to a client"
+      ],
+      "avoid": [
+        "deleting the field for every shape: that is DataField.Delete; Clear only empties this shape's value"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGDataItem. Reach it from a shape: Shape.ObjectData(\"FieldName\") or Shape.ObjectData(index) (IVGShape.ObjectData returns DataItems). Value is a Variant you can read and write; FormattedValue is read-only text.",
+      "key_members": [
+        {
+          "name": "Value",
+          "use": "get / set the raw value (Variant)"
+        },
+        {
+          "name": "FormattedValue",
+          "use": "the value as text, formatted with the field's Format"
+        },
+        {
+          "name": "DataField",
+          "use": "the DataField this value belongs to (name, type, format)"
+        },
+        {
+          "name": "Clear",
+          "use": "empty this shape's value for the field"
+        },
+        {
+          "name": "Parent",
+          "use": "the DataItems collection of the shape"
+        },
+        {
+          "name": "Application",
+          "use": "the CorelDRAW application"
+        }
+      ],
+      "gotchas": [
+        "Value is a Variant: a number field may hand back a string after a round trip through the UI; convert explicitly (unverified).",
+        "On a shape that was never given a value the item reports the field default (unverified).",
+        "Values on a group and on its children are separate; SummarizeGroup on the field controls how the group summarises (unverified)."
+      ],
+      "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n    If s.ObjectData(\"SKU\").Value <> \"\" Then\n        Debug.Print s.Name, s.ObjectData(\"SKU\").FormattedValue\n    End If\nNext s",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DataItems",
+      "id": "class:DataItems",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataItems",
+      "status": "current",
+      "summary": "Collection of all object-data values attached to one shape (one row of the Object Data Manager). Used to read every field of a shape, add a value for a field, copy a whole row from another shape, or clear it.",
+      "use_for": [
+        "copy SKU / price metadata from a master shape to its duplicates",
+        "dump every metadata field of selected objects for a parts list",
+        "wipe metadata before exporting a client file"
+      ],
+      "avoid": [
+        "defining new fields: that is ActiveDocument.DataFields.Add; this collection only holds values"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGDataItems. Reach it with Shape.ObjectData (IVGShape.ObjectData). Item takes a base-1 index or a field name and is the default member: s.ObjectData(\"SKU\").Value. Add attaches a value for an existing DataField; CopyFrom copies all items from another shape.",
+      "key_members": [
+        {
+          "name": "Item",
+          "use": "value object (DataItem) by base-1 index or field name"
+        },
+        {
+          "name": "Count",
+          "use": "number of data items on the shape"
+        },
+        {
+          "name": "Add",
+          "use": "add a value for a DataField, with optional Value"
+        },
+        {
+          "name": "CopyFrom",
+          "use": "copy all data items from another shape"
+        },
+        {
+          "name": "Clear",
+          "use": "clear every data item of the shape"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the items"
+        },
+        {
+          "name": "Parent",
+          "use": "the Shape the data belongs to"
+        }
+      ],
+      "gotchas": [
+        "Item is base 1.",
+        "Add needs a DataField object, not a field name; get it from ActiveDocument.DataFields first.",
+        "Clear empties the whole row for this shape, not just one field (use DataItem.Clear for one)."
+      ],
+      "example": "Dim src As Shape, s As Shape\nSet src = ActiveSelectionRange(1)\nFor Each s In ActiveSelectionRange\n    If Not s Is src Then s.ObjectData.CopyFrom src\nNext s",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DataSourceProxy",
+      "id": "class:DataSourceProxy",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DataSourceProxy",
+      "status": "current",
+      "summary": "Corel UI-framework handle on a named data source (ICUIDataSourceProxy, also in CrlFrmWkOM): lets a script read and write the source's properties by name, invoke one of its methods, and tell bound UI listeners to refresh.",
+      "use_for": [
+        "push a new value into an add-in docker's data source and refresh the controls bound to it",
+        "trigger a command method of a framework data source from a macro"
+      ],
+      "avoid": [
+        "per-shape metadata (use DataField / DataItem)",
+        "plain drawing macros that have no custom UI"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDataSourceProxy. Obtained from a DataContext: Application.FrameWork.Application.DataContext.GetDataSource(\"Name\"), or returned by DataContext.AddDataSource when you register your own object. Properties and methods are addressed by string name, so there is no compile-time checking.",
+      "key_members": [
+        {
+          "name": "Name",
+          "use": "name of the data source"
+        },
+        {
+          "name": "GetProperty",
+          "use": "read a data-source property by name (Variant)"
+        },
+        {
+          "name": "SetProperty",
+          "use": "write a data-source property by name"
+        },
+        {
+          "name": "InvokeMethod",
+          "use": "call a handler on the data source by name"
+        },
+        {
+          "name": "UpdateListeners",
+          "use": "refresh the UI listeners named in a comma-separated list"
+        },
+        {
+          "name": "Application",
+          "use": "the framework application (ICUIApplication)"
+        }
+      ],
+      "gotchas": [
+        "Property and method names are strings defined by whoever wrote the data source; a typo is only caught at run time.",
+        "After SetProperty the bound UI may not redraw until UpdateListeners is called with the listener names (unverified).",
+        "Framework objects live in CrlFrmWkOM; they are not reachable from Document or Shape."
+      ],
+      "example": "Dim ds As Object\nSet ds = Application.FrameWork.Application.DataContext.GetDataSource(\"MyAddonData\")\nds.SetProperty \"Status\", \"ready\"\nds.UpdateListeners \"Status\"\nDebug.Print ds.GetProperty(\"Status\")",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Dimension",
+      "id": "class:Dimension",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Dimension",
+      "status": "current",
+      "summary": "Settings of a dimension (measurement) object: label precision, prefix / suffix, units, boxed or centred text, placement, dynamic updating, extension-line visibility and the custom gaps and overhangs. Linear and angular specifics hang off it as DimensionLinear / DimensionAngular.",
+      "use_for": [
+        "label packaging dielines and technical drawings with live measurements",
+        "restyle every dimension in a file (precision, unit suffix, boxed text) in one macro",
+        "build signage or furniture spec sheets with consistent callouts"
+      ],
+      "avoid": [
+        "static annotation text: a dimension is tied to snap points and updates when they move; use a text shape for fixed notes",
+        "changing geometry: move the anchor points (Linear.Point1 / Point2) rather than the label"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Adobe Dimension Tool"
+      },
+      "how": "Members live on IVGDimension. Create dimension shapes with ActiveLayer.CreateLinearDimension(Type, Point1, Point2, ...) or ActiveLayer.CreateAngularDimension(Center, Point1, Point2, TextX, TextY, ...), both taking SnapPoint anchors; read the settings of an existing one with Shape.Dimension. Type says which sub-object (Linear or Angular) is valid.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrDimensionLinear or cdrDimensionAngular"
+        },
+        {
+          "name": "Linear",
+          "use": "linear-specific settings (DimensionLinear)"
+        },
+        {
+          "name": "Angular",
+          "use": "angular-specific settings (DimensionAngular)"
+        },
+        {
+          "name": "Precision",
+          "use": "digits after the decimal point in the label"
+        },
+        {
+          "name": "ShowUnits",
+          "use": "append the unit to the label"
+        },
+        {
+          "name": "Prefix",
+          "use": "text before the number"
+        },
+        {
+          "name": "Suffix",
+          "use": "text after the number"
+        },
+        {
+          "name": "BoxedText",
+          "use": "draw a rectangle around the label"
+        },
+        {
+          "name": "LeadingZero",
+          "use": "show 0.5 instead of .5"
+        },
+        {
+          "name": "TextCentered",
+          "use": "centre the label on the dimension line"
+        },
+        {
+          "name": "Placement",
+          "use": "cdrDimensionAboveLine / WithinLine / BelowLine"
+        },
+        {
+          "name": "HorizontalText",
+          "use": "keep the label horizontal on slanted dimensions"
+        },
+        {
+          "name": "DynamicText",
+          "use": "update the label automatically when the measured shapes change"
+        },
+        {
+          "name": "TextShape",
+          "use": "the label as a text shape (font, size, colour)"
+        },
+        {
+          "name": "Outline",
+          "use": "outline of the dimension lines (width, colour, arrows)"
+        },
+        {
+          "name": "SetDistanceFromObject",
+          "use": "set a custom distance of the dimension line from the object"
+        },
+        {
+          "name": "SetOverhang",
+          "use": "set the witness-line overhang"
+        },
+        {
+          "name": "SetTextLabelGap",
+          "use": "set the gap around the label"
+        },
+        {
+          "name": "ExtensionLinesVisible",
+          "use": "show or hide extension lines"
+        }
+      ],
+      "gotchas": [
+        "DistanceFromObject, Overhang and TextLabelGap are read-only in the harvest; change them with SetDistanceFromObject / SetOverhang / SetTextLabelGap, and the matching Use... flag says whether the custom value is in force.",
+        "cdrShapeType has only cdrLinearDimensionShape in the harvest; test Shape.Dimension.Type to tell linear from angular (unverified that angular dimensions report the same shape type).",
+        "Turning DynamicText off freezes the label at its current value; resizing the measured object afterwards leaves a wrong number.",
+        "The number in the label is in the Units of the Linear / Angular object (cdrDimensionLinearUnits / cdrDimensionAngularUnits), not in Document.Unit (which only sets script coordinates); a typed Suffix does not convert it."
+      ],
+      "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n    If s.Type = cdrLinearDimensionShape Then\n        s.Dimension.Precision = 1\n        s.Dimension.BoxedText = True\n    End If\nNext s",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "unit gotcha said the label follows Document.Unit, contradicting DimensionLinear (label uses the Units property)"
+      }
+    },
+    {
+      "name": "DimensionAngular",
+      "id": "class:DimensionAngular",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DimensionAngular",
+      "status": "current",
+      "summary": "Angular-dimension settings: the centre and the two arc points (snap points), label position, unit (degrees, radians, gradians, degree symbol), measuring direction and inner extension lines.",
+      "use_for": [
+        "mark angles on technical illustrations, packaging folds or architectural details",
+        "switch every angle callout in a drawing to the degree symbol or to radians"
+      ],
+      "avoid": [
+        "straight-line measurements: use Dimension.Linear (DimensionLinear)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Adobe Dimension Tool"
+      },
+      "how": "Members live on IVGDimensionAngular. Reach it from a dimension shape: Shape.Dimension.Angular (valid when Shape.Dimension.Type = cdrDimensionAngular). Create one with ActiveLayer.CreateAngularDimension(Center, Point1, Point2, TextX, TextY, Precision, ShowUnits, Units, ...).",
+      "key_members": [
+        {
+          "name": "Center",
+          "use": "snap point at the vertex of the angle"
+        },
+        {
+          "name": "Point1",
+          "use": "snap point on the first arm"
+        },
+        {
+          "name": "Point2",
+          "use": "snap point on the second arm"
+        },
+        {
+          "name": "TextX",
+          "use": "horizontal position of the label"
+        },
+        {
+          "name": "TextY",
+          "use": "vertical position of the label"
+        },
+        {
+          "name": "Units",
+          "use": "cdrDimensionUnitDegrees / Radians / Gradians / DegreesSymbol"
+        },
+        {
+          "name": "ShowUnits",
+          "use": "append the unit to the label"
+        },
+        {
+          "name": "Clockwise",
+          "use": "measure the angle clockwise instead of counter-clockwise"
+        },
+        {
+          "name": "InnerExtensionLinesVisible",
+          "use": "show the inner extension lines"
+        }
+      ],
+      "gotchas": [
+        "Point properties are SnapPoint objects tied to shapes; moving the shapes moves the dimension, so do not expect fixed coordinates.",
+        "Clockwise flips which of the two possible arcs is measured, so the label can change from A to 360 - A (unverified exact rule).",
+        "Accessing Shape.Dimension.Angular on a linear dimension is expected to fail; check Dimension.Type first (unverified)."
+      ],
+      "example": "Dim a As Object\nSet a = ActiveShape.Dimension.Angular\na.Units = cdrDimensionUnitDegreesSymbol\na.ShowUnits = True\nDebug.Print a.TextX, a.TextY",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DimensionLinear",
+      "id": "class:DimensionLinear",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DimensionLinear",
+      "status": "current",
+      "summary": "Linear-dimension settings: horizontal, vertical or slanted type, the two anchor snap points, label position and number style (decimal, fractional, engineering, architectural), unit, placement and the dimension-arrow (terminator) behaviour.",
+      "use_for": [
+        "dimension dielines, panels and product drawings in mm or inches",
+        "convert every linear callout to architectural feet-inches or to millimetres",
+        "flip arrows outside the witness lines on short dimensions"
+      ],
+      "avoid": [
+        "angle callouts: use Dimension.Angular"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Adobe Dimension Tool"
+      },
+      "how": "Members live on IVGDimensionLinear. Reach it with Shape.Dimension.Linear (when Dimension.Type = cdrDimensionLinear). Create with ActiveLayer.CreateLinearDimension(Type, Point1, Point2, TextCentered, TextX, TextY, Style, Precision, ShowUnits, Units, Placement, ...), where Type is cdrDimensionHorizontal, cdrDimensionVertical or cdrDimensionSlanted.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrDimensionHorizontal / Vertical / Slanted"
+        },
+        {
+          "name": "Point1",
+          "use": "first anchor snap point"
+        },
+        {
+          "name": "Point2",
+          "use": "second anchor snap point"
+        },
+        {
+          "name": "Style",
+          "use": "number style: cdrDimensionStyleDecimal / Fractional / Engineering / Architectural"
+        },
+        {
+          "name": "Units",
+          "use": "cdrDimensionLinearUnits, e.g. cdrDimensionUnitMM, cdrDimensionUnitInches"
+        },
+        {
+          "name": "ShowUnits",
+          "use": "append the unit to the label"
+        },
+        {
+          "name": "TextCentered",
+          "use": "centre the label between the anchors"
+        },
+        {
+          "name": "TextX",
+          "use": "horizontal label position"
+        },
+        {
+          "name": "TextY",
+          "use": "vertical label position"
+        },
+        {
+          "name": "Placement",
+          "use": "label above, within or below the dimension line"
+        },
+        {
+          "name": "HorizontalText",
+          "use": "keep the label horizontal on a slanted dimension"
+        },
+        {
+          "name": "ReverseTerminators",
+          "use": "put the arrows outside the extension lines"
+        },
+        {
+          "name": "AutoReverseTerminators",
+          "use": "reverse arrows automatically when there is no room"
+        },
+        {
+          "name": "SetReverseTerminatorLength",
+          "use": "set the length of reversed arrow ends"
+        },
+        {
+          "name": "InnerDimensionLineVisible",
+          "use": "show the line between the extension lines when arrows are reversed"
+        }
+      ],
+      "gotchas": [
+        "Units here is the label unit (cdrDimensionLinearUnits, default cdrDimensionUnitMM = 15 in CreateLinearDimension); it is separate from Document.Unit used for coordinates.",
+        "Several unit constants look alike (cdrDimensionUnitMM vs cdrDimensionUnitMillimeters, cdrDimensionUnitIN vs cdrDimensionUnitInches): they differ in the label text, abbreviated or spelled out (unverified).",
+        "ReverseTerminatorLength is read-only; set it with SetReverseTerminatorLength."
+      ],
+      "example": "Dim s As Shape, L As Object\nSet s = ActiveLayer.CreateLinearDimension(cdrDimensionHorizontal, _\n    ActiveShape.SnapPoints.BBox(cdrTopLeft), ActiveShape.SnapPoints.BBox(cdrTopRight))\nSet L = s.Dimension.Linear\nL.Units = cdrDimensionUnitMM\nL.Style = cdrDimensionStyleDecimal",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DIVGApplicationEvents",
+      "id": "class:DIVGApplicationEvents",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DIVGApplicationEvents",
+      "status": "hidden",
+      "summary": "Application-level event interface (hidden dispinterface): the callbacks CorelDRAW fires for document open / new / close, before and after save, print and export, window activation, selection change, start, quit, plug-in commands and generic application events. The Query... events let a handler veto the action by setting Cancel.",
+      "use_for": [
+        "preflight a file before every save or export (block it when linked images are missing)",
+        "log every export path for an asset-tracking or delivery checklist",
+        "auto-apply house settings when any document is opened or created",
+        "drive the enabled / checked state of a custom plug-in command"
+      ],
+      "avoid": [
+        "events that belong to one document only: use DIVGDocumentEvents",
+        "heavy work in SelectionChange: it fires on every click"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "class:Notifier"
+      },
+      "how": "Not created by scripts: it is the event (source) interface of the Application object. In VBA write handlers in the GlobalMacros project's ThisMacroStorage module, named GlobalMacroStorage_<Event>; an external COM client connects with Application.AdviseEvents(sink) and disconnects with UnadviseEvents(cookie); Python can use win32com.client.DispatchWithEvents(\"CorelDRAW.Application.25\", Handler) with On<Event> methods. Application.EventsEnabled switches event delivery.",
+      "key_members": [
+        {
+          "name": "QueryDocumentSave",
+          "use": "before a save; set Cancel = True to block it"
+        },
+        {
+          "name": "QueryDocumentExport",
+          "use": "before an export; Cancel blocks it"
+        },
+        {
+          "name": "QueryDocumentPrint",
+          "use": "before printing; Cancel blocks it"
+        },
+        {
+          "name": "QueryDocumentClose",
+          "use": "before a close; Cancel keeps the document open"
+        },
+        {
+          "name": "QueryQuit",
+          "use": "before the application quits; Cancel keeps it running"
+        },
+        {
+          "name": "DocumentOpen",
+          "use": "a document was opened (Doc, FileName)"
+        },
+        {
+          "name": "DocumentNew",
+          "use": "a document was created (template info included)"
+        },
+        {
+          "name": "DocumentClose",
+          "use": "a document was closed"
+        },
+        {
+          "name": "DocumentBeforeSave",
+          "use": "just before saving (SaveAs flag, FileName)"
+        },
+        {
+          "name": "DocumentAfterSave",
+          "use": "after saving"
+        },
+        {
+          "name": "DocumentBeforeExport",
+          "use": "before exporting (FileName, Filter, SaveBitmap)"
+        },
+        {
+          "name": "DocumentAfterExport",
+          "use": "after exporting"
+        },
+        {
+          "name": "DocumentBeforePrint",
+          "use": "before printing"
+        },
+        {
+          "name": "WindowActivate",
+          "use": "a document window became active"
+        },
+        {
+          "name": "SelectionChange",
+          "use": "the selection changed"
+        },
+        {
+          "name": "Start",
+          "use": "the application started"
+        },
+        {
+          "name": "Quit",
+          "use": "the application is quitting"
+        },
+        {
+          "name": "OnPluginCommand",
+          "use": "a command added with Application.AddPluginCommand was run"
+        },
+        {
+          "name": "OnUpdatePluginCommand",
+          "use": "set Enabled / Checked for a plug-in command"
+        },
+        {
+          "name": "OnApplicationEvent",
+          "use": "generic named event with a parameter array"
+        }
+      ],
+      "gotchas": [
+        "Typelib flags mark it hidden: object browsers do not list it, but the events still fire.",
+        "Cancel is passed ByRef; declare it without ByVal or setting it has no effect.",
+        "Application.EventsEnabled = False (often set by batch macros for speed) silences every handler until it is set back.",
+        "A handler that edits the document can trigger further events (SelectionChange, document ShapeChange); guard against re-entry.",
+        "The ThisMacroStorage / GlobalMacroStorage_ naming is the VBA convention (unverified for 25.1 workspaces without GlobalMacros.gms)."
+      ],
+      "example": "' GlobalMacros > ThisMacroStorage\nPrivate Sub GlobalMacroStorage_QueryDocumentExport(ByVal Doc As Document, Cancel As Boolean)\n    If Doc.ActivePage.Shapes.Count = 0 Then Cancel = True\nEnd Sub\nPrivate Sub GlobalMacroStorage_DocumentAfterExport(ByVal Doc As Document, ByVal FileName As String, ByVal Filter As cdrFilter, ByVal SaveBitmap As Boolean)\n    Debug.Print \"exported \" & FileName\nEnd Sub",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DIVGDocumentEvents",
+      "id": "class:DIVGDocumentEvents",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DIVGDocumentEvents",
+      "status": "hidden",
+      "summary": "Per-document event interface (hidden dispinterface): callbacks for one document's open, close, save, print and export (with Query... vetoes), and for layers, pages and shapes being created, deleted, moved, transformed, distorted or changed, plus selection change.",
+      "use_for": [
+        "keep a live parts list or price total in sync as shapes are added or deleted",
+        "re-run a layout rule when a template's key shape is moved or changed",
+        "block saving a template until required fields are filled"
+      ],
+      "avoid": [
+        "watching every document at once: use DIVGApplicationEvents",
+        "reacting to the deleted shape itself: delete events only report a count"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "class:Notifier"
+      },
+      "how": "The event (source) interface of the Document coclass. In VBA, handlers go in a document's ThisDocument module as Document_<Event>; a COM client connects with Document.AdviseEvents(sink) and Document.UnadviseEvents(cookie); Python can use win32com.client.WithEvents(doc, Handler) with On<Event> methods.",
+      "key_members": [
+        {
+          "name": "QuerySave",
+          "use": "before a save; set Cancel = True to block it"
+        },
+        {
+          "name": "QueryClose",
+          "use": "before the document closes; Cancel keeps it open"
+        },
+        {
+          "name": "QueryExport",
+          "use": "before export; Cancel blocks it"
+        },
+        {
+          "name": "QueryPrint",
+          "use": "before print; Cancel blocks it"
+        },
+        {
+          "name": "Open",
+          "use": "the document was opened"
+        },
+        {
+          "name": "BeforeSave",
+          "use": "just before saving (SaveAs, FileName)"
+        },
+        {
+          "name": "AfterSave",
+          "use": "after saving"
+        },
+        {
+          "name": "BeforeExport",
+          "use": "before export (FileName, Filter, SaveBitmap)"
+        },
+        {
+          "name": "AfterExport",
+          "use": "after export"
+        },
+        {
+          "name": "PageCreate",
+          "use": "a page was added"
+        },
+        {
+          "name": "LayerCreate",
+          "use": "a layer was added"
+        },
+        {
+          "name": "ShapeCreate",
+          "use": "a shape was created"
+        },
+        {
+          "name": "ShapeDelete",
+          "use": "shapes were deleted (Count only)"
+        },
+        {
+          "name": "ShapeMove",
+          "use": "a shape was moved"
+        },
+        {
+          "name": "ShapeTransform",
+          "use": "a shape was scaled, rotated or skewed"
+        },
+        {
+          "name": "ShapeDistort",
+          "use": "a shape was distorted"
+        },
+        {
+          "name": "ShapeChange",
+          "use": "a shape changed; Scope is a cdrShapeChangeScope bit mask"
+        },
+        {
+          "name": "SelectionChange",
+          "use": "the selection in this document changed"
+        }
+      ],
+      "gotchas": [
+        "ShapeChange Scope is a bit mask (cdrShapeChangeFill = 1, Outline = 2, Transparency = 4, Content = 8 ...); test bits with And, not equality.",
+        "ShapeDelete, LayerDelete and PageDelete pass only a Count: the objects are already gone.",
+        "Handlers that modify shapes raise more Shape... events; set Application.EventsEnabled = False while the handler edits and restore it after.",
+        "Hidden in the type library, so it does not appear in the object browser; handler names must match exactly."
+      ],
+      "example": "' ThisDocument module of the document's VBA project\nPrivate Sub Document_ShapeChange(ByVal Shape As Shape, ByVal Scope As cdrShapeChangeScope)\n    If (Scope And cdrShapeChangeFill) <> 0 Then Debug.Print \"fill changed: \" & Shape.Name\nEnd Sub\nPrivate Sub Document_QuerySave(Cancel As Boolean)\n    If ActiveDocument.DataFields.Count = 0 Then Cancel = True\nEnd Sub",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DockHost",
+      "id": "class:DockHost",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DockHost",
+      "status": "current",
+      "summary": "Corel UI-framework dock host (ICUIDockHost, also in CrlFrmWkOM): a horizontal or vertical docking area of a frame window that holds dock items (nested dock hosts or view hosts such as dockers and document views). Scripts use it to inspect or rearrange the window layout.",
+      "use_for": [
+        "inspect where dockers are docked in the current workspace",
+        "insert a custom view or view host into a docking area from an add-in"
+      ],
+      "avoid": [
+        "showing or hiding a docker by GUID: ICUIFrameWork.ShowDocker / HideDocker is simpler",
+        "anything in the drawing itself"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDockHost. Reach it from a frame window: Application.FrameWork.MainFrameWindow.RootDockHost, or .DockHosts (DockHosts collection). Children returns the DockItems inside it; each DockItem is either another dock host or a view host.",
+      "key_members": [
+        {
+          "name": "ID",
+          "use": "identifier of the dock host"
+        },
+        {
+          "name": "Orientation",
+          "use": "cuiDockHostHorizontal or cuiDockHostVertical"
+        },
+        {
+          "name": "Children",
+          "use": "the DockItems directly inside this host"
+        },
+        {
+          "name": "ParentDockHost",
+          "use": "the dock host that contains this one"
+        },
+        {
+          "name": "DockItem",
+          "use": "this host seen as a DockItem of its parent"
+        },
+        {
+          "name": "Position",
+          "use": "screen rectangle of the host"
+        },
+        {
+          "name": "InsertViewHost",
+          "use": "insert an existing view host at an index"
+        },
+        {
+          "name": "InsertView",
+          "use": "wrap a view window in a new view host and insert it"
+        }
+      ],
+      "gotchas": [
+        "Framework objects come from CrlFrmWkOM, not from Document; nothing here changes the artwork.",
+        "Layout changes go into the user's workspace and can persist after restart (unverified).",
+        "The optional Operation argument of InsertView / InsertViewHost is a cuiDockOperation: cuiDockOperationInsert (0), cuiDockOperationSplitTopLeft (1) or cuiDockOperationSplitBottomRight (2); the exact split behaviour is unverified."
+      ],
+      "example": "Dim h As Object, it As Object\nSet h = Application.FrameWork.MainFrameWindow.RootDockHost\nDebug.Print h.ID, h.Orientation\nFor Each it In h.Children\n    Debug.Print it.ID, it.Type, it.RelativeSize\nNext it",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "cuiDockOperation values are in the harvest; gotcha lists them instead of calling them unknown"
+      }
+    },
+    {
+      "name": "DockHosts",
+      "id": "class:DockHosts",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DockHosts",
+      "status": "current",
+      "summary": "Corel UI-framework collection of the dock hosts of a frame window (ICUIDockHosts, also in CrlFrmWkOM), with lookup by ID and first / last access.",
+      "use_for": [
+        "walk all docking areas of the main window to find where an add-in docker sits",
+        "find a dock host by ID before inserting a view into it"
+      ],
+      "avoid": [
+        "toggling dockers: use ICUIFrameWork.ShowDocker / HideDocker"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDockHosts. Reach it with Application.FrameWork.MainFrameWindow.DockHosts (ICUIFrameWindow.DockHosts).",
+      "key_members": [
+        {
+          "name": "Count",
+          "use": "number of dock hosts"
+        },
+        {
+          "name": "Item",
+          "use": "dock host by index"
+        },
+        {
+          "name": "Find",
+          "use": "dock host by its ID string"
+        },
+        {
+          "name": "First",
+          "use": "first dock host"
+        },
+        {
+          "name": "Last",
+          "use": "last dock host"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the hosts"
+        }
+      ],
+      "gotchas": [
+        "Index base for Item is not stated in the harvest (unverified; most Corel collections are base 1).",
+        "IDs are workspace-specific; one saved in one workspace may not exist in another."
+      ],
+      "example": "Dim h As Object\nFor Each h In Application.FrameWork.MainFrameWindow.DockHosts\n    Debug.Print h.ID, h.Orientation, h.Children.Count\nNext h",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DockItem",
+      "id": "class:DockItem",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DockItem",
+      "status": "current",
+      "summary": "Corel UI-framework dock item (ICUIDockItem, also in CrlFrmWkOM): one entry inside a dock host, which is either a nested dock host or a view host (a docker or view). Gives its type, index, relative size and screen position.",
+      "use_for": [
+        "resize a docked panel relative to its neighbours from an add-in",
+        "tell docked view hosts from nested docking areas while walking the layout"
+      ],
+      "avoid": [
+        "drawing work of any kind"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDockItem. Get items from DockHost.Children (DockItems) or from DockHost.DockItem / ViewHost.DockItem. Type is cuiDockItemDockHost or cuiDockItemViewHost and tells which of DockHost / ViewHost is valid.",
+      "key_members": [
+        {
+          "name": "ID",
+          "use": "identifier of the item"
+        },
+        {
+          "name": "Type",
+          "use": "cuiDockItemDockHost or cuiDockItemViewHost"
+        },
+        {
+          "name": "DockHost",
+          "use": "the dock host, when Type is cuiDockItemDockHost"
+        },
+        {
+          "name": "ViewHost",
+          "use": "the view host, when Type is cuiDockItemViewHost"
+        },
+        {
+          "name": "Index",
+          "use": "position in the parent dock host"
+        },
+        {
+          "name": "RelativeSize",
+          "use": "size relative to the other items of the parent (settable)"
+        },
+        {
+          "name": "Position",
+          "use": "screen rectangle of the item"
+        }
+      ],
+      "gotchas": [
+        "Only one of DockHost / ViewHost is meaningful for a given Type (unverified whether the other returns Nothing or errors).",
+        "RelativeSize is a proportion among siblings, not pixels."
+      ],
+      "example": "Dim it As Object\nFor Each it In Application.FrameWork.MainFrameWindow.RootDockHost.Children\n    If it.Type = cuiDockItemViewHost Then Debug.Print it.ID, it.RelativeSize\nNext it",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DockItems",
+      "id": "class:DockItems",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DockItems",
+      "status": "current",
+      "summary": "Corel UI-framework collection of the dock items inside one dock host (ICUIDockItems, also in CrlFrmWkOM), with lookup by ID and first / last access.",
+      "use_for": [
+        "walk the dockers and nested areas inside one docking area",
+        "find a docked item by ID before resizing it"
+      ],
+      "avoid": [
+        "drawing work of any kind"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on ICUIDockItems. Reach it with DockHost.Children, e.g. Application.FrameWork.MainFrameWindow.RootDockHost.Children.",
+      "key_members": [
+        {
+          "name": "Count",
+          "use": "number of items in the dock host"
+        },
+        {
+          "name": "Item",
+          "use": "dock item by index"
+        },
+        {
+          "name": "Find",
+          "use": "dock item by ID"
+        },
+        {
+          "name": "First",
+          "use": "first item"
+        },
+        {
+          "name": "Last",
+          "use": "last item"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the items"
+        }
+      ],
+      "gotchas": [
+        "Index base for Item is not stated in the harvest (unverified).",
+        "The collection reflects the layout at the moment you read it; re-read after docking changes."
+      ],
+      "example": "Dim items As Object\nSet items = Application.FrameWork.MainFrameWindow.RootDockHost.Children\nDebug.Print items.Count, items.First.ID, items.Last.ID",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Document",
+      "id": "class:Document",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Document",
+      "status": "current",
+      "summary": "A CorelDRAW (or Corel DESIGNER) document: pages, layers, selection, units and drawing origin, undo grouping, save / export / PDF publishing, object-data fields, styles, colour context and the document palette. It is the root object for almost every scripted design job.",
+      "use_for": [
+        "batch-export every page of a brochure to PDF or PNG",
+        "build a print-ready layout: add pages at a set size, set units, place artwork",
+        "wrap a multi-step macro in one undo step",
+        "preflight a client file: units, resolution, linked bitmaps, colour context"
+      ],
+      "avoid": [
+        "looping over open files: use Application.Documents, and open / create files with Application.OpenDocument / CreateDocument (Documents has no Add or Open)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "class:Document",
+        "AI": "class:Document"
+      },
+      "how": "Members live on IVGDocument. Reach it with ActiveDocument (Application.ActiveDocument), Documents(i), or the return value of Application.CreateDocument / OpenDocument. Pages, ActivePage, ActiveLayer and SelectionRange lead to the artwork; Unit, ReferencePoint and DrawingOriginX/Y set how every coordinate the script passes is read.",
+      "key_members": [
+        {
+          "name": "ActivePage",
+          "use": "the current page"
+        },
+        {
+          "name": "ActiveLayer",
+          "use": "the layer new shapes go on"
+        },
+        {
+          "name": "Pages",
+          "use": "all pages (base 1)"
+        },
+        {
+          "name": "AddPagesEx",
+          "use": "append pages of a given width and height"
+        },
+        {
+          "name": "Unit",
+          "use": "unit for every position and size the script passes (cdrUnit)"
+        },
+        {
+          "name": "ReferencePoint",
+          "use": "which point of a shape positions refer to"
+        },
+        {
+          "name": "SaveSettings",
+          "use": "remember Unit, origin and similar settings"
+        },
+        {
+          "name": "RestoreSettings",
+          "use": "put them back at the end of a macro"
+        },
+        {
+          "name": "BeginCommandGroup",
+          "use": "start a single undo step"
+        },
+        {
+          "name": "EndCommandGroup",
+          "use": "close the undo step"
+        },
+        {
+          "name": "SelectionRange",
+          "use": "the selected shapes as a ShapeRange"
+        },
+        {
+          "name": "ClearSelection",
+          "use": "deselect everything"
+        },
+        {
+          "name": "SaveAs",
+          "use": "save to a new path with SaveAs options"
+        },
+        {
+          "name": "Save",
+          "use": "save in place"
+        },
+        {
+          "name": "Export",
+          "use": "export to a non-native format via a cdrFilter"
+        },
+        {
+          "name": "ExportBitmap",
+          "use": "export to a raster format with size, resolution and anti-aliasing"
+        },
+        {
+          "name": "PublishToPDF",
+          "use": "write a PDF using PDFSettings"
+        },
+        {
+          "name": "PDFSettings",
+          "use": "PDF options used by PublishToPDF"
+        },
+        {
+          "name": "DataFields",
+          "use": "object-data field definitions"
+        },
+        {
+          "name": "Close",
+          "use": "close the document"
+        }
+      ],
+      "gotchas": [
+        "Unit is the scripting unit and is separate from the ruler units the user sees (Rulers.HUnits / VUnits); scripts usually find it at inches (unverified for every document), so set it at the start of every macro (SaveSettings / RestoreSettings keep the previous value).",
+        "CorelDRAW coordinates grow upward on Y from the drawing origin (page lower-left by default, DrawingOriginX / Y), unlike Photoshop's top-down pixel coordinates.",
+        "Selection returns a special selection shape (cdrSelectionShape) that changes as the selection changes; take a ShapeRange with SelectionRange when you need a stable list.",
+        "Without BeginCommandGroup / EndCommandGroup every call is a separate undo step; an error between them leaves the group open, so end it in the error handler.",
+        "Close does not ask about unsaved changes when called from a script (unverified); check Dirty and Save first if needed.",
+        "Resolution / ResolutionX / ResolutionY are the document pixel resolution (DPI); pass ResolutionX / ResolutionY to ExportBitmap explicitly rather than relying on what it defaults to (unverified)."
+      ],
+      "example": "Dim doc As Document\nSet doc = ActiveDocument\ndoc.SaveSettings\ndoc.Unit = cdrMillimeter\ndoc.BeginCommandGroup \"Add badge\"\nActiveLayer.CreateEllipse2 105, 148, 30\ndoc.EndCommandGroup\ndoc.RestoreSettings",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "gotcha claimed Unit defaults to the ruler unit (unsupported; scripting unit is separate from ruler units, inches in harvest tests); dropped the claim that Illustrator scripting is Y-down (its scripting Y also grows upward); removed unsupported claim that ExportBitmap / effect defaults follow Document.Resolution"
+      }
+    },
+    {
+      "name": "Documents",
+      "id": "class:Documents",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Documents",
+      "status": "current",
+      "summary": "Collection of all open documents, in the order they were created or opened. Read-only access by index, count and enumeration; documents are opened and created through Application, not here.",
+      "use_for": [
+        "batch-export or preflight every open file",
+        "find an already-open document by file name before opening it again"
+      ],
+      "avoid": [
+        "opening or creating files: use Application.OpenDocument / CreateDocument / CreateDocumentFromTemplate; this collection has no Add or Open"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "class:Documents",
+        "AI": "class:Documents"
+      },
+      "how": "Members live on IVGDocuments. Reach it with Documents (Application.Documents). Item takes a base-1 index; iterate with For Each.",
+      "key_members": [
+        {
+          "name": "Count",
+          "use": "number of open documents"
+        },
+        {
+          "name": "Item",
+          "use": "document by base-1 index"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the documents"
+        },
+        {
+          "name": "Parent",
+          "use": "the Application"
+        },
+        {
+          "name": "Application",
+          "use": "the Application"
+        }
+      ],
+      "gotchas": [
+        "Item takes only an index (long) in the harvest, not a name; match Document.FileName or Title yourself.",
+        "Closing documents inside a For Each over this collection changes it under the loop; walk it backwards by index instead.",
+        "Temporary documents made by Document.Clone have no window (IsTemporary) and may or may not be listed (unverified)."
+      ],
+      "example": "Dim i As Long, d As Document\nFor i = Documents.Count To 1 Step -1\n    Set d = Documents(i)\n    Debug.Print d.Title, d.FullFileName, d.Dirty\nNext i",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Duotone",
+      "id": "class:Duotone",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Duotone",
+      "status": "current",
+      "summary": "Duotone settings for a bitmap: monotone, duotone, tritone or quadtone, the inks with their tone curves, and the optional overprint colour overrides; can be loaded from or saved to a .cpd preset file.",
+      "use_for": [
+        "give photos a two-colour spot-ink look for a two-colour print job",
+        "apply a brand-colour monotone to every photo in a brochure",
+        "save a duotone recipe as .cpd and reuse it across jobs"
+      ],
+      "avoid": [
+        "a quick colour tint on screen-only work: a transparency or lens is easier and stays vector-editable",
+        "vector shapes: duotone applies to bitmaps only (Shape.Bitmap)"
+      ],
+      "confidence": "medium",
+      "equivalents": {
+        "PS": "Image/Mode/Duotone"
+      },
+      "how": "Members live on IVGDuotone. Create a fresh one with Application.CreateDuotone(), read the settings of a duotone bitmap with Shape.Bitmap.Duotone, and apply with Shape.Bitmap.ConvertToDuotone(dt). Inks(i) returns each DuotoneInk; Overprints(i) the DuotoneOverprint combinations when UseOverprints is True.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrMonotone / cdrDuotone / cdrTritone / cdrQuadtone"
+        },
+        {
+          "name": "InkCount",
+          "use": "number of tone inks"
+        },
+        {
+          "name": "Inks",
+          "use": "one ink (colour plus tone curve) by index"
+        },
+        {
+          "name": "UseOverprints",
+          "use": "use the overprint colour overrides"
+        },
+        {
+          "name": "OverprintCount",
+          "use": "number of overprint ink combinations"
+        },
+        {
+          "name": "Overprints",
+          "use": "one overprint combination by index"
+        },
+        {
+          "name": "ResetOverprints",
+          "use": "reset all overprint overrides"
+        },
+        {
+          "name": "Load",
+          "use": "load settings from a .cpd file"
+        },
+        {
+          "name": "Save",
+          "use": "save settings to a .cpd file"
+        },
+        {
+          "name": "GetCopy",
+          "use": "independent copy of these settings"
+        },
+        {
+          "name": "CopyAssign",
+          "use": "copy settings from another Duotone"
+        }
+      ],
+      "gotchas": [
+        "Type is read / write in the type library (not read-only, although its description says 'Returns'); what setting it does to the existing inks is unverified, so loading a .cpd is the safer way to get a given ink count.",
+        "Ink colours must be valid duotone colours; IVGColor.IsValidDuotoneColor / ValidDuotoneColor exist to check and fix them.",
+        "The index base of Inks and Overprints is not stated in the harvest (unverified).",
+        "Bitmap.Duotone on a bitmap that is not in duotone mode (Bitmap.Mode <> cdrDuotoneImage) is not meaningful (unverified whether it errors)."
+      ],
+      "example": "Dim dt As Duotone\nSet dt = CreateDuotone()\nIf dt.Load(\"C:\\presets\\warm_duotone.cpd\") Then\n    ActiveShape.Bitmap.ConvertToDuotone dt\nEnd If\nDebug.Print ActiveShape.Bitmap.Duotone.InkCount",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "Type is not read-only in the harvest; gotcha now says so"
+      }
+    },
+    {
+      "name": "DuotoneInk",
+      "id": "class:DuotoneInk",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DuotoneInk",
+      "status": "current",
+      "summary": "One ink of a duotone: its colour and its tone-transfer curve (handles that map bitmap grey levels to ink coverage, 256 levels), with load / save of .cik ink files.",
+      "use_for": [
+        "shape how much of a spot colour prints in highlights versus shadows",
+        "store a tuned ink curve as .cik and reuse it in other duotones"
+      ],
+      "avoid": [
+        "global brightness or contrast changes to the photo: adjust the bitmap first, keep ink curves for ink distribution"
+      ],
+      "confidence": "medium",
+      "equivalents": {},
+      "how": "Members live on IVGDuotoneInk. Reach it with Duotone.Inks(index) from Application.CreateDuotone() or Shape.Bitmap.Duotone. Handles are integer x / y pairs on the curve; GetCurveLevels returns the resulting 256-entry curve.",
+      "key_members": [
+        {
+          "name": "Color",
+          "use": "the ink colour"
+        },
+        {
+          "name": "HandleCount",
+          "use": "number of curve handles"
+        },
+        {
+          "name": "HandleX",
+          "use": "x of a handle by index"
+        },
+        {
+          "name": "HandleY",
+          "use": "y of a handle by index"
+        },
+        {
+          "name": "AddHandle",
+          "use": "add a handle at x, y; returns its index"
+        },
+        {
+          "name": "RemoveHandle",
+          "use": "remove a handle by index"
+        },
+        {
+          "name": "FindHandle",
+          "use": "index of the handle at x, y"
+        },
+        {
+          "name": "GetHandles",
+          "use": "all handle positions as an array"
+        },
+        {
+          "name": "PutHandles",
+          "use": "set all handle positions from an array"
+        },
+        {
+          "name": "GetCurveLevels",
+          "use": "the 256 curve levels"
+        },
+        {
+          "name": "CurveLevel",
+          "use": "curve level at one input value"
+        },
+        {
+          "name": "Reset",
+          "use": "reset the curve to straight"
+        },
+        {
+          "name": "Load",
+          "use": "load ink settings from a .cik file"
+        },
+        {
+          "name": "Save",
+          "use": "save ink settings to a .cik file"
+        }
+      ],
+      "gotchas": [
+        "Handle coordinates are integers; with 256 curve levels the useful range is most likely 0 to 255 on both axes (unverified).",
+        "Whether the IVGColor returned by Color is live (editing it changes the ink) or a copy is unverified; assigning a new colour is the safer route.",
+        "Changes to an ink only reach the bitmap when the Duotone is applied again with Bitmap.ConvertToDuotone (unverified)."
+      ],
+      "example": "Dim dt As Duotone, ink As Object\nSet dt = ActiveShape.Bitmap.Duotone\nSet ink = dt.Inks(1)\nink.Reset\nink.AddHandle 128, 90\nActiveShape.Bitmap.ConvertToDuotone dt",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "DuotoneOverprint",
+      "id": "class:DuotoneOverprint",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/DuotoneOverprint",
+      "status": "current",
+      "summary": "One overprint ink combination of a duotone (where two or more inks overlap): CMYK components and a colour override that set the colour shown where those inks overlap.",
+      "use_for": [
+        "make the on-screen and composite proof of overlapping spot inks match a printed swatch",
+        "reset overlap colours after changing duotone inks"
+      ],
+      "avoid": [
+        "changing the inks themselves: use DuotoneInk.Color and the tone curve"
+      ],
+      "confidence": "medium",
+      "equivalents": {},
+      "how": "Members live on IVGDuotoneOverprint. Reach it with Duotone.Overprints(index) (OverprintCount gives the number of combinations); the overrides apply when Duotone.UseOverprints is True.",
+      "key_members": [
+        {
+          "name": "SetValues",
+          "use": "set Cyan, Magenta, Yellow, Black in one call"
+        },
+        {
+          "name": "Cyan",
+          "use": "cyan component of the overlap colour"
+        },
+        {
+          "name": "Magenta",
+          "use": "magenta component"
+        },
+        {
+          "name": "Yellow",
+          "use": "yellow component"
+        },
+        {
+          "name": "Black",
+          "use": "black component"
+        },
+        {
+          "name": "Color",
+          "use": "overprint colour override"
+        },
+        {
+          "name": "Reset",
+          "use": "reset this combination"
+        }
+      ],
+      "gotchas": [
+        "Overrides do nothing unless Duotone.UseOverprints is True.",
+        "Overprint colours are believed to affect the composite / screen rendering, not the separated ink plates (unverified for CorelDRAW 25.1).",
+        "Component range is not stated in the harvest; 0 to 100 percent is the usual CorelDRAW CMYK range (unverified)."
+      ],
+      "example": "Dim dt As Duotone\nSet dt = ActiveShape.Bitmap.Duotone\ndt.UseOverprints = True\ndt.Overprints(1).SetValues 0, 40, 100, 20\nActiveShape.Bitmap.ConvertToDuotone dt",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "summary no longer asserts the unverified 'composite preview only' behaviour"
+      }
+    },
+    {
+      "name": "EdgeSnapPoint",
+      "id": "class:EdgeSnapPoint",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EdgeSnapPoint",
+      "status": "current",
+      "summary": "Extra data of a snap point that sits on a path edge rather than on a node: which segment it is on and where along that segment (a parametric time value).",
+      "use_for": [
+        "anchor a dimension or connector to a point partway along a curve",
+        "read where an edge snap point lies on a path"
+      ],
+      "avoid": [
+        "node positions: use the Curve / Node objects; bounding-box corners: use SnapPoints.BBox"
+      ],
+      "confidence": "medium",
+      "equivalents": {},
+      "how": "Members live on IVGEdgeSnapPoint. Reach it with SnapPoint.Edge on a snap point whose Type is cdrSnapPointEdge; Shape.SnapPoints.Edge(SegmentIndex, SegmentOffset) returns such a SnapPoint for a chosen segment and offset.",
+      "key_members": [
+        {
+          "name": "SegmentIndex",
+          "use": "index of the path segment the point is on"
+        },
+        {
+          "name": "SegmentOffset",
+          "use": "parametric position (time) along that segment"
+        }
+      ],
+      "gotchas": [
+        "SegmentOffset is a curve parameter, not a distance: 0.5 is the middle of a straight segment but not, in general, the arc-length midpoint of a curved one.",
+        "SnapPoint.Edge is only meaningful for edge snap points; check SnapPoint.Type first (unverified what it returns otherwise).",
+        "Segment indices change when nodes are added or removed, so stored edge points can drift to another place."
+      ],
+      "example": "Dim sp As SnapPoint\nSet sp = ActiveShape.SnapPoints.Edge(1, 0.5)\nDebug.Print sp.PositionX, sp.PositionY\nDebug.Print sp.Edge.SegmentIndex, sp.Edge.SegmentOffset",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Effect",
+      "id": "class:Effect",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Effect",
+      "status": "current",
+      "summary": "Generic handle on one interactive effect applied to a shape (blend, contour, drop or inner shadow, extrude, envelope, lens, perspective, distortion, text on path, control path or custom effect). Type says which kind it is; the matching typed property gives its settings; Clear removes it and Separate breaks it into ordinary shapes.",
+      "use_for": [
+        "walk every effect on a shape and adjust or remove one kind (e.g. soften all drop shadows)",
+        "bake a blend, contour or extrude into editable curves before sending to a cutter or another app",
+        "find which effects a template shape carries"
+      ],
+      "avoid": [
+        "creating effects: use the Shape.CreateDropShadow / CreateBlend / CreateContour / CreateExtrude / CreateEnvelope / CreateLens / CreatePerspective / Create...Distortion / CreateInnerShadow methods, which return an Effect"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGEffect. Obtained from the Shape.Create... methods, from Shape.Effects (Item, or typed accessors such as DropShadowEffect), or from Shape.Effect. Read Type (cdrEffectType) and then use only the matching property: Blend, Contour, DropShadow, InnerShadow, Extrude, Envelope, Lens, Perspective, Distortion, TextOnPath, ControlPath or Custom.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrEffectType: cdrBlend, cdrExtrude, cdrEnvelope, cdrTextOnPath, cdrControlPath, cdrDropShadow, cdrContour, cdrDistortion, cdrPerspective, cdrLens, cdrCustomEffect, cdrInnerShadow"
+        },
+        {
+          "name": "Blend",
+          "use": "blend settings (EffectBlend)"
+        },
+        {
+          "name": "Contour",
+          "use": "contour settings (EffectContour)"
+        },
+        {
+          "name": "DropShadow",
+          "use": "drop-shadow settings (EffectDropShadow)"
+        },
+        {
+          "name": "InnerShadow",
+          "use": "inner-shadow settings (EffectInnerShadow)"
+        },
+        {
+          "name": "Extrude",
+          "use": "extrude settings (EffectExtrude)"
+        },
+        {
+          "name": "Envelope",
+          "use": "envelope settings (EffectEnvelope)"
+        },
+        {
+          "name": "Lens",
+          "use": "lens settings (EffectLens)"
+        },
+        {
+          "name": "Perspective",
+          "use": "perspective settings (EffectPerspective)"
+        },
+        {
+          "name": "Distortion",
+          "use": "distortion settings (EffectDistortion)"
+        },
+        {
+          "name": "TextOnPath",
+          "use": "text-on-path settings (EffectTextOnPath)"
+        },
+        {
+          "name": "ControlPath",
+          "use": "effects that use this shape as their path (EffectControlPath)"
+        },
+        {
+          "name": "Custom",
+          "use": "custom effect properties"
+        },
+        {
+          "name": "Clear",
+          "use": "remove the effect"
+        },
+        {
+          "name": "Separate",
+          "use": "break the effect into ordinary shapes; returns them as a ShapeRange"
+        },
+        {
+          "name": "Clones",
+          "use": "effects cloned from this one"
+        },
+        {
+          "name": "CloneParent",
+          "use": "the effect this one was cloned from"
+        }
+      ],
+      "gotchas": [
+        "Only the property that matches Type is valid; reading another (e.g. .Blend on a drop shadow) is expected to raise an error (unverified exact behaviour).",
+        "The harvest describes Clear and Separate as 'blend' operations, but they sit on the generic Effect; whether Separate works for every type (e.g. lens, perspective) is unverified.",
+        "After Clear or Separate the Effect object is stale; do not reuse it."
+      ],
+      "example": "Dim e As Effect\nFor Each e In ActiveShape.Effects\n    If e.Type = cdrDropShadow Then e.DropShadow.Opacity = 35\nNext e\nSet e = ActiveShape.Effects.ContourEffect\nIf Not e Is Nothing Then e.Separate",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "example no longer calls Separate inside a For Each over the Effects it changes"
+      }
+    },
+    {
+      "name": "EffectBlend",
+      "id": "class:EffectBlend",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectBlend",
+      "status": "current",
+      "summary": "Settings of a blend: the intermediate shapes CorelDRAW generates between a start and an end shape, with step count or spacing, rotation, colour direction, acceleration of spacing, colour and size, and an optional path to follow.",
+      "use_for": [
+        "3D-looking stacked or neon text from two outlines",
+        "smooth colour ramps and guilloche-style line art",
+        "rows of objects spaced evenly along a curved path (blend on path)"
+      ],
+      "avoid": [
+        "a single uniform outline around a shape: use a contour (EffectContour)",
+        "exact repeat counts with no morphing: Shape.StepAndRepeat"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Object/Blend/Make"
+      },
+      "how": "Members live on IVGEffectBlend. Create with startShape.CreateBlend(endShape, Steps, ColorBlendType, Mode, Spacing, Angle, Loop, Path, RotateShapes, SpacingAccel, ColorAccel, AccelSize) (defaults: 20 steps, direct colours); the call returns an Effect whose .Blend is this object. Existing blends: Shape.Effects.BlendEffects or Effect.Blend.",
+      "key_members": [
+        {
+          "name": "StartShape",
+          "use": "start control shape"
+        },
+        {
+          "name": "EndShape",
+          "use": "end control shape"
+        },
+        {
+          "name": "Steps",
+          "use": "number of intermediate shapes (Mode = cdrBlendSteps)"
+        },
+        {
+          "name": "Mode",
+          "use": "cdrBlendSteps or cdrBlendSpacing"
+        },
+        {
+          "name": "Spacing",
+          "use": "distance between steps (cdrBlendSpacing, on a path)"
+        },
+        {
+          "name": "Angle",
+          "use": "rotation spread across the steps"
+        },
+        {
+          "name": "Loop",
+          "use": "rotate around a centre to make the blend loop"
+        },
+        {
+          "name": "ColorBlendType",
+          "use": "direct, rainbow clockwise or rainbow counter-clockwise colours"
+        },
+        {
+          "name": "Path",
+          "use": "path the blend follows"
+        },
+        {
+          "name": "FullPath",
+          "use": "stretch the blend over the whole path"
+        },
+        {
+          "name": "RotateShapes",
+          "use": "rotate steps to follow the path"
+        },
+        {
+          "name": "SpacingAcceleration",
+          "use": "bunch steps towards one end"
+        },
+        {
+          "name": "ColorAcceleration",
+          "use": "speed the colour change towards one end"
+        },
+        {
+          "name": "AccelerateSize",
+          "use": "size follows the spacing acceleration"
+        },
+        {
+          "name": "LinkAcceleration",
+          "use": "link colour and spacing acceleration"
+        },
+        {
+          "name": "MapNodes",
+          "use": "use StartPoint / EndPoint node mapping"
+        },
+        {
+          "name": "BlendGroup",
+          "use": "the generated intermediate shapes"
+        },
+        {
+          "name": "Split",
+          "use": "split the blend at a step into two blends"
+        },
+        {
+          "name": "CopyFrom",
+          "use": "copy settings from another blend"
+        }
+      ],
+      "gotchas": [
+        "Spacing only applies with Mode = cdrBlendSpacing and a path; on a straight blend Steps rules.",
+        "The steps live in BlendGroup and are regenerated on every change; edit the start / end shapes, or Separate the Effect, to get editable copies.",
+        "Blending shapes with different node counts can twist unexpectedly; set MapNodes with StartPoint / EndPoint to fix the correspondence.",
+        "CreateBlend's Steps parameter is typed int (default 20) while the Steps property is long."
+      ],
+      "example": "Dim a As Shape, b As Shape, e As Effect\nSet a = ActiveLayer.CreateEllipse2(50, 150, 10)\nSet b = ActiveLayer.CreateEllipse2(150, 150, 30)\nSet e = a.CreateBlend(b, 12)\ne.Blend.ColorBlendType = cdrRainbowCWFountainFillBlend\ne.Blend.Angle = 90",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectContour",
+      "id": "class:EffectContour",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectContour",
+      "status": "current",
+      "summary": "Settings of a contour: a series of concentric outlines grown inside, outside or to the centre of a shape at a set offset and step count, with colour progression from the shape to a target outline / fill colour and control of end caps and corners.",
+      "use_for": [
+        "sticker or die-cut outline around a logo or text (one outside step)",
+        "topographic or radiating-line art from a single shape",
+        "multi-ring retro type and badge outlines"
+      ],
+      "avoid": [
+        "morphing between two different shapes: use a blend (EffectBlend)",
+        "a single plain stroke: just set the outline width"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Effect/Path/Offset Path"
+      },
+      "how": "Members live on IVGEffectContour. Create with Shape.CreateContour(Direction, Offset, Steps, BlendType, OutlineColor, FillColor, FillColor2, SpacingAccel, ColorAccel, EndCapType, CornerType, MiterLimit) (defaults: outside, 1 step, square caps, mitered offset bevel corners); it returns an Effect whose .Contour is this object. Existing contour: Shape.Effects.ContourEffect.Contour.",
+      "key_members": [
+        {
+          "name": "Direction",
+          "use": "cdrContourInside / cdrContourOutside / cdrContourToCenter"
+        },
+        {
+          "name": "Offset",
+          "use": "distance between steps, in document units"
+        },
+        {
+          "name": "Steps",
+          "use": "number of contour steps"
+        },
+        {
+          "name": "FillColor",
+          "use": "fill colour of the last step"
+        },
+        {
+          "name": "FillColorTo",
+          "use": "second fill colour for fountain-filled shapes"
+        },
+        {
+          "name": "OutlineColor",
+          "use": "outline colour of the last step"
+        },
+        {
+          "name": "ColorBlendType",
+          "use": "direct or rainbow colour progression"
+        },
+        {
+          "name": "SpacingAcceleration",
+          "use": "change step spacing towards the end"
+        },
+        {
+          "name": "ColorAcceleration",
+          "use": "change colour progression towards the end"
+        },
+        {
+          "name": "LinkAcceleration",
+          "use": "link the two accelerations"
+        },
+        {
+          "name": "CornerType",
+          "use": "cdrContourCorner... bevel, round or mitered variants"
+        },
+        {
+          "name": "MiterLimit",
+          "use": "miter limit for mitered corners"
+        },
+        {
+          "name": "EndCapType",
+          "use": "butt, round or square ends on open paths"
+        },
+        {
+          "name": "ContourGroup",
+          "use": "the generated contour shapes"
+        }
+      ],
+      "gotchas": [
+        "Offset follows Document.Unit, so the same macro gives different results in mm and inch documents unless Unit is set.",
+        "With cdrContourToCenter the step count follows from Offset and the shape size (unverified that Steps is ignored).",
+        "The contour steps are generated; for a cut line take the outermost step after Effect.Separate.",
+        "Inside contours on very thin or open shapes may produce nothing."
+      ],
+      "example": "Dim e As Effect\nActiveDocument.Unit = cdrMillimeter\nSet e = ActiveShape.CreateContour(cdrContourOutside, 2, 1)\ne.Contour.CornerType = cdrContourCornerRound\ne.Contour.FillColor.CMYKAssign 0, 0, 0, 0",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectControlPath",
+      "id": "class:EffectControlPath",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectControlPath",
+      "status": "current",
+      "summary": "Effect object for a shape that is used as a path by other effects: it lists the blends and text-on-path effects attached to that path.",
+      "use_for": [
+        "find every blend or text-on-path that depends on a guide curve before editing or deleting it",
+        "audit templates where text is fitted to a shared path"
+      ],
+      "avoid": [
+        "the blend or text settings themselves: go to the listed Effect's Blend or TextOnPath"
+      ],
+      "confidence": "medium",
+      "equivalents": {},
+      "how": "Members live on IVGEffectControlPath. Reach it from the path shape: pathShape.Effects.ControlPathEffect.ControlPath (an Effect of Type cdrControlPath). Its Effects collection holds the attached Blend and TextOnPath effects.",
+      "key_members": [
+        {
+          "name": "Effects",
+          "use": "the blend and text-on-path effects attached to this path"
+        },
+        {
+          "name": "Parent",
+          "use": "the Effect (Type cdrControlPath) this belongs to"
+        },
+        {
+          "name": "Application",
+          "use": "the CorelDRAW application"
+        }
+      ],
+      "gotchas": [
+        "Only blend and text-on-path effects are listed; envelopes or shadows referencing other shapes are not.",
+        "On a shape that is not used as a path, Effects.ControlPathEffect returns nothing useful (unverified: Nothing or an error).",
+        "Deleting the path shape detaches or removes the dependent effects (unverified which)."
+      ],
+      "example": "Dim cp As Effect, e As Effect\nSet cp = ActiveShape.Effects.ControlPathEffect\nIf Not cp Is Nothing Then\n    For Each e In cp.ControlPath.Effects\n        Debug.Print e.Type\n    Next e\nEnd If",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectCustomDistortion",
+      "id": "class:EffectCustomDistortion",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectCustomDistortion",
+      "status": "current",
+      "summary": "Properties of a custom distortion (Distortion type cdrDistortionCustom); the only harvested member is the identifier of the distortion. Which distortions in CorelDRAW 2024 are 'custom' (add-on or newer distortion types beyond Push-Pull, Zipper and Twister) is not shown by the harvest and is unverified.",
+      "use_for": [
+        "read which custom distortion is applied to a shape before copying or removing it"
+      ],
+      "avoid": [
+        "Push-Pull, Zipper or Twister distortions: use EffectPushPullDistortion / EffectZipperDistortion / EffectTwisterDistortion"
+      ],
+      "confidence": "low",
+      "equivalents": {},
+      "how": "Members live on IVGEffectCustomDistortion. Reach it with Effect.Distortion.Custom when Effect.Distortion.Type = cdrDistortionCustom. Such distortions are created with Shape.CreateCustomDistortion(DistortionID, Parameters), whose IDs and parameter arrays are not documented in the type library.",
+      "key_members": [
+        {
+          "name": "DistortionID",
+          "use": "identifier of the custom distortion"
+        }
+      ],
+      "gotchas": [
+        "No settings beyond the ID are exposed, so a custom distortion cannot be tuned from VBA once applied; recreate it with new Parameters instead (unverified).",
+        "Valid DistortionID strings and their Parameters layout are not in the harvest; read the ID from an existing shape before trying to recreate one."
+      ],
+      "example": "Dim e As Effect\nFor Each e In ActiveShape.Effects.DistortionEffects\n    If e.Distortion.Type = cdrDistortionCustom Then Debug.Print e.Distortion.Custom.DistortionID\nNext e",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectDistortion",
+      "id": "class:EffectDistortion",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectDistortion",
+      "status": "current",
+      "summary": "Settings of a Distort-tool effect: the distortion type (Push-Pull, Zipper, Twister or custom), its centre point, and the type-specific sub-object holding amplitude, frequency or angle. The shape keeps its original curves, so the distortion stays editable.",
+      "use_for": [
+        "starburst and flower shapes from a circle or polygon",
+        "jagged comic or electric edges on text and badges",
+        "swirled logos and decorative ornaments"
+      ],
+      "avoid": [
+        "regular perspective or envelope warps: use EffectPerspective or EffectEnvelope",
+        "cut-ready paths: Separate or convert to curves first, the distortion is live"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGEffectDistortion. Created by Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude), CreateZipperDistortion(OriginX, OriginY, Amplitude, Frequency, Random, Smooth, Local) or CreateTwisterDistortion(OriginX, OriginY, Angle); each returns an Effect whose .Distortion is this object. Existing ones: Shape.Effects.DistortionEffects.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrDistortionPushPull / Zipper / Twister / Custom"
+        },
+        {
+          "name": "OriginX",
+          "use": "x of the distortion centre"
+        },
+        {
+          "name": "OriginY",
+          "use": "y of the distortion centre"
+        },
+        {
+          "name": "CenterDistortion",
+          "use": "move the centre to the middle of the shape"
+        },
+        {
+          "name": "PushPull",
+          "use": "Push-Pull settings (Amplitude)"
+        },
+        {
+          "name": "Zipper",
+          "use": "Zipper settings (Amplitude, Frequency, Random, Smooth, Local)"
+        },
+        {
+          "name": "Twister",
+          "use": "Twister settings (Angle)"
+        },
+        {
+          "name": "Custom",
+          "use": "custom distortion properties"
+        },
+        {
+          "name": "Parent",
+          "use": "the Effect"
+        }
+      ],
+      "gotchas": [
+        "Only the sub-object matching Type is valid.",
+        "Distortions stack: Effects.DistortionEffects can hold several, applied in order.",
+        "OriginX / OriginY are taken as document coordinates (pass Shape.CenterX / CenterY for a centred effect; unverified that they are not shape-relative); off-centre origins change the look a lot."
+      ],
+      "example": "Dim e As Effect\nWith ActiveShape\n    Set e = .CreateZipperDistortion(.CenterX, .CenterY, 20, 8)\nEnd With\ne.Distortion.Zipper.Smooth = True\nDebug.Print e.Distortion.Type",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "marked the coordinate-space claim for OriginX / OriginY as unverified"
+      }
+    },
+    {
+      "name": "EffectDropShadow",
+      "id": "class:EffectDropShadow",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectDropShadow",
+      "status": "current",
+      "summary": "Settings of a drop shadow: a soft (feathered) bitmap shadow behind a shape, either flat with an X/Y offset or perspective (bottom, top, left, right) with angle, stretch and fade, plus opacity, colour, feather type and edge, and the merge (blend) mode.",
+      "use_for": [
+        "lift product shots and cut-outs off a background on posters and social cards",
+        "soft text shadows for headlines over photos",
+        "perspective cast shadows that ground an object on a surface"
+      ],
+      "avoid": [
+        "vector-only output (cutting, embroidery, some print RIPs): the shadow is a bitmap, use a blended or offset vector copy",
+        "shading inside a shape: use an inner shadow (EffectInnerShadow)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "Layer/Layer Style/Drop Shadow",
+        "AI": "Effect/Stylize/Drop Shadow"
+      },
+      "how": "Members live on IVGEffectDropShadow. Create with Shape.CreateDropShadow(Type, Opacity, Feather, OffsetX, OffsetY, Color, FeatherType, FeatherEdge, PerspectiveAngle, PerspectiveStretch, Fade, MergeMode) (defaults: flat, opacity 50, feather 15, Gaussian-blur feather type); it returns an Effect whose .DropShadow is this object. Existing shadow: Shape.Effects.DropShadowEffect.DropShadow.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrDropShadowFlat / Bottom / Top / Left / Right"
+        },
+        {
+          "name": "OffsetX",
+          "use": "horizontal offset (flat shadows)"
+        },
+        {
+          "name": "OffsetY",
+          "use": "vertical offset (flat shadows)"
+        },
+        {
+          "name": "SetOffset",
+          "use": "set both offsets at once"
+        },
+        {
+          "name": "Opacity",
+          "use": "shadow opacity, percent"
+        },
+        {
+          "name": "Feather",
+          "use": "softness of the shadow edge"
+        },
+        {
+          "name": "FeatherType",
+          "use": "cdrFeatherInside / Middle / Outside / Average / GaussianBlur"
+        },
+        {
+          "name": "FeatherEdge",
+          "use": "cdrEdgeLinear / Squared / Flat / InverseSquared / Mesa / Gaussian"
+        },
+        {
+          "name": "Color",
+          "use": "shadow colour"
+        },
+        {
+          "name": "MergeMode",
+          "use": "blend mode of the shadow (cdrMergeMultiply, cdrMergeNormal ...)"
+        },
+        {
+          "name": "PerspectiveAngle",
+          "use": "angle of a perspective shadow"
+        },
+        {
+          "name": "PerspectiveStretch",
+          "use": "length of a perspective shadow"
+        },
+        {
+          "name": "Fade",
+          "use": "fade along a perspective shadow"
+        },
+        {
+          "name": "ShadowGroup",
+          "use": "the shadow bitmap shape"
+        }
+      ],
+      "gotchas": [
+        "The shadow is rendered as a bitmap at document resolution; PDF / EPS export rasterises it and low Document.Resolution makes it banded or soft.",
+        "OffsetX / OffsetY drive flat shadows; perspective types use PerspectiveAngle / PerspectiveStretch / Fade instead.",
+        "Offsets follow Document.Unit; set the unit before passing numbers.",
+        "MergeMode default is cdrMergeNormal (0) per the CreateDropShadow defaults; Multiply usually looks more natural over colour backgrounds."
+      ],
+      "example": "Dim e As Effect\nActiveDocument.Unit = cdrMillimeter\nSet e = ActiveShape.CreateDropShadow(cdrDropShadowFlat, 60, 12, 1.5, -1.5)\ne.DropShadow.MergeMode = cdrMergeMultiply\ne.DropShadow.Color.RGBAssign 20, 20, 40",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectEnvelope",
+      "id": "class:EffectEnvelope",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectEnvelope",
+      "status": "current",
+      "summary": "Settings of an envelope: an editable container curve that warps a shape (including live text) to its outline, mapped in Putty, Original, Horizontal or Vertical mode (cdrEnvelopeMode), optionally keeping straight lines straight.",
+      "use_for": [
+        "arch or bulge a headline into a banner, badge or pennant shape",
+        "fit a logo or pattern into a curved label area",
+        "warp artwork to the outline of another shape (CreateEnvelopeFromShape)"
+      ],
+      "avoid": [
+        "true 3D perspective: use EffectPerspective",
+        "fitting text along a line rather than filling a shape: use text on path (EffectTextOnPath)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "Edit/Transform/Warp",
+        "AI": "Object/Envelope Distort/Make with Top Object"
+      },
+      "how": "Members live on IVGEffectEnvelope. Create with Shape.CreateEnvelope(PresetIndex, Mode, KeepLines), Shape.CreateEnvelopeFromShape(Source, Mode, KeepLines, CopyMode, CornerIndices) or Shape.CreateEnvelopeFromCurve(...); each returns an Effect whose .Envelope is this object. Existing envelope: Shape.Effects.EnvelopeEffects.",
+      "key_members": [
+        {
+          "name": "Container",
+          "use": "the envelope curve"
+        },
+        {
+          "name": "Mode",
+          "use": "cdrEnvelopePutty / Original / Horizontal / Vertical"
+        },
+        {
+          "name": "KeepLines",
+          "use": "keep straight segments straight"
+        },
+        {
+          "name": "CopyFromShape",
+          "use": "reshape the envelope from another shape (mode, keep lines, copy mode, corners)"
+        },
+        {
+          "name": "CopyFromCurve",
+          "use": "reshape the envelope from a curve"
+        },
+        {
+          "name": "CreateFrom",
+          "use": "make the envelope from a shape"
+        },
+        {
+          "name": "CopyFrom",
+          "use": "copy settings from another envelope"
+        },
+        {
+          "name": "Select",
+          "use": "pick a preset envelope by index"
+        },
+        {
+          "name": "CornerIndices",
+          "use": "four node indices of the container that act as corners"
+        }
+      ],
+      "gotchas": [
+        "CreateEnvelope takes a preset index; valid indices depend on the installed envelope presets (unverified range).",
+        "CopyMode (cdrEnvelopeUseOriginal / Center / Stretch / Fit) decides how the source shape is mapped; the default from CreateEnvelopeFromShape is cdrEnvelopeCenter.",
+        "Strong envelopes on paragraph text can push text out of the frame; artistic text is safer.",
+        "Envelopes stack on top of other effects; order matters when combined with perspective or distortion."
+      ],
+      "example": "Dim e As Effect, target As Shape\nSet target = ActiveSelectionRange(2)\nSet e = ActiveSelectionRange(1).CreateEnvelopeFromShape(target, cdrEnvelopePutty, False, cdrEnvelopeFit)\ne.Envelope.KeepLines = False",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "summary called the Original mode 'Bezier' and Horizontal / Vertical 'straight-line'; they are mapping modes"
+      }
+    },
+    {
+      "name": "EffectExtrude",
+      "id": "class:EffectExtrude",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectExtrude",
+      "status": "current",
+      "summary": "Settings of a vector extrusion: depth toward a vanishing point or parallel, 3D rotation, shading (object fill, solid, or colour shading between two colours), an optional bevel, and up to several lights. The result is a live group of vector faces.",
+      "use_for": [
+        "chunky 3D headline and logo lettering for posters and thumbnails",
+        "isometric-looking icons and blocks",
+        "vector 3D type that stays editable and scalable for print"
+      ],
+      "avoid": [
+        "photo-real materials and lighting: the extrude is flat-shaded vector; render elsewhere",
+        "a simple offset shadow: use a drop shadow"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Effect/3D and Materials/3D (Classic)/Extrude & Bevel (Classic)"
+      },
+      "how": "Members live on IVGEffectExtrude. Create with Shape.CreateExtrude(Type, VPType, VPX, VPY, Depth, Shading, BaseColor, ShadingColor, BevelDepth, BevelAngle, BevelColor, BevelOnly) (Depth default 20, bevel angle 45); it returns an Effect whose .Extrude is this object. Existing extrusion: Shape.Effects.ExtrudeEffect.Extrude.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrExtrudeSmallBack / SmallFront / BigBack / BigFront / BackParallel / FrontParallel"
+        },
+        {
+          "name": "Depth",
+          "use": "extrusion depth"
+        },
+        {
+          "name": "VanishingPoint",
+          "use": "the vanishing point object"
+        },
+        {
+          "name": "Rotate",
+          "use": "rotate the extrusion in 3D (AngleX, AngleY, AngleZ)"
+        },
+        {
+          "name": "AngleX",
+          "use": "x rotation"
+        },
+        {
+          "name": "AngleY",
+          "use": "y rotation"
+        },
+        {
+          "name": "AngleZ",
+          "use": "z rotation"
+        },
+        {
+          "name": "Shading",
+          "use": "cdrExtrudeObjectFill / SolidFill / ColorShading"
+        },
+        {
+          "name": "BaseColor",
+          "use": "solid colour or start of the shading"
+        },
+        {
+          "name": "ShadingColor",
+          "use": "end of the shading"
+        },
+        {
+          "name": "SetBevel",
+          "use": "set bevel depth, angle and bevel-only in one call"
+        },
+        {
+          "name": "UseBevel",
+          "use": "turn the bevel on or off"
+        },
+        {
+          "name": "BevelColor",
+          "use": "bevel colour"
+        },
+        {
+          "name": "SetLight",
+          "use": "place a light at an index with position and intensity"
+        },
+        {
+          "name": "LightPresent",
+          "use": "whether a light exists at an index"
+        },
+        {
+          "name": "ExtrudeGroup",
+          "use": "the generated side faces"
+        },
+        {
+          "name": "FaceShape",
+          "use": "the front (control) face"
+        },
+        {
+          "name": "CopyFrom",
+          "use": "copy settings from another extrusion"
+        }
+      ],
+      "gotchas": [
+        "Depth is a long in the property but a double in CreateExtrude; the UI caps depth (believed 1 to 99, unverified).",
+        "The faces in ExtrudeGroup are regenerated on every change; Separate the Effect for editable faces.",
+        "Light indices and how many lights are allowed are not in the harvest (unverified; the UI shows three).",
+        "Colour shading on fountain-filled control shapes can band in print; check at output size."
+      ],
+      "example": "Dim e As Effect\nSet e = ActiveShape.CreateExtrude(cdrExtrudeSmallBack, cdrVPLockedToShape, _\n    ActiveShape.CenterX + 20, ActiveShape.CenterY - 30, 25, cdrExtrudeColorShading)\ne.Extrude.BaseColor.RGBAssign 255, 120, 0\ne.Extrude.ShadingColor.RGBAssign 90, 20, 0\ne.Extrude.SetBevel 1, 45, False",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectInnerShadow",
+      "id": "class:EffectInnerShadow",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectInnerShadow",
+      "status": "current",
+      "summary": "Settings of an inner shadow: a feathered bitmap shadow drawn inside a shape's edge, with offset or depth, opacity, colour, feather type and edge, and merge mode, giving a cut-in, pressed or engraved look.",
+      "use_for": [
+        "pressed or engraved buttons and badges",
+        "letterpress and cut-out headline text",
+        "inset panels in UI mock-ups and infographics"
+      ],
+      "avoid": [
+        "shadows cast outside the shape: use a drop shadow (EffectDropShadow)",
+        "vector-only output: the inner shadow is a bitmap"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "Layer/Layer Style/Inner Shadow"
+      },
+      "how": "Members live on IVGEffectInnerShadow. Create with Shape.CreateInnerShadow(Opacity, Feather, OffsetX, OffsetY, Color, FeatherType, FeatherEdge, MergeMode, Depth) (defaults: opacity 50, feather 15, offsets 0, Gaussian-blur feather, Depth -1); it returns an Effect whose .InnerShadow is this object. Existing one: Shape.Effects.InnerShadowEffect.InnerShadow.",
+      "key_members": [
+        {
+          "name": "OffsetX",
+          "use": "horizontal offset"
+        },
+        {
+          "name": "OffsetY",
+          "use": "vertical offset"
+        },
+        {
+          "name": "SetOffset",
+          "use": "set both offsets at once"
+        },
+        {
+          "name": "Depth",
+          "use": "shadow depth used when there is no offset"
+        },
+        {
+          "name": "Opacity",
+          "use": "opacity, percent"
+        },
+        {
+          "name": "Feather",
+          "use": "softness"
+        },
+        {
+          "name": "FeatherType",
+          "use": "cdrFeather... type"
+        },
+        {
+          "name": "FeatherEdge",
+          "use": "cdrEdge... falloff"
+        },
+        {
+          "name": "Color",
+          "use": "shadow colour"
+        },
+        {
+          "name": "MergeMode",
+          "use": "blend mode of the shadow"
+        },
+        {
+          "name": "ShadowGroup",
+          "use": "the shadow bitmap shape"
+        }
+      ],
+      "gotchas": [
+        "Depth only matters for shadows without offsets; with offsets 0 and Depth -1 (the defaults) the look depends on the app's default depth (unverified).",
+        "Rendered as a bitmap at document resolution, like drop shadows; exports rasterise it.",
+        "Needs a closed, filled shape to show (unverified for open paths)."
+      ],
+      "example": "Dim e As Effect\nActiveDocument.Unit = cdrMillimeter\nSet e = ActiveShape.CreateInnerShadow(70, 10, 0.8, -0.8)\ne.InnerShadow.MergeMode = cdrMergeMultiply\ne.InnerShadow.Color.RGBAssign 0, 0, 0",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectLens",
+      "id": "class:EffectLens",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectLens",
+      "status": "current",
+      "summary": "Settings of a lens: a shape that changes how everything beneath it looks inside its outline (magnify, fish-eye, wireframe, colour limit, colour add, invert, brighten, tinted greyscale, heat map, transparency or custom colour map), optionally from a fixed viewpoint and optionally frozen into real shapes.",
+      "use_for": [
+        "magnifier call-outs on maps, infographics and product diagrams",
+        "invert or greyscale a region of a layout through a shape",
+        "heat-map or colour-limit looks over vector art without editing it"
+      ],
+      "avoid": [
+        "plain see-through: the Transparency tool is the modern route; the transparency lens is legacy",
+        "files for other apps: lenses do not survive export as live effects, Freeze them first"
+      ],
+      "confidence": "medium",
+      "equivalents": {},
+      "how": "Members live on IVGEffectLens. Create with Shape.CreateLens(Type, RateOrMagnification, Color1, Color2, ColorMapPalette) (rate default 50); it returns an Effect whose .Lens is this object. Existing lens: Shape.Effects.LensEffect.Lens.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrLensMagnify / FishEye / Wireframe / ColorLimit / ColorAdd / Invert / Brighten / TintedGrayscale / HeatMap / Transparency / CustomColorMap"
+        },
+        {
+          "name": "Rate",
+          "use": "strength percent for rate-based lenses"
+        },
+        {
+          "name": "Magnification",
+          "use": "magnification amount for the magnify lens"
+        },
+        {
+          "name": "Color",
+          "use": "lens colour (colour limit, colour add, tinted greyscale)"
+        },
+        {
+          "name": "FromColor",
+          "use": "start colour of a custom colour map"
+        },
+        {
+          "name": "ToColor",
+          "use": "end colour of a custom colour map"
+        },
+        {
+          "name": "ColorMapPalette",
+          "use": "direct or rainbow mapping for custom colour maps"
+        },
+        {
+          "name": "PaletteRotation",
+          "use": "palette rotation amount"
+        },
+        {
+          "name": "OutlineColor",
+          "use": "outline colour for the wireframe lens"
+        },
+        {
+          "name": "FillColor",
+          "use": "fill colour for the wireframe lens"
+        },
+        {
+          "name": "UseViewPoint",
+          "use": "look through from a separate viewpoint"
+        },
+        {
+          "name": "ViewPointX",
+          "use": "viewpoint x"
+        },
+        {
+          "name": "ViewPointY",
+          "use": "viewpoint y"
+        },
+        {
+          "name": "RemoveFace",
+          "use": "show the lens only where it covers other objects"
+        },
+        {
+          "name": "Freeze",
+          "use": "turn the current view into real shapes"
+        },
+        {
+          "name": "Unfreeze",
+          "use": "make a frozen lens live again"
+        },
+        {
+          "name": "Frozen",
+          "use": "whether the lens is frozen"
+        },
+        {
+          "name": "Shapes",
+          "use": "shapes of a frozen lens group"
+        }
+      ],
+      "gotchas": [
+        "CreateLens has one RateOrMagnification argument: it means Magnification for the magnify lens and Rate for the others (unverified for fish-eye).",
+        "A live lens recomputes from what lies beneath; moving the lens or the art changes the result. Freeze before handing files off.",
+        "Lens effects on bitmaps may render only on screen and rasterise or drop on export to PDF / EPS (unverified for 25.1).",
+        "Wireframe uses OutlineColor / FillColor with UseOutlineColor / UseFillColor, not Color."
+      ],
+      "example": "Dim e As Effect\nSet e = ActiveShape.CreateLens(cdrLensMagnify, 2)\ne.Lens.UseViewPoint = True\ne.Lens.ViewPointX = ActiveShape.CenterX + 40\ne.Lens.ViewPointY = ActiveShape.CenterY",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectPerspective",
+      "id": "class:EffectPerspective",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectPerspective",
+      "status": "current",
+      "summary": "Settings of a perspective effect: one-point or two-point perspective on a shape or group, set by the positions of a horizontal and / or vertical vanishing point.",
+      "use_for": [
+        "put flat artwork onto a wall, sign or box side in a mock-up",
+        "receding title text for retro posters",
+        "simple packaging and signage previews"
+      ],
+      "avoid": [
+        "curved warps: use an envelope (EffectEnvelope)",
+        "3D depth with sides: use an extrusion (EffectExtrude)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "Edit/Transform/Perspective",
+        "AI": "Effect/Distort & Transform/Free Distort"
+      },
+      "how": "Members live on IVGEffectPerspective. Create with Shape.CreatePerspective(HorizVanishPointX, HorizVanishPointY, VertVanishPointX, VertVanishPointY) (Variant arguments, so a pair can be left out for one-point perspective); it returns an Effect whose .Perspective is this object. Existing ones: Shape.Effects.PerspectiveEffects.",
+      "key_members": [
+        {
+          "name": "UseHorizVanishingPoint",
+          "use": "use the horizontal vanishing point"
+        },
+        {
+          "name": "UseVertVanishingPoint",
+          "use": "use the vertical vanishing point"
+        },
+        {
+          "name": "HorizVanishingPointX",
+          "use": "x of the horizontal vanishing point"
+        },
+        {
+          "name": "HorizVanishingPointY",
+          "use": "y of the horizontal vanishing point"
+        },
+        {
+          "name": "VertVanishingPointX",
+          "use": "x of the vertical vanishing point"
+        },
+        {
+          "name": "VertVanishingPointY",
+          "use": "y of the vertical vanishing point"
+        },
+        {
+          "name": "Parent",
+          "use": "the Effect"
+        }
+      ],
+      "gotchas": [
+        "Vanishing points are in document coordinates and are often far off the page; small distances give extreme distortion.",
+        "One-point versus two-point is set by the Use... flags, not by a separate type.",
+        "Perspective is a live envelope-like effect; text stays editable underneath, but exporting to other apps flattens it to curves (unverified for all formats)."
+      ],
+      "example": "Dim e As Effect\nWith ActiveShape\n    Set e = .CreatePerspective(.CenterX + 300, .CenterY)\nEnd With\ne.Perspective.UseVertVanishingPoint = False",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectPushPullDistortion",
+      "id": "class:EffectPushPullDistortion",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectPushPullDistortion",
+      "status": "current",
+      "summary": "Settings of a Push-Pull distortion: a single amplitude that moves a shape's nodes away from or toward the distortion centre, turning circles and polygons into spiky stars or rounded flower petals.",
+      "use_for": [
+        "starburst price badges and sale stickers",
+        "flower and petal ornaments from a polygon",
+        "playful bulging logo shapes"
+      ],
+      "avoid": [
+        "regular stars with exact points: draw them with the Star / Polygon tool (Layer.CreatePolygon2)",
+        "zig-zag edges: use the Zipper distortion"
+      ],
+      "confidence": "medium",
+      "equivalents": {
+        "AI": "Effect/Distort & Transform/Pucker & Bloat"
+      },
+      "how": "Members live on IVGEffectPushPullDistortion. Create with Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude); the returned Effect's .Distortion.PushPull is this object.",
+      "key_members": [
+        {
+          "name": "Amplitude",
+          "use": "strength and direction of the push or pull (long)"
+        },
+        {
+          "name": "Parent",
+          "use": "the EffectDistortion"
+        },
+        {
+          "name": "Application",
+          "use": "the CorelDRAW application"
+        }
+      ],
+      "gotchas": [
+        "The sign of Amplitude chooses push versus pull; which sign gives the spiky (pucker) look and which the rounded (bloat) look is unverified, so test both.",
+        "Amplitude range is not in the harvest (the UI is believed to allow -200 to 200, unverified).",
+        "The look depends on node count: add nodes (or use a polygon with more sides) for more points."
+      ],
+      "example": "Dim e As Effect\nWith ActiveShape\n    Set e = .CreatePushPullDistortion(.CenterX, .CenterY, -60)\nEnd With\nDebug.Print e.Distortion.PushPull.Amplitude",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Effects",
+      "id": "class:Effects",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Effects",
+      "status": "current",
+      "summary": "Collection of all effects applied to one shape, with typed shortcuts to each single-instance effect (contour, drop shadow, inner shadow, extrude, lens, text on path, control path) and sub-collections for the stackable kinds (blends, distortions, envelopes, perspectives, custom).",
+      "use_for": [
+        "check whether a shape already has a shadow or contour before adding one",
+        "strip or restyle every effect on imported artwork",
+        "audit effects before exporting to a format that cannot keep them"
+      ],
+      "avoid": [
+        "removing one kind of effect: Shape.ClearEffect(cdrEffectType) does it in one call (Shape.FlattenEffects is different: it converts the shape with live bitmap effects into a bitmap)"
+      ],
+      "confidence": "high",
+      "equivalents": {},
+      "how": "Members live on IVGEffects. Reach it with Shape.Effects. Item is base 1; the ...Effect properties return one Effect (or nothing) and the ...Effects properties return Effects sub-collections.",
+      "key_members": [
+        {
+          "name": "Count",
+          "use": "number of effects on the shape"
+        },
+        {
+          "name": "Item",
+          "use": "effect by base-1 index"
+        },
+        {
+          "name": "_NewEnum",
+          "use": "lets For Each walk the effects"
+        },
+        {
+          "name": "DropShadowEffect",
+          "use": "the drop shadow, if any"
+        },
+        {
+          "name": "InnerShadowEffect",
+          "use": "the inner shadow, if any"
+        },
+        {
+          "name": "ContourEffect",
+          "use": "the contour, if any"
+        },
+        {
+          "name": "ExtrudeEffect",
+          "use": "the extrusion, if any"
+        },
+        {
+          "name": "LensEffect",
+          "use": "the lens, if any"
+        },
+        {
+          "name": "TextOnPathEffect",
+          "use": "the text-on-path effect, if any"
+        },
+        {
+          "name": "ControlPathEffect",
+          "use": "blends and text-on-path effects that use this shape as path"
+        },
+        {
+          "name": "BlendEffects",
+          "use": "all blends on the shape"
+        },
+        {
+          "name": "DistortionEffects",
+          "use": "all distortions, in order"
+        },
+        {
+          "name": "EnvelopeEffects",
+          "use": "all envelopes"
+        },
+        {
+          "name": "PerspectiveEffects",
+          "use": "all perspective effects"
+        },
+        {
+          "name": "CustomEffects",
+          "use": "all custom effects"
+        },
+        {
+          "name": "Parent",
+          "use": "the Shape"
+        }
+      ],
+      "gotchas": [
+        "Effects of a group or effect-group shape (cdrDropShadowGroupShape, cdrContourGroupShape, cdrBlendGroupShape ...) may be reached from the group or from the control shape; which one holds them depends on the effect (unverified).",
+        "The single-instance properties are expected to return Nothing when the effect is absent (unverified: may raise an error instead); test both in a robust macro.",
+        "Item is base 1."
+      ],
+      "example": "Dim fx As Effects\nSet fx = ActiveShape.Effects\nDebug.Print fx.Count\nIf fx.DropShadowEffect Is Nothing Then\n    ActiveShape.CreateDropShadow cdrDropShadowFlat, 50, 15, 1, -1\nEnd If",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "avoid suggested FlattenEffects for removing effects; it rasterises the shape"
+      }
+    },
+    {
+      "name": "EffectTextOnPath",
+      "id": "class:EffectTextOnPath",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectTextOnPath",
+      "status": "current",
+      "summary": "Settings of text fitted to a path: which text and path, distance from the path, offset along it, letter orientation (rotate, skew, upright), horizontal and vertical placement, which side of the path, and the starting quadrant on closed paths.",
+      "use_for": [
+        "circular badge, seal and stamp lettering",
+        "text running along a wave, river or road in illustrations",
+        "curved labels on logos and packaging"
+      ],
+      "avoid": [
+        "warping text into a shape: use an envelope",
+        "long body copy: text on a path is for short lines"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Type/Type on a Path/Type on a Path Options..."
+      },
+      "how": "Members live on IVGEffectTextOnPath. Create by fitting text: textShape.Text.FitToPath(pathShape) returns an Effect whose .TextOnPath is this object. Existing one: Shape.Effects.TextOnPathEffect.TextOnPath; the path's Effects.ControlPathEffect lists it too.",
+      "key_members": [
+        {
+          "name": "Text",
+          "use": "the text shape"
+        },
+        {
+          "name": "Path",
+          "use": "the path shape"
+        },
+        {
+          "name": "DistanceFromPath",
+          "use": "gap between text and path"
+        },
+        {
+          "name": "Offset",
+          "use": "shift along the path"
+        },
+        {
+          "name": "Orientation",
+          "use": "cdrRotateOrientation / VerticalSkew / HorizontalSkew / Upright / Transform"
+        },
+        {
+          "name": "Placement",
+          "use": "cdrLeftPlacement / RightPlacement / CenterPlacement"
+        },
+        {
+          "name": "VertPlacement",
+          "use": "baseline, ascender, descender, centre or custom"
+        },
+        {
+          "name": "PlaceOnOtherSide",
+          "use": "put the text on the other side of the path"
+        },
+        {
+          "name": "Quadrant",
+          "use": "start quadrant on a closed path: left, right, top, bottom"
+        }
+      ],
+      "gotchas": [
+        "Offset and DistanceFromPath follow Document.Unit.",
+        "Quadrant only makes sense on closed paths such as ellipses (unverified on open paths).",
+        "Deleting the path removes or detaches the fitting (unverified which); hide the path by setting no outline instead.",
+        "For bottom-of-circle text that reads upright, combine PlaceOnOtherSide with a second text object; one text cannot run both ways."
+      ],
+      "example": "Dim t As Shape, c As Shape, e As Effect\nSet c = ActiveLayer.CreateEllipse2(100, 100, 40)\nSet t = ActiveLayer.CreateArtisticText(0, 0, \"CERTIFIED ORGANIC\")\nSet e = t.Text.FitToPath(c)\ne.TextOnPath.Quadrant = cdrTopQuadrant\ne.TextOnPath.DistanceFromPath = 2",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "AI equivalent class:TextPath (a path item with fill / stroke) replaced by Type on a Path Options (effect, align to path, spacing, flip)"
+      }
+    },
+    {
+      "name": "EffectTwisterDistortion",
+      "id": "class:EffectTwisterDistortion",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectTwisterDistortion",
+      "status": "current",
+      "summary": "Settings of a Twister distortion: one rotation angle that swirls a shape around the distortion centre, more at the outside than at the centre, giving a twisted spiral look.",
+      "use_for": [
+        "swirled ornaments and spiral logos",
+        "psychedelic or hypnotic poster shapes",
+        "twisted star and flower motifs"
+      ],
+      "avoid": [
+        "plain rotation: use Shape.Rotate",
+        "spirals drawn from scratch: the Spiral tool (Layer.CreateSpiral)"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "Filter/Distort/Twirl",
+        "AI": "Effect/Distort & Transform/Twist"
+      },
+      "how": "Members live on IVGEffectTwisterDistortion. Create with Shape.CreateTwisterDistortion(OriginX, OriginY, Angle); the returned Effect's .Distortion.Twister is this object.",
+      "key_members": [
+        {
+          "name": "Angle",
+          "use": "twist angle in degrees"
+        },
+        {
+          "name": "Parent",
+          "use": "the EffectDistortion"
+        },
+        {
+          "name": "Application",
+          "use": "the CorelDRAW application"
+        }
+      ],
+      "gotchas": [
+        "Angles above 360 add extra turns (unverified upper limit).",
+        "Shapes with few nodes twist coarsely; add nodes first for a smooth swirl.",
+        "The twist is centred on OriginX / OriginY of the parent distortion, not on the shape unless you pass its centre."
+      ],
+      "example": "Dim e As Effect\nWith ActiveShape\n    Set e = .CreateTwisterDistortion(.CenterX, .CenterY, 180)\nEnd With\ne.Distortion.Twister.Angle = 270",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EffectZipperDistortion",
+      "id": "class:EffectZipperDistortion",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EffectZipperDistortion",
+      "status": "current",
+      "summary": "Settings of a Zipper distortion: zig-zag ridges along a shape's edges, with amplitude, frequency, and switches for random size, smooth (wavy) ridges and local falloff toward the centre.",
+      "use_for": [
+        "torn, jagged or electric edges on comic panels and stickers",
+        "wavy scalloped borders when Smooth is on",
+        "rough grunge type and badges"
+      ],
+      "avoid": [
+        "regular sine-like borders with exact count along a path: a pattern brush or Artistic Media stroke may be easier"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "AI": "Effect/Distort & Transform/Zig Zag"
+      },
+      "how": "Members live on IVGEffectZipperDistortion. Create with Shape.CreateZipperDistortion(OriginX, OriginY, Amplitude, Frequency, Random, Smooth, Local); the returned Effect's .Distortion.Zipper is this object.",
+      "key_members": [
+        {
+          "name": "Amplitude",
+          "use": "ridge height"
+        },
+        {
+          "name": "Frequency",
+          "use": "ridges per segment"
+        },
+        {
+          "name": "Random",
+          "use": "vary ridge sizes randomly"
+        },
+        {
+          "name": "Smooth",
+          "use": "rounded waves instead of sharp points"
+        },
+        {
+          "name": "Local",
+          "use": "strongest at the origin, fading outward"
+        },
+        {
+          "name": "Parent",
+          "use": "the EffectDistortion"
+        },
+        {
+          "name": "Application",
+          "use": "the CorelDRAW application"
+        }
+      ],
+      "gotchas": [
+        "Amplitude and Frequency ranges are not in the harvest (UI believed 0 to 100, unverified).",
+        "Frequency is per segment, so a shape with more nodes gets more ridges.",
+        "Random re-rolls when the distortion is recomputed (unverified), so the jag pattern may change on edit."
+      ],
+      "example": "Dim e As Effect\nWith ActiveShape\n    Set e = .CreateZipperDistortion(.CenterX, .CenterY, 15, 10)\nEnd With\ne.Distortion.Zipper.Random = True\ne.Distortion.Zipper.Smooth = False",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "Ellipse",
+      "id": "class:Ellipse",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/Ellipse",
+      "status": "current",
+      "summary": "Properties of an ellipse shape: whether it is a full ellipse, an arc or a pie, its start and end angles and direction, its centre and its horizontal and vertical radii. The shape stays an editable ellipse until converted to curves.",
+      "use_for": [
+        "pie and donut-chart segments in infographics",
+        "circular badges and seals sized exactly from the centre",
+        "arcs for gauges and progress rings"
+      ],
+      "avoid": [
+        "free node editing: convert to curves first (Shape.ConvertToCurves), which ends the ellipse object"
+      ],
+      "confidence": "high",
+      "equivalents": {
+        "PS": "ellipseTool",
+        "AI": "Adobe Ellipse Shape Tool"
+      },
+      "how": "Members live on IVGEllipse. Create with ActiveLayer.CreateEllipse(Left, Top, Right, Bottom, StartAngle, EndAngle, Pie), CreateEllipse2(CenterX, CenterY, Radius1, Radius2, StartAngle, EndAngle, Pie) or CreateEllipseRect; read or edit an existing one with Shape.Ellipse when Shape.Type = cdrEllipseShape.",
+      "key_members": [
+        {
+          "name": "Type",
+          "use": "cdrEllipse / cdrArc / cdrPie"
+        },
+        {
+          "name": "StartAngle",
+          "use": "start angle in degrees"
+        },
+        {
+          "name": "EndAngle",
+          "use": "end angle in degrees"
+        },
+        {
+          "name": "Clockwise",
+          "use": "direction of the arc or pie"
+        },
+        {
+          "name": "CenterX",
+          "use": "centre x"
+        },
+        {
+          "name": "CenterY",
+          "use": "centre y"
+        },
+        {
+          "name": "HRadius",
+          "use": "horizontal radius"
+        },
+        {
+          "name": "VRadius",
+          "use": "vertical radius"
+        },
+        {
+          "name": "SetCenterPosition",
+          "use": "move the centre"
+        },
+        {
+          "name": "SetRadius",
+          "use": "set horizontal and optional vertical radius"
+        },
+        {
+          "name": "GetRadius",
+          "use": "read both radii"
+        },
+        {
+          "name": "GetCenterPosition",
+          "use": "read the centre"
+        }
+      ],
+      "gotchas": [
+        "CreateEllipse / CreateEllipse2 default StartAngle and EndAngle to 90; equal angles give a full ellipse, so pass different angles plus Pie = True for a wedge.",
+        "Radii and centre follow Document.Unit.",
+        "On a rotated or skewed ellipse the radii are in the ellipse's own frame, not the page (unverified).",
+        "Shape.Ellipse is only valid when Shape.Type = cdrEllipseShape."
+      ],
+      "example": "Dim s As Shape\nActiveDocument.Unit = cdrMillimeter\nSet s = ActiveLayer.CreateEllipse2(100, 100, 40)\ns.Ellipse.Type = cdrPie\ns.Ellipse.StartAngle = 0\ns.Ellipse.EndAngle = 270",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    },
+    {
+      "name": "EPS",
+      "id": "class:EPS",
+      "app": "CDR",
+      "kind": "cdr_api",
+      "path": "VGCore/EPS",
+      "status": "current",
+      "summary": "A placed (encapsulated) EPS object: CorelDRAW shows its preview bitmap and passes the PostScript through on output. Gives the preview, the raw EPS data, the crop envelope (clipping path), the original bounding box, the linked file name and DCS separation file names.",
+      "use_for": [
+        "check which linked EPS files a legacy print job depends on",
+        "pull the raw EPS stream out of a document for archiving",
+        "reset an EPS that was cropped by mistake"
+      ],
+      "avoid": [
+        "editing the artwork: import the EPS as editable objects (interpreted) instead of placing it",
+        "PDF / screen workflows that cannot pass PostScript through: convert to vectors or PDF first"
+      ],
+      "confidence": "medium",
+      "equivalents": {
+        "AI": "class:PlacedItem"
+      },
+      "how": "Members live on IVGEPS. Reach it with Shape.EPS when Shape.Type = cdrEPSShape. Placed EPS shapes come from importing an EPS as a placeable file (Layer.Import / ImportEx with the right import options, unverified option name).",
+      "key_members": [
+        {
+          "name": "LinkFileName",
+          "use": "path of the linked EPS file"
+        },
+        {
+          "name": "PreviewBitmap",
+          "use": "the preview bitmap CorelDRAW displays"
+        },
+        {
+          "name": "Data",
+          "use": "the EPS stream as a byte array"
+        },
+        {
+          "name": "DataAsString",
+          "use": "the EPS stream as a string"
+        },
+        {
+          "name": "CropEnvelope",
+          "use": "curve of the current clipping path"
+        },
+        {
+          "name": "CropEnvelopeModified",
+          "use": "True when the clipping path was changed"
+        },
+        {
+          "name": "ResetCropEnvelope",
+          "use": "restore the rectangular clip"
+        },
+        {
+          "name": "BoundingBoxPath",
+          "use": "curve of the original bounding box"
+        },
+        {
+          "name": "DCSFileNames",
+          "use": "file names of DCS separation plates"
+        }
+      ],
+      "gotchas": [
+        "What prints is the PostScript, what shows is only the preview; a low-resolution or missing preview hides problems.",
+        "Output to non-PostScript devices or PDF may use the preview or need interpretation (unverified for 25.1 PDF export).",
+        "Shape.EPS is only valid when Shape.Type = cdrEPSShape.",
+        "DataAsString on binary EPS (with TIFF preview) can be mangled; use Data for a byte-exact copy."
+      ],
+      "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n    If s.Type = cdrEPSShape Then\n        Debug.Print s.Name, s.EPS.LinkFileName, s.EPS.CropEnvelopeModified\n    End If\nNext s",
+      "source": "cdr_api_06 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+      "review": {
+        "by": "adversarial",
+        "changes": "none"
+      }
+    }
+  ]
+}

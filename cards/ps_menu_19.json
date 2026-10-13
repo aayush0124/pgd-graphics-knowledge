@@ -1,0 +1,829 @@
+{
+ "cards": [
+  {
+   "name": "Actions",
+   "id": "1170",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Actions",
+   "status": "current",
+   "summary": "Shows or hides the Actions panel, which stores recorded sequences of Photoshop steps in sets and plays them back on the active document, or on a whole folder of files through File > Automate > Batch. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it. In the harvest the Layers tab it was grouped with did not come back to the front after the second run.",
+   "how": "Create a set, click New Action, press Record, perform the steps, then Stop. Play runs the selected action on the active document. Insert Menu Item records commands that do not record on their own, Insert Stop adds a pause with a message, and the dialog toggle beside a step makes it stop for input. Button Mode in the panel menu turns actions into one-click buttons; File > Automate > Batch or Create Droplet runs an action over a folder.",
+   "use_for": [
+    "repeating the same resize, sharpen and export steps on a set of product photos",
+    "batch-processing a folder of images into web-sized JPEGs through File > Automate > Batch",
+    "giving a script a recorded step to replay with app.doAction when the step has no DOM call"
+   ],
+   "avoid": [
+    "steps that depend on what is in each image (subject position, text length): actions replay blindly, use a script with logic instead",
+    "freehand painting: brush strokes only record with Allow Tool Recording on and replay at fixed coordinates, so paint by hand or generate the texture"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Actions",
+    "CDR": "Tools/Scripts/Scripts"
+   },
+   "shortcut": "Alt+F9",
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleActionsPalette')) (verified live 2026-10-04: the Actions panel appeared). To play an action without the panel (unverified): app.doAction('Action Name', 'Set Name').",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Adjustments",
+   "id": "6479",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Adjustments",
+   "status": "current",
+   "summary": "Shows or hides the Adjustments panel, whose buttons add a non-destructive adjustment layer (Brightness/Contrast, Levels, Curves, Exposure, Vibrance, Hue/Saturation, Color Balance, Black & White, Photo Filter, Channel Mixer, Color Lookup, Invert, Posterize, Threshold, Gradient Map, Selective Color) above the active layer, and whose Adjustment Presets section applies ready-made looks in one click; the settings then open in the Properties panel. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Select the layer to correct, click an adjustment icon or a preset thumbnail (hovering a preset previews it on the canvas) and tune it in Properties. The adjustment changes every layer below it; clip it (the clip button in Properties, or Layer > Create Clipping Mask) to limit it to the layer directly below, and paint its mask black to hide it in areas.",
+   "use_for": [
+    "colour-grading a poster photo with Curves and Hue/Saturation that stay editable",
+    "matching the tone of a product cut-out to its background with a clipped adjustment",
+    "one-click cinematic or black-and-white looks for social posts from Adjustment Presets"
+   ],
+   "avoid": [
+    "a correction that must be baked into the pixels for another app: merge it down, or apply Image > Adjustments directly to a pixel layer",
+    "Shadows/Highlights: it is not an adjustment layer; apply it to a smart object as a Smart Filter instead (HDR Toning is not an adjustment layer either and cannot be a Smart Filter: it works on a flattened image)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleCreatePanel')) (verified live 2026-10-04: the Adjustments panel appeared). To add an adjustment layer without the panel (unverified): executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with null = reference to class adjustmentLayer and using = an adjustmentLayer descriptor whose type holds e.g. a levels or curves descriptor.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: said HDR Toning can be applied as a Smart Filter (it cannot; it flattens the image); how: replaced the unharvested Alt-click gesture with the clip button / Layer > Create Clipping Mask"
+   }
+  },
+  {
+   "name": "2-up Horizontal",
+   "id": "5935",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/2-up Horizontal",
+   "status": "needs_input",
+   "summary": "Splits the document area into two panes, one above the other, and shows two open documents in them, so they can be compared or layers dragged between them. Needs at least two open documents: with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "comparing a wide banner with its retouched version, one above the other",
+    "dragging a logo or texture layer from one wide document into another while both are visible"
+   ],
+   "avoid": [
+    "tall portrait images: they are squeezed into short strips; use 2-up Vertical",
+    "more than two documents: only two are shown; use Tile All Horizontally or a 3-up / 4-up layout"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Window/Tile Horizontally"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('2upHorizontal')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5935}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "2-up Vertical",
+   "id": "5936",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/2-up Vertical",
+   "status": "needs_input",
+   "summary": "Splits the document area into two side-by-side panes and shows two open documents in them, the usual before / after or source / target layout. Needs at least two open documents: with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "before / after comparison of a retouched portrait or product shot",
+    "dragging a cut-out from a source photo into a poster layout open next to it"
+   ],
+   "avoid": [
+    "very wide banners: each pane is only half the width; use 2-up Horizontal",
+    "comparing two states of the same file: use New Window for the document, not a second document"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Window/Tile Vertically"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('2upVertical')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5936}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "3-up Horizontal",
+   "id": "5937",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/3-up Horizontal",
+   "status": "needs_input",
+   "summary": "Splits the document area into three horizontal strips stacked one above another, each showing one open document. Needs at least three open documents: with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "comparing three wide banner or header variants one above the other",
+    "checking a web hero image at three crops for consistency"
+   ],
+   "avoid": [
+    "portrait or square images: the strips are short and the images become tiny; use 3-up Vertical or 3-up Stacked"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Window/Tile Horizontally"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('3upHorizontal')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5937}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "3-up Stacked",
+   "id": "5939",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/3-up Stacked",
+   "status": "needs_input",
+   "summary": "Arranges three open documents with one large pane on one side and the other two stacked in half-height panes beside it, so a main image stays big while two references sit next to it. Needs at least three open documents: with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "building a composite in the large pane while two source photos stay visible beside it",
+    "matching colour of a main key visual against two reference images"
+   ],
+   "avoid": [
+    "three equally important images: use 3-up Vertical or 3-up Horizontal for equal panes"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('3upStacked')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5939}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "3-up Vertical",
+   "id": "5938",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/3-up Vertical",
+   "status": "needs_input",
+   "summary": "Splits the document area into three side-by-side columns, each showing one open document. Needs at least three open documents: with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "comparing three portrait-format story or poster variants side by side",
+    "reviewing three colour grades of the same tall product shot"
+   ],
+   "avoid": [
+    "wide landscape images: the columns are narrow; use 3-up Horizontal"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Window/Tile Vertically"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('3upVertical')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5938}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "4-up",
+   "id": "5940",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/4-up",
+   "status": "needs_input",
+   "summary": "Splits the document area into a two-by-two grid and shows four open documents at once. Needs several open documents (the layout is meant for four): with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "reviewing four thumbnail or ad variants side by side before picking one",
+    "checking consistency of a four-image carousel set"
+   ],
+   "avoid": [
+    "detailed retouching: each pane is a quarter of the screen; switch back to a single tab to work"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('4upTile')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5940}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "6-up",
+   "id": "5941",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/6-up",
+   "status": "needs_input",
+   "summary": "Splits the document area into a grid of six panes (three by two) and shows six open documents at once. Needs several open documents (the layout is meant for six): with one document open the harvest found it disabled in every state.",
+   "use_for": [
+    "comparing a six-slide carousel or six social-post variants for consistent colour and type",
+    "contact-sheet style review of six candidate photos"
+   ],
+   "avoid": [
+    "any close work: six panes leave each image very small; use Tile or a 2-up layout for fewer files"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('6upTile')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5941}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Cascade",
+   "id": "5930",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Cascade",
+   "status": "needs_input",
+   "summary": "Stacks the floating (undocked) document windows diagonally from the top left, each offset so its title bar shows; tabbed documents are not cascaded. With one document open the harvest found it disabled in every state; floating the documents first (Float All in Windows) should enable it, but that was not observed.",
+   "use_for": [
+    "tidying many floating image windows so each title bar can be clicked",
+    "working with several reference photos in floating windows over a layout"
+   ],
+   "avoid": [
+    "seeing several images at once: cascaded windows overlap; use Tile or a 2-up / 4-up layout"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Arrange/Cascade",
+    "CDR": "Window/Cascade"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('cascade')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one document open it failed 'not currently available', as the menu item was disabled). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5930}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that failed while the item was disabled; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id; summary: the batch does not say the document was tabbed; the floating-windows condition is marked as not observed; confidence high -> medium: the enabling condition is inferred, the harvest only saw it disabled"
+   }
+  },
+  {
+   "name": "Consolidate All to Tabs",
+   "id": "5998",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Consolidate All to Tabs",
+   "status": "current",
+   "summary": "Docks every floating document window back into the application frame as tabs, so one document fills the document area at a time and the others sit in the tab bar; it also undoes a tiled or n-up split. With every document already tabbed it has nothing to do; the harvest's run with one scratch document open showed no change.",
+   "use_for": [
+    "getting back to one large tabbed view after comparing images side by side",
+    "cleaning up a workspace cluttered with floating windows before detailed retouching"
+   ],
+   "avoid": [
+    "keeping two images visible: tabs show one at a time; use 2-up Vertical or Tile"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Arrange/Consolidate All Windows",
+    "CDR": "Window/Combine Windows"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('consolidateAllTabs')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5998}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id; summary: the batch does not say the scratch document was tabbed"
+   }
+  },
+  {
+   "name": "Float All in Windows",
+   "id": "5997",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Float All in Windows",
+   "status": "current",
+   "summary": "Undocks every open document from the tab bar into its own floating window over the workspace, so windows can be moved, resized, cascaded or dragged to a second monitor. Needs an open document.",
+   "use_for": [
+    "placing reference photos in small floating windows around a main layout",
+    "moving documents to a second monitor for side-by-side checking"
+   ],
+   "avoid": [
+    "a clean single-image workspace: floating windows overlap; use Consolidate All to Tabs",
+    "only one document to float: use Float in Window"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Arrange/Float All in Windows"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('floatAllWindows')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5997}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Float in Window",
+   "id": "5996",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Float in Window",
+   "status": "current",
+   "summary": "Undocks only the active document from the tab bar into a floating window that can be moved and resized freely, leaving the other documents tabbed. Needs an open document.",
+   "use_for": [
+    "keeping one reference image floating over the tabbed working file",
+    "dragging a single document onto a second monitor"
+   ],
+   "avoid": [
+    "arranging all documents at once: use Float All in Windows, Tile or an n-up layout"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Arrange/Float in Window"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('floatWindow')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5996}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Match All",
+   "id": "5964",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Match All",
+   "status": "current",
+   "summary": "Sets every other open document to the active document's zoom level and visible location in one step, so all windows show the same part at the same scale (the harvested candidate id is matchZoomAndLocation; whether it also matches canvas rotation in 27.4 is not confirmed, Match Rotation does that). Enabled with one document, but it only has an effect when two or more documents are visible.",
+   "use_for": [
+    "checking the same detail across several retouch versions of a photo",
+    "comparing alternate poster layouts at identical zoom and position"
+   ],
+   "avoid": [
+    "matching only one property: use Match Zoom, Match Location or Match Rotation"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('matchZoomAndLocation')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5964}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id; summary: claimed it also matches canvas rotation, which the batch does not support (its candidate id is matchZoomAndLocation); marked unconfirmed; confidence high -> medium"
+   }
+  },
+  {
+   "name": "Match Location",
+   "id": "5962",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Match Location",
+   "status": "current",
+   "summary": "Scrolls every other open document so it shows the same relative area as the active document, without changing their zoom levels. Enabled with one document, but it only has an effect when two or more documents are visible.",
+   "use_for": [
+    "inspecting the same corner of several product shots for dust or edge problems",
+    "lining up the same region of two versions of a composite to compare detail"
+   ],
+   "avoid": [
+    "documents at different zoom levels where the same scale matters: use Match All or Match Zoom too"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('matchLocation')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5962}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Match Rotation",
+   "id": "5963",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Match Rotation",
+   "status": "current",
+   "summary": "Sets the canvas view rotation (the Rotate View tool angle) of every other open document to the active document's angle; only the view turns, the pixels are not rotated. Enabled with one document, but it only has an effect when two or more documents are open.",
+   "use_for": [
+    "painting or inking several illustrations at the same comfortable rotated angle",
+    "comparing two rotated-view sketches at the same orientation"
+   ],
+   "avoid": [
+    "rotating the actual image: use Image > Image Rotation or Free Transform; this only turns the view"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "app.runMenuItem(stringIDToTypeID('matchRotation')) is the label-matched candidate and it failed live 2026-10-04 with 'not currently available' even though the menu item was enabled, so no working script route is known. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5963}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Match Zoom",
+   "id": "5960",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Match Zoom",
+   "status": "current",
+   "summary": "Sets every other open document to the active document's zoom percentage, without moving the visible area. Enabled with one document, but it only has an effect when two or more documents are visible.",
+   "use_for": [
+    "viewing several exported sizes of a graphic at 100 % to judge sharpness",
+    "comparing texture or grain across photos at the same magnification"
+   ],
+   "avoid": [
+    "also aligning the visible area: use Match All"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('matchZoom')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5960}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "New Window for <document>",
+   "id": "1001",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/New Window for <document>",
+   "status": "current",
+   "summary": "Opens a second window onto the active document (the menu title carries the document's name), so the same file can be seen at another zoom, position or proof setting; edits in either window change the same document. Needs an open document.",
+   "use_for": [
+    "retouching zoomed in while a second window shows the whole poster at fit-to-screen",
+    "watching a soft-proof (CMYK preview) in one window while editing in the normal view"
+   ],
+   "avoid": [
+    "a separate copy to experiment on: edits show in both windows; use Image > Duplicate"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/New Window",
+    "CDR": "Window/New Window"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('newView')) is the hand-mapped candidate (not confirmed: run live 2026-10-04 with one document it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 1001}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Tile",
+   "id": "5931",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Tile",
+   "status": "current",
+   "summary": "Arranges all open documents edge to edge in a grid so every one is visible at once; as documents are closed the remaining ones resize to fill the space. Needs an open document and only changes the layout when two or more are open.",
+   "use_for": [
+    "reviewing a whole set of campaign images at once",
+    "dragging layers between several open documents"
+   ],
+   "avoid": [
+    "a fixed comparison layout for two or three files: 2-up and 3-up give predictable panes"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Arrange/Tile"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('tile')) is the label-matched candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5931}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Tile All Horizontally",
+   "id": "5934",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Tile All Horizontally",
+   "status": "current",
+   "summary": "Arranges all open documents as horizontal strips stacked one above another, each the full width of the document area. Needs an open document and only changes the layout when two or more are open.",
+   "use_for": [
+    "comparing several wide banners or website headers one above the other",
+    "checking a row of landscape thumbnails for consistent framing"
+   ],
+   "avoid": [
+    "portrait images: the strips are short; use Tile All Vertically"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Window/Tile Horizontally"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('tileHorizontally')) is the hand-mapped candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5934}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Tile All Vertically",
+   "id": "5933",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Arrange/Tile All Vertically",
+   "status": "current",
+   "summary": "Arranges all open documents side by side as vertical columns, each the full height of the document area. Needs an open document and only changes the layout when two or more are open.",
+   "use_for": [
+    "comparing portrait-format story or poster versions side by side",
+    "dragging a cut-out from one photo into another open next to it"
+   ],
+   "avoid": [
+    "wide landscape images: the columns are narrow; use Tile All Horizontally"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Window/Tile Vertically"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('tileVertically')) is the hand-mapped candidate (not confirmed: run live 2026-10-04 with one scratch document open it raised no error, but the harvest's check saw no change). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5933}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the batch does not say the scratch document was tabbed; scriptable yes -> partial: the runMenuItem id is an unconfirmed candidate that ran with no observed change; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Brush Settings",
+   "id": "1025",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Brush Settings",
+   "status": "current",
+   "summary": "Shows or hides the Brush Settings panel, where the current brush tip is edited: Brush Tip Shape (size, angle, roundness, hardness, spacing) plus sections such as Shape Dynamics, Scattering, Texture, Dual Brush, Color Dynamics, Transfer, Brush Pose, Noise, Wet Edges, Build-up, Smoothing and Protect Texture. Changes apply to the active painting tool's brush. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Pick a painting tool, tick a section to enable it and click its name to see its settings; set a Control (Pen Pressure, Pen Tilt, Fade) for tablet-driven variation. The stroke preview at the bottom updates live. Save the result with Create New Brush so it appears in the Brushes panel.",
+   "use_for": [
+    "scattered sparkle, bokeh or leaf brushes for poster backgrounds (Scattering plus Shape Dynamics)",
+    "pressure-sensitive inking and lettering brushes for a tablet",
+    "textured dry-brush strokes for grunge type treatments"
+   ],
+   "avoid": [
+    "just choosing a ready-made brush: use the Brushes panel",
+    "strokes that must stay editable or scale cleanly: draw them as vector paths in Illustrator or as a shape layer stroke"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "F5",
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleBrushesPalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). The DOM has no API for brush tip settings (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Brushes",
+   "id": "1396",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Brushes",
+   "status": "current",
+   "summary": "Shows or hides the Brushes panel, the library of brush presets in folders with recently used brushes, a size slider and a preview of each tip; clicking a preset loads it into the active painting tool (Brush, Eraser, Mixer Brush, Clone Stamp and so on). Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Pick a brush-based tool, click a preset and set Size with the slider. The panel menu imports .abr brush files, restores Legacy Brushes and changes the view; drag presets into folders to organise them, and Create New Brush saves the current tip and settings as a preset.",
+   "use_for": [
+    "choosing a soft round brush for masking and dodge / burn on portraits",
+    "loading downloaded .abr packs (watercolour, smoke, grunge) for poster textures",
+    "keeping a project's custom stamp brushes (logo marks, patterns) in one folder"
+   ],
+   "avoid": [
+    "editing spacing, scattering or dynamics: use Brush Settings (F5)",
+    "repeating a motif evenly over an area: use a Pattern fill layer instead of stamping"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Brushes"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleBrushPresetsPalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). To pick a preset without the panel (unverified): executeAction(stringIDToTypeID('select'), desc, DialogModes.NO) with null = reference to class brush by name.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Canvas HUD",
+   "id": "8022",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Canvas HUD",
+   "status": "unusable",
+   "summary": "By its name a Window menu toggle for an on-canvas heads-up display; what it shows in Photoshop 27.4 and what enables it are not confirmed. The harvest found it disabled in every state tried, with and without a document, and found no script route, so on this install it cannot be used.",
+   "use_for": [
+    "none confirmed on this install: leave it out of automated builds until its function and enabling condition are known"
+   ],
+   "avoid": [
+    "planning any scripted step around it: it could not be enabled and no menuItemType, event or DOM route was found"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested: no menuItemType or event label matches this command and no DOM / Action Manager equivalent is known. UXP (unverified; the item was disabled in every harvested state, so it would fail there too): require('photoshop').core.performMenuCommand({commandID: 8022}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Channels",
+   "id": "1021",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Channels",
+   "status": "current",
+   "summary": "Shows or hides the Channels panel, which lists the composite and each colour channel of the document (R, G, B; C, M, Y, K; or L, a, b) plus saved alpha channels and spot colour channels; eye icons show or hide channels and clicking one shows it alone in greyscale. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Load a channel as a selection with the Load Channel as Selection button or Select > Load Selection; Save Selection as Channel stores the current selection as an alpha channel. For masks, duplicate the highest-contrast colour channel and push it with Levels or Curves. The panel menu adds spot channels and splits or merges channels.",
+   "use_for": [
+    "cutting out hair or foliage by turning the highest-contrast channel into a mask",
+    "storing complex selections as alpha channels to reuse later in the file",
+    "adding a spot colour plate (Pantone or white ink) for packaging print"
+   ],
+   "avoid": [
+    "editing a colour channel directly on the only copy of an image: it is destructive; use a Channel Mixer or Curves adjustment layer",
+    "keeping alpha channels in a JPEG or PNG export: they are dropped; save as PSD or TIFF"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleChannelsPalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). Channels by script (unverified): app.activeDocument.channels, doc.activeChannels, doc.selection.store(channel) and doc.selection.load(channel).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: replaced the unharvested Ctrl-click gesture with the panel button / Select > Load Selection"
+   }
+  },
+  {
+   "name": "Character",
+   "id": "Window/Character",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Character",
+   "status": "current",
+   "summary": "Shows or hides the Character panel, which sets type formatting for the selected type layer or highlighted text: font family and style, size, leading, kerning, tracking, vertical and horizontal scale, baseline shift, colour, faux bold / italic, caps, super- and subscript, underline, strikethrough, OpenType features, language and anti-aliasing. Same command as Type > Panels > Character Panel. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Select a type layer to format all of it, or highlight characters with the Type tool to format only those, then change the values; tracking spaces a whole run of letters, kerning sets the gap between the two letters at the text cursor.",
+   "use_for": [
+    "setting headline tracking and leading for a poster or thumbnail title",
+    "styling prices, units and superscripts in product promos",
+    "switching on ligatures and stylistic alternates for logotype text"
+   ],
+   "avoid": [
+    "alignment, indents and hyphenation: use the Paragraph panel",
+    "giving many text layers the same look: save a Character Style instead of retyping values"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Type/Character",
+    "CDR": "Text/Text"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleCharacterPalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). Formatting by script (unverified): artLayer.textItem.font, .size, .tracking, .leading and .color on a text layer.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the unharvested Alt+Left / Right arrow shortcut"
+   }
+  },
+  {
+   "name": "Character Styles",
+   "id": "Window/Character Styles",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Character Styles",
+   "status": "current",
+   "summary": "Shows or hides the Character Styles panel, which keeps named sets of character formatting (font, size, colour, tracking and so on) that can be applied to selected text in one click; editing a style updates all text that uses it, and a + after a style name marks local overrides. Same command as Type > Panels > Character Styles Panel. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Format some text, then create a new style from the panel (it takes its formatting from the selected text) and double-click it to edit its options. Click a style to apply it to the selected type; Clear Override removes local formatting and Redefine Style updates the style from the selection. Load Character Styles in the panel menu imports styles from another PSD.",
+   "use_for": [
+    "consistent price, label and caption styling across a multi-artboard social campaign",
+    "restyling every highlighted word in a set of thumbnails by editing one style",
+    "sharing a brand's type styles between template PSDs"
+   ],
+   "avoid": [
+    "one-off formatting of a single headline: use the Character panel",
+    "text that will be edited in another app: the styles stay in the PSD; Illustrator needs its own"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Type/Character Styles",
+    "CDR": "Window/Dockers/Object Styles"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleCharacterStylesPalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). The DOM has no character style API; set the formatting directly through artLayer.textItem properties instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Clone Source",
+   "id": "1058",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Clone Source",
+   "status": "current",
+   "summary": "Shows or hides the Clone Source panel, which holds several clone-source slots for the Clone Stamp and Healing Brush tools and transforms the sampled pixels: X / Y offset, width and height scale, rotation and flip, plus an overlay preview (opacity, blend mode, clipped, auto hide) and a frame offset for video layers. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Sample a source point with Clone Stamp or Healing Brush to set the source in the selected slot. Set Scale or Angle to clone at another size or rotation, use flip for mirrored repairs, and turn on Show Overlay to see the source under the brush before painting.",
+   "use_for": [
+    "retouching product shots by cloning a texture at another scale or angle",
+    "mirroring one side of a symmetrical object to repair the other",
+    "restoring damaged old photos while previewing the source overlay"
+   ],
+   "avoid": [
+    "removing large objects: Content-Aware Fill or the Remove tool is faster than manual cloning",
+    "scripted retouching: cloning needs hand-placed strokes; Edit > Fill with Content-Aware on a selection can be scripted"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleCloneSourcePalette')) (verified live 2026-10-04: the panel appeared and a second run hid it). The panel's settings have no DOM API (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the unharvested number of clone sources (five); how: removed the unharvested Alt-click gesture"
+   }
+  },
+  {
+   "name": "Color",
+   "id": "1046",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Color",
+   "status": "current",
+   "summary": "Shows or hides the Color panel, which shows the foreground and background colours and lets you set them with sliders (Grayscale, RGB, HSB, CMYK, Lab, Web Color) or a colour ramp, cube or wheel, with a warning when a colour is outside the CMYK print gamut. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it. The harvest's run hid the panel, which was already open.",
+   "how": "Click the foreground or background swatch in the panel, then drag the sliders or click in the spectrum. The panel menu switches slider modes and the ramp / cube / wheel view; clicking the gamut warning swaps in the nearest printable colour.",
+   "use_for": [
+    "setting brand colours by exact RGB or CMYK values for text and shapes",
+    "picking accent colours on the colour wheel for a poster palette",
+    "checking that a vivid colour will print within the CMYK gamut"
+   ],
+   "avoid": [
+    "storing reusable brand colours: save them in the Swatches panel",
+    "taking a colour from the image: use the Eyedropper tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Color",
+    "CDR": "Window/Dockers/Color"
+   },
+   "shortcut": "F6",
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleColorPalette')) (verified live 2026-10-04: the visible panel was hidden and a second run showed it again). Setting the colour by script (unverified): app.foregroundColor = a SolidColor with .rgb.hexValue set.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Comments",
+   "id": "20008",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Window/Comments",
+   "status": "current",
+   "summary": "Shows or hides the Comments panel, used with Photoshop cloud documents that are shared for review or editing: it lists collaborators' comments, pinned to a point or area on the canvas, and lets you reply, resolve and filter them. Ordinary local PSD files have no such comments, so the panel stays empty for them. Like the other Window menu panel entries it is a toggle: choosing it while the panel is showing hides it.",
+   "how": "Save the file as a cloud document and share it (invite people or share a review link); their comments then appear in the panel. Click a comment to jump to its pin, reply, or mark it resolved.",
+   "use_for": [
+    "collecting client feedback pinned to exact spots on a poster or social post",
+    "tracking which revision notes on a campaign visual have been resolved"
+   ],
+   "avoid": [
+    "local files and offline work: comments need a cloud document; leave notes in a PSD with the Notes panel instead",
+    "automated pipelines: there is no script route for comments"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Comments",
+    "CDR": "Window/Dockers/Comments"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested: no menuItemType or event label matches this command and no DOM / Action Manager equivalent is known. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 20008}); ExtendScript app.runMenuItem is not expected to take this numeric id (the harvest audit found runMenuItem refuses menuBarInfo command ids; it tried 1017, 1192, 1135).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  }
+ ]
+}

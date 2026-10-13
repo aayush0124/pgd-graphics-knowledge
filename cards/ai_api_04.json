@@ -1,0 +1,2148 @@
+{
+ "cards": [
+  {
+   "name": "ScreenInfo",
+   "id": "class:ScreenInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/ScreenInfo",
+   "status": "current",
+   "summary": "Halftone screen settings for one colour-separation screen a PostScript printer's PPD offers: line frequency (lpi), screen angle in degrees and whether it is the printer's default. It is information for choosing print output, it does not change any artwork.",
+   "use_for": [
+    "checking which halftone rulings (lpi / angle) a PostScript printer supports before a scripted separation print",
+    "preflight report of a press PPD's default screen"
+   ],
+   "avoid": [
+    "a visible halftone dot look in the artwork: screens act only at PostScript output; use a halftone effect on the art instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Reached through the PPD list: app.getPPDFileInfo(app.PPDFileList[i].name).screenList[j] is a Screen (name + screenInfo); screenInfo is this value object. COM: _ScreenInfo / ScreenInfo (DefaultScreen, Frequency, Angle).",
+   "key_members": [
+    {
+     "name": "frequency",
+     "use": "screen ruling in lines per inch"
+    },
+    {
+     "name": "angle",
+     "use": "screen angle in degrees"
+    },
+    {
+     "name": "defaultScreen",
+     "use": "true for the PPD's default screen"
+    }
+   ],
+   "gotchas": [
+    "Only PostScript printers with a PPD have screens; the list is empty for other drivers (unverified)",
+    "Editing frequency / angle here does not change a print job; the per-ink screen used for output is InkInfo.frequency / angle in PrintOptions.colorSeparationOptions.inkList (unverified)",
+    "app.PPDFileList entries hold only the PPD model name and file spec (harvest: trimmed for performance), so PPDFileList[i].PPDInfo is not the detailed info and may lack the screen lists; call app.getPPDFileInfo(name) for the full PPDFileInfo"
+   ],
+   "example": "var ppd = app.getPPDFileInfo(app.PPDFileList[0].name);\nfor (var i = 0; i < ppd.screenList.length; i++) {\n  var s = ppd.screenList[i];\n  $.writeln(s.name + ': ' + s.screenInfo.frequency + ' lpi @ ' + s.screenInfo.angle);\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "how/example now reach the screen list through app.getPPDFileInfo(name): the harvest says PPDFileList entries hold only name + file spec, so PPDFileList[0].PPDInfo.screenList was the wrong route; replaced the gotcha that misread that note as 'slow first read'; dropped CDR SeparationPlate (per-plate output setting = AI InkInfo, not a PPD's available screen)"
+   }
+  },
+  {
+   "name": "ScreenSpotFunction",
+   "id": "class:ScreenSpotFunction",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/ScreenSpotFunction",
+   "status": "current",
+   "summary": "One halftone dot shape (spot function) defined in a PostScript printer's PPD: a name plus the PostScript code that draws the dot (round, elliptical, line ...). Used when choosing dot shape for separations; it does not touch artwork.",
+   "use_for": [
+    "listing the dot shapes a press PPD supports before a scripted separation print",
+    "documenting output settings for a print vendor"
+   ],
+   "avoid": [
+    "a visible halftone pattern in the design: spot functions only act at PostScript output time"
+   ],
+   "confidence": "medium",
+   "how": "app.getPPDFileInfo(app.PPDFileList[i].name).screenSpotFunctionList[j]; two string properties. COM: ScreenSpotFunction (Name, SpotFunction).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the spot function's display name"
+    },
+    {
+     "name": "spotFunction",
+     "use": "the PostScript procedure that defines the dot"
+    }
+   ],
+   "gotchas": [
+    "spotFunction is raw PostScript, meaningful only to a PostScript RIP; non-PostScript devices ignore it (unverified)",
+    "The dot shape actually used per ink is chosen on the print side (InkInfo.dotShape)",
+    "The list can be empty when the PPD defines no spot functions (unverified)",
+    "app.PPDFileList entries hold only the PPD model name and file spec (harvest: trimmed for performance), so PPDFileList[i].PPDInfo is not the detailed info and may lack the screen lists; call app.getPPDFileInfo(name) for the full PPDFileInfo"
+   ],
+   "example": "var fns = app.getPPDFileInfo(app.PPDFileList[0].name).screenSpotFunctionList;\nfor (var i = 0; i < fns.length; i++) {\n  $.writeln(fns[i].name + ' -> ' + fns[i].spotFunction);\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how/example use app.getPPDFileInfo(name) instead of PPDFileList[0].PPDInfo (PPDFileList entries are name + file spec only); added that gotcha; InkInfo.dotShape is in the harvest so dropped its (unverified)"
+   }
+  },
+  {
+   "name": "Artboard",
+   "id": "class:Artboard",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Artboard",
+   "status": "current",
+   "summary": "One artboard (page) of an Illustrator document: its rectangle on the canvas, name, ruler origin and the video centre / cross-hair / safe-area marks. Scripts read it to place or export art per page and edit it to resize or rename pages.",
+   "use_for": [
+    "resizing an artboard to a social format (1080 x 1350 post, 1080 x 1920 story)",
+    "naming artboards before Export for Screens or per-artboard PDF / PNG export",
+    "placing art relative to a given artboard's bounds",
+    "multi-size campaign files with one artboard per size"
+   ],
+   "avoid": [
+    "expecting the art to follow: changing artboardRect moves only the page, translate the page items too",
+    "deleting the last artboard: a document must keep at least one (unverified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Page"
+   },
+   "how": "doc.artboards[i]; the Artboards collection has add(rect), insert(rect, index), remove(index), getByName, getActiveArtboardIndex / setActiveArtboardIndex. COM: Document.Artboards(i) -> Artboard.",
+   "key_members": [
+    {
+     "name": "artboardRect",
+     "use": "[left, top, right, bottom] in points; set it to move or resize the page"
+    },
+    {
+     "name": "name",
+     "use": "artboard name used by exports and the Artboards panel"
+    },
+    {
+     "name": "rulerOrigin",
+     "use": "ruler origin, relative to the artboard's bottom-left corner"
+    },
+    {
+     "name": "rulerPAR",
+     "use": "pixel aspect ratio for pixel rulers"
+    },
+    {
+     "name": "showCenter",
+     "use": "show the centre mark"
+    },
+    {
+     "name": "showCrossHairs",
+     "use": "show cross hairs"
+    },
+    {
+     "name": "showSafeAreas",
+     "use": "show video title / action safe areas"
+    },
+    {
+     "name": "isVideoRulerVisible",
+     "use": "is the video ruler shown"
+    },
+    {
+     "name": "canChangeRulerCoordinateSystem",
+     "use": "can the ruler coordinate system be changed"
+    },
+    {
+     "name": "remove",
+     "use": "delete this artboard"
+    },
+    {
+     "name": "typename",
+     "use": "'Artboard'"
+    }
+   ],
+   "gotchas": [
+    "artboardRect is [left, top, right, bottom] in points with the y axis pointing up, so top is greater than bottom",
+    "Values depend on app.coordinateSystem (DOCUMENTCOORDINATESYSTEM vs ARTBOARDCOORDINATESYSTEM); read and write in the same one",
+    "Artboard has no index member: find an artboard's index by looping doc.artboards or via getActiveArtboardIndex()",
+    "A rect outside the canvas limits throws (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar ab = doc.artboards[doc.artboards.getActiveArtboardIndex()];\nvar r = ab.artboardRect; // [left, top, right, bottom]\nab.artboardRect = [r[0], r[1], r[0] + 1080, r[1] - 1350];\nab.name = 'IG_4x5';",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ArtStyle",
+   "id": "class:ArtStyle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/ArtStyle",
+   "status": "current",
+   "summary": "A graphic style from the Graphic Styles panel: a saved appearance (fills, strokes, effects, opacity) applied to objects in one go. Scripts can find it by name, apply or merge it, rename or delete it, but cannot read or build its appearance.",
+   "use_for": [
+    "applying a saved brand look (neon stroke, shadowed badge, sticker outline) to many objects at once",
+    "styling generated shapes or text consistently in template scripts",
+    "adding a style's attributes on top of existing appearance with mergeTo"
+   ],
+   "avoid": [
+    "building a style from scratch: ArtStyle exposes no fills or effects; set them on the object (fillColor, applyEffect) or bring the style in from a template document",
+    "keeping the object's own appearance: applyTo replaces it, use mergeTo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Style"
+   },
+   "how": "doc.graphicStyles (ArtStyles: getByName, removeAll); style.applyTo(item) or style.mergeTo(item). COM names it GraphicStyle / Document.GraphicStyles.",
+   "key_members": [
+    {
+     "name": "applyTo",
+     "use": "replace an object's appearance with this style"
+    },
+    {
+     "name": "mergeTo",
+     "use": "merge this style into the object's current appearance"
+    },
+    {
+     "name": "name",
+     "use": "style name as shown in the panel"
+    },
+    {
+     "name": "remove",
+     "use": "delete the style from the document"
+    },
+    {
+     "name": "typename",
+     "use": "'ArtStyle'"
+    }
+   ],
+   "gotchas": [
+    "There is no ArtStyles.add: a script cannot create a graphic style, only use ones already in the document",
+    "doc.graphicStyles[0] is normally [Default]; applying it strips the appearance (unverified)",
+    "applyTo replaces fills, strokes and effects; mergeTo layers the style's attributes on top",
+    "ExtendScript calls the class ArtStyle while COM calls it GraphicStyle"
+   ],
+   "example": "var doc = app.activeDocument;\nvar st = doc.graphicStyles.getByName('Neon Glow');\nfor (var i = 0; i < doc.selection.length; i++) {\n  st.applyTo(doc.selection[i]);\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Brush",
+   "id": "class:Brush",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Brush",
+   "status": "current",
+   "summary": "A brush from the document's Brushes panel (calligraphic, scatter, art, pattern or bristle). A script can find it by name and stroke paths with it via applyTo; the brush definition itself is not readable or editable.",
+   "use_for": [
+    "giving generated paths a hand-drawn or art-brush stroke",
+    "applying a brand pattern brush (border, stitch, rope) to frames",
+    "re-stroking many lines with one chosen brush"
+   ],
+   "avoid": [
+    "changing brush size or shape: Brush has only a name; edit it in the Brushes panel or load another brush",
+    "heavy bristle brushes on many paths: slow redraw and export, flatten or use an art brush"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Artistic Media"
+   },
+   "how": "doc.brushes (Brushes: getByName, add(brushDefinition File, brushName), addAndLoad(File)); brush.applyTo(pathItem). COM: Document.Brushes -> Brush.",
+   "key_members": [
+    {
+     "name": "applyTo",
+     "use": "stroke the given object(s) with this brush"
+    },
+    {
+     "name": "name",
+     "use": "brush name in the panel"
+    },
+    {
+     "name": "typename",
+     "use": "'Brush'"
+    },
+    {
+     "name": "parent",
+     "use": "the containing document"
+    }
+   ],
+   "gotchas": [
+    "Brush has no remove member in this harvest; delete brushes in the panel or with an action",
+    "Brushes.add / addAndLoad take a brush definition file; the accepted file type is not stated in the harvest (unverified)",
+    "applyTo on objects that cannot take a brush (text frames, images) fails or does nothing (unverified)",
+    "Brushes from libraries must be in the document's panel before getByName finds them (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar b = doc.brushes.getByName('My Art Brush');\nvar p = doc.pathItems.ellipse(-100, 100, 200, 200);\nb.applyTo(p);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CompoundPathItem",
+   "id": "class:CompoundPathItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/CompoundPathItem",
+   "status": "current",
+   "summary": "A compound path: several paths combined into one object so overlaps cut holes (letter counters, rings, cut-out logos). It has one fill and stroke shared by its member paths and acts as a single shape.",
+   "use_for": [
+    "logos and icons with holes (rings, letters, cut-outs)",
+    "knock-out text shapes after outlining type",
+    "one clipping mask built from several shapes"
+   ],
+   "avoid": [
+    "parts that need different colours: a compound has one fill, use a group",
+    "permanently merging shapes: use Pathfinder (Unite / Minus Front)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Curve"
+   },
+   "how": "doc.compoundPathItems / layer.compoundPathItems / group.compoundPathItems (CompoundPathItems: add, getByName). Create it, then draw into compound.pathItems (rectangle, ellipse ...). Inherits PageItem (position, bounds, opacity, resize). COM: CompoundPathItem.",
+   "key_members": [
+    {
+     "name": "pathItems",
+     "use": "the member paths; create new paths inside the compound through it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the compound"
+    },
+    {
+     "name": "move",
+     "use": "move it to another container / z position"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'CompoundPathItem'"
+    }
+   ],
+   "gotchas": [
+    "No fillColor / strokeColor on the compound itself: set them on compound.pathItems[0] and the shared paint applies to all members",
+    "A compound made from outlined text or groups can contain groups, then pathItems.length is 0 and the colour trick fails (unverified)",
+    "Whether an inner path cuts a hole depends on path direction and the fill rule; draw the inner shape reversed or set evenodd (unverified)",
+    "PageItem members (position, width, rotate ...) work but are not listed in this class's own members"
+   ],
+   "example": "var doc = app.activeDocument;\nvar cp = doc.compoundPathItems.add();\ncp.pathItems.ellipse(-100, 100, 200, 200);\ncp.pathItems.ellipse(-150, 150, 100, 100, true);\nvar c = new RGBColor(); c.red = 230; c.green = 30; c.blue = 60;\ncp.pathItems[0].fillColor = c;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Dimensions",
+   "id": "class:Dimensions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Dimensions",
+   "status": "current",
+   "summary": "A plain width / height pair. In this harvest it is the type of ExportOptionsPNG24.dimensions, the box an exported PNG must fit into; its units are not stated in the harvest.",
+   "use_for": [
+    "exporting a PNG to a fixed box (for example a 1080 x 1080 social tile)",
+    "thumbnail exports at an exact size"
+   ],
+   "avoid": [
+    "sizing artwork or artboards: use PageItem width / height or Artboard.artboardRect"
+   ],
+   "confidence": "low",
+   "how": "Value object read from or assigned to ExportOptionsPNG24.dimensions, then the options go to doc.exportFile(file, ExportType.PNG24, options). COM: Dimensions (Width, Height).",
+   "key_members": [
+    {
+     "name": "width",
+     "use": "box width"
+    },
+    {
+     "name": "height",
+     "use": "box height"
+    }
+   ],
+   "gotchas": [
+    "Units (pixels or points) are not stated in the harvest; test an export before relying on it (unverified)",
+    "How it interacts with horizontalScale / verticalScale on the same options object is undocumented (unverified)",
+    "Whether new Dimensions() can be constructed is not confirmed; reading opts.dimensions, editing and assigning back is safer (unverified)"
+   ],
+   "example": "var opts = new ExportOptionsPNG24();\nvar d = opts.dimensions;\nd.width = 1080; d.height = 1080;\nopts.dimensions = d;\napp.activeDocument.exportFile(new File('~/Desktop/tile.png'), ExportType.PNG24, opts);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DocumentPreset",
+   "id": "class:DocumentPreset",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/DocumentPreset",
+   "status": "current",
+   "summary": "The settings for a new document: title, size, artboard count and layout, colour mode, units, raster-effects resolution, preview mode, transparency grid and bleed. Passed to Documents.addDocument to create a file without the New Document dialog.",
+   "use_for": [
+    "creating print-ready CMYK documents with bleed from a script",
+    "spinning up multi-artboard campaign files (N artboards in a grid or row)",
+    "standardising new files to house units and effect resolution"
+   ],
+   "avoid": [
+    "changing an existing document: the preset only applies at creation; edit doc.artboards or doc.rasterEffectSettings instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:StructCreateOptions"
+   },
+   "how": "new DocumentPreset(), or app.getPresetSettings(name) to start from a profile in app.startupPresetsList; then app.documents.addDocument(startupPreset, presetSettings, showOptionsDialog). COM: DocumentPreset for Documents.AddDocument.",
+   "key_members": [
+    {
+     "name": "title",
+     "use": "document name"
+    },
+    {
+     "name": "width",
+     "use": "page width"
+    },
+    {
+     "name": "height",
+     "use": "page height"
+    },
+    {
+     "name": "numArtboards",
+     "use": "number of artboards, 1-100"
+    },
+    {
+     "name": "artboardLayout",
+     "use": "DocumentArtboardLayout (GridByRow, Row, Column ...)"
+    },
+    {
+     "name": "artboardSpacing",
+     "use": "gap between artboards"
+    },
+    {
+     "name": "artboardRowsOrCols",
+     "use": "rows or columns for grid layouts"
+    },
+    {
+     "name": "colorMode",
+     "use": "DocumentColorSpace RGB or CMYK"
+    },
+    {
+     "name": "units",
+     "use": "RulerUnits for the rulers"
+    },
+    {
+     "name": "rasterResolution",
+     "use": "DocumentRasterResolution for raster effects"
+    },
+    {
+     "name": "previewMode",
+     "use": "DocumentPreviewMode"
+    },
+    {
+     "name": "transparencyGrid",
+     "use": "DocumentTransparencyGrid"
+    },
+    {
+     "name": "documentBleedOffset",
+     "use": "bleed values as a Rect"
+    },
+    {
+     "name": "documentBleedLink",
+     "use": "link the four bleed values"
+    }
+   ],
+   "gotchas": [
+    "Sizes are in points whatever units says; units only sets the rulers (unverified)",
+    "numArtboards is limited to 1-100 and artboardRowsOrCols to 1..numArtboards-1 (harvest descriptions)",
+    "startupPreset must be a name from app.startupPresetsList; an unknown name throws (unverified)",
+    "The order of the four documentBleedOffset values is not stated in the harvest (unverified)"
+   ],
+   "example": "var p = new DocumentPreset();\np.title = 'Poster_A3';\np.width = 842; p.height = 1191; // points\np.colorMode = DocumentColorSpace.CMYK;\np.units = RulerUnits.Millimeters;\nvar doc = app.documents.addDocument(app.startupPresetsList[0], p);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "EmbedItem",
+   "id": "class:EmbedItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/EmbedItem",
+   "status": "current",
+   "summary": "An item in doc.embeddedItems: placed content stored inside the .ai rather than linked. The harvest gives it only a file property plus move / duplicate / remove; which kinds of embedded art Illustrator 30.2 reports here (versus RasterItem) is not documented.",
+   "use_for": [
+    "auditing embedded content before packaging or handing off a file",
+    "reading the source file recorded for embedded art"
+   ],
+   "avoid": [
+    "placing new linked art: use PlacedItems.add() and set file",
+    "pixel edits: embedded bitmaps are RasterItem objects"
+   ],
+   "confidence": "low",
+   "how": "doc.embeddedItems (EmbeddedItems: add, getByName, removeAll); inherits PageItem. COM: EmbedItem.",
+   "key_members": [
+    {
+     "name": "file",
+     "use": "the file the embedded art came from"
+    },
+    {
+     "name": "move",
+     "use": "move to another container"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'EmbedItem'"
+    }
+   ],
+   "gotchas": [
+    "What EmbeddedItems.add() creates and how to fill it is undocumented; placedItems.add() + file + embed() is the known route (unverified)",
+    "Embedded bitmaps usually show up as RasterItem; scan doc.rasterItems as well (unverified)",
+    "file can point to a path that no longer exists once the art is embedded (unverified)"
+   ],
+   "example": "var items = app.activeDocument.embeddedItems;\nfor (var i = 0; i < items.length; i++) {\n  var e = items[i];\n  $.writeln(e.typename + ' ' + (e.file ? e.file.fsName : '(no file)'));\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Gradient",
+   "id": "class:Gradient",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Gradient",
+   "status": "current",
+   "summary": "A gradient swatch definition: linear or radial type, a name and its colour stops. Applied to art through a GradientColor fill or stroke it gives smooth colour blends such as sky backgrounds, metallic buttons or glows.",
+   "use_for": [
+    "background blends for posters and social tiles",
+    "brand gradient swatches created by script",
+    "metallic or glossy button fills",
+    "radial spotlight / vignette fills"
+   ],
+   "avoid": [
+    "freeform (point / line) gradients: only LINEAR and RADIAL exist in GradientType",
+    "colour that follows a shape's contours: use a gradient mesh or Object > Blend"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:FountainFill"
+   },
+   "how": "doc.gradients.add() (Gradients: add, getByName); set type, edit gradientStops, then var gc = new GradientColor(); gc.gradient = g; item.fillColor = gc. COM: Document.Gradients -> Gradient.",
+   "key_members": [
+    {
+     "name": "type",
+     "use": "GradientType LINEAR or RADIAL"
+    },
+    {
+     "name": "name",
+     "use": "swatch name"
+    },
+    {
+     "name": "gradientStops",
+     "use": "the colour stops; add more with gradientStops.add()"
+    },
+    {
+     "name": "remove",
+     "use": "delete the gradient swatch"
+    },
+    {
+     "name": "typename",
+     "use": "'Gradient'"
+    }
+   ],
+   "gotchas": [
+    "Angle, origin and length belong to the GradientColor applied to the object, not to the Gradient",
+    "A new gradient starts with two stops (unverified)",
+    "Editing a gradient swatch changes every object that uses it",
+    "Freeform gradients cannot be created through GradientType"
+   ],
+   "example": "var doc = app.activeDocument;\nvar g = doc.gradients.add();\ng.name = 'Sunset'; g.type = GradientType.LINEAR;\nvar gc = new GradientColor(); gc.gradient = g;\nvar r = doc.pathItems.rectangle(0, 0, 1080, 1080);\nr.fillColor = gc;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GradientStop",
+   "id": "class:GradientStop",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/GradientStop",
+   "status": "current",
+   "summary": "One colour stop of a gradient: its colour, position on the ramp (rampPoint, percent), midpoint to the next stop (midPoint, percent) and opacity. Stops decide which colours a gradient blends and where.",
+   "use_for": [
+    "setting brand colours on a gradient swatch",
+    "fade-to-transparent overlays (stop opacity 0)",
+    "multi-colour gradient ramps for backgrounds"
+   ],
+   "avoid": [
+    "changing gradient direction or angle: that is on GradientColor, not on stops"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:FountainColor"
+   },
+   "how": "gradient.gradientStops[i]; new stops with gradient.gradientStops.add(). COM: GradientStop.",
+   "key_members": [
+    {
+     "name": "color",
+     "use": "the stop colour (RGBColor, CMYKColor, SpotColor ...)"
+    },
+    {
+     "name": "rampPoint",
+     "use": "position along the gradient in percent"
+    },
+    {
+     "name": "midPoint",
+     "use": "midpoint toward the next stop in percent"
+    },
+    {
+     "name": "opacity",
+     "use": "stop opacity 0-100"
+    },
+    {
+     "name": "remove",
+     "use": "delete the stop"
+    },
+    {
+     "name": "typename",
+     "use": "'GradientStop'"
+    }
+   ],
+   "gotchas": [
+    "opacity, rampPoint and midPoint are percentages (0-100), not 0-1",
+    "midPoint is limited to 13-87 and rampPoint / opacity to 0-100 (ranges from the COM type library descriptions)",
+    "A gradient keeps at least two stops; removing below that fails (unverified)",
+    "A stop colour that does not match the document colour mode is converted (unverified)"
+   ],
+   "example": "var g = app.activeDocument.gradients.getByName('Sunset');\nvar a = new RGBColor(); a.red = 255; a.green = 94; a.blue = 58;\nvar b = new RGBColor(); b.red = 255; b.green = 42; b.blue = 104;\ng.gradientStops[0].color = a;\ng.gradientStops[1].color = b;\ng.gradientStops[1].opacity = 60;",
+   "review": {
+    "by": "adversarial",
+    "changes": "midPoint 13-87 gotcha now cites the batch's COM description (MidPoint 13.0-87.0) instead of outside docs, no longer unverified; added rampPoint 0-100 range from the same source"
+   }
+  },
+  {
+   "name": "GraphItem",
+   "id": "class:GraphItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/GraphItem",
+   "status": "current",
+   "summary": "A chart made with Illustrator's Graph tools (column, bar, line, pie ...). Scripting can only move, duplicate or remove it and bind it to a graph variable for data-driven graphics; chart type and data are not reachable from the DOM.",
+   "use_for": [
+    "data-driven infographics through Variables (bind the graph, then apply data sets)",
+    "finding and repositioning charts in templates"
+   ],
+   "avoid": [
+    "building charts by script: GraphItems has no add; draw bars and wedges with PathItems instead",
+    "modern-looking charts without restyling: Illustrator graphs need manual styling"
+   ],
+   "confidence": "medium",
+   "how": "doc.graphItems / layer.graphItems / group.graphItems (GraphItems: getByName, removeAll); contentVariable takes a Variable from doc.variables. COM: GraphItem.",
+   "key_members": [
+    {
+     "name": "contentVariable",
+     "use": "bind the graph to a GRAPH-kind variable"
+    },
+    {
+     "name": "move",
+     "use": "move to another container"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the graph"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'GraphItem'"
+    }
+   ],
+   "gotchas": [
+    "No way to create a graph or read its data from script",
+    "The bound variable should be of kind VariableKind.GRAPH (unverified)",
+    "Ungrouping a graph turns it into ordinary art; it is then no longer a GraphItem"
+   ],
+   "example": "var doc = app.activeDocument;\nvar v = doc.variables.add();\nv.kind = VariableKind.GRAPH; v.name = 'salesChart';\ndoc.graphItems[0].contentVariable = v;",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GroupItem",
+   "id": "class:GroupItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/GroupItem",
+   "status": "current",
+   "summary": "A group of page items handled as one object; with clipped = true the top-most path clips the rest (a clipping mask). The main container for compositions such as badges, lockups and masked photos.",
+   "use_for": [
+    "logo lockups and badges moved and scaled as one",
+    "clipping a photo or pattern into a shape",
+    "building layout blocks by drawing straight into the group",
+    "importing a file as editable art via createFromFile"
+   ],
+   "avoid": [
+    "holes inside one shape: use a CompoundPathItem",
+    "organising a whole document: use Layers"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:LayerSet",
+    "CDR": "class:Shape"
+   },
+   "how": "doc.groupItems.add() (GroupItems: add, createFromFile, getByName), also layer.groupItems / group.groupItems. Typed child collections (pathItems, textFrames, placedItems ...) create art inside the group; pageItems lists all children. Inherits PageItem. COM: GroupItem.",
+   "key_members": [
+    {
+     "name": "clipped",
+     "use": "true = top-most path clips the group (clipping mask)"
+    },
+    {
+     "name": "pageItems",
+     "use": "all children, front-most first"
+    },
+    {
+     "name": "pathItems",
+     "use": "child paths; draw new paths into the group"
+    },
+    {
+     "name": "compoundPathItems",
+     "use": "child compound paths"
+    },
+    {
+     "name": "groupItems",
+     "use": "nested groups"
+    },
+    {
+     "name": "textFrames",
+     "use": "child text frames"
+    },
+    {
+     "name": "placedItems",
+     "use": "child linked images"
+    },
+    {
+     "name": "rasterItems",
+     "use": "child embedded images"
+    },
+    {
+     "name": "symbolItems",
+     "use": "child symbol instances"
+    },
+    {
+     "name": "pluginItems",
+     "use": "child plug-in art"
+    },
+    {
+     "name": "isDimensionArt",
+     "use": "is this a dimension-tool group"
+    },
+    {
+     "name": "move",
+     "use": "move the group"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the group"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'GroupItem'"
+    }
+   ],
+   "gotchas": [
+    "clipped = true needs a path or compound path as the top-most child to act as the clip; mark it clipping = true",
+    "pageItems[0] is the front-most child, so creation order is reversed",
+    "Moving existing art into a group uses move(group, ElementPlacement.PLACEATEND); the omv harvest only lists the COM enum AiElementPlacement (aiPlaceAtEnd) (unverified)",
+    "Effects and opacity set on the group act on the group as a whole"
+   ],
+   "example": "var doc = app.activeDocument;\nvar g = doc.groupItems.add();\nvar photo = g.placedItems.add();\nphoto.file = new File('~/Desktop/photo.jpg');\nvar mask = g.pathItems.ellipse(-50, 50, 400, 400);\nmask.clipping = true;\ng.clipped = true;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layer",
+   "id": "class:Layer",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Layer",
+   "status": "current",
+   "summary": "A layer or sub-layer in the Layers panel: a named container for artwork with visibility, lock, print, preview, opacity and blend-mode settings. Scripts use layers to organise generated art and toggle template parts.",
+   "use_for": [
+    "separating background, artwork, text and guides in generated files",
+    "template variants: show or hide layers before each export",
+    "non-printing notes or dielines (printable = false)",
+    "locking finished layers so later steps cannot move them"
+   ],
+   "avoid": [
+    "moving a few objects together: use a GroupItem",
+    "adding art to a locked or hidden layer: unlock and show it first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Layer",
+    "PS": "class:LayerSet"
+   },
+   "how": "doc.layers / layer.layers (Layers: add, getByName, removeAll), doc.activeLayer, item.layer. Typed art collections on the layer (pathItems, textFrames, groupItems ...) create art directly in it. COM: Document.Layers(i) -> Layer.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "layer name"
+    },
+    {
+     "name": "visible",
+     "use": "show / hide"
+    },
+    {
+     "name": "locked",
+     "use": "lock / unlock editing"
+    },
+    {
+     "name": "printable",
+     "use": "include in print and PDF output"
+    },
+    {
+     "name": "preview",
+     "use": "preview vs outline display"
+    },
+    {
+     "name": "opacity",
+     "use": "layer opacity 0-100"
+    },
+    {
+     "name": "blendingMode",
+     "use": "BlendModes for the layer"
+    },
+    {
+     "name": "color",
+     "use": "Layers-panel highlight colour (RGBColor)"
+    },
+    {
+     "name": "hasSelectedArtwork",
+     "use": "true selects all art on the layer, false deselects it"
+    },
+    {
+     "name": "layers",
+     "use": "sub-layers"
+    },
+    {
+     "name": "pageItems",
+     "use": "all art on the layer"
+    },
+    {
+     "name": "pathItems",
+     "use": "paths; draw new shapes onto this layer"
+    },
+    {
+     "name": "groupItems",
+     "use": "groups on the layer"
+    },
+    {
+     "name": "textFrames",
+     "use": "text frames on the layer"
+    },
+    {
+     "name": "placedItems",
+     "use": "linked images on the layer"
+    },
+    {
+     "name": "zOrder",
+     "use": "reorder with ZOrderMethod"
+    },
+    {
+     "name": "move",
+     "use": "move the layer"
+    },
+    {
+     "name": "zOrderPosition",
+     "use": "stacking position (read-only)"
+    },
+    {
+     "name": "remove",
+     "use": "delete the layer and its art"
+    }
+   ],
+   "gotchas": [
+    "Creating or moving art into a locked or hidden layer throws; set locked = false and visible = true first",
+    "layers.add() puts the new layer on top; reorder with zOrder(ZOrderMethod.SENDTOBACK)",
+    "color is the panel highlight colour, not a fill",
+    "A document needs at least one layer; removing the last fails (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar bg = doc.layers.add();\nbg.name = 'BG';\nbg.zOrder(ZOrderMethod.SENDTOBACK);\nbg.pathItems.rectangle(0, 0, 1080, 1080);\nbg.locked = true;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LegacyTextItem",
+   "id": "class:LegacyTextItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/LegacyTextItem",
+   "status": "current",
+   "summary": "Unconverted text from documents saved before Illustrator 11 (the pre-CS text engine). It displays but cannot be edited until converted; convertToNative turns it into modern text inside a group and deletes the legacy item.",
+   "use_for": [
+    "batch-updating old Illustrator files so their type becomes editable",
+    "auditing archive files for legacy text before reuse"
+   ],
+   "avoid": [
+    "files where legacy line breaks and spacing must stay exact: conversion can reflow text, check or keep an outlined copy"
+   ],
+   "confidence": "high",
+   "how": "doc.legacyTextItems / layer.legacyTextItems (LegacyTextItems: getByName, convertToNative); item.convertToNative() returns a GroupItem. COM: LegacyTextItem.",
+   "key_members": [
+    {
+     "name": "converted",
+     "use": "has this item already been updated (read-only)"
+    },
+    {
+     "name": "convertToNative",
+     "use": "create native text (returns a GroupItem) and delete the legacy item"
+    },
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'LegacyTextItem'"
+    }
+   ],
+   "gotchas": [
+    "convertToNative deletes the original; use the returned GroupItem, not the old reference",
+    "Converted text can reflow (spacing, kerning, line breaks) (unverified)",
+    "Loop backwards while converting, the collection shrinks as items are converted"
+   ],
+   "example": "var items = app.activeDocument.legacyTextItems;\nfor (var i = items.length - 1; i >= 0; i--) {\n  if (!items[i].converted) items[i].convertToNative();\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ListStyle",
+   "id": "class:ListStyle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/ListStyle",
+   "status": "current",
+   "summary": "A bullet / numbering list style of the document: per-level alignment, left and first-line indents, plus the prefix, postfix and bullet each level uses. Applied to paragraphs through ParagraphAttributes.listStyle.",
+   "use_for": [
+    "consistent bulleted feature lists on posters, menus and spec sheets",
+    "numbered steps in infographics",
+    "hanging indents for list levels set by script"
+   ],
+   "avoid": [
+    "typing bullet characters into the text: they break on reflow, use a list style",
+    "defining the bullet or number format by script: only getters exist for prefix, postfix and bullet"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:TextIndentLevelStyle"
+   },
+   "how": "doc.listStyles (ListStyles: add(name), getByName); textRange.paragraphAttributes.listStyle = style (listStyleTier picks the level). put* methods return the ListStyle so calls chain. COM: ListStyle.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "list style name"
+    },
+    {
+     "name": "getAlignment",
+     "use": "alignment of a level"
+    },
+    {
+     "name": "putAlignment",
+     "use": "set a level's alignment"
+    },
+    {
+     "name": "getLeftIndent",
+     "use": "left indent of a level"
+    },
+    {
+     "name": "putLeftIndent",
+     "use": "set a level's left indent"
+    },
+    {
+     "name": "getFirstLineIndent",
+     "use": "first-line indent of a level"
+    },
+    {
+     "name": "putFirstLineIndent",
+     "use": "set a level's first-line indent (negative = hanging)"
+    },
+    {
+     "name": "getSequencePrefix",
+     "use": "text before the number of a level"
+    },
+    {
+     "name": "getSequencePostfix",
+     "use": "text after the number of a level"
+    },
+    {
+     "name": "getSequenceBullet",
+     "use": "bullet character of a level"
+    },
+    {
+     "name": "duplicate",
+     "use": "clone the style"
+    }
+   ],
+   "gotchas": [
+    "index is the list level; whether it starts at 0 or 1 is not stated in the harvest (unverified)",
+    "alignment is a bare Int32, not an enum; its value mapping is undocumented (unverified)",
+    "No setters for prefix, postfix or bullet: make those in the UI and duplicate the style",
+    "List styles are new to the DOM; scripts using them fail on older Illustrator (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar ls = doc.listStyles.add('Features');\nls.putLeftIndent(0, 18).putFirstLineIndent(0, -12);\nvar para = doc.textFrames[0].paragraphs[0];\npara.paragraphAttributes.listStyle = ls;",
+   "review": {
+    "by": "adversarial",
+    "changes": "'new to the DOM / fails on older versions' is not in the batch, marked unverified"
+   }
+  },
+  {
+   "name": "MeshItem",
+   "id": "class:MeshItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/MeshItem",
+   "status": "current",
+   "summary": "A gradient mesh object (Mesh tool / Create Gradient Mesh): a shape whose colour is painted across a grid of mesh points for photo-real shading. The DOM exposes no mesh points or colours, only move, duplicate and remove.",
+   "use_for": [
+    "finding and repositioning mesh-shaded illustrations in templates",
+    "auditing heavy mesh objects before export"
+   ],
+   "avoid": [
+    "creating or editing mesh shading by script: not exposed; use gradients or blur effects for scripted shading"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Toolbox/Fill Tools/Mesh Fill"
+   },
+   "how": "doc.meshItems / layer.meshItems / group.meshItems (MeshItems: getByName, removeAll). Inherits PageItem. COM: MeshItem.",
+   "key_members": [
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'MeshItem'"
+    }
+   ],
+   "gotchas": [
+    "MeshItems has no add: scripts cannot create meshes",
+    "Mesh point colours are not readable; recolour through menu commands such as Edit Colors (unverified)",
+    "Meshes can rasterise or bloat SVG / older-PDF exports (unverified)"
+   ],
+   "example": "var meshes = app.activeDocument.meshItems;\n$.writeln(meshes.length + ' gradient mesh objects');\nfor (var i = 0; i < meshes.length; i++) meshes[i].locked = true;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "NonNativeItem",
+   "id": "class:NonNativeItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/NonNativeItem",
+   "status": "current",
+   "summary": "Artwork Illustrator lists as non-native: objects it holds but does not model with its own art types. The harvest gives no members beyond move / duplicate / remove, and which objects fall in this class in 30.2 is not documented.",
+   "use_for": [
+    "auditing documents for objects scripts cannot edit",
+    "moving or deleting such objects during cleanup"
+   ],
+   "avoid": [
+    "editing its content: no properties are exposed"
+   ],
+   "confidence": "low",
+   "how": "doc.nonNativeItems / layer.nonNativeItems / group.nonNativeItems (NonNativeItems: getByName). Inherits PageItem. COM: NonNativeItem.",
+   "key_members": [
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'NonNativeItem'"
+    }
+   ],
+   "gotchas": [
+    "The NonNativeItems collection has no add or removeAll here; delete items one by one with remove()",
+    "Which artwork lands in this class (3D, plug-in or foreign art) is undocumented (unverified)"
+   ],
+   "example": "var nn = app.activeDocument.nonNativeItems;\nfor (var i = 0; i < nn.length; i++) {\n  $.writeln(nn[i].typename + ' on layer ' + nn[i].layer.name);\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PageItem",
+   "id": "class:PageItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/PageItem",
+   "status": "current",
+   "summary": "The base class of all artwork (paths, groups, text frames, placed and raster images, symbols, meshes ...). It carries the shared position, size, bounds, opacity, blend mode, lock / hide / select state and the transform, z-order and live-effect methods.",
+   "use_for": [
+    "positioning and sizing any art in layout scripts",
+    "batch scale, rotate and move of many objects",
+    "applying live effects by XML (drop shadow, blur) via applyEffect",
+    "naming and tagging art for pipelines",
+    "walking all art via doc.pageItems or doc.selection"
+   ],
+   "avoid": [
+    "type-specific edits (fill colour, text, file link): check typename and use the concrete class"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Shape",
+    "PS": "class:Layer"
+   },
+   "how": "Never created directly: items come from doc.pageItems, layer.pageItems, group.pageItems or doc.selection, and every concrete art class inherits these members. Check item.typename ('PathItem', 'GroupItem', 'TextFrame' ...) first. No COM PageItem interface is in the harvest (batch com = none); COM Document.PageItems returns the concrete objects.",
+   "key_members": [
+    {
+     "name": "typename",
+     "use": "concrete class name, check before type-specific calls"
+    },
+    {
+     "name": "position",
+     "use": "[x, y] of the top-left corner"
+    },
+    {
+     "name": "width",
+     "use": "width in points"
+    },
+    {
+     "name": "height",
+     "use": "height in points"
+    },
+    {
+     "name": "geometricBounds",
+     "use": "[left, top, right, bottom] without stroke"
+    },
+    {
+     "name": "visibleBounds",
+     "use": "[left, top, right, bottom] including stroke"
+    },
+    {
+     "name": "top",
+     "use": "top edge"
+    },
+    {
+     "name": "left",
+     "use": "left edge"
+    },
+    {
+     "name": "name",
+     "use": "name in the Layers panel"
+    },
+    {
+     "name": "opacity",
+     "use": "0-100"
+    },
+    {
+     "name": "blendingMode",
+     "use": "BlendModes"
+    },
+    {
+     "name": "locked",
+     "use": "lock state"
+    },
+    {
+     "name": "hidden",
+     "use": "hide state"
+    },
+    {
+     "name": "selected",
+     "use": "selection state"
+    },
+    {
+     "name": "translate",
+     "use": "move by deltaX / deltaY"
+    },
+    {
+     "name": "resize",
+     "use": "scale in percent"
+    },
+    {
+     "name": "rotate",
+     "use": "rotate by degrees"
+    },
+    {
+     "name": "transform",
+     "use": "apply a Matrix"
+    },
+    {
+     "name": "zOrder",
+     "use": "bring forward / send back"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy"
+    },
+    {
+     "name": "applyEffect",
+     "use": "apply a live effect from its LiveEffect XML"
+    },
+    {
+     "name": "tags",
+     "use": "invisible key/value tags"
+    },
+    {
+     "name": "uuid",
+     "use": "unique id (read-only)"
+    }
+   ],
+   "gotchas": [
+    "Units are always points (1/72 in) whatever the ruler units",
+    "The y axis points up: art below the artboard top has negative top / y; bounds are [left, top, right, bottom]",
+    "resize() takes percentages (100 = unchanged), not points",
+    "rotate() angles are counter-clockwise positive (unverified)",
+    "applyEffect needs the exact LiveEffect XML (see the ai_effect cards' scripting field); bad XML can fail silently (unverified)",
+    "Modifying locked items or art on locked layers throws; the same for hidden items is unverified"
+   ],
+   "example": "var doc = app.activeDocument;\nfor (var i = 0; i < doc.selection.length; i++) {\n  var it = doc.selection[i];\n  it.resize(50, 50);\n  it.position = [0, 0];\n  it.opacity = 80;\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "how claimed a COM PageItem; the batch has com = none and the harvest has no such interface, corrected; hidden-item throw marked unverified"
+   }
+  },
+  {
+   "name": "PathItem",
+   "id": "class:PathItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/PathItem",
+   "status": "current",
+   "summary": "A vector path (open or closed bezier) with its own fill, stroke, dash, cap, join and clipping / guide flags: the basic drawing object for shapes, lines and frames.",
+   "use_for": [
+    "drawing layout shapes (rectangles, rounded boxes, ellipses, stars via PathItems)",
+    "polylines and icons from coordinates with setEntirePath",
+    "dashed borders, dividers and dielines",
+    "clipping masks and guides",
+    "measuring shape area and path length"
+   ],
+   "avoid": [
+    "shapes with holes: combine paths in a CompoundPathItem",
+    "text: use a text frame"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Curve",
+    "PS": "class:PathItem"
+   },
+   "how": "doc.pathItems / layer.pathItems / group.pathItems (PathItems: add, rectangle, roundedRectangle, ellipse, polygon, star, getByName). Points via pathPoints or setEntirePath([[x, y], ...]). Inherits PageItem. COM: PathItem.",
+   "key_members": [
+    {
+     "name": "filled",
+     "use": "fill on / off"
+    },
+    {
+     "name": "fillColor",
+     "use": "fill colour"
+    },
+    {
+     "name": "stroked",
+     "use": "stroke on / off"
+    },
+    {
+     "name": "strokeColor",
+     "use": "stroke colour"
+    },
+    {
+     "name": "strokeWidth",
+     "use": "stroke width in points"
+    },
+    {
+     "name": "strokeDashes",
+     "use": "dash lengths; [] = solid"
+    },
+    {
+     "name": "strokeCap",
+     "use": "StrokeCap"
+    },
+    {
+     "name": "strokeJoin",
+     "use": "StrokeJoin"
+    },
+    {
+     "name": "closed",
+     "use": "closed path?"
+    },
+    {
+     "name": "clipping",
+     "use": "use as clipping path"
+    },
+    {
+     "name": "guides",
+     "use": "turn into a guide"
+    },
+    {
+     "name": "evenodd",
+     "use": "even-odd fill rule"
+    },
+    {
+     "name": "area",
+     "use": "area in square points (read-only)"
+    },
+    {
+     "name": "length",
+     "use": "path length in points (read-only)"
+    },
+    {
+     "name": "pathPoints",
+     "use": "the anchor points"
+    },
+    {
+     "name": "setEntirePath",
+     "use": "replace the path from an array of [x, y] pairs"
+    },
+    {
+     "name": "convertAnchorToCorner",
+     "use": "make one anchor a corner"
+    },
+    {
+     "name": "convertAnchorToSmooth",
+     "use": "make one anchor smooth"
+    },
+    {
+     "name": "setSmootheningPercentageValue",
+     "use": "smooth the path by a percentage"
+    }
+   ],
+   "gotchas": [
+    "fillColor / strokeColor only show when filled / stroked are true",
+    "strokeDashes is an array of lengths in points; an empty array means a solid line",
+    "setEntirePath makes corner points only; set leftDirection / rightDirection on pathPoints for curves",
+    "area can come back negative depending on path direction (unverified)",
+    "convertAnchorToCorner / convertAnchorToSmooth / setSmootheningPercentageValue are recent members missing from older versions (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar p = doc.pathItems.add();\np.setEntirePath([[0, 0], [200, -100], [400, 0]]);\np.filled = false; p.stroked = true; p.strokeWidth = 4;\np.strokeDashes = [12, 6];",
+   "review": {
+    "by": "adversarial",
+    "changes": "'recent members' version claim is not in the batch, marked unverified"
+   }
+  },
+  {
+   "name": "PathPoint",
+   "id": "class:PathPoint",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/PathPoint",
+   "status": "current",
+   "summary": "One anchor of a path with its two bezier handles (leftDirection in, rightDirection out), its smooth / corner type and selection state. Editing path points reshapes curves precisely.",
+   "use_for": [
+    "drawing smooth curves and waves from computed coordinates",
+    "sharpening or smoothing specific corners",
+    "reading anchor positions for alignment or export to data"
+   ],
+   "avoid": [
+    "simple polylines: PathItem.setEntirePath is shorter"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Node",
+    "PS": "class:PathPoint"
+   },
+   "how": "path.pathPoints[i] (PathPoints: add, getByName); add() appends a point at the end of the path. COM: PathPoint.",
+   "key_members": [
+    {
+     "name": "anchor",
+     "use": "[x, y] of the anchor"
+    },
+    {
+     "name": "leftDirection",
+     "use": "[x, y] of the incoming handle"
+    },
+    {
+     "name": "rightDirection",
+     "use": "[x, y] of the outgoing handle"
+    },
+    {
+     "name": "pointType",
+     "use": "PointType SMOOTH or CORNER"
+    },
+    {
+     "name": "selected",
+     "use": "PathPointSelection state"
+    },
+    {
+     "name": "remove",
+     "use": "delete the point"
+    }
+   ],
+   "gotchas": [
+    "A new point's handles sit on its anchor; set leftDirection / rightDirection or the segments stay straight",
+    "Setting pointType = SMOOTH does not move the handles; place them collinear yourself (unverified)",
+    "Coordinates are points with y up (negative below the artboard top)",
+    "selected is a PathPointSelection enum (ANCHORPOINT, LEFTDIRECTION ...), not a boolean"
+   ],
+   "example": "var p = app.activeDocument.pathItems.add();\nvar a = p.pathPoints.add();\na.anchor = [0, 0]; a.leftDirection = [0, 0]; a.rightDirection = [100, 80];\nvar b = p.pathPoints.add();\nb.anchor = [300, 0]; b.leftDirection = [200, 80]; b.rightDirection = [300, 0];\np.stroked = true;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PlacedItem",
+   "id": "class:PlacedItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/PlacedItem",
+   "status": "current",
+   "summary": "A linked file placed in the document (image, PDF, AI, PSD ...): it keeps a link to the file on disk plus its transform matrix and original bounds, and can be relinked, embedded or Image-Traced.",
+   "use_for": [
+    "placing product photos and logos into templates",
+    "swapping images in a template by relinking",
+    "embedding links before handing off a file",
+    "auto-tracing a placed raster into vectors (trace)"
+   ],
+   "avoid": [
+    "sending files with unembedded links: embed() first or package the links",
+    "pixel retouching: edit in Photoshop and relink"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Place Linked"
+   },
+   "how": "doc.placedItems / layer.placedItems / group.placedItems (PlacedItems: add, getByName); var p = doc.placedItems.add(); p.file = new File(path). Inherits PageItem. COM: PlacedItem.",
+   "key_members": [
+    {
+     "name": "file",
+     "use": "the linked file; set it right after add()"
+    },
+    {
+     "name": "matrix",
+     "use": "transformation matrix"
+    },
+    {
+     "name": "boundingBox",
+     "use": "original size regardless of transforms (read-only)"
+    },
+    {
+     "name": "contentVariable",
+     "use": "bind to an IMAGE variable for data-driven swaps"
+    },
+    {
+     "name": "embed",
+     "use": "embed the linked file in the document"
+    },
+    {
+     "name": "relink",
+     "use": "point the link to another file"
+    },
+    {
+     "name": "trace",
+     "use": "Image Trace with default options, returns a PluginItem"
+    },
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    }
+   ],
+   "gotchas": [
+    "Set file immediately after placedItems.add(); an empty PlacedItem is useless",
+    "After embed() the PlacedItem reference is dead (the art becomes a RasterItem or group); find the new item again (unverified)",
+    "For multi-page PDFs set app.preferences.PDFFileOptions.pageToOpen before placing to choose the page",
+    "trace() uses default tracing options; adjust through the returned PluginItem's tracing object"
+   ],
+   "example": "var doc = app.activeDocument;\nvar p = doc.placedItems.add();\np.file = new File('~/Desktop/product.png');\np.position = [0, 0];\np.embed();",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PluginItem",
+   "id": "class:PluginItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/PluginItem",
+   "status": "current",
+   "summary": "Art generated and owned by a plug-in, most often an Image Trace result (isTracing / tracing). The DOM exposes only the tracing link plus move, duplicate and remove.",
+   "use_for": [
+    "finishing a scripted Image Trace: reach the TracingObject and expand it to paths",
+    "finding unexpanded trace objects before export"
+   ],
+   "avoid": [
+    "creating plug-in art directly: get a PluginItem from PlacedItem.trace() or RasterItem.trace()"
+   ],
+   "confidence": "medium",
+   "how": "Returned by placedItem.trace() / rasterItem.trace(); also doc.pluginItems (PluginItems: getByName, removeAll). item.tracing -> TracingObject (tracingOptions, expandTracing, releaseTracing). COM: PluginItem.",
+   "key_members": [
+    {
+     "name": "isTracing",
+     "use": "is this plug-in group an Image Trace (read-only)"
+    },
+    {
+     "name": "tracing",
+     "use": "the TracingObject (options, expand, release)"
+    },
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy it"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'PluginItem'"
+    }
+   ],
+   "gotchas": [
+    "tracing is only meaningful when isTracing is true",
+    "Tracing may not be finished right after trace(); call app.redraw() before expandTracing() (unverified)",
+    "expandTracing() returns a GroupItem that replaces the plug-in art; use the returned group",
+    "Other plug-in art (blends, envelopes ...) may also appear as PluginItem with nothing editable (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar t = doc.placedItems[0].trace();\napp.redraw();\nif (t.isTracing) {\n  var paths = t.tracing.expandTracing();\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Preferences",
+   "id": "class:Preferences",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Preferences",
+   "status": "current",
+   "summary": "Application-wide Illustrator preferences: typed get / set / remove of any preference key, plus the options used when opening or placing Photoshop, PDF and AutoCAD files.",
+   "use_for": [
+    "choosing which PDF page to place or open",
+    "keeping PSD layers when opening or placing Photoshop files",
+    "flipping an app preference for a batch run and restoring it afterwards"
+   ],
+   "avoid": [
+    "per-document settings (units, raster effects): use Document properties",
+    "guessing keys: an unknown key just creates a new entry or returns a default (unverified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Preferences"
+   },
+   "how": "app.preferences (read-only property; its members are writable). Typed accessors get/set Boolean, Integer, Real and String preferences, preferenceExists, removePreference; open options via preferences.PDFFileOptions / photoshopFileOptions / AutoCADFileOptions. COM: Application.Preferences.",
+   "key_members": [
+    {
+     "name": "PDFFileOptions",
+     "use": "OpenOptionsPDF used when opening / placing PDFs (pageToOpen ...)"
+    },
+    {
+     "name": "photoshopFileOptions",
+     "use": "OpenOptionsPhotoshop (preserveLayers ...)"
+    },
+    {
+     "name": "AutoCADFileOptions",
+     "use": "OpenOptionsAutoCAD"
+    },
+    {
+     "name": "getBooleanPreference",
+     "use": "read a boolean pref"
+    },
+    {
+     "name": "setBooleanPreference",
+     "use": "write a boolean pref"
+    },
+    {
+     "name": "getIntegerPreference",
+     "use": "read an integer pref"
+    },
+    {
+     "name": "setIntegerPreference",
+     "use": "write an integer pref"
+    },
+    {
+     "name": "getRealPreference",
+     "use": "read a real pref"
+    },
+    {
+     "name": "setRealPreference",
+     "use": "write a real pref"
+    },
+    {
+     "name": "getStringPreference",
+     "use": "read a string pref"
+    },
+    {
+     "name": "setStringPreference",
+     "use": "write a string pref"
+    },
+    {
+     "name": "preferenceExists",
+     "use": "check a key before using it"
+    },
+    {
+     "name": "removePreference",
+     "use": "delete a key"
+    }
+   ],
+   "gotchas": [
+    "Keys are the internal names from the Illustrator Prefs file, not dialog labels; the harvest lists none, so check preferenceExists first",
+    "Reading with the wrong typed getter returns a default rather than an error (unverified)",
+    "Changes persist across sessions; restore old values at the end of a batch (unverified)",
+    "Some prefs only take effect after a restart (unverified)"
+   ],
+   "example": "var prefs = app.preferences;\nprefs.PDFFileOptions.pageToOpen = 2;\nprefs.photoshopFileOptions.preserveLayers = true;\nvar key = 'myKey'; // an internal key from the Illustrator Prefs file\nif (prefs.preferenceExists(key)) $.writeln(prefs.getBooleanPreference(key));",
+   "review": {
+    "by": "adversarial",
+    "changes": "persistence and unknown-key behaviour are not in the batch, marked unverified"
+   }
+  },
+  {
+   "name": "RasterEffectOptions",
+   "id": "class:RasterEffectOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/RasterEffectOptions",
+   "status": "current",
+   "summary": "The document's Raster Effects Settings (Effect > Document Raster Effects Settings): resolution, colour model, transparent background, anti-aliasing, clipping mask, spot conversion and padding used whenever live raster effects (shadows, blurs, glows, Photoshop effects) render.",
+   "use_for": [
+    "setting 300 ppi before print export so shadows and blurs are not soft",
+    "dropping to 72 ppi while building heavy web layouts for speed",
+    "rendering effects on a transparent background"
+   ],
+   "avoid": [
+    "rasterising objects permanently: use Document.rasterize with RasterizeOptions"
+   ],
+   "confidence": "high",
+   "how": "doc.rasterEffectSettings (read / write Document property); edit its fields and assign it back. COM: Document.RasterEffectSettings -> RasterEffectOptions.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "effect resolution in dpi"
+    },
+    {
+     "name": "colorModel",
+     "use": "RasterizationColorModel"
+    },
+    {
+     "name": "transparency",
+     "use": "transparent background"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "anti-alias the result"
+    },
+    {
+     "name": "clippingMask",
+     "use": "create a clipping mask"
+    },
+    {
+     "name": "convertSpotColors",
+     "use": "convert spots to process"
+    },
+    {
+     "name": "padding",
+     "use": "extra space around objects in points"
+    }
+   ],
+   "gotchas": [
+    "Assign the edited object back to doc.rasterEffectSettings; editing a fetched copy may not apply (unverified)",
+    "Pixel-based effects can change visible size when resolution changes (unverified)",
+    "High resolution with many effects slows redraw and export a lot"
+   ],
+   "example": "var doc = app.activeDocument;\nvar r = doc.rasterEffectSettings;\nr.resolution = 300; r.transparency = true; r.antiAliasing = true;\ndoc.rasterEffectSettings = r;",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RasterItem",
+   "id": "class:RasterItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/RasterItem",
+   "status": "current",
+   "summary": "An embedded bitmap in the document (pasted, embedded or rasterised art): pixels with matrix, bounds, colour space, channels, bit depth and link status. Grayscale images can be colourised and any raster can be Image-Traced.",
+   "use_for": [
+    "preflight of embedded images: colour space, bit depth, embedded flag",
+    "tinting grayscale images with a brand colour (colorize)",
+    "auto-tracing embedded bitmaps into vectors"
+   ],
+   "avoid": [
+    "pixel edits: open the image in Photoshop",
+    "linked images: those are PlacedItem"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Bitmap"
+   },
+   "how": "doc.rasterItems / layer.rasterItems / group.rasterItems (RasterItems: getByName, removeAll); produced by placedItem.embed() or doc.rasterize(). Inherits PageItem. COM: RasterItem.",
+   "key_members": [
+    {
+     "name": "embedded",
+     "use": "is the image embedded"
+    },
+    {
+     "name": "file",
+     "use": "source file (read-only)"
+    },
+    {
+     "name": "imageColorSpace",
+     "use": "ImageColorSpace RGB, CMYK, GrayScale ... (read-only)"
+    },
+    {
+     "name": "channels",
+     "use": "number of channels (read-only)"
+    },
+    {
+     "name": "bitsPerChannel",
+     "use": "bit depth (read-only)"
+    },
+    {
+     "name": "colorants",
+     "use": "colorant names (read-only)"
+    },
+    {
+     "name": "status",
+     "use": "RasterLinkState of the link (read-only)"
+    },
+    {
+     "name": "matrix",
+     "use": "transformation matrix"
+    },
+    {
+     "name": "boundingBox",
+     "use": "size regardless of transforms"
+    },
+    {
+     "name": "overprint",
+     "use": "overprint on / off"
+    },
+    {
+     "name": "transparent",
+     "use": "has transparency (read-only)"
+    },
+    {
+     "name": "colorizedGrayscale",
+     "use": "is a colourised grayscale (read-only)"
+    },
+    {
+     "name": "colorize",
+     "use": "tint with a CMYK or RGB colour"
+    },
+    {
+     "name": "trace",
+     "use": "Image Trace, returns a PluginItem"
+    },
+    {
+     "name": "contentVariable",
+     "use": "bind to an IMAGE variable"
+    }
+   ],
+   "gotchas": [
+    "RasterItems has no add: make one by embedding a PlacedItem or with doc.rasterize()",
+    "colorize is meant for grayscale / bitmap images; on colour images it fails or does nothing (unverified)",
+    "There is no effective-ppi member; derive it from boundingBox and the placed size (unverified)",
+    "file is read-only and can be empty for pasted images (unverified)"
+   ],
+   "example": "var items = app.activeDocument.rasterItems;\nfor (var i = 0; i < items.length; i++) {\n  var r = items[i];\n  $.writeln(r.imageColorSpace + ' ' + r.bitsPerChannel + ' bit, embedded=' + r.embedded);\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RasterizeOptions",
+   "id": "class:RasterizeOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/RasterizeOptions",
+   "status": "current",
+   "summary": "The options for Document.rasterize: resolution, colour model, transparent or black background, anti-aliasing method, clipping mask, spot conversion, text-to-outlines, layer attributes and padding. Controls how vector art becomes an embedded bitmap.",
+   "use_for": [
+    "flattening heavy vector art (blends, meshes, effects) into one image for a lighter file",
+    "making a pixel version of a logo or illustration for a mock-up",
+    "rasterising type with type-optimised anti-aliasing"
+   ],
+   "avoid": [
+    "keeping art editable: rasterize is destructive, duplicate first or use a live Rasterize effect",
+    "setting live-effect resolution: that is RasterEffectOptions"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Convert to Bitmap"
+   },
+   "how": "var o = new RasterizeOptions(); set fields; doc.rasterize(sourceArt, clipBounds, o) returns the new raster art. COM: RasterizeOptions passed to Document.Rasterize.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "dpi"
+    },
+    {
+     "name": "colorModel",
+     "use": "RasterizationColorModel DEFAULTCOLORMODEL / GRAYSCALE / BITMAP"
+    },
+    {
+     "name": "transparency",
+     "use": "transparent background"
+    },
+    {
+     "name": "antiAliasingMethod",
+     "use": "AntiAliasingMethod None / ARTOPTIMIZED / TYPEOPTIMIZED"
+    },
+    {
+     "name": "clippingMask",
+     "use": "create a clipping mask"
+    },
+    {
+     "name": "convertSpotColors",
+     "use": "convert spots to process"
+    },
+    {
+     "name": "convertTextToOutlines",
+     "use": "outline text before rasterising"
+    },
+    {
+     "name": "includeLayers",
+     "use": "keep layer opacity / blend attributes"
+    },
+    {
+     "name": "backgroundBlack",
+     "use": "rasterise against black instead of white"
+    },
+    {
+     "name": "padding",
+     "use": "extra space in points"
+    }
+   ],
+   "gotchas": [
+    "doc.rasterize disposes the source art (harvest description); duplicate it first if you need the vectors",
+    "clipBounds is [left, top, right, bottom] in points; pass the item's visibleBounds to keep strokes",
+    "padding is in points, resolution in dpi",
+    "DEFAULTCOLORMODEL follows the document colour mode"
+   ],
+   "example": "var doc = app.activeDocument;\nvar art = doc.selection[0];\nvar o = new RasterizeOptions();\no.resolution = 300; o.transparency = true;\no.antiAliasingMethod = AntiAliasingMethod.ARTOPTIMIZED;\nvar img = doc.rasterize(art, art.visibleBounds, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol",
+   "id": "class:Symbol",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Symbol",
+   "status": "current",
+   "summary": "A symbol definition in the Symbols panel: reusable master art whose instances (SymbolItem) all follow the master. Keeps repeated elements light and consistent.",
+   "use_for": [
+    "repeated icons, bullets and logos across a layout",
+    "scatters of one element with a small file size",
+    "9-slice scalable UI elements (Symbols.addWith9SliceScaling)"
+   ],
+   "avoid": [
+    "one-off art: a plain group is simpler",
+    "copies that need individual edits: break the link on the instance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:SymbolDefinition"
+   },
+   "how": "doc.symbols (Symbols: add(sourceArt, registrationPoint), addWith9SliceScaling, getByName); place instances with doc.symbolItems.add(symbol). COM: Document.Symbols -> Symbol.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "symbol name"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the definition"
+    },
+    {
+     "name": "remove",
+     "use": "delete the definition"
+    },
+    {
+     "name": "typename",
+     "use": "'Symbol'"
+    }
+   ],
+   "gotchas": [
+    "symbols.add copies the source art into the definition; the source art stays on the page as ordinary art (unverified)",
+    "Removing a symbol that still has instances may fail or break the instances (unverified)",
+    "The master art cannot be edited through the DOM; rebuild the art and redefine (unverified)",
+    "registrationPoint takes a SymbolRegistrationPoint value such as SYMBOLCENTERPOINT"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sym = doc.symbols.add(doc.selection[0], SymbolRegistrationPoint.SYMBOLCENTERPOINT);\nsym.name = 'Star_Icon';\nvar inst = doc.symbolItems.add(sym);\ninst.position = [300, -300];",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SymbolItem",
+   "id": "class:SymbolItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/SymbolItem",
+   "status": "current",
+   "summary": "One placed instance of a symbol: lightweight art mirroring its master Symbol that can be transformed on its own, switched to another symbol, or broken into ordinary editable art.",
+   "use_for": [
+    "placing many copies of an icon or logo programmatically",
+    "swapping instances to a new design (assign symbol)",
+    "breaking instances into editable art for final tweaks"
+   ],
+   "avoid": [
+    "per-instance recolouring or reshaping: break the link first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Symbol"
+   },
+   "how": "doc.symbolItems.add(symbol) (SymbolItems: add, getByName), also on layers and groups. Inherits PageItem. COM: SymbolItem.",
+   "key_members": [
+    {
+     "name": "symbol",
+     "use": "the master Symbol; assign another to swap"
+    },
+    {
+     "name": "breakLink",
+     "use": "turn the instance into ordinary art"
+    },
+    {
+     "name": "move",
+     "use": "move it"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the instance"
+    },
+    {
+     "name": "remove",
+     "use": "delete it"
+    },
+    {
+     "name": "typename",
+     "use": "'SymbolItem'"
+    }
+   ],
+   "gotchas": [
+    "After breakLink the SymbolItem reference is no longer valid; find the resulting art again (unverified)",
+    "Swapping symbol keeps the instance transform, so sizes jump if the masters differ (unverified)",
+    "New instances land at a default position; set position afterwards (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sym = doc.symbols.getByName('Star_Icon');\nfor (var i = 0; i < 5; i++) {\n  var s = doc.symbolItems.add(sym);\n  s.position = [i * 120, -100];\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "symbol-swap sizing and default-position claims are not in the batch, marked unverified"
+   }
+  },
+  {
+   "name": "TabStopInfo",
+   "id": "class:TabStopInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/TabStopInfo",
+   "status": "current",
+   "summary": "One tab stop of a paragraph: alignment (left, center, right, decimal), position in points, decimal character and leader string (for example dot leaders). Decides how tab characters line up columns of text.",
+   "use_for": [
+    "price lists and menus with dot leaders",
+    "aligned columns in spec sheets inside one text frame",
+    "decimal-aligned numbers"
+   ],
+   "avoid": [
+    "real tables with cells: use separate text frames or a layout app"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:TextTabPosition"
+   },
+   "how": "textRange.paragraphAttributes.tabStops holds an array of TabStopInfo; build new ones with new TabStopInfo() and assign the array back (unverified). COM: TabStopInfo.",
+   "key_members": [
+    {
+     "name": "alignment",
+     "use": "TabStopAlignment Left / Center / Right / Decimal"
+    },
+    {
+     "name": "position",
+     "use": "position in points"
+    },
+    {
+     "name": "decimalCharacter",
+     "use": "character to align on for Decimal stops"
+    },
+    {
+     "name": "leader",
+     "use": "leader string, e.g. '.'"
+    }
+   ],
+   "gotchas": [
+    "tabStops is an array value: build or copy it and assign the whole array back; editing one element in place may not stick (unverified)",
+    "position is measured from the frame's left edge (unverified)",
+    "decimalCharacter only matters with TabStopAlignment.Decimal"
+   ],
+   "example": "var t = new TabStopInfo();\nt.position = 216; t.alignment = TabStopAlignment.Right; t.leader = '.';\nvar para = app.activeDocument.textFrames[0].paragraphs[0];\npara.paragraphAttributes.tabStops = [t];",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Tag",
+   "id": "class:Tag",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/Tag",
+   "status": "current",
+   "summary": "A named string value attached to a page item (or document): invisible metadata stored in the file, used by scripts to mark objects and find them again later.",
+   "use_for": [
+    "marking template slots (headline, photo, price) so a fill script can find them",
+    "recording a source id or version on generated art",
+    "round-trips between pipeline passes"
+   ],
+   "avoid": [
+    "visible labels: use the item name or note",
+    "large data: keep it in a sidecar JSON"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Properties"
+   },
+   "how": "item.tags.add() (Tags: add, getByName, removeAll), then set name and value; doc.tags for document-level tags. COM: Tags on each art class (PathItem.Tags ...) and Document.Tags -> Tag.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "tag key"
+    },
+    {
+     "name": "value",
+     "use": "tag data (string)"
+    },
+    {
+     "name": "remove",
+     "use": "delete the tag"
+    },
+    {
+     "name": "typename",
+     "use": "'Tag'"
+    }
+   ],
+   "gotchas": [
+    "Tag names should be identifier-like; spaces or punctuation can throw (unverified)",
+    "value is always a string: serialise numbers or JSON yourself",
+    "Tags are invisible in the UI, so people editing the file can delete tagged art without noticing",
+    "tags.getByName throws when the tag is missing; wrap it in try / catch"
+   ],
+   "example": "var item = app.activeDocument.selection[0];\nvar t = item.tags.add();\nt.name = 'slot'; t.value = 'headline';\ntry { $.writeln(item.tags.getByName('slot').value); } catch (e) {}",
+   "review": {
+    "by": "adversarial",
+    "changes": "COM route named a non-existent PageItem interface; now PathItem.Tags / Document.Tags"
+   }
+  },
+  {
+   "name": "TextFont",
+   "id": "class:TextFont",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Scripting commands and classes for Adobe Illustrator/TextFont",
+   "status": "current",
+   "summary": "An installed font as Illustrator sees it: name, family, style and, for variable fonts, the axis vector. Read-only; assigned to text through CharacterAttributes.textFont.",
+   "use_for": [
+    "setting brand fonts on generated text",
+    "checking a font is installed before building a layout",
+    "listing families and styles for preflight"
+   ],
+   "avoid": [
+    "assuming a font exists: check TextFonts.isFontAvailable and fall back"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:TextFont"
+   },
+   "how": "app.textFonts (TextFonts: getByName, getFontByName, isFontAvailable, getCurrentFont); textRange.characterAttributes.textFont = font. COM: Application.TextFonts -> TextFont.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the font's name used by getByName (read-only)"
+    },
+    {
+     "name": "family",
+     "use": "family name (read-only)"
+    },
+    {
+     "name": "style",
+     "use": "style name (read-only)"
+    },
+    {
+     "name": "axisVector",
+     "use": "variable-font axis vector (read-only)"
+    },
+    {
+     "name": "typename",
+     "use": "'TextFont'"
+    }
+   ],
+   "gotchas": [
+    "getByName expects the internal (PostScript-style) name such as 'ArialMT', not the menu name; the harvest calls name the 'full name', so test the exact string (unverified)",
+    "getByName throws if the font is missing; use isFontAvailable or try / catch",
+    "All members are read-only",
+    "Looping app.textFonts is slow on machines with thousands of fonts; cache what you need"
+   ],
+   "example": "var fonts = app.textFonts;\nvar n = 'Montserrat-Bold';\nvar f = fonts.isFontAvailable(n) ? fonts.getByName(n) : fonts[0];\nvar tf = app.activeDocument.textFrames.add();\ntf.contents = 'SALE';\ntf.textRange.characterAttributes.textFont = f;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

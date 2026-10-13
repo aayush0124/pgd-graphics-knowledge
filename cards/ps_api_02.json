@@ -1,0 +1,2183 @@
+{
+ "cards": [
+  {
+   "name": "PathPoint",
+   "id": "class:PathPoint",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with art path items/PathPoint",
+   "status": "current",
+   "summary": "Read-only view of one anchor point of an existing Photoshop path: its anchor position, the two Bezier direction handles and whether it is a corner or smooth point.",
+   "how": "Reach it as app.activeDocument.pathItems[i].subPathItems[j].pathPoints[k]. It only reports geometry; to build a path you fill PathPointInfo objects and pass them to pathItems.add().",
+   "key_members": [
+    {
+     "name": "anchor",
+     "use": "anchor position [x, y] of the point"
+    },
+    {
+     "name": "leftDirection",
+     "use": "incoming Bezier handle; equals anchor on a straight segment"
+    },
+    {
+     "name": "rightDirection",
+     "use": "outgoing Bezier handle; equals anchor on a straight segment"
+    },
+    {
+     "name": "kind",
+     "use": "PointKind.CORNERPOINT or PointKind.SMOOTHPOINT"
+    },
+    {
+     "name": "parent",
+     "use": "the SubPathItem the point belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "'PathPoint', for type checks"
+    }
+   ],
+   "gotchas": [
+    "Every property is read-only: you cannot move a point in place; rebuild the path from PathPointInfo objects and add it again.",
+    "Coordinates come back in points measured against the document resolution, so on a non-72 ppi document they do not equal pixel positions (unverified; common workaround: read at 72 ppi or convert with the resolution)."
+   ],
+   "example": "var sp = app.activeDocument.pathItems[0].subPathItems[0];\nfor (var i = 0; i < sp.pathPoints.length; i++) {\n  var p = sp.pathPoints[i];\n  $.writeln(p.anchor + \" \" + p.kind + \" in:\" + p.leftDirection + \" out:\" + p.rightDirection);\n}",
+   "use_for": [
+    "copy a logo outline's points into another tool",
+    "measure a pen-tool path to place type or shapes along it",
+    "audit a clipping path before print"
+   ],
+   "avoid": [
+    "editing a path point by point: rebuild it with PathPointInfo + pathItems.add instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PathPoint",
+    "CDR": "class:Node"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PathPointInfo",
+   "id": "class:PathPointInfo",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with art path items/PathPointInfo",
+   "status": "current",
+   "summary": "Script-side description of one path point (anchor plus left and right direction handles plus corner/smooth kind) used as input when a script creates a path; it is not a live object in the document.",
+   "how": "Create with new PathPointInfo(), set anchor / leftDirection / rightDirection as [x, y] arrays and kind, collect them in a SubPathInfo.entireSubPath array, then pass the SubPathInfo array to app.activeDocument.pathItems.add(name, ...).",
+   "key_members": [
+    {
+     "name": "anchor",
+     "use": "[x, y] of the point"
+    },
+    {
+     "name": "leftDirection",
+     "use": "incoming handle [x, y]; set equal to anchor for a straight segment"
+    },
+    {
+     "name": "rightDirection",
+     "use": "outgoing handle [x, y]; set equal to anchor for a straight segment"
+    },
+    {
+     "name": "kind",
+     "use": "PointKind.CORNERPOINT for sharp corners, PointKind.SMOOTHPOINT for curves"
+    }
+   ],
+   "gotchas": [
+    "All three coordinates must be set even for straight lines: copy the anchor into both handles.",
+    "Coordinates are interpreted in points against the document resolution, so pixel coordinates land scaled on a non-72 ppi document (unverified; usual fix is to divide by resolution/72 or temporarily work at 72 ppi).",
+    "The object does nothing on its own: nothing appears until pathItems.add() is called with the SubPathInfo array."
+   ],
+   "example": "function pt(x, y) {\n  var p = new PathPointInfo();\n  p.kind = PointKind.CORNERPOINT;\n  p.anchor = [x, y]; p.leftDirection = [x, y]; p.rightDirection = [x, y];\n  return p;\n}",
+   "use_for": [
+    "draw a badge, arrow or frame outline from code",
+    "build a vector mask or clipping path from computed coordinates",
+    "turn data (chart lines) into Photoshop paths"
+   ],
+   "avoid": [
+    "reading an existing path: use PathPoint via subPathItems[].pathPoints"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PathPoint"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SubPathInfo",
+   "id": "class:SubPathInfo",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with art path items/SubPathInfo",
+   "status": "current",
+   "summary": "Script-side description of one contour of a new path: its array of PathPointInfo points, whether it is closed and how it combines with the other contours (add, subtract, intersect, exclude).",
+   "how": "Create with new SubPathInfo(), set entireSubPath to an array of PathPointInfo, closed and operation, then pass an array of SubPathInfo objects to app.activeDocument.pathItems.add(name, subPaths).",
+   "key_members": [
+    {
+     "name": "entireSubPath",
+     "use": "array of PathPointInfo objects in drawing order"
+    },
+    {
+     "name": "closed",
+     "use": "true closes the contour back to its first point (needed to fill or select it)"
+    },
+    {
+     "name": "operation",
+     "use": "ShapeOperation.SHAPEADD / SHAPESUBTRACT / SHAPEINTERSECT / SHAPEXOR against the other contours"
+    }
+   ],
+   "gotchas": [
+    "entireSubPath must be an Array of PathPointInfo even though the dictionary types it as a single PathPointInfo.",
+    "pathItems.add expects an array of SubPathInfo, not a single SubPathInfo, even for one contour.",
+    "operation controls how overlapping contours make holes (for example a ring = outer SHAPEADD + inner SHAPESUBTRACT); leaving it unset gives an unclear default (unverified)."
+   ],
+   "example": "function pt(x, y) { var p = new PathPointInfo(); p.kind = PointKind.CORNERPOINT; p.anchor = [x, y]; p.leftDirection = [x, y]; p.rightDirection = [x, y]; return p; }\nvar sp = new SubPathInfo();\nsp.operation = ShapeOperation.SHAPEXOR;\nsp.closed = true;\nsp.entireSubPath = [pt(100, 100), pt(400, 100), pt(250, 350)]; // PathPointInfo array\napp.activeDocument.pathItems.add(\"Triangle\", [sp]);",
+   "use_for": [
+    "build a multi-contour path such as a ring or a cut-out letter",
+    "create a closed selection shape to fill or mask",
+    "generate clipping paths for product cut-outs"
+   ],
+   "avoid": [
+    "inspecting an existing path: use SubPathItem"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "example called pt() defined only on the PathPointInfo card; made it self-contained"
+   }
+  },
+  {
+   "name": "SubPathItem",
+   "id": "class:SubPathItem",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with art path items/SubPathItem",
+   "status": "current",
+   "summary": "Read-only view of one contour inside an existing Photoshop path: whether it is closed, how it combines with sibling contours and its collection of path points.",
+   "how": "Reach it as app.activeDocument.pathItems[i].subPathItems[j]. Use it to inspect geometry; to make paths use SubPathInfo with pathItems.add().",
+   "key_members": [
+    {
+     "name": "pathPoints",
+     "use": "the PathPoints collection of this contour"
+    },
+    {
+     "name": "closed",
+     "use": "true when the contour is closed"
+    },
+    {
+     "name": "operation",
+     "use": "ShapeOperation this contour applies to the others (add, subtract, intersect, xor)"
+    },
+    {
+     "name": "parent",
+     "use": "the PathItem that owns the contour"
+    },
+    {
+     "name": "typename",
+     "use": "'SubPathItem'"
+    }
+   ],
+   "gotchas": [
+    "Every property is read-only; to change a contour rebuild the whole path with SubPathInfo objects.",
+    "A path made of several shapes (a letter with a counter, a ring) has several sub paths; do not assume subPathItems[0] is the whole outline."
+   ],
+   "example": "var path = app.activeDocument.pathItems.getByName(\"Logo\");\nfor (var i = 0; i < path.subPathItems.length; i++) {\n  var s = path.subPathItems[i];\n  $.writeln(i + \": closed=\" + s.closed + \" op=\" + s.operation + \" points=\" + s.pathPoints.length);\n}",
+   "use_for": [
+    "check that every contour of a clipping path is closed before export",
+    "count shapes in a traced logo path",
+    "copy path geometry to another document or app"
+   ],
+   "avoid": [
+    "creating or editing contours: use SubPathInfo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PathItem",
+    "CDR": "class:SubPath"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Notifier",
+   "id": "class:Notifier",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with notifiers/Notifier",
+   "status": "current",
+   "summary": "One registered event handler: when the given Photoshop event (for example document open or new document) fires, Photoshop runs the attached script file. It is the scripting side of File > Scripts > Script Events Manager.",
+   "how": "Created through app.notifiers.add(event, file, eventClass); each entry of app.notifiers is a Notifier. Nothing fires unless app.notifiersEnabled is true.",
+   "key_members": [
+    {
+     "name": "event",
+     "use": "four-character event ID or string ID the handler listens for, e.g. 'Opn ' or 'Mk  '"
+    },
+    {
+     "name": "eventClass",
+     "use": "optional class filter, e.g. 'Dcmn' so 'Mk  ' only fires for new documents"
+    },
+    {
+     "name": "eventFile",
+     "use": "the script file (File) that runs when the event fires"
+    },
+    {
+     "name": "remove",
+     "use": "unregister this one handler"
+    },
+    {
+     "name": "removeAll",
+     "use": "unregister every handler"
+    },
+    {
+     "name": "parent",
+     "use": "the Application (the object that owns app.notifiers) (unverified)"
+    },
+    {
+     "name": "typename",
+     "use": "'Notifier'"
+    }
+   ],
+   "gotchas": [
+    "Events raised while a script is running generally do not trigger notifiers (they happen inside a 'play script' event), so a pipeline that opens files by script will not fire its own open handler.",
+    "All properties are read-only: to change the event or file, remove the notifier and add a new one.",
+    "Notifiers persist across Photoshop restarts like Script Events Manager entries, so a test handler left behind keeps firing for the user (unverified)."
+   ],
+   "example": "app.notifiersEnabled = true;\nvar n = app.notifiers.add(\"Opn \", File(\"C:/scripts/on_open.jsx\"));\n$.writeln(n.event + \" -> \" + n.eventFile.fsName);\nn.remove();",
+   "use_for": [
+    "auto-apply a colour profile check or watermark when a document opens",
+    "log or tag every new document for a brand pipeline"
+   ],
+   "avoid": [
+    "unattended pipelines that open files by script: the handler will not fire; call the step directly"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "eventFile said '(or action)': the batch only gives a file to execute; parent now names the Application, marked unverified"
+   }
+  },
+  {
+   "name": "ArtLayers",
+   "id": "class:ArtLayers",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/ArtLayers",
+   "status": "current",
+   "summary": "The collection of non-group layers (pixel, text, adjustment, smart object, fill) directly inside a document or layer group, with methods to add a new empty layer and find layers by name or index.",
+   "how": "Reach it as app.activeDocument.artLayers (top level only) or someLayerSet.artLayers for layers inside a group.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new empty layer and return it"
+    },
+    {
+     "name": "getByName",
+     "use": "first art layer with that exact name"
+    },
+    {
+     "name": "[]",
+     "use": "art layer by index, 0 = topmost"
+    },
+    {
+     "name": "length",
+     "use": "number of art layers in this container"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every art layer in this container"
+    },
+    {
+     "name": "parent",
+     "use": "the Document or LayerSet that owns the collection"
+    },
+    {
+     "name": "typename",
+     "use": "'ArtLayers'"
+    }
+   ],
+   "gotchas": [
+    "Only covers layers directly in this container: layers inside groups are not listed, walk layerSets recursively or use the group's own artLayers.",
+    "getByName raises an error when nothing matches instead of returning null (unverified); wrap it in try/catch.",
+    "add() inserts relative to the active layer, so set the active layer first if position matters (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar lyr = doc.artLayers.add();\nlyr.name = \"Texture\";\nvar photo = doc.artLayers.getByName(\"Photo\");\n$.writeln(doc.artLayers.length + \" art layers, top = \" + doc.artLayers[0].name);",
+   "use_for": [
+    "add an empty layer for a texture, glow or text in a poster build",
+    "find the hero photo layer of a template by name",
+    "loop over a template's layers to swap content"
+   ],
+   "avoid": [
+    "listing groups too: use Layers (art layers and layer sets together)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Layers",
+    "CDR": "class:Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "add() key_member stated 'above the active layer' as fact while the gotcha marks it unverified; key_member no longer claims a position"
+   }
+  },
+  {
+   "name": "Channels",
+   "id": "class:Channels",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/Channels",
+   "status": "current",
+   "summary": "The collection of a document's channels: the colour component channels (for example Red, Green, Blue) plus any alpha (saved selection) and spot colour channels.",
+   "how": "Reach it as app.activeDocument.channels; add() creates a new alpha channel.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new alpha channel and return it"
+    },
+    {
+     "name": "getByName",
+     "use": "channel by name, e.g. 'Red' or a saved mask name"
+    },
+    {
+     "name": "[]",
+     "use": "channel by index; component channels come first"
+    },
+    {
+     "name": "length",
+     "use": "number of channels"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete channels in the collection"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'Channels'"
+    }
+   ],
+   "gotchas": [
+    "Component channels cannot be deleted, so removeAll on an RGB/CMYK document will not leave an empty collection and may raise an error (unverified).",
+    "Channel names are localised in non-English Photoshop builds ('Red' may not exist); prefer indices for component channels.",
+    "The composite channel (RGB / CMYK) is not an entry of the collection (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar mask = doc.channels.add();\nmask.name = \"Cutout\";\ndoc.selection.selectAll(); // store() needs an active selection\ndoc.selection.store(mask);\n$.writeln(doc.channels.length + \" channels; first = \" + doc.channels[0].name);",
+   "use_for": [
+    "save a subject selection as an alpha channel for later masking",
+    "read a single colour channel to build a luminosity mask",
+    "check a print file for stray alpha or spot channels"
+   ],
+   "avoid": [
+    "layer masks: those live on the layer, not in Channels"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "example stored a selection that may not exist; added selection.selectAll() first"
+   }
+  },
+  {
+   "name": "ColorSamplers",
+   "id": "class:ColorSamplers",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/ColorSamplers",
+   "status": "current",
+   "summary": "The document's colour sampler markers (Color Sampler tool points) whose colour values appear in the Info panel; the collection adds a new sampler at a position.",
+   "how": "Reach it as app.activeDocument.colorSamplers; add(position) takes an [x, y] UnitValue pair and returns a ColorSampler.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "place a new sampler at [x, y] and return it"
+    },
+    {
+     "name": "getByName",
+     "use": "sampler by name"
+    },
+    {
+     "name": "[]",
+     "use": "sampler by index"
+    },
+    {
+     "name": "length",
+     "use": "number of samplers in the document"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'ColorSamplers'"
+    }
+   ],
+   "gotchas": [
+    "Photoshop caps the number of samplers per document and add() fails past the cap (unverified; the cap is not in the harvest).",
+    "Plain numbers in the position are read in the current ruler units; pass UnitValue(..., 'px') to be explicit.",
+    "The ExtendScript dictionary lists no removeAll on this collection (the COM type library does: ColorSamplers.RemoveAll); in a .jsx use ColorSampler.removeAll or call remove() on each sampler."
+   ],
+   "example": "var doc = app.activeDocument;\nvar s = doc.colorSamplers.add([UnitValue(120, \"px\"), UnitValue(80, \"px\")]);\n$.writeln(s.color.rgb.hexValue + \" (\" + doc.colorSamplers.length + \" samplers)\");",
+   "use_for": [
+    "read exact colours at fixed points for a brand colour check",
+    "measure skin or product tones before and after a grade"
+   ],
+   "avoid": [
+    "averaging an area: samplers read a point (or the tool's sample size), not a region"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented '10 samplers' cap; the 'no removeAll' gotcha ignored the batch's COM RemoveAll and the element's removeAll, rewritten"
+   }
+  },
+  {
+   "name": "CountItems",
+   "id": "class:CountItems",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/CountItems",
+   "status": "current",
+   "summary": "The document's Count tool markers (numbered dots used to count objects in an image); the collection adds a marker at a position.",
+   "how": "Reach it as app.activeDocument.countItems; add(position) takes an [x, y] pair and returns a CountItem.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "place a numbered count marker at [x, y]"
+    },
+    {
+     "name": "length",
+     "use": "how many count markers the document holds"
+    },
+    {
+     "name": "getByName",
+     "use": "count item by name"
+    },
+    {
+     "name": "[]",
+     "use": "count item by index"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'CountItems'"
+    }
+   ],
+   "gotchas": [
+    "Count markers are non-printing annotations; they do not appear in exported pixels.",
+    "Markers belong to Count groups in the UI; how scripted markers choose a group is not exposed here (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.countItems.add([UnitValue(200, \"px\"), UnitValue(150, \"px\")]);\n$.writeln(doc.countItems.length + \" count markers\");",
+   "use_for": [
+    "mark and number items on a product sheet or proof for review",
+    "read how many items a reviewer counted"
+   ],
+   "avoid": [
+    "visible numbered callouts on the design: draw text layers instead, count markers do not print"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Documents",
+   "id": "class:Documents",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/Documents",
+   "status": "current",
+   "summary": "The collection of documents open in Photoshop; add() creates a new document with size, resolution, colour mode, fill, bit depth and profile.",
+   "how": "Reach it as app.documents; the new document from add() becomes app.activeDocument.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "new document: width, height, resolution, name, mode, initialFill, pixelAspectRatio, bitsPerChannel, colorProfileName"
+    },
+    {
+     "name": "length",
+     "use": "number of open documents"
+    },
+    {
+     "name": "getByName",
+     "use": "open document by its window name"
+    },
+    {
+     "name": "[]",
+     "use": "open document by index"
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "'Documents'"
+    }
+   ],
+   "gotchas": [
+    "Plain numbers for width/height are read in the current ruler units (app.preferences.rulerUnits); pass UnitValue(1080, 'px') to get pixels regardless of preferences.",
+    "Open documents may belong to the user or another pipeline: never close or modify a document you did not open; create your own and close only that.",
+    "colorProfileName must match an installed profile name exactly or the call fails (unverified)."
+   ],
+   "example": "var doc = app.documents.add(UnitValue(1080, \"px\"), UnitValue(1350, \"px\"), 72, \"IG post\",\n  NewDocumentMode.RGB, DocumentFill.WHITE, 1, BitsPerChannelType.EIGHT, \"sRGB IEC61966-2.1\");\n$.writeln(app.documents.length + \" open\");",
+   "use_for": [
+    "create a social post, poster or banner canvas at an exact size",
+    "set up a CMYK print document at 300 ppi",
+    "find an already open template by name"
+   ],
+   "avoid": [
+    "opening a file: use app.open(File(...)), not documents.add"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Documents",
+    "CDR": "class:Documents"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Guides",
+   "id": "class:Guides",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/Guides",
+   "status": "current",
+   "summary": "The document's ruler guides; add() places a new horizontal or vertical guide at a coordinate.",
+   "how": "Reach it as app.activeDocument.guides; add(Direction.VERTICAL | Direction.HORIZONTAL, coordinate) returns a Guide.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "new guide: direction plus coordinate from the image origin"
+    },
+    {
+     "name": "length",
+     "use": "number of guides"
+    },
+    {
+     "name": "getByName",
+     "use": "guide by name"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'Guides'"
+    }
+   ],
+   "gotchas": [
+    "Pass the coordinate as UnitValue(..., 'px'); a plain number is read in the current ruler units.",
+    "This harvest lists no index accessor or removeAll on Guides; index access (guides[i]) works in practice (unverified). Remove guides one by one with Guide.remove; Guide also lists removeAll (unverified whether it clears every guide).",
+    "Guides are non-printing and do not survive export to flat formats."
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.guides.add(Direction.VERTICAL, UnitValue(540, \"px\"));\ndoc.guides.add(Direction.HORIZONTAL, UnitValue(675, \"px\"));\n$.writeln(doc.guides.length + \" guides\");",
+   "use_for": [
+    "lay out margins, safe zones and centre lines on a social or print template",
+    "mark bleed and trim for print"
+   ],
+   "avoid": [
+    "visible layout lines in the output: draw shape layers instead"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha said guides can only be removed one by one; the batch lists removeAll on Guide, now mentioned"
+   }
+  },
+  {
+   "name": "HistoryStates",
+   "id": "class:HistoryStates",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/HistoryStates",
+   "status": "current",
+   "summary": "Read-only list of the document's History panel states (and snapshots); used to inspect or roll back to an earlier state.",
+   "how": "Reach it as app.activeDocument.historyStates; jump back by assigning one of its entries to app.activeDocument.activeHistoryState.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of states currently kept"
+    },
+    {
+     "name": "[]",
+     "use": "history state by index, 0 = oldest"
+    },
+    {
+     "name": "getByName",
+     "use": "history state by its step name, e.g. 'Gaussian Blur'"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'HistoryStates'"
+    }
+   ],
+   "gotchas": [
+    "There is no add(): states are created by edits; the number kept is capped by the History States preference, so old states roll off during long scripts.",
+    "Each scripted step adds its own state; wrap a whole script in Document.suspendHistory to collapse it into one undoable step.",
+    "Step names are localised and repeat (several 'Gaussian Blur' states), so getByName returns the first match only."
+   ],
+   "example": "var doc = app.activeDocument;\nvar before = doc.activeHistoryState;\n// ... scripted edits ...\n$.writeln(doc.historyStates.length + \" states\");\ndoc.activeHistoryState = before; // roll back",
+   "use_for": [
+    "try a look and roll back if a check fails",
+    "render variants from one base state without reopening the file"
+   ],
+   "avoid": [
+    "long-term versioning: save files or layer comps instead, history is lost on close"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LayerComps",
+   "id": "class:LayerComps",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/LayerComps",
+   "status": "current",
+   "summary": "The document's layer comps: saved snapshots of layer visibility, position and appearance (styles) that can be re-applied to switch between design variants.",
+   "how": "Reach it as app.activeDocument.layerComps; add(name, comment, appearance, position, visibility) records the current layer state.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "record the current layer state as a named comp; flags choose which aspects are captured"
+    },
+    {
+     "name": "getByName",
+     "use": "comp by name"
+    },
+    {
+     "name": "[]",
+     "use": "comp by index"
+    },
+    {
+     "name": "length",
+     "use": "number of comps"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'LayerComps'"
+    }
+   ],
+   "gotchas": [
+    "A comp only records visibility, position and appearance (layer style) for the flags you pass; pixel and text content changes are not captured.",
+    "Comps can be invalidated (warning icon) when layers are deleted or merged after recording (unverified as a scripting error)."
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.layerComps.add(\"Variant A\", \"red headline\", true, true, true);\n// ... change layer visibility for variant B ...\ndoc.layerComps.add(\"Variant B\", \"\", true, true, true);\ndoc.layerComps.getByName(\"Variant A\").apply();",
+   "use_for": [
+    "keep A/B variants of an ad or thumbnail in one PSD",
+    "export several layouts (square, story) from one master file"
+   ],
+   "avoid": [
+    "variants that differ in text or pixels: comps do not store content, use separate layers or files"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layers",
+   "id": "class:Layers",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/Layers",
+   "status": "current",
+   "summary": "The collection of all top-level layers of a document or group, art layers and layer groups (layer sets) together, in stacking order.",
+   "how": "Reach it as app.activeDocument.layers or someLayerSet.layers. Items are ArtLayer or LayerSet; check typename. There is no add(): use artLayers.add() or layerSets.add().",
+   "key_members": [
+    {
+     "name": "[]",
+     "use": "layer by index, 0 = top of the stack"
+    },
+    {
+     "name": "length",
+     "use": "number of layers at this level"
+    },
+    {
+     "name": "getByName",
+     "use": "first layer (art layer or group) with that name"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every layer at this level"
+    },
+    {
+     "name": "parent",
+     "use": "the Document or LayerSet"
+    },
+    {
+     "name": "typename",
+     "use": "'Layers'"
+    }
+   ],
+   "gotchas": [
+    "Only one level deep: layers inside groups appear under that group's own layers collection, so walk recursively for a full tree.",
+    "No add(): new layers come from artLayers.add() or layerSets.add().",
+    "Iterating a large layers collection via the DOM is slow; Action Manager descriptors are much faster for big files (unverified for 27.4)."
+   ],
+   "example": "var layers = app.activeDocument.layers;\nfor (var i = 0; i < layers.length; i++) {\n  var l = layers[i];\n  $.writeln(l.typename + \": \" + l.name);\n}",
+   "use_for": [
+    "walk a template PSD to find placeholders",
+    "list a file's layer structure for QC before export"
+   ],
+   "avoid": [
+    "creating layers: use ArtLayers or LayerSets"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Layers",
+    "CDR": "class:Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LayerSets",
+   "id": "class:LayerSets",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/LayerSets",
+   "status": "current",
+   "summary": "The collection of layer groups (folders in the Layers panel) directly inside a document or group; add() creates a new empty group.",
+   "how": "Reach it as app.activeDocument.layerSets or someLayerSet.layerSets for nested groups.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new empty layer group and return it"
+    },
+    {
+     "name": "getByName",
+     "use": "group by name"
+    },
+    {
+     "name": "[]",
+     "use": "group by index, 0 = topmost"
+    },
+    {
+     "name": "length",
+     "use": "number of groups at this level"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every group (and its contents) at this level"
+    },
+    {
+     "name": "parent",
+     "use": "the Document or LayerSet"
+    },
+    {
+     "name": "typename",
+     "use": "'LayerSets'"
+    }
+   ],
+   "gotchas": [
+    "Only lists groups at one level; nested groups live in each group's own layerSets.",
+    "removeAll deletes the groups together with all layers inside them.",
+    "To put new layers inside a group, add them through the group's own artLayers / layerSets rather than moving them afterwards."
+   ],
+   "example": "var doc = app.activeDocument;\nvar grp = doc.layerSets.add();\ngrp.name = \"Headline\";\nvar title = grp.artLayers.add();\ntitle.name = \"Title\";",
+   "use_for": [
+    "organise a generated poster into Background / Subject / Type groups",
+    "find the group that holds a template's swappable content"
+   ],
+   "avoid": [
+    "listing all layers: use Layers"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Notifiers",
+   "id": "class:Notifiers",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/Notifiers",
+   "status": "current",
+   "summary": "The application's list of registered event handlers (Script Events Manager entries); add() registers a script to run when a Photoshop event fires.",
+   "how": "Reach it as app.notifiers (the dictionary says 'in the document', but it hangs off the Application). Turn on app.notifiersEnabled for any of them to fire.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "register: event ID, script File, optional event class"
+    },
+    {
+     "name": "removeAll",
+     "use": "unregister every handler"
+    },
+    {
+     "name": "length",
+     "use": "number of registered handlers"
+    },
+    {
+     "name": "getByName",
+     "use": "notifier by name"
+    },
+    {
+     "name": "[]",
+     "use": "notifier by index"
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "'Notifiers'"
+    }
+   ],
+   "gotchas": [
+    "Nothing fires while app.notifiersEnabled is false.",
+    "Events produced by scripts generally do not trigger notifiers.",
+    "removeAll also deletes handlers the user set up in Script Events Manager; remove only the ones you added."
+   ],
+   "example": "app.notifiersEnabled = true;\napp.notifiers.add(\"Mk  \", File(\"C:/scripts/on_new_doc.jsx\"), \"Dcmn\");\n$.writeln(app.notifiers.length + \" notifiers\");",
+   "use_for": [
+    "auto-run a brand setup script whenever a new document is created",
+    "auto-check files when a designer opens them"
+   ],
+   "avoid": [
+    "scripted batch runs: call the step directly instead of relying on an event"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PathItems",
+   "id": "class:PathItems",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/PathItems",
+   "status": "current",
+   "summary": "The document's paths (the Paths panel entries: saved paths, work path, vector mask and clipping paths); add() creates a new named path from SubPathInfo data.",
+   "how": "Reach it as app.activeDocument.pathItems; add(name, subPathInfoArray) returns a PathItem you can select, fill, stroke or make a clipping path.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a named path from an array of SubPathInfo"
+    },
+    {
+     "name": "getByName",
+     "use": "path by its Paths panel name"
+    },
+    {
+     "name": "[]",
+     "use": "path by index"
+    },
+    {
+     "name": "length",
+     "use": "number of paths"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'PathItems'"
+    }
+   ],
+   "gotchas": [
+    "add() needs an array of SubPathInfo (each with a PathPointInfo array), not plain coordinates.",
+    "Path coordinates are scaled by document resolution (points vs pixels) on non-72 ppi files (unverified).",
+    "A shape layer's vector mask is listed among the paths only while that layer is selected (unverified)."
+   ],
+   "example": "function pt(x, y) { var p = new PathPointInfo(); p.kind = PointKind.CORNERPOINT; p.anchor = [x, y]; p.leftDirection = [x, y]; p.rightDirection = [x, y]; return p; }\nvar sp = new SubPathInfo();\nsp.operation = ShapeOperation.SHAPEXOR; sp.closed = true;\nsp.entireSubPath = [pt(100, 100), pt(400, 100), pt(400, 300), pt(100, 300)];\nvar doc = app.activeDocument;\nvar path = doc.pathItems.add(\"Badge\", [sp]);\npath.makeSelection(0, true);\n$.writeln(doc.pathItems.getByName(\"Badge\").subPathItems.length);",
+   "use_for": [
+    "build a clipping path for a product cut-out",
+    "turn a computed outline into a selection to fill or mask",
+    "check a supplied image for an existing clipping path"
+   ],
+   "avoid": [
+    "vector shape layers with fill: a path alone does not render; fill or stroke it, or use a shape layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PathItems"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "example used an undefined sp variable; now builds its own SubPathInfo so it runs"
+   }
+  },
+  {
+   "name": "PathPoints",
+   "id": "class:PathPoints",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/PathPoints",
+   "status": "current",
+   "summary": "Read-only collection of the PathPoint objects that make up one sub path of an existing path.",
+   "how": "Reach it as app.activeDocument.pathItems[i].subPathItems[j].pathPoints.",
+   "key_members": [
+    {
+     "name": "[]",
+     "use": "point by index in drawing order"
+    },
+    {
+     "name": "length",
+     "use": "number of points in the sub path"
+    },
+    {
+     "name": "getByName",
+     "use": "point by name (points rarely have useful names)"
+    },
+    {
+     "name": "parent",
+     "use": "the SubPathItem"
+    },
+    {
+     "name": "typename",
+     "use": "'PathPoints'"
+    }
+   ],
+   "gotchas": [
+    "No add or remove: the points of an existing path cannot be edited through this collection; rebuild the path with PathPointInfo.",
+    "Coordinates of the points are in points, not pixels, on non-72 ppi documents (unverified)."
+   ],
+   "example": "var pts = app.activeDocument.pathItems[0].subPathItems[0].pathPoints;\nfor (var i = 0; i < pts.length; i++) $.writeln(pts[i].anchor);",
+   "use_for": [
+    "export a Photoshop path's points to another tool",
+    "measure a path's bounding points for layout"
+   ],
+   "avoid": [
+    "creating paths: use PathPointInfo + SubPathInfo + pathItems.add"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PathPoints",
+    "CDR": "class:Nodes"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SubPathItems",
+   "id": "class:SubPathItems",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/SubPathItems",
+   "status": "current",
+   "summary": "Read-only collection of the contours (SubPathItem objects) that make up one existing path.",
+   "how": "Reach it as app.activeDocument.pathItems[i].subPathItems.",
+   "key_members": [
+    {
+     "name": "[]",
+     "use": "contour by index"
+    },
+    {
+     "name": "length",
+     "use": "number of contours in the path"
+    },
+    {
+     "name": "getByName",
+     "use": "contour by name"
+    },
+    {
+     "name": "parent",
+     "use": "the PathItem"
+    },
+    {
+     "name": "typename",
+     "use": "'SubPathItems'"
+    }
+   ],
+   "gotchas": [
+    "Read-only: contours cannot be added or removed here; rebuild the path with SubPathInfo objects.",
+    "Contour order follows drawing order, not visual position."
+   ],
+   "example": "var subs = app.activeDocument.pathItems.getByName(\"Logo\").subPathItems;\n$.writeln(subs.length + \" sub paths\");\nvar first = subs[0];",
+   "use_for": [
+    "count the separate shapes in a traced path",
+    "loop contours to copy a path's geometry"
+   ],
+   "avoid": [
+    "creating contours: use SubPathInfo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:SubPaths"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFonts",
+   "id": "class:TextFonts",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Collections/TextFonts",
+   "status": "current",
+   "summary": "The collection of fonts installed and available to Photoshop, each a TextFont with name, family, style and PostScript name.",
+   "how": "Reach it as app.fonts. Use it to resolve a family/style to the PostScript name that TextItem.font expects.",
+   "key_members": [
+    {
+     "name": "[]",
+     "use": "font by index"
+    },
+    {
+     "name": "length",
+     "use": "number of available fonts (often thousands)"
+    },
+    {
+     "name": "getByName",
+     "use": "font by name"
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "'TextFonts'"
+    }
+   ],
+   "gotchas": [
+    "TextItem.font takes the PostScript name (e.g. 'Montserrat-Bold'), not the family name shown in menus; look it up here first.",
+    "Which name getByName matches (display name or PostScript name) is not stated in the dictionary; loop and compare family/style when unsure (unverified).",
+    "Looping the whole collection is slow on machines with many fonts; cache the result for a run.",
+    "Adobe Fonts activated after Photoshop started may not appear until restart (unverified)."
+   ],
+   "example": "var want = \"Montserrat\", psName = null;\nfor (var i = 0; i < app.fonts.length; i++) {\n  if (app.fonts[i].family == want) { psName = app.fonts[i].postScriptName; break; }\n}\n$.writeln(psName || \"missing font\");",
+   "use_for": [
+    "verify a brand font is installed before building a poster",
+    "pick the exact weight for a headline text layer"
+   ],
+   "avoid": [
+    "assuming a family name works as TextItem.font: always resolve the PostScript name"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextFonts",
+    "CDR": "class:FontList"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CMYKColor",
+   "id": "class:CMYKColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/CMYKColor",
+   "status": "current",
+   "summary": "CMYK ink-percentage colour (cyan, magenta, yellow, black, each 0 to 100), usually used as the cmyk part of a SolidColor.",
+   "how": "Normally reached as someSolidColor.cmyk (setting it switches the SolidColor to CMYK); can also be created with new CMYKColor() and assigned to solidColor.cmyk.",
+   "key_members": [
+    {
+     "name": "cyan",
+     "use": "cyan ink 0-100"
+    },
+    {
+     "name": "magenta",
+     "use": "magenta ink 0-100"
+    },
+    {
+     "name": "yellow",
+     "use": "yellow ink 0-100"
+    },
+    {
+     "name": "black",
+     "use": "black (K) ink 0-100"
+    }
+   ],
+   "gotchas": [
+    "Values are percentages 0-100, not 0-255 or 0-1.",
+    "Reading .cmyk from an RGB SolidColor gives a converted value that depends on Edit > Color Settings, so it may not match a printer's spec.",
+    "Rich black for print must be set explicitly by adding cyan, magenta and yellow under black; black = 100 with the other inks at 0 is plain K."
+   ],
+   "example": "var c = new SolidColor();\nc.cmyk.cyan = 100; c.cmyk.magenta = 60; c.cmyk.yellow = 0; c.cmyk.black = 20;\napp.foregroundColor = c;",
+   "use_for": [
+    "set exact brand ink values for print fills",
+    "specify rich black for large print areas"
+   ],
+   "avoid": [
+    "screen-only work: use RGBColor / hexValue"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:CMYKColor",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 60/40/40/100 rich-black recipe (not in the batch)"
+   }
+  },
+  {
+   "name": "Color",
+   "id": "class:Color",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/Color",
+   "status": "current",
+   "summary": "Abstract base type of Photoshop's colour classes (RGBColor, CMYKColor, GrayColor, HSBColor, LabColor, NoColor); it has no members of its own.",
+   "how": "Never constructed or used directly; it is the declared superclass. Work with SolidColor and its rgb / cmyk / hsb / lab / gray parts.",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "no harvested members: abstract base type only; use SolidColor or a concrete colour class"
+    }
+   ],
+   "gotchas": [
+    "new Color() is not a useful object; build colours with new SolidColor() (unverified that the constructor throws)."
+   ],
+   "example": "var c = app.foregroundColor; // a SolidColor\nif (c.model == ColorModel.RGB) $.writeln(c.rgb.hexValue);",
+   "use_for": [
+    "type documentation only: knowing which classes count as a colour"
+   ],
+   "avoid": [
+    "any direct use: use SolidColor"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Color",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GrayColor",
+   "id": "class:GrayColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/GrayColor",
+   "status": "current",
+   "summary": "Grayscale colour with one value, gray, from 0 to 100, used as the gray part of a SolidColor.",
+   "how": "Normally reached as someSolidColor.gray; setting gray.gray switches the SolidColor model to grayscale.",
+   "key_members": [
+    {
+     "name": "gray",
+     "use": "gray value 0-100"
+    }
+   ],
+   "gotchas": [
+    "The value reads like a K (ink) percentage, so 100 is black and 0 is white, the opposite of an RGB brightness (unverified).",
+    "The final grey a value produces depends on the document's gray working space (dot gain)."
+   ],
+   "example": "var c = new SolidColor();\nc.gray.gray = 75;\napp.backgroundColor = c;",
+   "use_for": [
+    "set neutral greys for mono print jobs",
+    "fill grayscale masks with an exact tone"
+   ],
+   "avoid": [
+    "colour designs: use RGBColor or CMYKColor"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:GrayColor",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HSBColor",
+   "id": "class:HSBColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/HSBColor",
+   "status": "current",
+   "summary": "Hue / saturation / brightness colour (hue 0-360 degrees, saturation and brightness 0-100), used as the hsb part of a SolidColor.",
+   "how": "Reached as someSolidColor.hsb; setting its values switches the SolidColor to HSB, and .rgb / .cmyk then give converted values.",
+   "key_members": [
+    {
+     "name": "hue",
+     "use": "hue angle 0-360"
+    },
+    {
+     "name": "saturation",
+     "use": "saturation 0-100"
+    },
+    {
+     "name": "brightness",
+     "use": "brightness 0-100"
+    }
+   ],
+   "gotchas": [
+    "Photoshop documents have no HSB mode; the colour is converted to the document's mode when used.",
+    "Hue is in degrees 0-360 while saturation and brightness are percentages."
+   ],
+   "example": "var c = new SolidColor();\nc.hsb.hue = 210; c.hsb.saturation = 80; c.hsb.brightness = 90;\napp.foregroundColor = c;\n$.writeln(c.rgb.hexValue);",
+   "use_for": [
+    "generate harmonious palettes by rotating hue",
+    "make tints and shades of a brand colour by changing brightness"
+   ],
+   "avoid": [
+    "exact print specs: use CMYKColor"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LabColor",
+   "id": "class:LabColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/LabColor",
+   "status": "current",
+   "summary": "CIE Lab colour (L lightness 0-100, A and B from -128 to 127), device-independent, used as the lab part of a SolidColor.",
+   "how": "Reached as someSolidColor.lab; setting L / A / B switches the SolidColor to Lab.",
+   "key_members": [
+    {
+     "name": "L",
+     "use": "lightness 0-100"
+    },
+    {
+     "name": "A",
+     "use": "green (-) to red (+), -128 to 127"
+    },
+    {
+     "name": "B",
+     "use": "blue (-) to yellow (+), -128 to 127"
+    }
+   ],
+   "gotchas": [
+    "Property names are upper-case L, A, B; lower-case .l / .a / .b are not the harvested names.",
+    "Lab values outside the document's gamut are clipped when the colour is used in RGB or CMYK."
+   ],
+   "example": "var c = new SolidColor();\nc.lab.L = 55; c.lab.A = 70; c.lab.B = 40;\napp.foregroundColor = c;",
+   "use_for": [
+    "match a measured brand colour given in Lab",
+    "compare colour differences device-independently"
+   ],
+   "avoid": [
+    "simple screen colours: use RGBColor.hexValue"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:LabColor",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "NoColor",
+   "id": "class:NoColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/NoColor",
+   "status": "current",
+   "summary": "Represents a missing colour (no colour); it has no members of its own and Photoshop's DOM rarely uses it.",
+   "how": "Created with new NoColor() (the COM type library marks it creatable). Where Photoshop properties accept or return it is not documented in the harvest.",
+   "key_members": [
+    {
+     "name": "NoColor",
+     "use": "no harvested members: the constructor new NoColor() is the whole API"
+    }
+   ],
+   "gotchas": [
+    "Unlike Illustrator, Photoshop has no 'none' fill on layers through this class; to show no fill hide or delete the layer or set its fill opacity to 0 (unverified that any Photoshop property accepts NoColor)."
+   ],
+   "example": "var none = new NoColor(); // the constructor is the whole harvested API",
+   "use_for": [
+    "recognising a 'no colour' value read back from a script"
+   ],
+   "avoid": [
+    "removing a fill in Photoshop: hide the layer or set fill opacity to 0 instead"
+   ],
+   "confidence": "low",
+   "equivalents": {
+    "AI": "class:NoColor"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RGBColor",
+   "id": "class:RGBColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Color classes for Adobe Photoshop/RGBColor",
+   "status": "current",
+   "summary": "RGB colour with red, green and blue channels 0-255 plus a hexValue string, used as the rgb part of a SolidColor.",
+   "how": "Reached as someSolidColor.rgb; set either the three channels or hexValue. Setting it switches the SolidColor to RGB.",
+   "key_members": [
+    {
+     "name": "red",
+     "use": "red 0-255"
+    },
+    {
+     "name": "green",
+     "use": "green 0-255"
+    },
+    {
+     "name": "blue",
+     "use": "blue 0-255"
+    },
+    {
+     "name": "hexValue",
+     "use": "'RRGGBB' hex string, e.g. 'FF5A1F'"
+    }
+   ],
+   "gotchas": [
+    "hexValue takes six hex digits without the leading '#' (unverified whether '#' is rejected or ignored).",
+    "Channels use the 0-255 scale even in 16- and 32-bit documents.",
+    "Values can be fractional; round before comparing colours."
+   ],
+   "example": "var c = new SolidColor();\nc.rgb.hexValue = \"FF5A1F\";\n$.writeln(c.rgb.red + \",\" + c.rgb.green + \",\" + c.rgb.blue);\napp.foregroundColor = c;",
+   "use_for": [
+    "apply a brand hex colour to fills, text and strokes",
+    "read back a sampled colour as hex for a style guide"
+   ],
+   "avoid": [
+    "print ink specs: use CMYKColor"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:RGBColor",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DocumentPrintSettings",
+   "id": "class:DocumentPrintSettings",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "omv/DocumentPrintSettings",
+   "status": "current",
+   "summary": "The document's print settings: printer, copies, colour handling and print profile, rendering intent, page position and scale, and printer marks (crop marks, registration marks, colour bars, labels).",
+   "how": "Reach it as app.activeDocument.printSettings; set the properties, then print with the Document's print methods.",
+   "key_members": [
+    {
+     "name": "activePrinter",
+     "use": "name of the printer to use"
+    },
+    {
+     "name": "printers",
+     "use": "read-only list of available printer names"
+    },
+    {
+     "name": "copies",
+     "use": "number of copies"
+    },
+    {
+     "name": "colorHandling",
+     "use": "PrintColorHandling: printer manages, Photoshop manages, or separations"
+    },
+    {
+     "name": "printSpace",
+     "use": "printer colour profile name, or nothing for the source space"
+    },
+    {
+     "name": "renderIntent",
+     "use": "colour conversion intent when the print space differs"
+    },
+    {
+     "name": "hardProof",
+     "use": "print a hard proof"
+    },
+    {
+     "name": "cornerCropMarks",
+     "use": "corner crop marks"
+    },
+    {
+     "name": "registrationMarks",
+     "use": "registration marks"
+    },
+    {
+     "name": "colorBars",
+     "use": "colour calibration bars"
+    },
+    {
+     "name": "bleedWidth",
+     "use": "bleed width"
+    },
+    {
+     "name": "setPagePosition",
+     "use": "position (DocPositionStyle), posX, posY and scale of the image on the page"
+    },
+    {
+     "name": "docPosition",
+     "use": "read-only current position style"
+    },
+    {
+     "name": "scale",
+     "use": "read-only current scale"
+    }
+   ],
+   "gotchas": [
+    "docPosition, posX, posY and scale are read-only; change placement through setPagePosition.",
+    "Printing is a side effect that cannot be undone: never send a print from an unattended run without the user's go-ahead.",
+    "activePrinter must match a name in printers exactly (unverified)."
+   ],
+   "example": "var ps = app.activeDocument.printSettings;\n$.writeln(ps.printers);\nps.copies = 1;\nps.cornerCropMarks = true;\nps.setPagePosition(DocPositionStyle.PRINTCENTERED);",
+   "use_for": [
+    "prepare a proof print with crop and registration marks",
+    "set colour-managed printing with a paper profile"
+   ],
+   "avoid": [
+    "PDF output for a print shop: save as Photoshop PDF instead of printing"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:PrintOptions",
+    "CDR": "class:PrintSettings"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "global",
+   "id": "class:global",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "omv/global",
+   "status": "current",
+   "summary": "The ExtendScript global scope inside Photoshop: the app object plus standard JavaScript globals (eval, parseInt, URI encoding) and the alert / confirm / prompt dialogs and BridgeTalk.",
+   "how": "Available everywhere in a Photoshop .jsx without a prefix; app is the entry point to the whole DOM.",
+   "key_members": [
+    {
+     "name": "app",
+     "use": "the Photoshop Application object, root of the DOM"
+    },
+    {
+     "name": "decodeURIComponent",
+     "use": "decode a percent-encoded payload sent over COM"
+    },
+    {
+     "name": "encodeURIComponent",
+     "use": "percent-encode a result string before returning it"
+    },
+    {
+     "name": "eval",
+     "use": "run a decoded script payload"
+    },
+    {
+     "name": "uneval",
+     "use": "serialise an object to source text for returning structured results"
+    },
+    {
+     "name": "parseInt",
+     "use": "parse integers from strings"
+    },
+    {
+     "name": "parseFloat",
+     "use": "parse numbers from strings"
+    },
+    {
+     "name": "isNaN",
+     "use": "check parsed numbers"
+    },
+    {
+     "name": "alert",
+     "use": "modal message box"
+    },
+    {
+     "name": "confirm",
+     "use": "modal Yes/No box"
+    },
+    {
+     "name": "prompt",
+     "use": "modal text input box"
+    },
+    {
+     "name": "localize",
+     "use": "pick a localised string"
+    },
+    {
+     "name": "BridgeTalk",
+     "use": "send scripts to other Adobe apps"
+    }
+   ],
+   "gotchas": [
+    "alert, confirm and prompt are modal: in a COM or command-line driven run they block until someone clicks, which looks like a hang.",
+    "ExtendScript is ES3: no JSON object by default, no let/const or arrow functions; use uneval/eval or a bundled JSON polyfill.",
+    "Payloads with backslashes and quotes get mangled crossing COM; send them percent-encoded and run eval(decodeURIComponent(...)) first."
+   ],
+   "example": "var PAYLOAD = encodeURIComponent(\"({width: '1080'})\"); // normally sent percent-encoded by the host\nvar args = eval(decodeURIComponent(PAYLOAD));\nvar w = parseInt(args.width, 10);\nif (isNaN(w)) throw new Error(\"bad width\");\nvar result = encodeURIComponent(uneval({ok: true, width: w, docs: app.documents.length}));",
+   "use_for": [
+    "entry point for every automation script",
+    "safe payload transfer from a Python or Node pipeline into Photoshop"
+   ],
+   "avoid": [
+    "user dialogs (alert/confirm/prompt) in unattended runs: return values instead"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "example read an undefined PAYLOAD variable; it now defines one so the snippet runs"
+   }
+  },
+  {
+   "name": "Guide",
+   "id": "class:Guide",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "omv/Guide",
+   "status": "current",
+   "summary": "One ruler guide in a document: its orientation and its distance from the image origin, editable and removable.",
+   "how": "Returned by app.activeDocument.guides.add(...) or read from the document's guides collection.",
+   "key_members": [
+    {
+     "name": "direction",
+     "use": "Direction.HORIZONTAL or Direction.VERTICAL"
+    },
+    {
+     "name": "coordinate",
+     "use": "UnitValue position from the image origin"
+    },
+    {
+     "name": "remove",
+     "use": "delete this guide"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all guides"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'Guide'"
+    }
+   ],
+   "gotchas": [
+    "coordinate is a UnitValue; compare with .as('px') rather than as a raw number.",
+    "removeAll is listed on the single guide object; whether it clears every guide in the document is not confirmed (unverified)."
+   ],
+   "example": "var g = app.activeDocument.guides.add(Direction.VERTICAL, UnitValue(100, \"px\"));\n$.writeln(g.direction + \" at \" + g.coordinate);\ng.coordinate = UnitValue(120, \"px\");\ng.remove();",
+   "use_for": [
+    "move a centre or margin guide when resizing a template",
+    "clean up temporary guides after a layout script"
+   ],
+   "avoid": [
+    "anything that must print: guides never render"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Guide"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SolidColor",
+   "id": "class:SolidColor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "omv/SolidColor",
+   "status": "current",
+   "summary": "Photoshop's general colour value: one object that holds a colour and exposes it in every model (RGB, CMYK, Lab, HSB, gray) plus the nearest web-safe colour.",
+   "how": "Create with new SolidColor() and set one model part (e.g. c.rgb.hexValue); read from app.foregroundColor / app.backgroundColor and pass to fills, strokes, text colour and filters that take a colour.",
+   "key_members": [
+    {
+     "name": "rgb",
+     "use": "RGBColor view; set red/green/blue or hexValue"
+    },
+    {
+     "name": "cmyk",
+     "use": "CMYKColor view (ink percentages)"
+    },
+    {
+     "name": "lab",
+     "use": "LabColor view"
+    },
+    {
+     "name": "hsb",
+     "use": "HSBColor view"
+    },
+    {
+     "name": "gray",
+     "use": "GrayColor view"
+    },
+    {
+     "name": "model",
+     "use": "ColorModel the colour was defined in"
+    },
+    {
+     "name": "nearestWebColor",
+     "use": "read-only nearest web-safe RGB colour"
+    },
+    {
+     "name": "isEqual",
+     "use": "compare with another SolidColor"
+    }
+   ],
+   "gotchas": [
+    "Setting any sub-model switches model; reading another model returns a converted value that depends on Edit > Color Settings.",
+    "Assigning to a property such as app.foregroundColor stores a copy: changing the SolidColor afterwards does not update the foreground colour.",
+    "isEqual compares colours, not models; an RGB and a CMYK definition of 'the same' colour may still differ after conversion (unverified)."
+   ],
+   "example": "var c = new SolidColor();\nc.rgb.hexValue = \"1E90FF\";\n$.writeln(c.model + \" C=\" + c.cmyk.cyan + \" web=\" + c.nearestWebColor.hexValue);\nif (!c.isEqual(app.foregroundColor)) app.foregroundColor = c;",
+   "use_for": [
+    "set fill, text and stroke colours from a brand palette",
+    "convert a hex colour to CMYK ink values for print notes"
+   ],
+   "avoid": [
+    "exact conversions for press: get CMYK values from the print vendor's profile instead of Photoshop's default settings"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Color",
+    "CDR": "class:Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Point",
+   "id": "class:Point",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Other Classes/Point",
+   "status": "current",
+   "summary": "Two-element coordinate (x/left, y/top) declared by the DOM for point arguments; in practice Photoshop scripts pass a plain [x, y] array.",
+   "how": "Not usually constructed: wherever the dictionary says Point (e.g. ArtLayer.adjustCurves, path handles) pass an array [x, y] or an array of such pairs.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "horizontal coordinate (same as left)"
+    },
+    {
+     "name": "y",
+     "use": "vertical coordinate (same as top)"
+    },
+    {
+     "name": "left",
+     "use": "horizontal coordinate"
+    },
+    {
+     "name": "top",
+     "use": "vertical coordinate"
+    },
+    {
+     "name": "length",
+     "use": "array length (2)"
+    }
+   ],
+   "gotchas": [
+    "Photoshop methods accept plain arrays where Point is declared; x/left and y/top are aliases of the two elements (unverified that new Point() is constructible in Photoshop).",
+    "Units depend on context: pixels/ruler units for positions, 0-255 levels for curve points."
+   ],
+   "example": "// a Point-typed argument is a plain [x, y] array\nvar curve = [[0, 0], [64, 40], [190, 215], [255, 255]];\napp.activeDocument.activeLayer.adjustCurves(curve);\n$.writeln(curve[1].length + \" values per point\");",
+   "use_for": [
+    "passing curve points to adjustCurves for an S-curve contrast boost",
+    "passing path handle coordinates"
+   ],
+   "avoid": [
+    "UnitValue-typed positions: colour samplers and count items take a UnitPoint pair, guides a single UnitValue"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Point",
+    "CDR": "class:Point"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid said guides take UnitValue pairs; Guides.add takes one UnitValue coordinate"
+   }
+  },
+  {
+   "name": "Rectangle",
+   "id": "class:Rectangle",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Other Classes/Rectangle",
+   "status": "current",
+   "summary": "Four-element rectangle (left, top, right, bottom) with x/y/width/height aliases, as declared by the DOM for bounds-like values.",
+   "how": "Seen as the shape of bounds values; the dictionary types Layer.bounds and Selection.bounds as UnitRect, which come back as a four-element array [left, top, right, bottom] of UnitValue.",
+   "key_members": [
+    {
+     "name": "left",
+     "use": "left edge"
+    },
+    {
+     "name": "top",
+     "use": "top edge"
+    },
+    {
+     "name": "right",
+     "use": "right edge"
+    },
+    {
+     "name": "bottom",
+     "use": "bottom edge"
+    },
+    {
+     "name": "width",
+     "use": "width"
+    },
+    {
+     "name": "height",
+     "use": "height"
+    },
+    {
+     "name": "x",
+     "use": "left edge alias"
+    },
+    {
+     "name": "y",
+     "use": "top edge alias"
+    },
+    {
+     "name": "length",
+     "use": "array length (4)"
+    }
+   ],
+   "gotchas": [
+    "Photoshop bounds are returned as arrays of UnitValue, so element math needs .as('px') or the current ruler units (unverified that a Rectangle object is ever returned instead of an Array).",
+    "Order is left, top, right, bottom, not x, y, width, height."
+   ],
+   "example": "var b = app.activeDocument.activeLayer.bounds; // [left, top, right, bottom]\nvar w = b[2].as(\"px\") - b[0].as(\"px\");\n$.writeln(\"width \" + w + \" px, \" + b.length + \" values\");",
+   "use_for": [
+    "measure a layer to centre or align it on the canvas",
+    "fit text or logos inside a safe zone"
+   ],
+   "avoid": [
+    "assuming width/height elements: compute them from right - left and bottom - top"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Rectangle",
+    "CDR": "class:Rect"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how now says bounds are typed UnitRect in the harvest, not Rectangle"
+   }
+  },
+  {
+   "name": "ArtLayer",
+   "id": "class:ArtLayer",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/ArtLayer",
+   "status": "current",
+   "summary": "A single non-group layer (pixel, text, smart object, fill or adjustment layer) with its lock, mask and clipping properties, plus DOM methods that apply classic filters and adjustments directly to its pixels.",
+   "how": "Reach it as app.activeDocument.activeLayer, app.activeDocument.artLayers[i] / getByName(name), or the return value of artLayers.add(). General layer properties (name, opacity, blendMode, visible, bounds, move, duplicate) come from the Layer superclass.",
+   "key_members": [
+    {
+     "name": "kind",
+     "use": "LayerKind; set LayerKind.TEXT on a new empty layer to make it a text layer"
+    },
+    {
+     "name": "textItem",
+     "use": "the TextItem (contents, font, size, colour) of a text layer"
+    },
+    {
+     "name": "isBackgroundLayer",
+     "use": "set false to turn the locked Background into a normal layer"
+    },
+    {
+     "name": "fillOpacity",
+     "use": "interior opacity 0-100 (layer styles stay visible)"
+    },
+    {
+     "name": "grouped",
+     "use": "true clips this layer to the layer below (clipping mask)"
+    },
+    {
+     "name": "pixelsLocked",
+     "use": "lock pixel editing"
+    },
+    {
+     "name": "transparentPixelsLocked",
+     "use": "confine painting to opaque pixels"
+    },
+    {
+     "name": "layerMaskFeather",
+     "use": "feather of the layer mask 0-250"
+    },
+    {
+     "name": "applyStyle",
+     "use": "apply a layer style preset by name"
+    },
+    {
+     "name": "rasterize",
+     "use": "convert text, shapes or smart objects to pixels"
+    },
+    {
+     "name": "merge",
+     "use": "merge down into the layer below"
+    },
+    {
+     "name": "applyGaussianBlur",
+     "use": "Gaussian Blur with a radius"
+    },
+    {
+     "name": "applyUnSharpMask",
+     "use": "Unsharp Mask sharpening: amount, radius, threshold"
+    },
+    {
+     "name": "applyAddNoise",
+     "use": "Add Noise: amount, distribution, monochromatic"
+    },
+    {
+     "name": "applyMotionBlur",
+     "use": "Motion Blur: angle (int) and radius (blur distance)"
+    },
+    {
+     "name": "adjustLevels",
+     "use": "Levels: input black/white/gamma and output range"
+    },
+    {
+     "name": "adjustCurves",
+     "use": "Curves from an array of [input, output] points"
+    },
+    {
+     "name": "adjustBrightnessContrast",
+     "use": "Brightness/Contrast"
+    },
+    {
+     "name": "desaturate",
+     "use": "remove colour in place"
+    },
+    {
+     "name": "photoFilter",
+     "use": "warming/cooling colour filter with density"
+    }
+   ],
+   "gotchas": [
+    "The apply* and adjust* methods are destructive: they change pixels with no adjustment layer or smart filter, so duplicate the layer first if you need to go back.",
+    "Filters and adjustments need pixels: text, shape and smart object layers must be rasterized first or the call fails (unverified whether smart objects get a smart filter instead).",
+    "kind can only be set on an empty layer; setting LayerKind.TEXT on a layer with pixels fails.",
+    "An active selection restricts filters and adjustments to the selected area.",
+    "Only the classic filters have DOM methods; newer ones (Camera Raw, Neural Filters, Generative Fill) need Action Manager (executeAction)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar t = doc.artLayers.add();\nt.kind = LayerKind.TEXT;\nt.textItem.contents = \"SALE\";\nvar photo = doc.artLayers.getByName(\"Photo\");\nphoto.applyGaussianBlur(8);\nphoto.adjustBrightnessContrast(10, 25);",
+   "use_for": [
+    "add a headline text layer to a poster or thumbnail",
+    "soften or sharpen a product photo layer",
+    "quick tonal fixes (levels, curves, brightness) on a background",
+    "clip a texture to the layer below"
+   ],
+   "avoid": [
+    "non-destructive grading: add adjustment layers or smart filters through Action Manager instead of the adjust*/apply* methods"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Layer",
+    "CDR": "class:Layer"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "applyMotionBlur use said 'angle and distance'; the harvested params are angle and radius"
+   }
+  },
+  {
+   "name": "BatchOptions",
+   "id": "class:BatchOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/BatchOptions",
+   "status": "current",
+   "summary": "Options for app.batch (the File > Automate > Batch command): where processed files go, whether to override the action's open/save steps, file naming and error logging.",
+   "how": "Create with new BatchOptions(), set the properties, and pass it as the last argument of app.batch(inputFiles, actionName, actionSetName, options).",
+   "key_members": [
+    {
+     "name": "destination",
+     "use": "BatchDestinationType.NODESTINATION / SAVEANDCLOSE / FOLDER"
+    },
+    {
+     "name": "destinationFolder",
+     "use": "output folder when destination is FOLDER"
+    },
+    {
+     "name": "overrideSave",
+     "use": "redirect the action's Save As steps to the destination"
+    },
+    {
+     "name": "overrideOpen",
+     "use": "ignore the action's Open steps and use the input files"
+    },
+    {
+     "name": "suppressOpen",
+     "use": "suppress file-open option dialogs"
+    },
+    {
+     "name": "suppressProfile",
+     "use": "suppress colour profile warnings"
+    },
+    {
+     "name": "fileNaming",
+     "use": "array of FileNamingType parts, up to 6"
+    },
+    {
+     "name": "startingSerial",
+     "use": "first serial number for naming"
+    },
+    {
+     "name": "errorFile",
+     "use": "log file for errors instead of stopping on the first one"
+    },
+    {
+     "name": "windowsCompatible",
+     "use": "Windows-safe file names"
+    }
+   ],
+   "gotchas": [
+    "app.batch runs a recorded action from the Actions panel: the action set and action names must already exist in Photoshop.",
+    "fileNaming takes at most 6 FileNamingType entries.",
+    "Without errorFile the batch stops at the first error and may show a dialog, which blocks an unattended run.",
+    "Leave suppressOpen and suppressProfile on for unattended runs, or open-option and profile dialogs can block the batch (unverified)."
+   ],
+   "example": "var o = new BatchOptions();\no.destination = BatchDestinationType.FOLDER;\no.destinationFolder = Folder(\"D:/out\");\no.overrideSave = true;\no.fileNaming = [FileNamingType.DOCUMENTNAMEMIXED, FileNamingType.EXTENSIONLOWER];\no.errorFile = File(\"D:/out/errors.txt\");\napp.batch(Folder(\"D:/in\").getFiles(\"*.jpg\"), \"Resize 1080\", \"PGD Actions\", o);",
+   "use_for": [
+    "run one recorded look or resize action over a folder of product photos",
+    "batch-export social sizes with consistent naming"
+   ],
+   "avoid": [
+    "logic that differs per file: loop over files in the script instead of app.batch"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BitmapConversionOptions",
+   "id": "class:BitmapConversionOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/BitmapConversionOptions",
+   "status": "current",
+   "summary": "Options for converting a document to 1-bit Bitmap mode: output resolution and the method (50% threshold, pattern dither, diffusion dither, halftone screen or custom pattern) with screen frequency, angle and dot shape.",
+   "how": "Create with new BitmapConversionOptions(), set method and its settings, and pass it to app.activeDocument.changeMode(ChangeMode.BITMAP, options).",
+   "key_members": [
+    {
+     "name": "method",
+     "use": "BitmapConversionType: HALFTHRESHOLD, PATTERNDITHER, DIFFUSIONDITHER, HALFTONESCREEN, CUSTOMPATTERN"
+    },
+    {
+     "name": "resolution",
+     "use": "output resolution in pixels per inch"
+    },
+    {
+     "name": "frequency",
+     "use": "screen frequency, which the dictionary calls printer dots per inch, 1.0 to 999.99 (HALFTONESCREEN only)"
+    },
+    {
+     "name": "angle",
+     "use": "dot angle in degrees, -180 to 180 (HALFTONESCREEN only)"
+    },
+    {
+     "name": "shape",
+     "use": "halftone dot shape: ROUND, DIAMOND, ELLIPSE, LINE, SQUARE, CROSS"
+    },
+    {
+     "name": "patternName",
+     "use": "pattern name for CUSTOMPATTERN"
+    }
+   ],
+   "gotchas": [
+    "Only a Grayscale document can be converted to Bitmap: convert RGB/CMYK to grayscale first.",
+    "The document is flattened by the conversion, and layers, adjustment layers and text are lost.",
+    "frequency, angle and shape only apply when method is HALFTONESCREEN; patternName only for CUSTOMPATTERN."
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.changeMode(ChangeMode.GRAYSCALE);\nvar o = new BitmapConversionOptions();\no.method = BitmapConversionType.HALFTONESCREEN;\no.resolution = 300; o.frequency = 45; o.angle = 45; o.shape = BitmapHalfToneType.ROUND;\ndoc.changeMode(ChangeMode.BITMAP, o);",
+   "use_for": [
+    "real halftone dot artwork for screen printing or risograph",
+    "1-bit line art for stamps, laser engraving or fax-style looks",
+    "diffusion-dither retro graphics"
+   ],
+   "avoid": [
+    "a halftone look in a colour design: use Filter > Pixelate > Color Halftone or a pattern overlay, which keep the layers"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "frequency said 'lines per inch', the batch says printer dots per inch; added the batch ranges for frequency (1.0-999.99) and angle (-180 to 180)"
+   }
+  },
+  {
+   "name": "Channel",
+   "id": "class:Channel",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/Channel",
+   "status": "current",
+   "summary": "One channel of a document: a colour component (Red, Cyan ...), an alpha channel holding a saved selection, or a spot colour channel, with its name, colour, opacity, visibility and histogram.",
+   "how": "Reach it as app.activeDocument.channels[i] / getByName(name) or from channels.add(); restrict edits to channels with app.activeDocument.activeChannels.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "channel name"
+    },
+    {
+     "name": "kind",
+     "use": "ChannelType: COMPONENT, MASKEDAREA, SELECTEDAREA or SPOTCOLOR"
+    },
+    {
+     "name": "histogram",
+     "use": "read-only array of 256 pixel counts"
+    },
+    {
+     "name": "color",
+     "use": "display / ink colour for alpha and spot channels"
+    },
+    {
+     "name": "opacity",
+     "use": "overlay opacity of an alpha channel (solidity for spot channels), 0 to 100; the dictionary says valid only for masked-area or selected-area channels"
+    },
+    {
+     "name": "visible",
+     "use": "show or hide the channel"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the channel, also into another document"
+    },
+    {
+     "name": "merge",
+     "use": "merge a spot channel into the colour channels"
+    },
+    {
+     "name": "remove",
+     "use": "delete the channel"
+    }
+   ],
+   "gotchas": [
+    "histogram is declared as int but returns an array of 256 counts for the channel.",
+    "color is not valid on component channels, and component channels cannot be removed.",
+    "The dictionary lists duplicate twice (with relativeObject + insertionLocation, and with targetDocument); which form is used depends on the arguments passed (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar a = doc.channels.add();\na.name = \"Sky mask\";\ndoc.selection.selectAll(); // store() needs an active selection\ndoc.selection.store(a);\nvar h = doc.channels[0].histogram; // first component channel; names are localised\n$.writeln(a.kind + \" first-channel highlights: \" + h[255]);",
+   "use_for": [
+    "save and reuse a cut-out selection as an alpha channel",
+    "check clipping in a channel's histogram before export",
+    "set up a spot (Pantone) channel for print"
+   ],
+   "avoid": [
+    "non-destructive masking on a layer: use the layer's mask, not an alpha channel"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "example used getByName('Red'), which fails in CMYK or localised builds (the Channels card says prefer indices), and stored a selection that may not exist; opacity now carries the batch range and validity note"
+   }
+  },
+  {
+   "name": "ColorSampler",
+   "id": "class:ColorSampler",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/ColorSampler",
+   "status": "current",
+   "summary": "One colour sampler marker in a document: its position and the colour read at that point, movable and removable.",
+   "how": "Returned by app.activeDocument.colorSamplers.add([x, y]) or read from that collection.",
+   "key_members": [
+    {
+     "name": "color",
+     "use": "read-only SolidColor sampled at the position"
+    },
+    {
+     "name": "position",
+     "use": "read-only [x, y] position"
+    },
+    {
+     "name": "move",
+     "use": "move the sampler to a new [x, y]"
+    },
+    {
+     "name": "remove",
+     "use": "delete this sampler"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all samplers"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "'ColorSampler'"
+    }
+   ],
+   "gotchas": [
+    "color reads the composite image (all visible layers), not the active layer alone (unverified).",
+    "The sampled area follows the Color Sampler / Eyedropper sample-size setting, so the same point can read differently after that option changes (unverified).",
+    "position is read-only; use move() to reposition."
+   ],
+   "example": "var s = app.activeDocument.colorSamplers.add([UnitValue(50, \"px\"), UnitValue(50, \"px\")]);\n$.writeln(s.position + \" = #\" + s.color.rgb.hexValue);\ns.move([UnitValue(300, \"px\"), UnitValue(200, \"px\")]);\ns.remove();",
+   "use_for": [
+    "check a background is pure white for marketplace photos",
+    "verify a brand colour after export or grading"
+   ],
+   "avoid": [
+    "sampling many points: read pixels in bulk another way (e.g. export and analyse) instead of hundreds of samplers"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,449 @@
+{"cards": [
+{
+ "name": "Hand Tool",
+ "id": "handTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Hand Tool",
+ "status": "current",
+ "summary": "Navigation tool that scrolls (pans) the document view inside its window when the image is zoomed in or larger than the window. It changes only what you see, never the pixels, layers or selection.",
+ "how": "Press H, or (the usual way) hold Space with almost any other tool, then drag on the canvas to pan. When zoomed in, press and hold H and click-and-hold to zoom out to a bird's-eye view, drag the frame to a new spot and release to jump there. The options bar has Scroll All Windows plus 100%, Fit Screen and Fill Screen buttons; double-clicking the tool icon fits the image on screen. The harvest's only option is an unlabelled boolean 'Hgng' (reads false); which checkbox it is is not confirmed. Rotate View Tool shares the group.",
+ "shortcut": "H",
+ "scriptable": "no",
+ "script_api": "app.currentTool = \"handTool\" only selects the tool. Panning changes nothing in the document, so an automated build never needs it; to frame the whole image use View/Fit on Screen: app.runMenuItem(stringIDToTypeID(\"fitOnScreen\")) (ps_menu_cmd fitOnScreen in the harvest).",
+ "use_for": [
+  "moving around a zoomed-in portrait while retouching skin at 200-400%",
+  "checking the edge of a product cut-out all the way round at high zoom",
+  "navigating a large billboard or banner file while painting a mask"
+ ],
+ "avoid": [
+  "moving a layer or its pixels: the Hand only scrolls the view, use the Move Tool (V)",
+  "turning the canvas for comfortable brush strokes: use the Rotate View Tool in the same group"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Scroll Tool",
+  "CDR": "Toolbox/Zoom Tools/Pan"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Healing Brush Tool",
+ "id": "magicStampTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Spot Healing Brush Tool",
+ "status": "current",
+ "summary": "Paints over flaws with pixels taken from a source point you Alt-click (or from a pattern), then blends that texture into the colour and brightness around the stroke, so the repair melts into skin, fabric or a backdrop instead of looking like a hard clone.",
+ "how": "Press J; Shift+J cycles Spot Healing Brush, Healing Brush, Patch, Content-Aware Move and Red Eye. Alt-click a clean area to set the source, then paint over the blemish with a brush slightly larger than it. With Aligned on, the source moves along with the brush; with it off, every stroke restarts from the same source point. Options that matter: Source (Sampled or Pattern), Sample (Current Layer, Current & Below, All Layers, which lets you heal onto an empty layer above the photo), Mode, Diffusion (harvested key healSmoothFactor, reads 5: lower keeps grain and fine detail, higher blends more smoothly) and Use Legacy (the older healing algorithm; the harvested 'useLegacy' key, reads false, sits on every brush-based tool in this harvest, so it is not confirmed to be this checkbox). Brush size and hardness come from the brush picker.",
+ "shortcut": "J",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"magicStampTool\" only selects the tool. A stroke can be replayed by stroking a path: build a path with doc.pathItems.add(...) and call pathItem.strokePath(ToolType.HEALINGBRUSH). The source point is tool state set by an Alt-click, which the DOM cannot set, so an unattended heal is unverified. For scripted clean-up prefer a selection plus Edit/Fill (ps_menu id 1042) set to Content-Aware.",
+ "use_for": [
+  "removing blemishes, stray hairs and fine wrinkles on a beauty portrait while keeping skin texture",
+  "cleaning dust and scratches from a scanned old photo",
+  "removing small marks, wires or stains from a textured product backdrop"
+ ],
+ "avoid": [
+  "large objects or repairs next to a contrasting edge: healing pulls in the surrounding colour and smears; use the Clone Stamp, Edit/Fill Content-Aware or Generative Fill",
+  "single small spots where choosing a source is extra work: use the Spot Healing Brush Tool",
+  "repairs that must keep the original untouched: heal on an empty layer with Sample set to Current & Below"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "how: Use Legacy no longer tied to the 'useLegacy' key as fact; that key is on every brush-based tool in the harvest, so the mapping is marked unconfirmed"
+ }
+},
+{
+ "name": "History Brush Tool",
+ "id": "historyBrushTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/History Brush Tool",
+ "status": "current",
+ "summary": "Paints pixels back from an earlier history state or snapshot (the one marked as the source in the History panel) into the current image, so you can undo an effect in selected places only, for example bring back sharp eyes after blurring a whole face.",
+ "how": "Press Y; Shift+Y toggles with the Art History Brush. In Window/History click the box left of the state or snapshot to paint from (the history brush source), then paint on the layer with the normal brush tip; Mode, Opacity and Flow set how strongly it restores. It refuses to work when the source state has a different canvas size or colour mode (after a crop, resize or mode change) or when the layer did not exist in that state. Take a snapshot before a big filter so the source survives later edits.",
+ "shortcut": "Y",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"historyBrushTool\" only selects the tool. The effect is scriptable: set doc.activeHistoryBrushSource to a HistoryState from doc.historyStates, build a path over the area and call pathItem.strokePath(ToolType.HISTORYBRUSH); for a whole area, doc.selection.fill(historyState) fills a selection from a history state (Selection.fill accepts a colour or a history state).",
+ "use_for": [
+  "restoring sharp eyes and lips after softening skin on a portrait",
+  "painting the original colour back into one object after a black-and-white conversion (colour-splash poster)",
+  "pulling detail back into one area after a heavy filter or blur"
+ ],
+ "avoid": [
+  "edits you may want to change later: history disappears when the file closes; use a filtered duplicate layer or a Smart Filter with a layer mask",
+  "after cropping, resizing or changing colour mode: earlier states no longer match and the brush will not paint"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Horizontal Type Mask Tool",
+ "id": "typeCreateMaskTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Horizontal Type Tool",
+ "status": "current",
+ "summary": "Types horizontal text that turns into a selection in the shape of the letters instead of a text layer. While typing a red quick-mask overlay shows; when you commit, marching ants surround the glyphs on the current layer and no new layer is made.",
+ "how": "Press T and use Shift+T to cycle Horizontal Type, Vertical Type, Horizontal Type Mask and Vertical Type Mask. Click (or drag a box) on the canvas, set font, size and tracking in the options bar or Character panel, type, then commit with the options-bar check mark (or Ctrl+Enter). The result is only a selection: fill it, add a layer mask to a photo layer for picture-inside-text, copy it with Layer Via Copy, or apply a filter inside the letters. The text cannot be edited after you commit.",
+ "shortcut": "T",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"typeCreateMaskTool\" only selects the tool. Script route to the same selection: add a temporary text layer (doc.artLayers.add(), layer.kind = LayerKind.TEXT, set textItem.contents, font, size, position), call textItem.createPath() to make a path from the letter outlines, turn that path into a selection with pathItem.makeSelection(feather, antiAlias, operation), then remove the temporary layer and path.",
+ "use_for": [
+  "photo-filled headline (image inside the letters) for a poster or thumbnail",
+  "knockout text cut out of a solid colour band on a banner",
+  "applying a filter or adjustment only inside letter shapes"
+ ],
+ "avoid": [
+  "text that must stay editable: use the Horizontal Type Tool and clip a photo layer to it (Create Clipping Mask)",
+  "crisp vector type for print: a selection is rasterised; keep a live text layer or set the type in Illustrator or CorelDRAW"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Horizontal Type Tool",
+ "id": "typeCreateOrEditTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Horizontal Type Tool",
+ "status": "current",
+ "summary": "Creates and edits horizontal live text layers: click for point text (one line that grows as you type) or drag a box for paragraph text that wraps. The text stays editable, vector-sharp and stylable until you rasterise it.",
+ "how": "Press T. Click to set a baseline for point text, or drag to draw a paragraph box, type, then commit with the options-bar check mark or Ctrl+Enter. Font, style, size, anti-aliasing, alignment, colour and Warp Text sit on the options bar; tracking, leading, kerning and OpenType features are in the Character and Paragraph panels. Click into an existing text layer to edit it; hold Ctrl while editing to drag the text box; Shift-click starts a new text layer over existing text.",
+ "shortcut": "T",
+ "scriptable": "yes",
+ "script_api": "app.currentTool = \"typeCreateOrEditTool\" only selects the tool; the text itself is fully scriptable through the DOM: var l = doc.artLayers.add(); l.kind = LayerKind.TEXT; then l.textItem.contents, font (PostScript name), size, color, position, justification, tracking, leading; textItem.kind = TextType.PARAGRAPHTEXT with width and height for boxed text; warpStyle and warpBend for warped text.",
+ "use_for": [
+  "poster and thumbnail headlines and taglines",
+  "copy on social-media posts and ad banners",
+  "editable template text that a script swaps for batch variations",
+  "price tags and labels on product mockups"
+ ],
+ "avoid": [
+  "long body copy or multi-page layouts: set them in InDesign, Illustrator or CorelDRAW",
+  "vertical Asian text: use the Vertical Type Tool",
+  "when you need a selection shaped like text rather than a layer: use the Horizontal Type Mask Tool"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Type Tool",
+  "CDR": "Toolbox/Text Tools/Text"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Lasso Tool",
+ "id": "lassoTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Lasso Tool",
+ "status": "current",
+ "summary": "Draws a freehand selection: the marquee follows the mouse or pen exactly and closes with a straight line back to the start when you release, giving a loose, hand-drawn selection.",
+ "how": "Press L; Shift+L cycles Lasso, Polygonal Lasso and Magnetic Lasso. Drag around the area and release to close. Holding Alt during the drag lets you place straight segments. Shift before dragging adds to the selection, Alt subtracts, Shift+Alt intersects, or use the selection-mode buttons (harvested selectionEnum, reads 0). Set Feather (likely harvested 'DrwR', pixels, reads 0) and Anti-alias (likely 'DrwA', reads true) before drawing, then refine with Select and Mask if needed.",
+ "shortcut": "L",
+ "scriptable": "yes",
+ "script_api": "app.currentTool = \"lassoTool\" only selects the tool. The same selection is made with doc.selection.select(region, SelectionType, feather, antiAlias), where region is the array of [x, y] points along the outline (many points approximate a smooth freehand curve); for smooth curved outlines build a path and call pathItem.makeSelection(feather, antiAlias, operation).",
+ "use_for": [
+  "rough selection around an object before Content-Aware Fill or Generative Fill",
+  "loose area for a local adjustment such as brightening a face",
+  "adding or removing a patch from an existing selection"
+ ],
+ "avoid": [
+  "precise product cut-outs: use the Pen Tool, Object Selection Tool or Select/Subject",
+  "straight-edged shapes: use the Polygonal Lasso",
+  "objects with strong, clean edges: the Magnetic Lasso or Object Selection Tool follow the edge for you"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "how: DrwR / DrwA feather and anti-alias mapping hedged as likely (unlabelled charIDs)"
+ }
+},
+{
+ "name": "Line Tool",
+ "id": "lineTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Rectangle Tool",
+ "status": "current",
+ "summary": "Draws straight lines. In Shape mode (the harvest reads geometryToolMode 'shape') each line is a live vector shape layer whose stroke colour and weight stay editable; optional arrowheads at the start or end turn it into an arrow.",
+ "how": "Press U; Shift+U cycles the shape tools of its toolbar group (Rectangle, Ellipse, Polygon, Line, Custom Shape and the rest). The kys U cycle still lists the Rounded Rectangle Tool, which is obsolete in this version (the Rectangle Tool's corner radius replaces it). Drag from start to end; Shift constrains the angle to 45-degree steps. Set the tool mode (Shape, Path or Pixels), stroke colour and weight on the options bar and the arrowheads (start, end, width, length, concavity) in the gear menu; edit a finished line in the Properties panel. By key name the harvest likely holds line weight 'LnWd' (reads 1), arrow width 'LnAW' (5), arrow length 'LnAL' (10), concavity 'LnAC' (0) and start/end arrowheads 'LnAS'/'LnAE' (both false); these mappings are not confirmed by labels.",
+ "shortcut": "U",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"lineTool\" only selects the tool. A pixel line is scriptable: build a two-point path with doc.pathItems.add(name, [SubPathInfo]) using PathPointInfo points and stroke it with pathItem.strokePath(ToolType.PENCIL or ToolType.BRUSH) after setting the brush size, or select a thin rectangle with doc.selection.select and fill it. A live shape-layer line with arrowheads needs an Action Manager descriptor that is not in this harvest (record it with ScriptListener).",
+ "use_for": [
+  "divider rules in a social post or poster layout",
+  "arrows on an annotated screenshot or tutorial graphic",
+  "leader lines from labels to parts of a product infographic"
+ ],
+ "avoid": [
+  "curved lines: use the Pen Tool and stroke the path",
+  "diagrams and flowcharts with many connected lines: draw them in Illustrator or CorelDRAW",
+  "Pixels mode when the line may change later: keep Shape mode so weight and colour stay editable"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "AI": "Adobe Line Tool",
+  "CDR": "Toolbox/Curve Tools/2-Point Line"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "how: Shift+U cycle no longer names the obsolete Rounded Rectangle Tool as a live tool (kys lists it, toolbar group does not; ps_tool_05 marks it obsolete)"
+ }
+},
+{
+ "name": "Magic Eraser Tool",
+ "id": "magicEraserTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Eraser Tool",
+ "status": "current",
+ "summary": "One click erases every pixel similar in colour to the clicked pixel (within the tolerance) to transparency, like a Magic Wand selection followed by Delete; on a locked Background layer it first turns the background into a normal layer.",
+ "how": "Press E; Shift+E cycles Eraser, Background Eraser and Magic Eraser. Click a flat colour area such as a white studio background. Tolerance (likely harvested 'BckT', reads 32) widens or narrows the colour range; Contiguous (reads true) limits the erase to connected pixels, off erases every matching pixel on the layer; Anti-alias softens the edge; Sample All Layers samples the merged image; Opacity below 100 erases only partly. It is destructive, so duplicate the layer first.",
+ "shortcut": "E",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"magicEraserTool\" only selects the tool. Same result by script: select a 1-pixel square at the click point with doc.selection.select, grow it with doc.selection.grow(tolerance, antiAlias) (contiguous) or doc.selection.similar(tolerance, antiAlias) (whole layer), then doc.selection.clear() on a non-background layer. Growing from one seed pixel approximates the tool's sampling; it is not verified pixel-identical.",
+ "use_for": [
+  "dropping a flat white background out of a logo or clip-art scan",
+  "knocking out a solid colour behind a simple graphic for a quick mockup"
+ ],
+ "avoid": [
+  "photos with gradients, shadows, hair or soft edges: it leaves fringes and holes; use Select/Subject or the Object Selection Tool with a layer mask",
+  "anything you may need to restore: erase with a layer mask instead, which is non-destructive"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Magic Wand Tool",
+ "id": "magicWandTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Object Selection Tool",
+ "status": "current",
+ "summary": "Selects pixels by colour similarity: click a pixel and everything within the tolerance (only connected pixels when Contiguous is on) becomes the selection. Works best on flat, evenly coloured areas.",
+ "how": "Press W; Shift+W cycles Quick Selection, Magic Wand and Object Selection. Click the area; Shift-click adds, Alt-click subtracts. Tolerance (likely harvested 'WndT', reads 32) sets the colour range; Contiguous (reads true) limits it to connected pixels; Anti-alias (likely 'WndA', reads true) softens the edge; Sample Size (likely 'eyeDropperSample', reads 0) averages several pixels to ignore noise; Sample All Layers samples the merged image. Select Subject and Select and Mask buttons sit on the same options bar.",
+ "shortcut": "W",
+ "scriptable": "yes",
+ "script_api": "app.currentTool = \"magicWandTool\" only selects the tool. Same result: select a 1-pixel square at the point with doc.selection.select, then doc.selection.grow(tolerance, antiAlias) for a contiguous selection or doc.selection.similar(tolerance, antiAlias) for all matching pixels. The click itself records as an Action Manager set-selection-to-point descriptor in ScriptListener; that descriptor is not in this harvest.",
+ "use_for": [
+  "selecting a flat sky or a solid studio backdrop",
+  "selecting one colour region of a flat illustration or logo to recolour it",
+  "selecting a white background to delete or invert for a simple product cut-out"
+ ],
+ "avoid": [
+  "textured, gradient or noisy areas and hair: use the Object Selection Tool, Quick Selection or Select/Subject with Select and Mask",
+  "selecting one colour range across the whole image with soft falloff: use Select/Color Range"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Magic Wand Tool"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Magnetic Lasso Tool",
+ "id": "magneticLassoTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Lasso Tool",
+ "status": "current",
+ "summary": "Freehand selection that snaps to the strongest edge near the cursor as you trace, dropping fastening points automatically, so the outline clings to a high-contrast object boundary.",
+ "how": "Press L and Shift+L to reach it. Click once on the edge, then move along it (the button need not be held); click to add a fastening point yourself, Backspace removes the last point, double-click or Enter closes the outline. Width (how far from the cursor it looks for an edge), Contrast (edge sensitivity) and Frequency (how often points are dropped) set its behaviour; [ and ] change the width while tracing. By key name the harvest likely holds Width 'MgWd' (reads 10) and edge contrast 'MgEd' (reads 10); the other Mg* keys are unlabelled. Feather ('DrwR') and Anti-alias ('DrwA') work as on the Lasso Tool.",
+ "shortcut": "L",
+ "scriptable": "no",
+ "script_api": "app.currentTool = \"magneticLassoTool\" only selects the tool; the edge snapping has no script call. Alternatives: Select/Subject (ps_menu id 1461) for the main subject of a photo, or doc.selection.select(points) / pathItem.makeSelection() when the outline is already known.",
+ "use_for": [
+  "selecting a product with clear edges against a contrasting background",
+  "quick cut-out of a building or sign against the sky",
+  "selecting an object with an irregular but well-defined outline"
+ ],
+ "avoid": [
+  "low-contrast or busy backgrounds and hair or fur: it jumps to wrong edges; use the Object Selection Tool or Select/Subject plus Select and Mask",
+  "smooth commercial clipping paths for print: draw them with the Pen Tool"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Mixer Brush Tool",
+ "id": "wetBrushTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Brush Tool",
+ "status": "current",
+ "summary": "Simulates real wet paint: the brush carries a reservoir of colour that mixes with the colours already on the canvas as you stroke, smearing and blending them, so strokes look like oil or gouache and a photo can be repainted into a painterly image.",
+ "how": "Press B; Shift+B cycles Brush, Pencil, Color Replacement and Mixer Brush. Pick a bristle or normal tip, then set Wet (how much paint it picks up from the canvas), Load (paint in the reservoir), Mix (canvas colour versus reservoir colour) and Flow, or choose one of the preset combinations (Dry, Moist, Wet, Very Wet ...). Alt-click loads the reservoir from the image; Load after each stroke and Clean after each stroke toggles control the reservoir; Sample All Layers lets you paint on an empty layer above the photo. Harvested keys read wetness 100, dryness 100 (probably the Load field), mix 7, autoFill false, autoClean false and sampleAllLayers false (last-used values, not defaults).",
+ "shortcut": "B",
+ "scriptable": "no",
+ "script_api": "app.currentTool = \"wetBrushTool\" only selects the tool. DOM path stroking (pathItem.strokePath) takes a ToolType, and that enum has no Mixer Brush entry, so a mixer stroke cannot be replayed through the DOM; an Action Manager stroke with wetBrushTool is unverified. For a scripted painterly look use Filter/Stylize/Oil Paint (ps_filter oilPaint).",
+ "use_for": [
+  "turning a portrait photo into a digital oil-painting look for a poster",
+  "blending colours softly in a digital illustration",
+  "painterly textured backgrounds behind a subject"
+ ],
+ "avoid": [
+  "precise, flat-colour or repeatable strokes: use the Brush Tool",
+  "automated or batch stylisation: use Filter/Stylize/Oil Paint",
+  "big bristle tips on large files: strokes lag; work on a downsized copy or a smaller tip"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Move Tool",
+ "id": "moveTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Move Tool",
+ "status": "current",
+ "summary": "Moves the selected layers, groups or selected pixels by dragging or with the arrow keys. With Auto-Select on, a click picks the topmost layer under the cursor; Show Transform Controls adds handles for scaling and rotating, and align and distribute buttons appear when several layers are selected.",
+ "how": "Press V; Shift+V toggles Move and Artboard. Drag to move; arrow keys nudge 1 px and Shift+arrow 10 px; Alt-drag duplicates; Shift-drag keeps the move horizontal, vertical or at 45 degrees; Ctrl-click auto-selects a layer once without turning Auto-Select on. Options: Auto-Select (likely harvest 'AtSl', reads true), Layer or Group target (likely 'ASGr', reads false), Show Transform Controls (likely 'Abbx', reads false), plus align and distribute buttons. Holding Ctrl with most other tools gives a temporary Move tool.",
+ "shortcut": "V",
+ "scriptable": "yes",
+ "script_api": "app.currentTool = \"moveTool\" only selects the tool. Moving is fully scriptable: layer.translate(deltaX, deltaY) on the active layer (Layer class), layer.move(relativeObject, ElementPlacement) for stacking order, doc.selection.translate(deltaX, deltaY) to move selected pixels, layer.resize / layer.rotate for transforms.",
+ "use_for": [
+  "positioning headline, logo and product in a poster or ad layout",
+  "aligning or centring elements on the canvas with the align buttons",
+  "Alt-drag duplicating an element to build a row or pattern"
+ ],
+ "avoid": [
+  "moving only the selection outline: drag inside it with a selection tool (script: selection.translateBoundary)",
+  "scrolling the view: use the Hand Tool",
+  "exact numeric placement: use Free Transform's X / Y fields or layer.translate in a script"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Select Tool",
+  "CDR": "Toolbox/Pick Tools/Pick"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "how: AtSl = Auto-Select hedged as likely (unlabelled charID)"
+ }
+},
+{
+ "name": "Note Tool",
+ "id": "textAnnotTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Eyedropper Tool",
+ "status": "current",
+ "summary": "Places a non-printing note icon on the canvas whose text is written in the Notes panel, for comments and instructions between designer, retoucher and client. Notes save inside PSD, PDF and TIFF files but never appear in the printed or exported image.",
+ "how": "Press I and Shift+I to cycle Eyedropper, Color Sampler, Ruler, Note and Count. Click where the comment belongs and type in the Notes panel (Window/Notes); the options bar sets the Author (harvest 'aath', reads empty) and the note colour ('color') and has Clear All. Show or hide notes with View/Show/Notes; File/Import/Notes brings notes in from a PDF.",
+ "shortcut": "I",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"textAnnotTool\" only selects the tool. The DOM has no call to create one note at a position; Document.importAnnotations(file) imports notes from a file, and the annotations flag on PhotoshopSaveOptions, PDFSaveOptions and TiffSaveOptions decides whether notes are saved.",
+ "use_for": [
+  "retouching instructions pinned on a client proof",
+  "hand-off notes inside a layered PSD template",
+  "marking areas that still need revision"
+ ],
+ "avoid": [
+  "labels that must show in the exported JPEG or print: use a text or shape layer",
+  "PDF review comments from a client: they belong in the PDF; import them with File/Import/Notes rather than retyping"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Comments",
+  "CDR": "Window/Dockers/Comments"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Object Selection Tool",
+ "id": "magicLassoTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Object Selection Tool",
+ "status": "current",
+ "summary": "AI-assisted selection: drag a rectangle or lasso loosely around an object and Photoshop finds and selects the object inside it; with Object Finder on, hovering highlights detected objects and one click selects them.",
+ "how": "Press W; Shift+W cycles Quick Selection, Magic Wand and Object Selection. Drag a loose box (Rectangle mode) or lasso (Lasso mode) around the object, or with Object Finder on (likely harvest 'auto', reads true) hover until the object is tinted (overlay reads overlayColorMagenta) and click. Shift adds, Alt subtracts; with Object Subtract on (likely 'smartSubtract', reads true) the subtraction looks for the object inside the area you drag. Other options: Sample All Layers ('sampleAllLayers', reads false), Hard Edge ('hardEdge', reads true) and the Select Subject button; refine hair with Select and Mask. What 'peopleDetailsOnCanvas' controls is not confirmed by the harvest. Note the harvested stringID is magicLassoTool even though the tool is Object Selection.",
+ "shortcut": "W",
+ "scriptable": "partial",
+ "script_api": "app.currentTool = \"magicLassoTool\" only selects the tool. Object detection inside a drawn rectangle has no DOM call; the whole-image equivalent is Select/Subject (ps_menu id 1461), which can then be limited to a box with doc.selection.select(region, SelectionType.INTERSECT).",
+ "use_for": [
+  "product cut-outs for e-commerce listings",
+  "isolating a person, car or animal for a poster composite",
+  "selecting one of several objects for a local colour adjustment"
+ ],
+ "avoid": [
+  "fine hair, fur or glass: the first result is rough; refine it in Select and Mask",
+  "flat single-colour areas: the Magic Wand Tool is faster and exact",
+  "hard-edged clipping paths for print packaging: draw them with the Pen Tool"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "review": {
+  "by": "adversarial",
+  "changes": "how: 'auto' = Object Finder and 'smartSubtract' = Object Subtract hedged as likely; smartSubtract explained as Object Subtract rather than the Alt key itself"
+ }
+},
+{
+ "name": "Paint Bucket Tool",
+ "id": "bucketTool",
+ "app": "PS",
+ "kind": "ps_tool",
+ "path": "Toolbar/Gradient Tool",
+ "status": "current",
+ "summary": "Fills the region of similar colour around the clicked pixel with the foreground colour or a pattern. The region is found like a Magic Wand click (tolerance, contiguous), so one click recolours a flat area.",
+ "how": "Press G; Shift+G toggles Gradient and Paint Bucket. Choose the fill source (Foreground or Pattern), Mode (harvest 'mode', reads normal), Opacity (reads 100), Tolerance (likely 'BckT', reads 32), Anti-alias, Contiguous (reads true) and All Layers, then click inside the area. An active selection limits the fill. It paints destructively; with All Layers on you can fill line-art regions on a separate empty layer.",
+ "shortcut": "G",
+ "scriptable": "yes",
+ "script_api": "app.currentTool = \"bucketTool\" only selects the tool. Same result: make the wand-style region (doc.selection.select a 1-pixel square at the point, then doc.selection.grow(tolerance, antiAlias) or doc.selection.similar(tolerance, antiAlias)) and fill it with doc.selection.fill(solidColor, ColorBlendMode, opacity); to fill an existing selection without colour sampling use doc.selection.fill or Edit/Fill (ps_menu id 1042).",
+ "use_for": [
+  "colouring flat regions of line art or comic panels",
+  "recolouring a solid background in a flat graphic",
+  "filling a selection with a pattern for a quick texture"
+ ],
+ "avoid": [
+  "photos with gradients or noise: fills come out patchy with fringes; use a Solid Color fill layer with a mask or Hue/Saturation",
+  "anti-aliased line art: a light halo stays at the edges; expand the selection slightly or fill on a layer below the lines"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Planar Paintbucket Tool",
+  "CDR": "Toolbox/Fill Tools/Smart Fill"
+ },
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+}
+]}

@@ -1,0 +1,846 @@
+{
+ "cards": [
+  {
+   "name": "Auto Adjust",
+   "id": "f9d61ad8-4f99-4ada-b900-d3c4c9b3ca60",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Auto Adjust",
+   "status": "current",
+   "summary": "One-click tonal and colour correction with no dialog settings: CorelDRAW finds the lightest and darkest values in each colour channel and stretches every channel to the full range, which raises contrast and can also neutralise a colour cast. The result depends entirely on the image: a dull, flat photo gets punchier, while an image that already holds pure black and pure white changes very little.",
+   "use_for": [
+    "quick first-pass fix of a flat, washed-out or slightly tinted product or event photo before layout",
+    "batch clean-up of many imported snapshots where per-image tuning is not worth the time",
+    "a neutral starting point before a creative grade (Tone Curve, Color Balance) on top"
+   ],
+   "avoid": [
+    "images that already contain pure black and white (a white caption, a black frame, a colour bar strip like the test plate): the stretch has nothing to stretch and the photo barely changes - use Levels or Tone Curve and set the points yourself",
+    "photos whose colour cast is intended (sunset, tungsten mood): the per-channel stretch can remove it - use Levels on RGB Channels together, or Gamma, which move all channels alike and keep the cast",
+    "any job that must be reproducible to an exact value: there are no settings to record - use Levels with explicit input/output points"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Auto Tone"
+   },
+   "look": [
+    "auto levels",
+    "auto contrast",
+    "auto correct",
+    "one-click fix",
+    "stretch tonal range",
+    "remove colour cast"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Levels (fine-tune after the automatic stretch)",
+    "Vibrance (add colour back after correction)",
+    "Tone Curve"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Auto Adjust\", \"AutoEqualizeEffect\")  // shape = an imported bitmap; no keys; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong string, so compare pixels before/after. Menu route on the current selection: Application.FrameWork.Automation.InvokeItem(\"f9d61ad8-4f99-4ada-b900-d3c4c9b3ca60\")",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker, Effects), where it can be hidden or removed later; the harvest does not record whether the scripted Bitmap.ApplyBitmapEffect path also lands in that stack or rewrites the pixels",
+   "cost": "light: one analysis pass plus one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line 2 reworded ('Brightness via Levels' named no real control: now Levels on RGB Channels or Gamma)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/a29a07169a17.png",
+    "note": "Small change, as the card predicts for a plate that already holds near-black and near-white: blacks go from 8 to 0, mid grey 128 drops to about 121, the swatches get slightly deeper (red 232,32,42 -> 228,8,33) and the photo a touch punchier (mean diff 7.5).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Black & White",
+   "id": "27afe7c6-45e6-406f-8051-a71736040523",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Black & White",
+   "status": "current",
+   "summary": "Converts the image to a greyscale look while letting you decide how light each original colour range becomes: the Reds, Yellows, Greens, Cyans, Blues and Magentas values (range -200 to 300, defaults 40/60/40/60/20/80, the same as Photoshop's Black & White) brighten or darken the grey that each hue turns into. An optional Split tone tints shadows and highlights with two separate hues for a toned print look. The image-slider keys SlideReds ... SlideMagentas default to 0.48/0.52/0.48/0.52/0.44/0.56, which is each colour default rescaled from -200..300 to 0..1 (40 -> 0.48), so they look like the same values on a 0-1 slider scale (inferred from the numbers, not documented).",
+   "use_for": [
+    "black-and-white editorial or poster photo where a red flag, dress or sky must keep separation instead of turning muddy grey",
+    "monochrome brand imagery with a controlled tonal mix (darker skies, lighter skin)",
+    "split-toned duotone look (cool shadows, warm highlights) for covers and mood boards"
+   ],
+   "avoid": [
+    "a quick grey with no control: Desaturate is one click",
+    "pushing one colour slider far (beyond about +200 or below -100) on a compressed or soft photo: neighbouring areas band and edges halo",
+    "a true 1-bit black-and-white bitmap (line art for a stamp, screen print or fax): Black & White keeps smooth greys in the bitmap's colour mode - use Bitmaps > Mode > Black and White (1-bit)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Black & White",
+    "AI": "Edit/Edit Colors/Convert to Grayscale"
+   },
+   "look": [
+    "black and white",
+    "monochrome",
+    "greyscale conversion",
+    "colour filter b&w",
+    "split tone",
+    "toned print"
+   ],
+   "params": [
+    {
+     "name": "Reds",
+     "does": "how light the reds turn in the grey result (higher = lighter)",
+     "typical": "40 default; 100-200 to make strong reds glow, -50 to make them near black"
+    },
+    {
+     "name": "Yellows",
+     "does": "grey level of yellow areas",
+     "typical": "60 default; raise for brighter skin and warm light"
+    },
+    {
+     "name": "Greens",
+     "does": "grey level of green areas (foliage)",
+     "typical": "40 default"
+    },
+    {
+     "name": "Cyans",
+     "does": "grey level of cyan areas",
+     "typical": "60 default"
+    },
+    {
+     "name": "Blues",
+     "does": "grey level of blue areas; lowering it gives the dark-sky red-filter look",
+     "typical": "20 default; -50 to 0 for dramatic skies"
+    },
+    {
+     "name": "Magentas",
+     "does": "grey level of magenta areas",
+     "typical": "80 default"
+    },
+    {
+     "name": "Split tone",
+     "does": "turns on tinting of shadows and highlights with the hues below",
+     "typical": "off; on for a toned-print look"
+    },
+    {
+     "name": "ShadowsHue",
+     "does": "hue (0-360) used to tint the shadows when split tone is on",
+     "typical": "42 default (only shows when Split tone is on); 200-230 for cool blue shadows"
+    },
+    {
+     "name": "ShadowsSaturation",
+     "does": "strength of the shadow tint (0-100)",
+     "typical": "0 default (no tint); 15-40 for a visible tone"
+    },
+    {
+     "name": "HighlightsHue",
+     "does": "hue (0-360) used to tint the highlights",
+     "typical": "42 default (only shows when Split tone is on); 30-45 for warm sepia highlights"
+    },
+    {
+     "name": "HighlightsSaturation",
+     "does": "strength of the highlight tint (0-100)",
+     "typical": "0 default (no tint); 15-40 for a visible tone"
+    }
+   ],
+   "demo_settings": {
+    "Reds": 150,
+    "Blues": -50
+   },
+   "pairs_with": [
+    "Levels or Tone Curve (set contrast after conversion)",
+    "Add Noise (film grain)",
+    "Vignette"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Black & White\", \"GrayscaleEffect Reds=150,Blues=-50\")  // shape = an imported bitmap; keys from GrayscaleEffectDS (Reds, Yellows, Greens, Cyans, Blues, Magentas, SplitToneTintEnabled, ShadowsHue, ShadowsSaturation, HighlightsHue, HighlightsSaturation); leave the SlideXxx keys out (they appear to mirror the colour values); command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"27afe7c6-45e6-406f-8051-a71736040523\")",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted Bitmap.ApplyBitmapEffect path also lands in that stack",
+   "cost": "light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the SlideXxx keys are no longer 'undocumented role' only - their harvested defaults are the colour defaults rescaled from -200..300 to 0..1, stated as an inference, and the -200..300 range is given; avoid line 3 was self-contradictory (stay in colour mode yet 1-bit), now points to Bitmaps > Mode > Black and White (1-bit); split-tone params carry the harvested defaults (hue 42, saturation 0); scripting says to omit the Slide keys"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/1dd5bf8c1d82.png",
+    "note": "Greyscale conversion with the demo's colour weights visible on the swatches: Reds 150 turned the red, orange and magenta swatches white while Blues -50 turned the blue swatch black, and the photo is a clean monochrome.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Brightness/Contrast/Intensity",
+   "id": "6db2cdb3-67e4-46a8-9f27-2b0b8b2b7a8e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Brightness/Contrast/Intensity",
+   "status": "hidden",
+   "summary": "The classic three-slider tonal adjustment: Brightness shifts every pixel lighter or darker, Contrast widens or narrows the gap between light and dark, and Intensity strengthens or weakens the lighter tones (its exact maths is not in the harvest). In CorelDRAW 2024 it is still defined in the Effects bar (DrawUI.xml) but the live Effects > Adjust menu no longer shows it, so it is reachable only by its command GUID or effect id.",
+   "use_for": [
+    "opening legacy CorelDRAW documents or macros that used Brightness/Contrast/Intensity",
+    "a fast, coarse lift of a dark or flat photo from a script"
+   ],
+   "avoid": [
+    "new work in CorelDRAW 2024: the item is hidden from the menu - use Effects > Adjust > Light, Levels or Tone Curve, which give finer and better-documented control",
+    "large Brightness values: shifting all tones clips highlights (or shadows) to flat white (or black) - use Gamma or Levels' middle value to lift midtones instead",
+    "high Contrast on skin or soft video frames: it blocks up shadows and blows highlights"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Brightness/Contrast"
+   },
+   "look": [
+    "brightness",
+    "contrast",
+    "punchier",
+    "lighten",
+    "darken",
+    "intensity"
+   ],
+   "params": [
+    {
+     "name": "Brightness",
+     "does": "moves all tones lighter (+) or darker (-)",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "Contrast",
+     "does": "spreads (+) or compresses (-) the difference between light and dark",
+     "typical": "+10 to +40 for a flat photo"
+    },
+    {
+     "name": "Intensity",
+     "does": "strengthens or weakens the light tones; exact behaviour not documented",
+     "typical": "0 to +25"
+    }
+   ],
+   "demo_settings": {
+    "Brightness": 10,
+    "Contrast": 60,
+    "Intensity": 20
+   },
+   "pairs_with": [
+    "Light (the visible Effects > Adjust item that carries Brightness, Contrast and Intensity plus Highlights / Shadows / Midtones)",
+    "Hue/Saturation/Lightness",
+    "Unsharp Mask"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD BCI\", \"BCIEffect Brightness=10,Contrast=60,Intensity=20\")  // shape = an imported bitmap; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. GUID route: Application.FrameWork.Automation.InvokeItem(\"6db2cdb3-67e4-46a8-9f27-2b0b8b2b7a8e\") (not in the live menu)",
+   "scriptable": "yes",
+   "non_destructive": "yes when it sits in the CorelDRAW 2024 effect stack (Properties docker, Effects); the harvest does not record whether the scripted path lands there",
+   "cost": "light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer claims CorelDRAW leaves Intensity undocumented (only the harvest lacks it); 'successor' in pairs_with replaced by what the Light item's harvest actually shows (same three keys plus Highlights/Shadows/Midtones)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'hidden' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status hidden); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Channel Mixer",
+   "id": "d81308f7-d93a-4c98-ac4d-4f1dfa87cca6",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Channel Mixer",
+   "status": "needs_input",
+   "summary": "Rebuilds one output colour channel as a percentage mix of the input channels (RGB, CMYK or Lab), plus a Constant offset. Mixing blue into the red channel, for example, swaps colours (reds go dark, blue turns magenta, warm beige goes green); switching Output to Monochrome makes a custom-weighted black-and-white conversion.",
+   "use_for": [
+    "false-colour and infrared-style looks for posters and album art",
+    "channel-weighted black-and-white (Monochrome) with more control than Desaturate",
+    "fixing a single contaminated channel (e.g. a scan with a weak blue channel)"
+   ],
+   "avoid": [
+    "subtle colour casts: Color Balance or White Balance is quicker and more predictable",
+    "keeping overall brightness: when the source percentages of a channel add up to more than 100% (see the total readout) the channel brightens and clips - keep the total near 100%",
+    "CMYK print images unless you understand channel maths: small mixes cause large ink shifts",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ChannelMixerEffect [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Channel Mixer"
+   },
+   "enum_labels": {
+    "InputColourModel": {
+     "1": "RGB",
+     "3": "CMYK",
+     "11": "Lab"
+    },
+    "OutputChannelRGB": {
+     "0": "Red",
+     "1": "Green",
+     "2": "Blue"
+    },
+    "OutputChannelLab": {
+     "0": "Lightness",
+     "1": "a",
+     "2": "b"
+    }
+   },
+   "look": [
+    "channel swap",
+    "false colour",
+    "infrared",
+    "custom black and white",
+    "colour remap",
+    "surreal colour"
+   ],
+   "params": [
+    {
+     "name": "InputColourModel",
+     "does": "which channel set is mixed: RGB, CMYK or Lab",
+     "typical": "1 (RGB) for screen images"
+    },
+    {
+     "name": "Output Channel (OutputChannelRGB)",
+     "does": "which RGB channel the sliders rebuild",
+     "typical": "0 (Red) to recolour warm areas"
+    },
+    {
+     "name": "Red",
+     "does": "percentage of the red input sent to the output channel",
+     "typical": "100 for the red output by default; 0 to remove it"
+    },
+    {
+     "name": "Green",
+     "does": "percentage of the green input in the output channel",
+     "typical": "0-50"
+    },
+    {
+     "name": "Blue",
+     "does": "percentage of the blue input in the output channel",
+     "typical": "0-100; 100 into Red swaps red and blue"
+    },
+    {
+     "name": "Constant",
+     "does": "adds or removes a flat amount of the output channel everywhere",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "OutputAsType",
+     "does": "Color keeps a colour image; Monochrome mixes to a single grey channel",
+     "typical": "Color; Monochrome for a custom B&W"
+    }
+   ],
+   "demo_settings": {
+    "InputColourModel": "1",
+    "OutputChannelRGB": "0",
+    "RedChannel": 0,
+    "GreenChannel": 0,
+    "BlueChannel": 100,
+    "OutputAsType": "Color"
+   },
+   "pairs_with": [
+    "Hue/Saturation/Lightness (tame the new colours)",
+    "Levels"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Channel Mixer\", \"ChannelMixerEffect InputColourModel=1,OutputChannelRGB=0,RedChannel=0,GreenChannel=0,BlueChannel=100,OutputAsType=Color\")  // shape = an imported bitmap; one command sets the mix of the one output channel it names; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"d81308f7-d93a-4c98-ac4d-4f1dfa87cca6\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: Red output = 100% Blue input turns a warm beige wall (R>G>B) green, not teal (R drops to the old B value, G and B unchanged)"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ChannelMixerEffect [...]\"; three forms, each with a 100 % Blue-into-Red mix (not a no-op), so the demo is not the cause; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Every listed form (and the object-model twin where one exists) changed nothing, and the demo values are far from a no-op, so needs_input is the honest status, matching Selective Color / Tone Curve."
+    }
+   }
+  },
+  {
+   "name": "Color Balance",
+   "id": "2f08faa9-ebf0-425c-a99e-07c23f9ccf46",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Color Balance",
+   "status": "needs_input",
+   "summary": "Shifts the colour of the image along three opposing axes - Cyan to Red, Magenta to Green, Yellow to Blue - either for the whole image (Master) or separately for shadows, midtones and highlights, optionally keeping luminance so brightness does not change. The harvested Mode list has only three entries (3-Way Color, Master, Shadows), so the exact set of views in the dialog is not fully recorded.",
+   "use_for": [
+    "warming or cooling a photo to match a brand palette or a layout's mood",
+    "cinematic split grade: teal shadows with warm highlights",
+    "removing a colour cast from indoor or fluorescent-lit photos"
+   ],
+   "avoid": [
+    "heavy shifts with Preserve luminance off: brightness changes along with colour and the image can look muddy",
+    "neutralising a cast from a known grey point: White Balance (temperature/tint) is faster",
+    "changing one specific hue (only the red flag): use Hue/Saturation/Lightness with a colour channel or Selective Color",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (RuntimeError: bitmap route: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ColorBalanceEffect [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Color Balance",
+    "AI": "Edit/Edit Colors/Adjust Color Balance..."
+   },
+   "enum_labels": {
+    "Mode": {
+     "0": "3-Way Color",
+     "1": "Master",
+     "2": "Shadows"
+    }
+   },
+   "look": [
+    "colour grade",
+    "warm",
+    "cool",
+    "teal and orange",
+    "colour cast",
+    "tint"
+   ],
+   "params": [
+    {
+     "name": "Mode",
+     "does": "which range the sliders edit: the 3-way colour view, the whole image (Master), or a tonal range",
+     "typical": "1 (Master) for a global shift"
+    },
+    {
+     "name": "Preserve luminance",
+     "does": "keeps brightness constant while colours shift",
+     "typical": "on"
+    },
+    {
+     "name": "Cyan -- Red (CR_Master)",
+     "does": "whole image toward cyan (-) or red (+)",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "Magenta -- Green (MG_Master)",
+     "does": "whole image toward magenta (-) or green (+)",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "Yellow -- Blue (YB_Master)",
+     "does": "whole image toward yellow (-) or blue (+)",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "Cyan -- Red (CR_Shadows)",
+     "does": "cyan/red shift only in the shadows",
+     "typical": "-30 for teal shadows"
+    },
+    {
+     "name": "Yellow -- Blue (YB_Highlights)",
+     "does": "yellow/blue shift only in the highlights",
+     "typical": "-25 for warm highlights"
+    }
+   ],
+   "demo_settings": {
+    "Mode": "1",
+    "Luminance": true,
+    "CR_Master": -60,
+    "YB_Master": 60
+   },
+   "pairs_with": [
+    "Vibrance",
+    "Levels",
+    "Gamma"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Color Balance\", \"ColorBalanceEffect Mode=1,Luminance=1,CR_Master=-60,YB_Master=60\")  // shape = an imported bitmap; bool written as 1/0 (format not proven for this key); command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"2f08faa9-ebf0-425c-a99e-07c23f9ccf46\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"RuntimeError: bitmap route: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ColorBalanceEffect [...]\"; CR -60 / YB +60 is not a no-op and the object-model twin Shape.ApplyEffectColorBalance also changed nothing; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Every listed form (and the object-model twin where one exists) changed nothing, and the demo values are far from a no-op, so needs_input is the honest status, matching Selective Color / Tone Curve."
+    }
+   }
+  },
+  {
+   "name": "Desaturate",
+   "id": "25f5d0f5-ccce-40e0-993c-e07ce61d1c96",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Desaturate",
+   "status": "current",
+   "summary": "Removes all colour in one click, turning every pixel into its grey equivalent while the bitmap keeps its RGB/CMYK colour mode, so colour can be added back on top later. No settings: reds, greens and blues of similar brightness end up as similar greys.",
+   "use_for": [
+    "fast greyscale photo behind coloured type or a colour overlay",
+    "muted background images so a foreground product or headline pops",
+    "a neutral base before tinting with Color Balance or a lens"
+   ],
+   "avoid": [
+    "photos where differently coloured areas of similar brightness must stay distinct (a red flag on a green field): they merge into one grey - use Black & White or Channel Mixer (Monochrome) to weight each colour",
+    "converting for a greyscale-only print workflow: the file stays in colour mode - use Bitmaps > Mode > Grayscale (8-bit)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Desaturate",
+    "AI": "Edit/Edit Colors/Convert to Grayscale"
+   },
+   "look": [
+    "greyscale",
+    "black and white",
+    "no colour",
+    "monochrome",
+    "desaturated"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Levels or Tone Curve (restore contrast)",
+    "Color Balance (tint after)",
+    "Add Noise"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Desaturate\", \"DesaturateEffect\")  // shape = an imported bitmap; no keys; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong string, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"25f5d0f5-ccce-40e0-993c-e07ce61d1c96\")",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "very light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line 2 now names the real conversion item (Bitmaps > Mode > Grayscale (8-bit))"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/232f39477896.png",
+    "note": "Every colour is gone: the photo is plain grey and the eight swatches became near-identical mid greys (similar brightness, similar grey), as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Equalize",
+   "id": "a82b16c9-2c98-4c50-a511-afe24717ee3a",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Equalize",
+   "status": "current",
+   "summary": "Histogram equalization: redistributes the image's tones so they spread across the whole range, which pulls detail out of flat, foggy or underexposed images and usually gives a hard, high-contrast result. Model chooses the target distribution (Uniform or Hyperbolic); the meaning of Channel, Preserve Color and the Lower/Upper limits is inferred from their names (likely the channel to equalize, equalizing brightness without shifting hues, and the part of the histogram that is used), because the harvest could not read their defaults or ranges.",
+   "use_for": [
+    "rescuing detail from a hazy, low-contrast scan or video frame",
+    "a gritty, high-contrast documentary or poster look",
+    "revealing hidden detail in dark areas before a more careful grade"
+   ],
+   "avoid": [
+    "portraits and skin: equalization exaggerates noise and blotches - use Levels or Tone Curve",
+    "images with large flat areas (sky, studio backdrop): they band and posterize",
+    "scripts that need exact values: the defaults and the ranges of LowerLimit/UpperLimit are unknown - leave them and Channel out of the command and set only Model and Preserve Color"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Equalize"
+   },
+   "look": [
+    "histogram equalization",
+    "high contrast",
+    "gritty",
+    "dehaze",
+    "pull detail",
+    "harsh tones"
+   ],
+   "params": [
+    {
+     "name": "Model",
+     "does": "target tone distribution: Uniform spreads tones evenly; Hyperbolic (by the general hyperbolization method, not from the harvest) puts more of them toward the dark end for a less harsh result",
+     "typical": "Uniform for maximum detail"
+    },
+    {
+     "name": "Preserve Color",
+     "does": "probably equalizes brightness only so hues do not shift (not confirmed by the harvest)",
+     "typical": "on for photos with skin or brand colours"
+    },
+    {
+     "name": "Channel",
+     "does": "which channel is equalized (its options were not harvested)",
+     "typical": "leave at the dialog default"
+    },
+    {
+     "name": "LowerLimit",
+     "does": "lower end of the histogram range used (range not harvested)",
+     "typical": "leave at the dialog default"
+    },
+    {
+     "name": "UpperLimit",
+     "does": "upper end of the histogram range used (range not harvested)",
+     "typical": "leave at the dialog default"
+    }
+   ],
+   "demo_settings": {
+    "Model": "Uniform",
+    "PreserveColor": true
+   },
+   "pairs_with": [
+    "Smart Blur or Remove Noise (calm the noise it reveals)",
+    "Hue/Saturation/Lightness (pull saturation back)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Equalize\", \"HistogramEqualizeEffect Model=Uniform,PreserveColor=1\")  // shape = an imported bitmap; effect id HistogramEqualizeEffect (EqualizeEffect is Levels, a different item); data source HistogramEqualizeEffectDS is only created when the dialog opens, so defaults and ranges were not read; bool written as 1/0 (format not proven); command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"a82b16c9-2c98-4c50-a511-afe24717ee3a\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "light: one histogram pass plus one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line 3 contradicted the demo/scripting (said set only Model, both also set PreserveColor); Hyperbolic description marked as general-method knowledge; 'Noise reduction' (no such CDR item) -> Remove Noise; scripting warns HistogramEqualizeEffect is not EqualizeEffect (Levels)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/4aec94fa40bf.png",
+    "note": "Tones are spread wider: the wall brightens (190,158,102 -> 236,203,142), blacks go to 0 and the swatches get more vivid, a punchier higher-contrast photo (moderate on this plate rather than harsh); Model was ignored by the script (dropped), so only the default model is shown.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Gamma",
+   "id": "5032fcaf-0b82-4d84-ae8a-c7d554290ab5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Gamma",
+   "status": "current",
+   "summary": "Applies a gamma curve to the midtones while pure black and pure white stay put, so it brings out detail in dark or low-contrast areas without clipping highlights. Gamma Value (key Level, 0.1-10, logarithmic slider) is neutral at its default 1.0; in CorelDRAW values above 1 lighten the midtones and values below 1 darken them (direction stated from experience, not from the harvest). LevelCompact (-1..1, default 0) has exactly the range of log10 of Level (log10 0.1 = -1, log10 10 = 1, log10 1 = 0), so it is most likely the same value on a compact log slider (inferred from the numbers, not documented).",
+   "use_for": [
+    "lifting murky shadows and midtones in an underexposed photo without blowing out white type or highlights",
+    "matching the overall lightness of photos placed side by side in a layout",
+    "compensating a print that comes out too dark (dot gain) by lifting midtones"
+   ],
+   "avoid": [
+    "fixing true black or white points (a grey-looking 'black'): gamma never moves the ends - use Levels",
+    "extreme values (below 0.3 or above 4) on compressed images: shadows band and look milky",
+    "setting both Level and LevelCompact in one command: LevelCompact appears to be log10 of Level, so two values can conflict - set Level only"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Exposure"
+   },
+   "look": [
+    "midtone brightness",
+    "lift shadows",
+    "gamma correction",
+    "brighter midtones",
+    "darker midtones"
+   ],
+   "params": [
+    {
+     "name": "Gamma Value",
+     "does": "the gamma applied to midtones; 1.0 = no change",
+     "typical": "1.2-1.6 to lift a dark photo, 0.6-0.8 to deepen a washed-out one"
+    }
+   ],
+   "demo_settings": {
+    "Level": 2.5
+   },
+   "pairs_with": [
+    "Levels (set black and white points first)",
+    "Vibrance",
+    "Color Balance"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Gamma\", \"GammaEffect Level=2.5\")  // shape = an imported bitmap; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"5032fcaf-0b82-4d84-ae8a-c7d554290ab5\")",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "very light: one per-pixel lookup",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: LevelCompact's role is no longer 'unknown' - its -1..1 range and 0 default are exactly log10 of Level's 0.1..10 range and 1.0 default, stated as an inference; Level's harvested range and logarithmic slider added; avoid line 3 explains why only Level should be set"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d1eacde7bde9.png",
+    "note": "Gamma 2.5 lifts the midtones strongly while white holds (mid grey 128 -> 193, white 247 -> 251): the photo looks light and washed out and the dark areas open up; near-black also rises a lot (8 -> 63), as a gamma curve does, since only pure 0 stays put.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Hue/Saturation/Lightness",
+   "id": "aee88264-894b-4272-8585-c2aef55ca37c",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Hue/Saturation/Lightness",
+   "status": "needs_input",
+   "summary": "Rotates hues around the colour wheel, boosts or mutes saturation, and lightens or darkens, either for the whole image (Master) or for one colour range at a time (Red, Yellow, Green, Cyan, Blue, Magenta, Grayscale). Hue +/-180 turns reds cyan and blues yellow; Saturation -100 on one channel removes just that colour.",
+   "use_for": [
+    "recolouring a product or garment in a photo to match a brand colour (one channel, Hue shift)",
+    "muting a distracting colour in the background (one channel, Saturation down)",
+    "boosting saturation for social posts and thumbnails",
+    "surreal or pop-art hue-shifted posters"
+   ],
+   "avoid": [
+    "skin-safe saturation boosts: global Saturation oversaturates skin first - use Vibrance",
+    "large Lightness values: they flatten contrast toward white or black - use Levels or Gamma",
+    "recolouring a hue that bleeds into neighbours (orange skin next to a red shirt): use Replace Colors or a mask",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (RuntimeError: bitmap route 'HueSaturationLightnessEffect Lightness=0,Channel=Master,Hue=180,Saturation=20' ignored ['Channel', 'Hue', 'Saturation']; [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Hue/Saturation"
+   },
+   "look": [
+    "hue shift",
+    "recolour",
+    "saturation boost",
+    "muted colours",
+    "pop colour",
+    "colour swap"
+   ],
+   "params": [
+    {
+     "name": "Channel",
+     "does": "which colour range the sliders affect: Master (all) or Red/Yellow/Green/Cyan/Blue/Magenta/Grayscale",
+     "typical": "Master; a single colour for targeted edits"
+    },
+    {
+     "name": "Hue",
+     "does": "rotates hues in degrees",
+     "typical": "-30 to +30 for a shift, 180 for complementary colours"
+    },
+    {
+     "name": "Saturation",
+     "does": "colour strength; -100 removes colour from the chosen range",
+     "typical": "+10 to +30 to boost, -100 to mute one colour"
+    },
+    {
+     "name": "Lightness",
+     "does": "lightens or darkens the chosen range",
+     "typical": "-20 to +20"
+    }
+   ],
+   "demo_settings": {
+    "Channel": "Master",
+    "Hue": 180,
+    "Saturation": 20
+   },
+   "pairs_with": [
+    "Vibrance",
+    "Levels",
+    "Replace Colors"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD HSL\", \"HueSaturationLightnessEffect Channel=Master,Hue=180,Saturation=20\")  // shape = an imported bitmap; command format proven on other effects, this string not yet tested, and the call returns OK even for a wrong key, so compare pixels. Menu route: Application.FrameWork.Automation.InvokeItem(\"aee88264-894b-4272-8585-c2aef55ca37c\")",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024; the harvest does not record whether the scripted path lands there",
+   "cost": "light: one per-pixel pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"RuntimeError: bitmap route 'HueSaturationLightnessEffect Lightness=0,Channel=Master,Hue=180,Saturation=20' ignored ['Channel', 'Hue', 'Saturation']; Shape.ApplyEffectHSL(180, 20, 0) also changed no pixel of the plate\"; Hue 180 is not a no-op, the bitmap route ignored Channel / Hue / Saturation and Shape.ApplyEffectHSL(180, 20, 0) also changed nothing; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Every listed form (and the object-model twin where one exists) changed nothing, and the demo values are far from a no-op, so needs_input is the honest status, matching Selective Color / Tone Curve."
+    }
+   }
+  },
+  {
+   "name": "Levels",
+   "id": "cebbcfb6-8412-4568-8301-93ea5eeb95b5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Adjust/Levels",
+   "status": "needs_input",
+   "summary": "The precise tonal-range tool (effect id EqualizeEffect, menu command OnEqualize; not the Equalize item, which is HistogramEqualizeEffect): set the input black and white points to clip and stretch the histogram, a Gamma value for midtones, and output points to compress the range, for all RGB channels together or one channel at a time; Auto Adjust sets the points automatically. Moving InputLow up and InputHigh down gives a crisper, higher-contrast image; raising OutputLow fades blacks to a matte look.",
+   "use_for": [
+    "setting clean black and white points on a flat scan or video frame before print",
+    "matte / faded-blacks look for lifestyle and editorial images (raise Output low)",
+    "fixing a cast channel by channel (Red, Green, Blue)",
+    "the standard tonal correction step in any photo-prep workflow"
+   ],
+   "avoid": [
+    "scripts that need chosen values: an independent audit (2026-10-04) found Bitmap.ApplyBitmapEffect raises RPC_E_SERVERFAULT for EqualizeEffect with any real key - apply it from the menu / Properties docker, or script Gamma or Tone Curve instead",
+    "pulling InputLow / InputHigh far into the histogram: shadows and highlights clip to flat black/white and lose detail",
+    "creative curve shapes (S-curves, cross-process): use Tone Curve",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'EqualizeEffect [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Levels"
+   },
+   "enum_labels": {
+    "Channel": {
+     "0": "RGB Channels",
+     "1": "Red Channel",
+     "2": "Green Channel",
+     "3": "Blue Channel"
+    }
+   },
+   "look": [
+    "levels",
+    "black point",
+    "white point",
+    "contrast",
+    "crisp",
+    "matte blacks",
+    "tonal range"
+   ],
+   "params": [
+    {
+     "name": "Channel",
+     "does": "edit all RGB channels together or one channel",
+     "typical": "0 (RGB Channels)"
+    },
+    {
+     "name": "InputLow",
+     "does": "input black point: tones at or below it become black",
+     "typical": "10-40 on a flat image"
+    },
+    {
+     "name": "InputHigh",
+     "does": "input white point: tones at or above it become white",
+     "typical": "215-245"
+    },
+    {
+     "name": "Gamma",
+     "does": "midtone brightness between the points; 1.0 neutral",
+     "typical": "0.8-1.3"
+    },
+    {
+     "name": "OutputLow",
+     "does": "the output value pure black is mapped to (0-254); raise it for faded, matte blacks",
+     "typical": "0; 20-40 for a matte look"
+    },
+    {
+     "name": "OutputHigh",
+     "does": "the output value pure white is mapped to (1-255); lower it to dull the highlights",
+     "typical": "255; 230 to tame highlights"
+    },
+    {
+     "name": "Auto Adjust",
+     "does": "sets the points automatically from the image",
+     "typical": "off"
+    }
+   ],
+   "demo_settings": {
+    "Channel": "0",
+    "InputLow": 60,
+    "InputHigh": 200,
+    "Gamma": 1.0
+   },
+   "pairs_with": [
+    "Gamma",
+    "Tone Curve",
+    "Color Balance"
+   ],
+   "scripting": "No working scripted call: shape.Bitmap.ApplyBitmapEffect(\"PGD Levels\", \"EqualizeEffect Channel=0,InputLow=60,InputHigh=200,Gamma=1\") raises RPC_E_SERVERFAULT (audit 2026-10-04: any real key fails). Only the menu route works, with dialog values: Application.FrameWork.Automation.InvokeItem(\"cebbcfb6-8412-4568-8301-93ea5eeb95b5\") on the selection, or the Properties docker toggle EffectsPropertiesDS ApplyOrDeleteEffect:EqualizeEffect",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: added to the object's effect stack (Properties docker, Effects) in CorelDRAW 2024",
+   "cost": "very light: one per-pixel lookup",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unsourced 'former Level Equalization' history and named the id clash with Equalize instead; OutputLow / OutputHigh descriptions were garbled ('lightest value black is mapped to'), now state the mapped output value with the harvested range"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'EqualizeEffect AutoAdjust=0,OutputLow=0,OutputHigh=255,Channel=0,InputLow=60,InputHigh=200,Gamma=1 (server fault)' [...]\"; every form raised RPC_E_SERVERFAULT, as the 2026-10-04 audit found for any real key; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Every listed form (and the object-model twin where one exists) changed nothing, and the demo values are far from a no-op, so needs_input is the honest status, matching Selective Color / Tone Curve."
+    }
+   }
+  }
+ ]
+}

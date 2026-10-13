@@ -1,0 +1,840 @@
+{"cards": [
+{
+ "name": "All Layers",
+ "id": "3545",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/All Layers",
+ "status": "current",
+ "summary": "Rasterizes every layer in the document that still holds vector or generated data (type, shape and fill layers, smart objects and similar) in one step, so each becomes an ordinary pixel layer. Nothing is selected first. The harvest found it enabled only when the document had a type layer or a smart object layer.",
+ "use_for": [
+  "flattening a finished poster or social post to plain pixel layers before handing the PSD to a printer or an app that cannot read live type or smart objects",
+  "removing missing-font and linked-file warnings from a template before sharing it",
+  "preparing a layered comp for pixel-only work (painting, liquify, clone) across all layers at once"
+ ],
+ "avoid": [
+  "any file you may still edit: text stops being editable and smart objects lose their quality-safe scaling. Rasterize a duplicate, or save a layered master first",
+  "rasterizing only one layer: use Layer/Rasterize/Layer (or the specific Type / Shape / Smart Object item)"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeAll'), new ActionDescriptor(), DialogModes.NO); verified live (a type layer became a pixel layer, history state 'Rasterize All Layers').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Fill Content",
+ "id": "3544",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Fill Content",
+ "status": "current",
+ "summary": "Rasterizes only the fill of a fill or shape layer (solid colour, gradient or pattern) into pixels, while any vector mask stays a vector mask and the layer's mask is kept. Meant for a fill or shape layer: the harvest's menu-state scan had none, so it showed disabled in every state tried, but the call run on a Color Fill layer turned it into a normal pixel layer with its layer mask intact.",
+ "use_for": [
+  "turning a gradient or pattern fill layer into pixels so it can be painted on, smudged or filtered",
+  "keeping a crisp vector edge on a shape while texturing its fill with filters or brushes"
+ ],
+ "avoid": [
+  "fills you may still recolour: double-click the fill layer thumbnail to change it instead, or keep a copy",
+  "rasterizing the whole shape including its outline: use Layer/Rasterize/Shape or Layer/Rasterize/Layer"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'content'; verified live on a Color Fill layer (layer kind fill -> pixel, mask kept, history 'Rasterize Fill Content'). DOM alternative (in the PS API harvest, not run): app.activeDocument.activeLayer.rasterize(RasterizeType.FILLCONTENT).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: 'Enabled with a fill or shape layer selected' was never observed (disabled in every scanned state, none had a fill layer); now says so; script_api: added the RasterizeType.FILLCONTENT DOM route from the PS API harvest (not run)"
+ }
+},
+{
+ "name": "Generative",
+ "id": "3561",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Generative",
+ "status": "current",
+ "summary": "Rasterizes a generative layer (the layer type that Firefly features such as Generative Fill create) into an ordinary pixel layer, which as far as is known drops the layer's stored variations and generation settings. Not exercised by the harvest: it was disabled in every scratch state tried because none had a generative layer.",
+ "use_for": [
+  "locking in the chosen Generative Fill result so the layer behaves like normal pixels for retouching and filters",
+  "shrinking a PSD that carries many generative variations before handing it off"
+ ],
+ "avoid": [
+  "layers whose other variations you may still want to compare: pick the variation first in the Properties panel, then rasterize",
+  "relying on exact behaviour in a script: there is no harvested script route"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (not run: no generative layer in the fixtures). No object-model call for it is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer",
+ "id": "3547",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Layer",
+ "status": "current",
+ "summary": "Rasterizes all vector and live data on the selected layer or layers (live type, a shape and its vector mask, a fill, a smart object) into plain pixels in one go, whatever kind of layer it is. Layer styles stay live. The harvest found it enabled with a type or smart object layer selected and saw a type layer become a pixel layer.",
+ "use_for": [
+  "turning a headline into pixels so it can be warped with Liquify, smudged or painted",
+  "making a placed logo or shape editable with brushes, filters and the Eraser",
+  "one command that works on any layer kind in a script, instead of picking Type / Shape / Smart Object"
+ ],
+ "avoid": [
+  "text you may still retype: duplicate the type layer and hide the original first",
+  "baking the drop shadow or stroke into pixels too: that is Layer/Rasterize/Layer Style"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr) and no What key; verified live on a type layer (history 'Rasterize Layer'). DOM alternative (unverified): app.activeDocument.activeLayer.rasterize(RasterizeType.ENTIRELAYER).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer Style",
+ "id": "3557",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Layer Style",
+ "status": "current",
+ "summary": "Bakes the layer's effects (drop shadow, stroke, glow, bevel, overlays and so on) into the layer's own pixels and removes the live style, so the look stays the same but can no longer be edited from the Layer Style dialog. Needs a layer with a layer style (the menu-state scan had none, so it showed disabled in every state tried); in the harvest, run on a layer given an effect, the fx disappeared and the pixel bounds were rewritten.",
+ "use_for": [
+  "freezing a text or logo effect so it survives export to apps that do not read Photoshop layer styles",
+  "painting, warping or masking the shadow and glow of a style as pixels",
+  "removing style-scaling surprises before resizing a layer"
+ ],
+ "avoid": [
+  "effects you may still tweak: keep the styled layer hidden as a backup or convert it to a smart object instead",
+  "a style on a type or shape layer you still need live: this bakes the whole layer, so rasterize a duplicate"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Expand Appearance",
+  "CDR": "Effects/Flatten Effects"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'layerStyle'; verified live (fx on -> off, history 'Rasterize Layer Style').",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: 'Enabled with a styled layer' was never observed (disabled in every scanned state); now says so"
+ }
+},
+{
+ "name": "Shape",
+ "id": "3541",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Shape",
+ "status": "current",
+ "summary": "Rasterizes a whole shape layer, fill and vector outline alike, into a normal pixel layer, so the shape can be painted or filtered but no longer edited as a path or rescaled crisply. Not exercised by the harvest: the fixtures had no shape layer, so it was disabled in every state tried.",
+ "use_for": [
+  "turning a vector icon or badge into pixels to add grunge, texture or Liquify distortion",
+  "making a shape layer behave like a normal layer for filters that refuse vector layers"
+ ],
+ "avoid": [
+  "shapes you will resize later: scale first, or convert to a smart object to keep them crisp",
+  "keeping the vector outline: use Layer/Rasterize/Fill Content, which rasterizes only the fill"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "Candidate, not confirmed: executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = target layer (Lyr), What = enum rasterizeItem 'shape'; tried live it failed ('not currently available') because no shape layer was present; runMenuItem(stringIDToTypeID('rasterizeShape')) also failed. DOM alternative (in the PS API harvest, not run): app.activeDocument.activeLayer.rasterize(RasterizeType.SHAPE). The verified Layer/Rasterize/Layer call (rasterizeLayer with no What key) should do the same job on a shape layer (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: added the second failed try (runMenuItem rasterizeShape) and the RasterizeType.SHAPE DOM route from the PS API harvest (not run)"
+ }
+},
+{
+ "name": "Smart Object",
+ "id": "Layer/Rasterize/Smart Object",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Smart Object",
+ "status": "current",
+ "summary": "Converts the selected smart object into an ordinary pixel layer at its current size and transform, discarding the embedded or linked source, its smart filters' editability and the ability to rescale without loss. Same command as Layer/Smart Objects/Rasterize; enabled with a smart object layer selected.",
+ "use_for": [
+  "making a placed photo or logo paintable with brushes, the Eraser or the clone tools",
+  "finalising a mock-up layer before Liquify or other edits that need plain pixels",
+  "cutting PSD size by dropping a heavy embedded source once the layout is final"
+ ],
+ "avoid": [
+  "layers you might still scale up or edit at source: rasterize a copy instead",
+  "unpacking a smart object back into its original layers: use Layer/Smart Objects/Convert to Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'placed'; verified live (smart object -> pixel layer, history 'Rasterize Smart Object').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Type",
+ "id": "Layer/Rasterize/Type",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Type",
+ "status": "current",
+ "summary": "Rasterizes the live text of a type layer into pixels, so the text is no longer editable or font-dependent but can be painted, warped and filtered like any image; other vector data on the layer is left alone. Same command as Type/Rasterize Type Layer; enabled with a type layer selected.",
+ "use_for": [
+  "distressing or texturing a headline with brushes, filters or Liquify",
+  "sending a PSD to someone who lacks the font, after the copy is final",
+  "breaking a word into pieces to animate or offset individual letters as pixels"
+ ],
+ "avoid": [
+  "copy that may still change: duplicate the type layer and hide the original first",
+  "only adding a stroke, shadow or warp: layer styles and Type > Warp Text work on live type"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'type'; verified live (type layer -> pixel layer, history 'Rasterize Type'). DOM alternative (unverified): app.activeDocument.activeLayer.rasterize(RasterizeType.TEXTCONTENTS).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Vector Mask",
+ "id": "1957",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Vector Mask",
+ "status": "current",
+ "summary": "Converts the selected layer's vector mask (a path-based mask) into an ordinary pixel layer mask with the same shape, so its edge can be painted, blurred or feathered with brushes; the vector path is removed. In the harvest the vector mask became a layer mask and the document's path count dropped from 1 to 0.",
+ "use_for": [
+  "softening or hand-painting part of a crisp path cut-out edge (hair, fur, shadows)",
+  "combining a pen-tool cut-out with brushed refinements in one mask"
+ ],
+ "avoid": [
+  "masks you will still reshape or rescale: keep the vector mask and feather it from the Properties panel instead",
+  "a layer that already has a pixel layer mask you need to keep separate: the result merges into one layer mask"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'vectorMask'; verified live (vector mask -> user mask, numberOfPaths 1 -> 0, history 'Rasterize Vector Mask'). Side effect seen in the same run: the foreground/background colours read 000000/FFFFFF afterwards (were 0CF916/000000).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: added the harvested foreground/background colour change as a side effect a script should expect"
+ }
+},
+{
+ "name": "Video",
+ "id": "3551",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/Video",
+ "status": "current",
+ "summary": "Rasterizes a video layer into an ordinary pixel layer holding the frame shown at the current time, dropping the rest of the clip. Not exercised by the harvest: the fixtures had no video layer, so it was disabled in every state tried.",
+ "use_for": [
+  "pulling one frame of footage into a still design (thumbnail, poster) as an editable pixel layer",
+  "retouching a single video frame with tools that refuse video layers"
+ ],
+ "avoid": [
+  "keeping the motion: rasterize a duplicate (Layer/Duplicate Layer) and keep the original video layer"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (no menuItemType or event label matches this command and no DOM / Action Manager equivalent is known).",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: 'export a frame from the Timeline' named no harvested command; now points at Layer/Duplicate Layer"
+ }
+},
+{
+ "name": "Rename Layer",
+ "id": "2983",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rename Layer",
+ "status": "needs_input",
+ "summary": "Gives the selected layer a new name: the layer's name becomes editable so a new one can be typed (menu title 'Rename Layer...'). Changes only the label, not the pixels. Needs an open document and the new name as input.",
+ "how": "Choose it with one layer selected, type the new name and confirm it (the harvest found it disabled with several layers selected). Double-clicking the layer name in the Layers panel does the same.",
+ "use_for": [
+  "naming layers clearly (headline, product, bg) so templates and hand-offs are readable",
+  "giving layers the names a script, data-driven variables or Export As layer names rely on"
+ ],
+ "avoid": [
+  "renaming many layers at once: do it in a script loop over the layers",
+  "renaming a document or file: use File > Save As"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Layers",
+  "CDR": "Object/Objects"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('set'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), T = object Lyr {Nm = 'new name'}; verified live (history 'Name Change'). DOM alternative (unverified): app.activeDocument.activeLayer.name = 'new name'.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: dropped the Enter / Esc keys (not in the batch) and added the harvested multi-layer state where it is disabled"
+ }
+},
+{
+ "name": "Select Linked Layers",
+ "id": "2960",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Select Linked Layers",
+ "status": "current",
+ "summary": "Adds to the selection every layer linked to the selected layer (layers joined with the chain-link icon), so the whole linked set can be moved, aligned or grouped together. Not exercised by the harvest: the fixtures had no linked layers, so it was disabled in every state tried.",
+ "use_for": [
+  "grabbing a logo lock-up or a product and its shadow that were linked together, to move or align them as one",
+  "selecting a linked set before grouping it or converting it to a smart object"
+ ],
+ "avoid": [
+  "layers that are only grouped, not linked: click the group instead",
+  "selecting layers by kind or name: use Select > All Layers or the Layers panel filter"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "Candidate, not confirmed: executeAction(stringIDToTypeID('selectLinkedLayers'), new ActionDescriptor(), DialogModes.NO); tried live it failed with 'Select Linked Layers is not currently available' because no linked layers existed. The same event with desc null = target layer (Lyr) failed naming a different command, Link Selected Layers, so use the empty descriptor. DOM (in the PS API harvest, not run): read app.activeDocument.activeLayer.linkedLayers to find the linked set.",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: cited the descriptor form whose error names this command (empty descriptor); the null = target layer form errored as 'Link Selected Layers', a different command"
+ }
+},
+{
+ "name": "Clear Smart Filters",
+ "id": "2770",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Filter/Clear Smart Filters",
+ "status": "current",
+ "summary": "Deletes every smart filter (and the filter mask) from the selected smart object, returning it to its unfiltered look. In the harvest a Gaussian Blur smart filter was removed and the layer's bounds shrank back to the original (history 'Delete All Smart Filters').",
+ "use_for": [
+  "starting the filter stack of a smart object over from scratch",
+  "stripping test filters from a template layer before swapping in new contents"
+ ],
+ "avoid": [
+  "comparing with and without filters: use Layer/Smart Filter/Disable Smart Filters, which keeps them",
+  "removing only one filter: drag that filter row to the trash in the Layers panel"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('delete'), desc, DialogModes.NO) with desc: null = reference: class filterFX of the target layer (Lyr, Ordn Trgt); verified live (history 'Delete All Smart Filters').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Delete Filter Mask",
+ "id": "5226",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Filter/Delete Filter Mask",
+ "status": "current",
+ "summary": "Deletes the mask that limits where the smart filters of the selected smart object apply, so the filters affect the whole layer again; the filters themselves stay. Verified in the harvest (history 'Delete Filter Mask').",
+ "use_for": [
+  "removing a filter mask that has become messy before repainting a new one",
+  "applying a blur or sharpen to the whole smart object again after masking it off"
+ ],
+ "avoid": [
+  "a temporary check: use Layer/Smart Filter/Disable Filter Mask, which keeps the mask",
+  "masking the whole layer, not just the filters: use a layer mask instead"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('delete'), desc, DialogModes.NO) with desc: null = reference to channel (Chnl) enum 'filterMask'; verified live (history 'Delete Filter Mask').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Disable Filter Mask",
+ "id": "3076",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Filter/Disable Filter Mask",
+ "status": "current",
+ "summary": "Switches off the smart filter mask of the selected smart object without deleting it, so the filters show across the whole layer; choosing the command again (it becomes Enable Filter Mask) brings the mask back. Verified in the harvest (history 'Disable Filter Mask').",
+ "use_for": [
+  "checking what a masked blur or sharpen looks like on the whole image before refining the mask",
+  "quick before / after of a filter mask during client review"
+ ],
+ "avoid": [
+  "removing the mask for good: use Layer/Smart Filter/Delete Filter Mask",
+  "hiding the filters themselves: use Layer/Smart Filter/Disable Smart Filters"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('set'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), T = object Lyr {filterMaskEnable = false}; verified live (history 'Disable Filter Mask'). Set it to true to enable the mask again.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Disable Smart Filters",
+ "id": "2769",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Filter/Disable Smart Filters",
+ "status": "current",
+ "summary": "Hides all smart filters on the selected smart object at once, showing it unfiltered while keeping every filter and its settings; the command then reads Enable Smart Filters to turn them back on. Needs a smart object that has smart filters.",
+ "use_for": [
+  "before / after comparison of a whole filter stack on a photo or mock-up",
+  "speeding up work on a heavy document by switching off slow filters while laying out"
+ ],
+ "avoid": [
+  "removing the filters for good: use Layer/Smart Filter/Clear Smart Filters",
+  "hiding just one filter: click that filter's eye icon in the Layers panel"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "Candidate, not confirmed: executeAction(stringIDToTypeID('set'), desc, DialogModes.NO) with desc: null = target layer (Lyr, Ordn Trgt), T = object Lyr {filterFXVisible = false}; tried live it wrote a history state named 'Layer Style', not 'Disable Smart Filters', and the result could not be read back. Not proven to hide the filters.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Convert to Layers",
+ "id": "21000",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Convert to Layers",
+ "status": "current",
+ "summary": "Unpacks the selected smart object back into the ordinary layers it contains, placed in the document in its stead, so the contents can be edited directly without opening a separate document. In the harvest a smart object became a normal pixel layer (history 'Convert Smart Object to Layers').",
+ "use_for": [
+  "breaking open a smart-object logo lock-up or text block to restyle its parts in place",
+  "flattening the nesting of a template whose smart objects are no longer needed"
+ ],
+ "avoid": [
+  "smart objects shared by several instances you want to keep in sync: edit with Layer/Smart Objects/Edit Contents instead",
+  "only needing pixels: Layer/Smart Objects/Rasterize gives one flat layer"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Object/Symbol/Revert to Objects"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerConvertToLayers'), new ActionDescriptor(), DialogModes.NO); verified live (smart object -> pixel layer).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Convert to Linked",
+ "id": "6339",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Convert to Linked",
+ "status": "needs_input",
+ "summary": "Writes the contents of an embedded smart object out to a file on disk and turns the layer into a linked smart object pointing at that file, so other documents can link to the same source and the PSD gets smaller. Opens a save dialog for the file name and location (menu title 'Convert to Linked...'). The harvest found the menu item enabled in every scratch state, including ones without a smart object.",
+ "how": "Pick a folder and file name in the save dialog; the contents are saved in their native format (usually .psb for content made in Photoshop). After that the layer shows the link icon, and editing the file updates every document that links to it.",
+ "use_for": [
+  "sharing one logo or product shot across many campaign PSDs so a single edit updates them all",
+  "shrinking a heavy PSD by moving large embedded sources out to files"
+ ],
+ "avoid": [
+  "files that must travel as one self-contained PSD: links break when the folder moves; package or keep embedded",
+  "only saving a copy of the contents: use Layer/Smart Objects/Export Contents"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Links"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerConvertToLinked')) is the terminology label match (not run: it opens a save dialog). No no-dialog route was harvested.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Convert to Smart Object",
+ "id": "2980",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Convert to Smart Object",
+ "status": "current",
+ "summary": "Wraps the selected layer or layers into one embedded smart object, which keeps the original pixels or vectors inside so later scaling, warps and filters (as smart filters) stay editable and lossless. Needs an open document with a layer selected; in the harvest a pixel layer became a smart object.",
+ "use_for": [
+  "applying editable smart filters (blur, sharpen, Camera Raw) to a photo",
+  "scaling a logo or product shot up and down while laying out a poster without losing quality",
+  "turning a group of layers into one placeable unit for mock-ups and templates"
+ ],
+ "avoid": [
+  "layers you need to paint on directly: brushes and the Eraser do not work on a smart object (edit its contents or rasterize)",
+  "a copy that must stay independent: use Layer/Smart Objects/New Smart Object via Copy rather than Layer/New/Layer Via Copy (whose copies share contents)"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('newPlacedLayer')); verified live (pixel layer -> smart object, history 'Convert to Smart Object'). executeAction(stringIDToTypeID('newPlacedLayer'), undefined, DialogModes.NO) is the common Action Manager form (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: Ctrl+J is not in this batch (the harvest binds it to Layer/New/Layer Via Copy); named the command by its harvested path"
+ }
+},
+{
+ "name": "Edit Contents",
+ "id": "6332",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Edit Contents",
+ "status": "current",
+ "summary": "Opens the contents of the selected smart object for editing: content made in Photoshop opens as its own document (a .psb), placed vector or other files open in their source app. Saving that document updates the smart object and every instance that shares its contents. In the harvest it opened px1.psb as a second document.",
+ "how": "Edit the opened document, then save (not Save As) and close it to push the change back into the parent PSD. Linked smart objects open their linked file instead.",
+ "use_for": [
+  "changing the artwork inside a mock-up's screen or label placeholder",
+  "editing a logo once and having every instance in the layout update",
+  "retouching a photo that is already scaled and filtered in the layout without losing those transforms"
+ ],
+ "avoid": [
+  "swapping in a different file entirely: use Layer/Smart Objects/Replace Contents",
+  "scripts that expect the active document to stay the same: the contents document becomes active"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Edit Original",
+  "CDR": "Bitmaps/Edit Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerEditContents'), new ActionDescriptor(), DialogModes.NO); verified live (opened the contents as a new document px1.psb, which became the active document). Save and close it with app.activeDocument.close(SaveOptions.SAVECHANGES) (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Embed All Linked",
+ "id": "6346",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Embed All Linked",
+ "status": "current",
+ "summary": "Embeds every linked smart object in the document, copying each linked file's data into the PSD so it no longer depends on outside files. In the harvest a placed linked image became embedded (history 'Embed All Linked Smart Objects').",
+ "use_for": [
+  "making a self-contained PSD before sending it to a client, printer or another machine",
+  "archiving a finished campaign file so missing links cannot break it later"
+ ],
+ "avoid": [
+  "files where the shared source must keep updating across documents: embedding cuts that link",
+  "embedding just one layer: use Layer/Smart Objects/Embed Linked"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Links"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerEmbedAll'), new ActionDescriptor(), DialogModes.NO); verified live (linked -> embedded).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Embed Linked",
+ "id": "6345",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Embed Linked",
+ "status": "current",
+ "summary": "Embeds the selected linked smart object, copying its linked file into the PSD so that layer no longer depends on the outside file. In the harvest a placed linked image became embedded (history 'Embed Linked Smart Object').",
+ "use_for": [
+  "freezing one linked asset (for example a product shot) at its current version while others stay linked",
+  "fixing a single layer before moving the PSD to a machine without the asset folder"
+ ],
+ "avoid": [
+  "embedding every link at once: use Layer/Smart Objects/Embed All Linked",
+  "assets that should keep updating from the shared file: leave them linked"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Links",
+  "CDR": "Bitmaps/Break Link"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerConvertToEmbedded'), new ActionDescriptor(), DialogModes.NO) on the selected linked smart object; verified live (linked -> embedded).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Export Contents",
+ "id": "6334",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Export Contents",
+ "status": "needs_input",
+ "summary": "Saves a copy of the selected smart object's contents to a file in its native format (for example .psb for content made in Photoshop, or the originally placed file type), leaving the layer unchanged. Opens a save dialog (menu title 'Export Contents...').",
+ "how": "Choose a folder and file name; the format follows the contents and cannot be changed in the dialog.",
+ "use_for": [
+  "recovering the original placed logo or photo from a client PSD",
+  "reusing a mock-up's inner artwork in another file or app"
+ ],
+ "avoid": [
+  "turning the layer into a linked smart object as well: use Layer/Smart Objects/Convert to Linked",
+  "exporting the visible, transformed result: use Layer/Export As, which exports the selected layer"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerExportContents')) is the terminology label match (not run: exports are skipped by rule), so the save dialog it should open was not seen. Without the dialog (unverified): executeAction(stringIDToTypeID('placedLayerExportContents'), desc, DialogModes.NO) with desc: null = path File(target).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: 'it opens the save dialog' was stated as observed, but the command was never run; avoid: File > Export > Export As exports the document; the per-layer command is the harvested Layer/Export As"
+ }
+},
+{
+ "name": "New Smart Object via Copy",
+ "id": "2981",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/New Smart Object via Copy",
+ "status": "current",
+ "summary": "Duplicates the selected smart object as a separate smart object with its own copy of the contents, so editing one no longer changes the other (a plain layer duplicate shares contents). In the harvest it added 'px1 copy' above the original (history 'New Smart Object via Copy').",
+ "use_for": [
+  "making colour or artwork variants of a mock-up placeholder that must diverge",
+  "branching a logo or badge smart object to customise one instance only"
+ ],
+ "avoid": [
+  "instances that should stay in sync: use Layer/Duplicate Layer or Layer/New/Layer Via Copy, whose copies share contents",
+  "non-smart-object layers: convert first with Layer/Smart Objects/Convert to Smart Object"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerMakeCopy')); verified live (layer count 1 -> 2, new layer 'px1 copy').",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: Ctrl+J was given as Duplicate Layer's shortcut, but the harvest binds it to Layer/New/Layer Via Copy and it is not in this batch; both commands named by their harvested paths"
+ }
+},
+{
+ "name": "Rasterize",
+ "id": "Layer/Smart Objects/Rasterize",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Rasterize",
+ "status": "current",
+ "summary": "The Smart Objects submenu's entry for flattening the selected smart object into a plain pixel layer at its current size and transform; the source contents, smart-filter editability and lossless rescaling are lost. Runs the same command as Layer/Rasterize/Smart Object; enabled with a smart object layer selected.",
+ "use_for": [
+  "finishing a placed graphic so it can be painted, erased or Liquified",
+  "lightening a PSD once a large embedded source is no longer needed"
+ ],
+ "avoid": [
+  "graphics you may still scale or edit at source: keep a hidden smart-object copy",
+  "recovering the inner layers: use Layer/Smart Objects/Convert to Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Rasterize...",
+  "CDR": "Object/Convert to Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('rasterizeLayer'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), What = enum rasterizeItem 'placed'; verified live (history 'Rasterize Smart Object').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Relink to File",
+ "id": "6340",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Relink to File",
+ "status": "needs_input",
+ "summary": "Points the selected smart object at a file on disk, or reconnects a linked one whose file has moved; the layer keeps its transforms, filters and styles. The harvest found it enabled on an embedded smart object too (the 'smart' fixture, so:emb), so it is not limited to linked layers; picking a file there makes the layer link to it (the pick itself was not completed). Opens a file picker (the harvest saw a 'Replace File' dialog; menu title 'Relink to File...').",
+ "how": "Pick the new or moved file in the 'Replace File' dialog; the layer then links to that file.",
+ "use_for": [
+  "fixing missing-link warnings after an asset folder was moved or renamed",
+  "swapping a linked product shot for the final retouched version while keeping its placement"
+ ],
+ "avoid": [
+  "keeping the layer embedded: use Layer/Smart Objects/Replace Contents, which swaps the contents without creating a link",
+  "pulling an asset from a Creative Cloud library: use Layer/Smart Objects/Relink to Library Graphic"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Links"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerRelinkToFile'), new ActionDescriptor(), DialogModes.ALL) opened the 'Replace File' dialog in the harvest; runMenuItem of the same id failed. Without the dialog (unverified): pass desc: null = path File(newFile) with DialogModes.NO.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: said it works on linked smart objects only, but the harvest found it enabled (and the call opened its dialog) on an embedded smart object; how: dropped the unobserved 'Place' button and the unverified claim that other layers linked to the old file stay unchanged; avoid: 'embedded smart objects' contradicted the harvest (enabled on one); reworded to the real difference, an embedded vs a linked result"
+ }
+},
+{
+ "name": "Relink to Library Graphic",
+ "id": "6341",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Relink to Library Graphic",
+ "status": "needs_input",
+ "summary": "Re-points the selected smart object at a graphic stored in a Creative Cloud library, so it becomes a library-linked smart object that updates when that library asset changes. Needs a library graphic to be chosen (menu title 'Relink to Library Graphic...'). In the harvest the command ran with no observable change, so the exact picking step was not seen.",
+ "how": "As far as is known the Libraries panel opens so a graphic can be picked; the layer keeps its transforms and filters. Needs a signed-in Creative Cloud account with a library.",
+ "use_for": [
+  "connecting a brand logo in many campaign PSDs to the team's shared library version",
+  "replacing a local placeholder with the approved asset from a CC library"
+ ],
+ "avoid": [
+  "offline or unattended pipelines: it depends on Creative Cloud libraries and an interactive pick",
+  "relinking to a file on disk: use Layer/Smart Objects/Relink to File"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "AI": "Window/Links"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerRelinkToLibraries')) is the terminology label match; tried live it ran without error but changed nothing observable. No working script route is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Replace Contents",
+ "id": "6333",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Replace Contents",
+ "status": "needs_input",
+ "summary": "Swaps the contents of the selected smart object for another file while keeping the layer's transform, smart filters, masks and styles. Asks for the file (menu title 'Replace Contents...'). The new file comes in at its own pixel size under the same transform: in the harvest a 160 px square smart object grew to 1920x1080 when a larger photo replaced it.",
+ "how": "Pick the replacement file in the file dialog. Match the replacement's pixel size to the original contents if the placement must stay the same.",
+ "use_for": [
+  "batch-filling a mock-up or template placeholder with different photos or designs",
+  "swapping a draft logo for the final file without rebuilding filters and effects",
+  "data-driven variants: one template, a folder of images"
+ ],
+ "avoid": [
+  "replacements with a different size or aspect ratio when the placement must not move: resize the source first or re-fit the layer afterwards",
+  "linked smart objects that should keep a link: use Layer/Smart Objects/Relink to File"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Window/Links"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('placedLayerReplaceContents'), desc, DialogModes.NO) with desc: null = path File('E:/path/new.png'); verified live (contents replaced by test_photo, history 'Replace Contents').",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: the dialog name 'Place' is not in the batch; made generic"
+ }
+},
+{
+ "name": "Reset Transform",
+ "id": "6347",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Reset Transform",
+ "status": "current",
+ "summary": "Removes the transforms applied to the selected smart object (scale, rotation and similar), returning it to its original size and orientation. In the harvest a smart object scaled to 50% went back to its original 160x160 px (history 'Reset Transforms').",
+ "use_for": [
+  "undoing a messy series of scales and rotations on a placed logo without losing later edits",
+  "restoring a mock-up insert to its native size before re-fitting it"
+ ],
+ "avoid": [
+  "undoing only the last transform: use Edit > Undo",
+  "non-smart-object layers: their transforms are already baked into the pixels"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Object/Clear Transformations"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerResetTransforms')); verified live (bounds 80,80,160,160 -> 40,40,200,200).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Reveal in Explorer",
+ "id": "3091",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Smart Objects/Reveal in Explorer",
+ "status": "current",
+ "summary": "Opens Windows File Explorer at the file that the selected linked smart object points to, with the file highlighted. Changes nothing in the document. Disabled in every scratch state the harvest tried, since none had a linked smart object.",
+ "use_for": [
+  "finding the source of a linked asset to edit, rename or hand it off",
+  "checking which version of a linked file a PSD is actually using"
+ ],
+ "avoid": [
+  "embedded smart objects: they have no file on disk; use Layer/Smart Objects/Export Contents",
+  "unattended scripts: it only opens another app's window"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "app.runMenuItem(stringIDToTypeID('placedLayerRevealInOS')) is the terminology label match (not run: it opens Windows Explorer). A script needs the linked file path instead, which the harvest did not cover.",
+ "review": {
+  "by": "adversarial",
+  "changes": "equivalents: removed AI Window/Links; the Links panel (per its card) relinks, updates, embeds and shows link info but does not open the file's folder in Explorer, so it is not the same job"
+ }
+}
+]}

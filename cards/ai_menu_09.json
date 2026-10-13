@@ -1,0 +1,504 @@
+{
+ "cards": [
+  {
+   "name": "Transform Again",
+   "id": "transformagain",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Transform Again",
+   "status": "needs_input",
+   "summary": "Repeats the most recent transformation (move, scale, rotate, reflect, shear or a Transform Each setting, including whether it made a copy) on the current selection with exactly the same values. Pressed again and again it keeps stepping, so one rotated or moved copy becomes an evenly spaced series.",
+   "use_for": [
+    "radial artwork: rotate a copy around a set pivot once, then repeat for clock ticks, sunbursts, petals or gear teeth",
+    "evenly spaced rows of icons, dashes, stripes or grid lines (move a copy once, repeat)",
+    "giving the next object the same scale or rotation you just applied to another"
+   ],
+   "avoid": [
+    "arrays you will want to respace or recount later: the copies are separate objects; use Effect > Distort & Transform > Transform or a Repeat (radial / grid) object for an editable series",
+    "spacing that should vary: every repeat uses identical values",
+    "nothing selected or no transformation yet in the session: there is nothing to repeat"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Again",
+    "CDR": "Edit/Repeat %s"
+   },
+   "shortcut": "Ctrl+D",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"transformagain\") (confirmed: same result as the menu item). Object-model alternative (unverified): call the same PageItem.translate / resize / rotate again yourself.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: marked the untested object-model alternative (unverified)"
+   }
+  },
+  {
+   "name": "Transform Each...",
+   "id": "Transform v23",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Transform Each...",
+   "status": "needs_input",
+   "summary": "Opens the Transform Each dialog, which scales, moves, rotates and reflects every selected object around its own reference point rather than around the selection as a whole, optionally with a random amount per object, and can apply the result to copies.",
+   "how": "Select the objects (it also works on a single object). Set Scale Horizontal / Vertical (%), Move Horizontal / Vertical and the Rotate angle; tick Reflect X or Reflect Y; pick the reference point on the locator (centre keeps each object in place). Random varies each object between zero and the entered values. Options: Scale Corners, Scale Strokes & Effects, Transform Objects / Transform Patterns. Turn on Preview, then OK, or Copy to transform duplicates and keep the originals.",
+   "use_for": [
+    "shrinking or rotating a scatter of icons, stars or confetti in place without pulling them toward the centre",
+    "random jitter of size, angle and position across repeated shapes for an organic pattern",
+    "turning every letter outline or tile by the same angle around its own centre"
+   ],
+   "avoid": [
+    "objects that should transform as one unit keeping their layout: use Object > Transform > Scale / Rotate or the bounding box",
+    "grouped artwork: a group counts as one object, so ungroup first if each piece should move on its own",
+    "repeatable random results: Random gives a different outcome on every run"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Alt+Shift+Ctrl+D",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Transform v23\") opens the Transform Each dialog (confirmed; the shortcut-file id \"Transform3\" fails with Error 1200 in 30.2.1). Object-model equivalent (unverified): loop over app.activeDocument.selection and call item.resize(sx, sy, true, true, true, true, lineScale, Transformation.CENTER), item.rotate(angle, true, true, true, true, Transformation.CENTER) and item.translate(dx, dy) on each item.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: 'two or more objects' was wrong (it works on one object too) and the number is not in the batch; how: dropped the unharvested '9-point' count"
+   }
+  },
+  {
+   "name": "Ungroup",
+   "id": "ungroup",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Ungroup",
+   "status": "needs_input",
+   "summary": "Removes one level of grouping from the selected group(s): the group's direct members become separately selectable objects, while groups nested inside stay grouped. Ungrouping a clipping group also releases the clip, leaving the clipping path as an unpainted path.",
+   "use_for": [
+    "editing one element of grouped artwork such as an imported logo, icon set or PDF",
+    "breaking a pasted or traced graphic into parts to recolour or rearrange them",
+    "separating pieces before sending them to their own layers for export or animation"
+   ],
+   "avoid": [
+    "groups that carry their own effects, opacity or graphic style: those group-level attributes are lost; edit inside the group in Isolation Mode (double-click) instead",
+    "clipping groups you still need: select inside with the Direct Selection tool or isolate rather than ungrouping",
+    "deeply nested groups: one level per press; use Ungroup All to flatten everything"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Ungroup Layers",
+    "CDR": "Object/Group/Ungroup"
+   },
+   "shortcut": "Shift+Ctrl+G",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"ungroup\") (id paired with the default shortcut set, not confirmed by execution). Object-model alternative (unverified): move each member out with item.move(group, ElementPlacement.PLACEBEFORE), then remove the empty GroupItem.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Ungroup All",
+   "id": "ungroupAll",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Ungroup All",
+   "status": "needs_input",
+   "summary": "Dissolves grouping completely in one step, nested groups included, so only individual objects remain (Ungroup removes one level at a time). Read from the name, menu place and shortcut only: the harvest did not execute it, so whether it works on the selection or on the whole document, and how it treats clipping groups inside, is unverified.",
+   "use_for": [
+    "flattening deeply nested groups in imported PDF, EPS or SVG artwork before editing",
+    "cleaning a clipart or icon file so every shape can be recoloured or moved on its own"
+   ],
+   "avoid": [
+    "artwork whose groups carry effects, opacity or clipping masks you need: ungroup selectively with Ungroup or edit in Isolation Mode",
+    "files whose group structure organises layers for later edits, export or animation"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Group/Ungroup All"
+   },
+   "shortcut": "Alt+Shift+G",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"ungroupAll\") (id paired with the default shortcut set, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Unlock All",
+   "id": "unlockAll",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Unlock All",
+   "status": "current",
+   "summary": "Unlocks every locked object in the document at once and leaves the freshly unlocked objects selected. Layer locks set in the Layers panel are a separate lock and are not changed.",
+   "use_for": [
+    "freeing a locked background, template image or guide shape once the layout is done",
+    "finding everything that was locked earlier: it arrives selected",
+    "opening up a received file whose objects were locked by someone else"
+   ],
+   "avoid": [
+    "freeing a single object: click its lock icon in the Layers panel instead",
+    "pressing Delete or moving straight afterwards: the unlocked objects are now part of the selection",
+    "objects on a locked layer: unlock the layer in the Layers panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Lock/Unlock All"
+   },
+   "shortcut": "Alt+Ctrl+2",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"unlockAll\") (id paired with the default shortcut set, not confirmed by execution). Object-model alternative (unverified): set item.locked = false for each item in app.activeDocument.pageItems.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Copy (Secondary)",
+   "id": "copy2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Copy (Secondary)",
+   "status": "needs_input",
+   "summary": "A second keyboard slot for Edit > Copy with no menu entry of its own (listed under Other Misc in Keyboard Shortcuts): F3 copies the selected artwork, or selected text while typing, to the clipboard and leaves it in place, the same as the primary Copy.",
+   "use_for": [
+    "one-hand copy on the function-key row (F2 cut, F3 copy, F4 paste) during repetitive layout",
+    "a second, remappable copy key in a custom shortcut set"
+   ],
+   "avoid": [
+    "scripts: call app.copy() or the primary Copy command, not the secondary slot",
+    "duplicating in place: a plain Paste after copying lands centred in the view, so use Paste in Front / Paste in Back / Paste in Place, or Alt-drag"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Copy",
+    "CDR": "Edit/Copy"
+   },
+   "shortcut": "F3",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"copy2\") (id from Illustrator Defaults.kys, not confirmed by execution); app.copy() does the same job in the object model.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the duplicating-in-place entry now says what goes wrong (plain Paste lands centred) instead of recommending Copy itself"
+   }
+  },
+  {
+   "name": "Cut (Secondary)",
+   "id": "cut2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Cut (Secondary)",
+   "status": "needs_input",
+   "summary": "A second keyboard slot for Edit > Cut with no menu entry of its own (listed under Other Misc in Keyboard Shortcuts): F2 removes the selected artwork, or selected text while typing, and puts it on the clipboard, the same as the primary Cut.",
+   "use_for": [
+    "moving art to another artboard, layer or document with the function-key row (F2 cut, F4 paste)",
+    "a second, remappable cut key in a custom shortcut set"
+   ],
+   "avoid": [
+    "moving art within the same document while keeping its position: cut, then Paste in Place or Paste in Front instead of plain Paste",
+    "scripts: call app.cut() or the primary Cut command, not the secondary slot"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Cut",
+    "CDR": "Edit/Cut"
+   },
+   "shortcut": "F2",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"cut2\") (id from Illustrator Defaults.kys, not confirmed by execution); app.cut() does the same job in the object model.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Navigate to Next Document",
+   "id": "navigateToNextDocument",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Navigate to Next Document",
+   "status": "current",
+   "summary": "Shortcut-only command that brings the next open document (the next document tab or window) to the front. Only the active window changes; no artwork is touched.",
+   "use_for": [
+    "flipping between a layout and its source files while copying artwork across",
+    "stepping through several open variants (sizes, colourways) to compare them"
+   ],
+   "avoid": [
+    "scripts: activate a named file with app.documents.getByName(name).activate() rather than relying on tab order",
+    "a single open document: there is nothing to switch to"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Ctrl+F6",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"navigateToNextDocument\") (id paired with the default shortcut set, not confirmed by execution). Object-model alternative (unverified): app.documents[i].activate() or app.documents.getByName(name).activate().",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Navigate to Next Document Group",
+   "id": "navigateToNextDocumentGroup",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Navigate to Next Document Group",
+   "status": "current",
+   "summary": "Shortcut-only command that moves focus to the next document group, meaning another set of documents such as a floating document window or a separate tab group, rather than the next tab inside the current group. The grouping behaviour is read from the name; the harvest did not execute it.",
+   "use_for": [
+    "jumping between two floating document windows or side-by-side tab groups while comparing or moving art between them"
+   ],
+   "avoid": [
+    "all documents in one tab group: use Navigate to Next Document instead",
+    "scripts: activate the target with app.documents.getByName(name).activate()"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Alt+Ctrl+F6",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"navigateToNextDocumentGroup\") (id paired with the default shortcut set, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Navigate to Previous Document",
+   "id": "navigateToPreviousDocument",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Navigate to Previous Document",
+   "status": "current",
+   "summary": "Shortcut-only command that brings the previous open document (the document tab or window before the current one) to the front; the reverse of Navigate to Next Document. No artwork is touched.",
+   "use_for": [
+    "stepping back to the file you were just in while assembling art from several documents",
+    "reviewing open variants in reverse order"
+   ],
+   "avoid": [
+    "scripts: activate a named file with app.documents.getByName(name).activate() rather than relying on tab order",
+    "a single open document: there is nothing to switch to"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Shift+Ctrl+F6",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"navigateToPreviousDocument\") (id paired with the default shortcut set, not confirmed by execution). Object-model alternative (unverified): app.documents.getByName(name).activate().",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Navigate to Previous Document Group",
+   "id": "navigateToPreviousDocumentGroup",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Navigate to Previous Document Group",
+   "status": "current",
+   "summary": "Shortcut-only command that moves focus to the previous document group (another floating document window or tab group), the reverse of Navigate to Next Document Group. The grouping behaviour is read from the name; the harvest did not execute it.",
+   "use_for": [
+    "jumping back between floating document windows or side-by-side tab groups while comparing layouts"
+   ],
+   "avoid": [
+    "all documents in one tab group: use Navigate to Previous Document instead",
+    "scripts: activate the target with app.documents.getByName(name).activate()"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Alt+Shift+Ctrl+F6",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"navigateToPreviousDocumentGroup\") (id paired with the default shortcut set, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "New File (No Dialog)",
+   "id": "new2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/New File (No Dialog)",
+   "status": "current",
+   "summary": "Shortcut-only command that creates a new blank document at once, skipping the New Document dialog. Which settings it reuses (the last new-document settings or the default profile) is not recorded by the harvest, so check the artboard size and colour mode before designing.",
+   "use_for": [
+    "a quick scratch document for testing a brush, effect, swatch or pasted art",
+    "spinning up several documents in a row without clicking through the dialog"
+   ],
+   "avoid": [
+    "print or screen jobs that need a set size, bleed, colour mode or raster resolution: use File > New with a preset",
+    "scripted builds: create the document with explicit settings through app.documents.add(...) instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Alt+Ctrl+N",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"new2\") (id from Illustrator Defaults.kys, not confirmed by execution). Object-model equivalent (unverified): app.documents.add() for defaults, or app.documents.add(DocumentColorSpace.CMYK, width, height) for an explicit size and colour mode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid, status, scriptable, script_api id, shortcut and equivalents checked against the batch and pgd.py items)"
+   }
+  },
+  {
+   "name": "Paste (Secondary)",
+   "id": "paste2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Paste (Secondary)",
+   "status": "current",
+   "summary": "A second keyboard slot for Edit > Paste with no menu entry of its own (listed under Other Misc in Keyboard Shortcuts): F4 pastes the clipboard centred in the current view, on the active layer (or the original layer when Paste Remembers Layers is on), the same as the primary Paste. Nothing happens when the clipboard is empty.",
+   "use_for": [
+    "placing copied art into another document or artboard with the function-key row (F3 copy, F4 paste)",
+    "a second, remappable paste key in a custom shortcut set"
+   ],
+   "avoid": [
+    "art that must keep its exact position: use Paste in Front, Paste in Back or Paste in Place",
+    "scripts: call app.paste() or the primary Paste command, not the secondary slot"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Paste",
+    "CDR": "Edit/Paste"
+   },
+   "shortcut": "F4",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"paste2\") (id from Illustrator Defaults.kys, not confirmed by execution); app.paste() does the same job in the object model.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'into the active layer' ignored Paste Remembers Layers (matches the primary Paste card)"
+   }
+  },
+  {
+   "name": "Subscript (Secondary)",
+   "id": "~subscript2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Subscript (Secondary)",
+   "status": "needs_input",
+   "summary": "Alternate shortcut, active only while editing type, that sets the selected characters to subscript: they shrink and drop below the baseline, as with the Character panel's subscript option. Size and offset come from Document Setup's subscript settings.",
+   "use_for": [
+    "the lowered numerals in chemical formulas on packaging, posters and infographics",
+    "index or footnote markers set below the line"
+   ],
+   "avoid": [
+    "fonts with drawn subscript figures: the synthesized version is a scaled copy of the normal glyph; use the Subscript / Inferior position in the OpenType panel (Window > Type > OpenType) for better-weighted figures",
+    "anything outside text editing: the shortcut works only with characters selected in a type object"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Alt+Shift+Ctrl++",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"~subscript2\") (id from Illustrator Defaults.kys, not confirmed by execution). Object-model equivalent (unverified): textRange.characterAttributes.baselinePosition = FontBaselineOption.SUBSCRIPT.",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: dropped example digits not in the batch; avoid: the OpenType subscript/inferior position lives in the OpenType panel, not the Character panel"
+   }
+  },
+  {
+   "name": "Superscript (Secondary)",
+   "id": "~superScript2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Superscript (Secondary)",
+   "status": "needs_input",
+   "summary": "Alternate shortcut, active only while editing type, that sets the selected characters to superscript: they shrink and rise above the baseline, as with the Character panel's superscript option. Size and offset come from Document Setup's superscript settings.",
+   "use_for": [
+    "trademark and registered marks, ordinals and exponents (square metres) in specs, price tags and ads",
+    "footnote reference numbers in brochures and reports"
+   ],
+   "avoid": [
+    "fonts with drawn superior figures: the synthesized version is a scaled copy of the normal glyph; use the Superscript / Superior position in the OpenType panel (Window > Type > OpenType) for better-weighted figures",
+    "anything outside text editing: the shortcut works only with characters selected in a type object"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Shift+Ctrl++",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"~superScript2\") (id paired by shortcut and order only, not confirmed by execution). Object-model equivalent (unverified): textRange.characterAttributes.baselinePosition = FontBaselineOption.SUPERSCRIPT.",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: dropped example digits not in the batch; avoid: named the OpenType panel where the superior position lives"
+   }
+  },
+  {
+   "name": "Switch Units",
+   "id": "switchUnits",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Switch Units",
+   "status": "current",
+   "summary": "Shortcut-only command that cycles the measurement unit to the next one (points, picas, inches, millimetres, centimetres, pixels and so on), changing what the rulers and the Transform / Control panel fields show; the artwork itself does not change. Read from the name and default shortcut; the harvest did not execute it, so whether it changes the document's units or the general unit in Preferences > Units is unverified.",
+   "use_for": [
+    "flipping a layout between millimetres for the print spec and pixels for a screen-size check",
+    "reading a dimension in another unit without opening Document Setup or Preferences"
+   ],
+   "avoid": [
+    "setting one specific unit: the result depends on the current unit, so right-click a ruler or set Units in Document Setup / Preferences > Units",
+    "scripts: read app.activeDocument.rulerUnits to know the unit instead of cycling"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Preferences/Units & Rulers"
+   },
+   "shortcut": "Alt+Shift+Ctrl+U",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"switchUnits\") (id paired with the default shortcut set, not confirmed by execution). Check the result with app.activeDocument.rulerUnits (RulerUnits enum).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'the active document's units' was stated as fact; whether it changes the document's units or the Preferences > Units general unit is not in the batch; summary: stated the unverified scope"
+   }
+  },
+  {
+   "name": "Undo (Secondary)",
+   "id": "undo2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Undo (Secondary)",
+   "status": "current",
+   "summary": "A second keyboard slot for Edit > Undo with no menu entry of its own (Other Misc in Keyboard Shortcuts). The harvest shows no default key for it, so it cannot be triggered from the keyboard until a key is assigned (a script can still call it); when triggered it steps back one action like the primary Undo.",
+   "use_for": [
+    "mapping undo to an extra key (an F-key or a tablet express key) while keeping the primary Undo shortcut"
+   ],
+   "avoid": [
+    "expecting a default shortcut: none is assigned",
+    "scripts: call app.undo() rather than the secondary slot"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Undo",
+    "CDR": "Edit/Undo %s"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"undo2\") (id paired by words and order only, not confirmed by execution); app.undo() does the same job in the object model.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'does nothing until a key is assigned' was wrong, executeMenuCommand can still run it"
+   }
+  },
+  {
+   "name": "Zoom In (Secondary)",
+   "id": "zoomin2",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Edit/Keyboard Shortcuts.../Menu Commands/Other Misc/Zoom In (Secondary)",
+   "status": "current",
+   "summary": "Secondary keyboard slot for View > Zoom In (its default key Ctrl++ is the same key the primary item shows): magnifies the active view by one zoom step; the artwork is unchanged. A live test zoomed a new document's view from 1.39 to 1.75, the same step as the primary Zoom In.",
+   "use_for": [
+    "checking small details (anchor points, stroke joins, kerning) while drawing",
+    "a predictable zoom step from a script before a window capture"
+   ],
+   "avoid": [
+    "zooming to an exact percentage or to fit: use View > Fit Artboard in Window or Fit All in Window, or set activeView.zoom in a script"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "View/Zoom In",
+    "CDR": "View/Zoom In"
+   },
+   "shortcut": "Ctrl++",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"zoomin2\") (confirmed live: same zoom step as \"zoomin\"). Object-model alternative (unverified): set app.activeDocument.activeView.zoom to an explicit value.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'second shortcut' implied a different key; both slots carry Ctrl++ in the harvest; avoid: removed 'zoom to the selection', which is not an Illustrator command in the harvest; script_api: marked the untested activeView.zoom route (unverified)"
+   }
+  }
+ ]
+}

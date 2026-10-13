@@ -1,0 +1,3123 @@
+{
+ "cards": [
+  {
+   "name": "Outline",
+   "id": "class:Outline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Outline",
+   "status": "current",
+   "summary": "The outline (pen) settings of one shape: width, color, dash style, arrowheads, caps, joins, calligraphic nib, position relative to the fill and whether it scales with the object. It is the scripting side of the Outline Pen dialog and the Properties docker's Outline section.",
+   "use_for": [
+    "set a consistent stroke weight and color on every logo element before print",
+    "turn hairlines into a fixed 0.25 mm keyline that does not scale with the artwork",
+    "add arrowheads to leader lines in an infographic or diagram",
+    "copy one shape's stroke onto many shapes (CopyAssign)",
+    "turn a stroke into a filled object for cutters or laser files (ConvertToObject)"
+   ],
+   "avoid": [
+    "reading outline settings off a group: read each child shape, a group has no outline of its own (unverified what a group returns)",
+    "dash patterns built by hand per shape: pick or create an OutlineStyle and assign it to Style"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Stroke"
+   },
+   "how": "Coclass with no members of its own; everything is on its default interface IVGOutline (members_on). Reach it as Shape.Outline (IVGShape.Outline) for one shape, or use ActiveSelectionRange.SetOutlineProperties (IVGShapeRange) to set many shapes at once. Width and DashDotLength are in document units (ActiveDocument.Unit). Style takes an OutlineStyle (Application.OutlineStyles or CreateOutlineStyle); StartArrow / EndArrow take an ArrowHead from Application.ArrowHeads.",
+   "key_members": [
+    {
+     "name": "Width",
+     "use": "stroke width in document units"
+    },
+    {
+     "name": "Color",
+     "use": "outline Color object; change it in place with Color.RGBAssign / CMYKAssign"
+    },
+    {
+     "name": "Type",
+     "use": "cdrNoOutline, cdrOutline or cdrEnhancedOutline"
+    },
+    {
+     "name": "SetNoOutline",
+     "use": "remove the outline entirely"
+    },
+    {
+     "name": "Style",
+     "use": "dash pattern as an OutlineStyle"
+    },
+    {
+     "name": "StartArrow",
+     "use": "arrowhead at the start node"
+    },
+    {
+     "name": "EndArrow",
+     "use": "arrowhead at the end node"
+    },
+    {
+     "name": "LineCaps",
+     "use": "butt, round or square caps (cdrOutlineLineCaps)"
+    },
+    {
+     "name": "LineJoin",
+     "use": "miter, round or bevel corners (cdrOutlineLineJoin)"
+    },
+    {
+     "name": "MiterLimit",
+     "use": "corner angle below which a miter join is beveled"
+    },
+    {
+     "name": "Justification",
+     "use": "stroke centred, inside or outside the path"
+    },
+    {
+     "name": "BehindFill",
+     "use": "draw the outline behind the fill so only the outer half shows"
+    },
+    {
+     "name": "ScaleWithShape",
+     "use": "scale the stroke width when the shape is resized"
+    },
+    {
+     "name": "NibAngle",
+     "use": "calligraphic nib angle"
+    },
+    {
+     "name": "NibStretch",
+     "use": "calligraphic nib stretch"
+    },
+    {
+     "name": "SetPropertiesEx",
+     "use": "set width, style, color, arrows, caps, joins, nib, dash length, miter and justification in one call"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy every outline setting from another Outline"
+    },
+    {
+     "name": "ConvertToObject",
+     "use": "Convert Outline to Object: returns the new filled shape"
+    },
+    {
+     "name": "VariableWidthNodes",
+     "use": "width nodes of a variable-width outline (Count 0 when the width is uniform)"
+    }
+   ],
+   "gotchas": [
+    "Width is in document units, so the same number means different strokes under cdrInch and cdrMillimeter: set ActiveDocument.Unit first.",
+    "ScaleWithShape is per shape: a logo scaled down for a favicon keeps its print stroke weight unless this is True.",
+    "BehindFill hides the inner half of the stroke, so the visible weight looks half of Width.",
+    "Setting Width on a shape whose Type is cdrNoOutline may not make the outline visible on its own (unverified); set Type or use SetPropertiesEx.",
+    "ConvertToObject creates a new shape and leaves the original without an outline (unverified that it also deletes the original's stroke in every case)."
+   ],
+   "example": "Dim s As Shape\nActiveDocument.Unit = cdrMillimeter\nSet s = ActiveShape\ns.Outline.Width = 0.25\ns.Outline.Color.CMYKAssign 0, 0, 0, 100\ns.Outline.ScaleWithShape = False\ns.Outline.Justification = cdrOutlineJustificationOutside",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGOutline)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: replaced ActiveSelection.Outline (unverified that a selection shape fans out) with the harvested ShapeRange.SetOutlineProperties"
+   }
+  },
+  {
+   "name": "OutlineStyle",
+   "id": "class:OutlineStyle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OutlineStyle",
+   "status": "current",
+   "summary": "One dash pattern (the dashed / dotted line styles in the Outline Pen style list): a count of dash-gap pairs with the length of each dash and gap. Assigning it to Outline.Style makes the stroke dashed.",
+   "use_for": [
+    "dashed cut or fold lines on packaging dielines",
+    "dotted leader lines in a map or infographic",
+    "a custom brand dash pattern reused across a document"
+   ],
+   "avoid": [
+    "changing a style taken from Application.OutlineStyles when only one shape should change: that list is app-wide; build a private style with Application.CreateOutlineStyle"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGOutlineStyle. Reach it as Shape.Outline.Style, Application.OutlineStyles.Item(i), or make a new one with Application.CreateOutlineStyle(DashDotCount, DashDotLengths). Apply it by assigning it to Outline.Style.",
+   "key_members": [
+    {
+     "name": "DashCount",
+     "use": "number of dash-gap pairs in the pattern"
+    },
+    {
+     "name": "DashLength",
+     "use": "length of dash number Index"
+    },
+    {
+     "name": "GapLength",
+     "use": "length of gap number Index"
+    },
+    {
+     "name": "Index",
+     "use": "position of the style in the application's style list"
+    },
+    {
+     "name": "Enhanced",
+     "use": "True when the style is an enhanced-outline dash style"
+    }
+   ],
+   "gotchas": [
+    "Dash and gap lengths are whole numbers; they appear to be relative to the outline width rather than absolute (unverified), so a thicker stroke stretches the pattern. For an absolute repeat use Outline.DashDotLength.",
+    "Index base for DashLength / GapLength is not documented in the harvest (unverified: 1-based like the collections).",
+    "Enhanced is a read-only flag; for an enhanced style the pattern may not be fully described by DashCount / DashLength (unverified)."
+   ],
+   "example": "Dim st As OutlineStyle\nSet st = OutlineStyles.Item(5)\nDebug.Print st.Index, st.DashCount, st.DashLength(1), st.GapLength(1)\nActiveShape.Outline.Style = st",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGOutlineStyle)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: reworded an invented claim that enhanced styles are read-only"
+   }
+  },
+  {
+   "name": "OutlineStyles",
+   "id": "class:OutlineStyles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OutlineStyles",
+   "status": "current",
+   "summary": "The application-wide list of dash styles shown in the Outline Pen style drop-down. Scripts read styles from it, add new ones and save the list so the styles appear in the UI.",
+   "use_for": [
+    "install a studio dash pattern (cut line, perforation, stitch) for every designer",
+    "look up an existing dash style by position to apply it in a batch macro"
+   ],
+   "avoid": [
+    "a one-off dashed stroke: CreateOutlineStyle gives a private style without touching the shared list"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGOutlineStyles. Reach it as Application.OutlineStyles (OutlineStyles unqualified in a CorelDRAW VBA macro). Item is base 1. Add returns a new style to fill in; AddStyle copies an existing OutlineStyle into the list; Save writes the list back.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of dash styles"
+    },
+    {
+     "name": "Item",
+     "use": "style by base-1 position"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the styles"
+    },
+    {
+     "name": "Add",
+     "use": "append a new blank style and return it"
+    },
+    {
+     "name": "AddStyle",
+     "use": "append a copy of a given OutlineStyle"
+    },
+    {
+     "name": "Remove",
+     "use": "delete the style at Index"
+    },
+    {
+     "name": "Save",
+     "use": "persist changes to the style list"
+    }
+   ],
+   "gotchas": [
+    "The list is shared by every document and user session on the machine; Remove and Save change what other designers see.",
+    "Changes may be lost at exit unless Save is called (unverified).",
+    "Which index is the solid line is not in the harvest (unverified); look up by DashCount instead of a hard-coded index.",
+    "The type library describes this class as 'the dash style applied to an outline', but its members (Item, Count, Add, Save) make it the style list; the style on one shape is Outline.Style."
+   ],
+   "example": "Dim st As OutlineStyle\nFor Each st In OutlineStyles\n    Debug.Print st.Index, st.DashCount, st.Enhanced\nNext st\nSet st = OutlineStyles.AddStyle(CreateOutlineStyle(1, Array(4, 2)))\nOutlineStyles.Save",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGOutlineStyles)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: noted the misleading harvested class description"
+   }
+  },
+  {
+   "name": "Page",
+   "id": "class:Page",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Page",
+   "status": "current",
+   "summary": "One page of a CorelDRAW document: its name, size, orientation, bleed, background, layers and shapes, plus search, selection and bounding-box helpers. The scripting side of the page tabs and Layout > Page Size / Page Background.",
+   "use_for": [
+    "build a multi-size social or print set by setting each page's size and name",
+    "find and replace placeholder text on a template page",
+    "fit the page to its artwork before export (Autofit)",
+    "collect the shapes on one page for a batch restyle",
+    "set bleed and background before publishing a print PDF"
+   ],
+   "avoid": [
+    "setting the paper name through Paper: it is read-only; use SetSize / SizeWidth / SizeHeight or SelectSize",
+    "reaching master-layer content through Shapes: use AllLayers or Document.MasterPage"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Artboard"
+   },
+   "how": "Coclass; members are on IVGPage. Reach it as ActivePage, ActiveDocument.Pages.Item(n), Pages.First / Last, or from Document.AddPages / AddPagesEx / InsertPages. Sizes and coordinates are in document units; the origin is the lower-left of the page by default and y grows upward. Call Activate before code that works through ActiveLayer / ActivePage.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "page name shown on the page tab"
+    },
+    {
+     "name": "Index",
+     "use": "page number (read-only; reorder with MoveTo)"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "page width in document units"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "page height in document units"
+    },
+    {
+     "name": "SetSize",
+     "use": "set width and height in one call"
+    },
+    {
+     "name": "SelectSize",
+     "use": "apply a named preset page size, optionally landscape"
+    },
+    {
+     "name": "Orientation",
+     "use": "cdrPortrait or cdrLandscape"
+    },
+    {
+     "name": "Bleed",
+     "use": "bleed distance around the page"
+    },
+    {
+     "name": "Background",
+     "use": "none, solid or bitmap background"
+    },
+    {
+     "name": "Color",
+     "use": "solid background color"
+    },
+    {
+     "name": "Layers",
+     "use": "local layers of the page"
+    },
+    {
+     "name": "AllLayers",
+     "use": "local plus master layers"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "layer new shapes go onto"
+    },
+    {
+     "name": "Shapes",
+     "use": "shapes across the page's layers"
+    },
+    {
+     "name": "FindShape",
+     "use": "one shape by name, type or static ID (Recursive into groups)"
+    },
+    {
+     "name": "FindShapes",
+     "use": "ShapeRange of matching shapes"
+    },
+    {
+     "name": "TextReplace",
+     "use": "find and replace text on the page"
+    },
+    {
+     "name": "GetObjectsBoundingBox",
+     "use": "Rect around the content (selected only / include non-printable)"
+    },
+    {
+     "name": "Autofit",
+     "use": "resize the page to the content on its local layers plus a margin"
+    },
+    {
+     "name": "Activate",
+     "use": "make this the active page"
+    }
+   ],
+   "gotchas": [
+    "All lengths follow ActiveDocument.Unit; set it before writing sizes.",
+    "Paper is read-only: the harvest description says to use SizeWidth / SizeHeight to change size.",
+    "Pages.Item(0) is the master page, not the first page; a loop from 0 touches the master.",
+    "Shapes covers the page's layers but not master-layer shapes (unverified); AllLayers includes the master layers.",
+    "Delete on the only page of a document is expected to fail (unverified)."
+   ],
+   "example": "Dim p As Page, r As Rect\nActiveDocument.Unit = cdrMillimeter\nSet p = ActiveDocument.Pages.Item(1)\np.SetSize 210, 297\np.Bleed = 3\np.Name = \"Cover\"\nSet r = p.GetObjectsBoundingBox(False, False)\nDebug.Print p.Index, r.Width, r.Height",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPage)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: Layout > Page Setup is not a CorelDRAW 2024 menu item; harvested items are Layout/Page Size and Layout/Page Background; key_members: Autofit scoped to local layers per harvest"
+   }
+  },
+  {
+   "name": "Pages",
+   "id": "class:Pages",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Pages",
+   "status": "current",
+   "summary": "The collection of pages of one document, in page order. Used to count, walk and pick pages; adding pages is done on the Document.",
+   "use_for": [
+    "loop over every page of a brochure to export or restyle it",
+    "jump to the first or last page of a multi-page template",
+    "check page count before a page-range export"
+   ],
+   "avoid": [
+    "looking for Add here: create pages with Document.AddPages, AddPagesEx or InsertPages"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Artboards"
+   },
+   "how": "Coclass; members are on IVGPages. Reach it as ActiveDocument.Pages. Item is base 1 for real pages; Item(0) returns the master page. For Each walks the pages in order.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of pages (master page not counted, unverified)"
+    },
+    {
+     "name": "Item",
+     "use": "page by number; 0 = master page"
+    },
+    {
+     "name": "First",
+     "use": "first page"
+    },
+    {
+     "name": "Last",
+     "use": "last page"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over pages"
+    },
+    {
+     "name": "Parent",
+     "use": "the Document"
+    }
+   ],
+   "gotchas": [
+    "Item(0) returns the master page (harvest description), so For i = 0 To Count touches the master.",
+    "The collection is live: deleting or inserting pages inside a For i loop shifts later indexes; loop backwards when deleting."
+   ],
+   "example": "Dim p As Page\nFor Each p In ActiveDocument.Pages\n    Debug.Print p.Index, p.Name, p.SizeWidth, p.SizeHeight\nNext p\nActiveDocument.Unit = cdrPixel\nSet p = ActiveDocument.AddPagesEx(1, 1080, 1350)\nDebug.Print ActiveDocument.Pages.Count, ActiveDocument.Pages.Last.Index",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPages)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example: AddPagesEx sizes are in document units; set cdrPixel first or the page is 1080 x 1350 of the default unit"
+   }
+  },
+  {
+   "name": "PageSize",
+   "id": "class:PageSize",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PageSize",
+   "status": "current",
+   "summary": "One named paper size preset (A4, Letter, a custom 'Instagram Post' and so on) from the page-size list (Layout > Page Size). It holds the name, width and height and whether it is built in.",
+   "use_for": [
+    "look up the exact dimensions of a named preset before laying out",
+    "check whether a studio's custom size is installed",
+    "remove an outdated custom size"
+   ],
+   "avoid": [
+    "sizing a page from this object directly: apply it with Page.SelectSize(Name, Landscape) or Page.SetSize"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPageSize. Reach it as Application.PageSizes.Item(IndexOrName) or as the return value of PageSizes.Add(Name, Width, Height).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "preset name as shown in the size list"
+    },
+    {
+     "name": "Width",
+     "use": "preset width"
+    },
+    {
+     "name": "Height",
+     "use": "preset height"
+    },
+    {
+     "name": "DefaultUnit",
+     "use": "the unit the preset is defined in"
+    },
+    {
+     "name": "BuiltIn",
+     "use": "True for presets shipped with CorelDRAW"
+    },
+    {
+     "name": "FixedOrientation",
+     "use": "True when the preset's orientation cannot be swapped"
+    },
+    {
+     "name": "Index",
+     "use": "position in the list"
+    },
+    {
+     "name": "Delete",
+     "use": "remove a custom preset"
+    }
+   ],
+   "gotchas": [
+    "Width / Height are typed read-write but described as 'Gets'; writing them on a built-in preset is expected to fail (unverified).",
+    "Whether Width / Height come back in document units or in DefaultUnit is not stated in the harvest (unverified); compare against a known size such as A4 first.",
+    "Delete works only on custom presets (harvest: 'Deletes the custom paper type')."
+   ],
+   "example": "Dim ps As PageSize\nSet ps = PageSizes.Item(\"A4\")\nDebug.Print ps.Name, ps.Width, ps.Height, ps.DefaultUnit, ps.BuiltIn\nActivePage.SelectSize ps.Name, True",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPageSize)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: menu path corrected to harvested Layout/Page Size"
+   }
+  },
+  {
+   "name": "PageSizes",
+   "id": "class:PageSizes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PageSizes",
+   "status": "current",
+   "summary": "The application's list of named page size presets. Scripts enumerate it, look sizes up by name, and add custom sizes that then appear in the Layout > Page Size list.",
+   "use_for": [
+    "install a studio set of social-media sizes (1080x1350, 1080x1920) as named presets",
+    "check a preset exists before calling Page.SelectSize in a template macro"
+   ],
+   "avoid": [
+    "a one-off page size: Page.SetSize is enough and leaves the shared list alone"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPageSizes. Reach it as Application.PageSizes. Item takes an index or a name. Add(Name, Width, Height) creates a custom preset and returns it.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of presets"
+    },
+    {
+     "name": "Item",
+     "use": "preset by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over presets"
+    },
+    {
+     "name": "Add",
+     "use": "add a custom preset with name, width and height"
+    },
+    {
+     "name": "Parent",
+     "use": "the Application"
+    }
+   ],
+   "gotchas": [
+    "Item with an unknown name raises an error (unverified); trap it or walk the list first.",
+    "Units of Add's Width / Height are not stated in the harvest (unverified: document units); check the new preset's Width afterwards.",
+    "The list is application-wide and persists for other documents."
+   ],
+   "example": "Dim ps As PageSize\nFor Each ps In PageSizes\n    If Not ps.BuiltIn Then Debug.Print ps.Name, ps.Width, ps.Height\nNext ps\nActiveDocument.Unit = cdrPixel\nSet ps = PageSizes.Add(\"IG Portrait\", 1080, 1350)",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPageSizes)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: menu path corrected to harvested Layout/Page Size"
+   }
+  },
+  {
+   "name": "Palette",
+   "id": "class:Palette",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Palette",
+   "status": "current",
+   "summary": "One color palette (custom, fixed such as PANTONE, or the document palette): its colors, name, file and open state. Scripts read, match and edit palette colors and save palettes to .xml palette files.",
+   "use_for": [
+    "build a brand palette from a list of CMYK / RGB values and save it for the team",
+    "snap arbitrary colors to the nearest brand or PANTONE swatch (MatchColor)",
+    "list the colors of a client palette for a style guide page",
+    "check a document palette for duplicate swatches"
+   ],
+   "avoid": [
+    "editing a fixed palette (PANTONE etc.): AddColor / RemoveColor work only on custom palettes; copy colors into a custom palette instead",
+    "Delete when you only mean to hide the palette: Delete removes the palette file; use Close"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:SwatchGroup"
+   },
+   "how": "Coclass; members are on IVGPalette. Reach it as ActiveDocument.Palette (document palette), Application.ActivePalette, Palettes.Item(IndexOrName), Palettes.Open / Create / CreateFromDocument / CreateFromSelection, or PaletteManager.GetPalette / DefaultPalette / LoadPalette.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "palette name (settable only on custom palettes)"
+    },
+    {
+     "name": "Type",
+     "use": "fixed, custom or document palette"
+    },
+    {
+     "name": "ColorCount",
+     "use": "number of colors"
+    },
+    {
+     "name": "Color",
+     "use": "color at Index (get or set)"
+    },
+    {
+     "name": "Colors",
+     "use": "all colors as a Colors collection"
+    },
+    {
+     "name": "AddColor",
+     "use": "append a color to a custom palette"
+    },
+    {
+     "name": "InsertColor",
+     "use": "insert a color at Index"
+    },
+    {
+     "name": "RemoveColor",
+     "use": "remove the color at Index"
+    },
+    {
+     "name": "MatchColor",
+     "use": "index of the closest palette color"
+    },
+    {
+     "name": "FindColor",
+     "use": "index of a color by name"
+    },
+    {
+     "name": "GetIndexOfColor",
+     "use": "index of an exact color"
+    },
+    {
+     "name": "DuplicatePresent",
+     "use": "True when a color repeats"
+    },
+    {
+     "name": "Save",
+     "use": "write changes to the palette file"
+    },
+    {
+     "name": "SaveAs",
+     "use": "save to a new file and name"
+    },
+    {
+     "name": "FileName",
+     "use": "palette file path"
+    },
+    {
+     "name": "Open",
+     "use": "show the palette on screen"
+    },
+    {
+     "name": "Close",
+     "use": "hide the palette"
+    },
+    {
+     "name": "Locked",
+     "use": "True when the palette cannot be edited"
+    },
+    {
+     "name": "MakeDefault",
+     "use": "make it the application default palette"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the palette and its file"
+    }
+   ],
+   "gotchas": [
+    "Name can be set only on a custom palette (harvest description); AddColor / InsertColor / RemoveColor are described as custom-palette operations.",
+    "Delete removes the palette file from disk, not just from the screen.",
+    "Color indexes are expected to be base 1 like the collections (unverified).",
+    "The document palette (Type cdrDocumentPalette) is saved inside the .cdr, not as a separate file (unverified that FileName is empty for it)."
+   ],
+   "example": "Dim pal As Palette\nSet pal = Palettes.Create(\"Brand 2026\", , True)\npal.AddColor CreateCMYKColor(0, 90, 85, 0)\npal.AddColor CreateCMYKColor(100, 70, 0, 20)\npal.AddColor CreateRGBColor(245, 240, 230)\npal.Save\nDebug.Print pal.ColorCount, pal.FileName",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPalette)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PaletteManager",
+   "id": "class:PaletteManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PaletteManager",
+   "status": "current",
+   "summary": "Application-level access to every color palette CorelDRAW has loaded, open on screen or not, plus the default palette and loading palettes from files. Wider than Palettes, which only covers palettes open on screen.",
+   "use_for": [
+    "find a palette by name or file whether or not it is shown",
+    "load a client palette file for a color-matching macro",
+    "read the default palette that new documents use"
+   ],
+   "avoid": [
+    "creating new palettes here: PaletteManager has no Create; use Palettes.Create / CreateFromDocument / CreateFromSelection"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPaletteManager. Reach it as Application.PaletteManager. GetPalette takes an index, unique ID, name or file name. For Each iterates the loaded palettes; call LoadAllPalettes first to include every registered palette.",
+   "key_members": [
+    {
+     "name": "PaletteCount",
+     "use": "number of palettes currently loaded"
+    },
+    {
+     "name": "GetPalette",
+     "use": "palette by index, unique ID, name or file name"
+    },
+    {
+     "name": "DefaultPalette",
+     "use": "the application default palette"
+    },
+    {
+     "name": "OpenPalettes",
+     "use": "the Palettes collection of palettes shown on screen"
+    },
+    {
+     "name": "LoadPalette",
+     "use": "load a palette file and return it"
+    },
+    {
+     "name": "LoadAllPalettes",
+     "use": "load every palette registered with CorelDRAW"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over loaded palettes"
+    }
+   ],
+   "gotchas": [
+    "PaletteCount and For Each only see loaded palettes; call LoadAllPalettes to see the full library (it may be slow with large libraries, unverified).",
+    "GetPalette with a name that matches nothing raises an error or returns Nothing (unverified which)."
+   ],
+   "example": "Dim pal As Palette\nPaletteManager.LoadAllPalettes\nFor Each pal In PaletteManager\n    Debug.Print pal.Name, pal.ColorCount, pal.IsOpen\nNext pal\nDebug.Print PaletteManager.DefaultPalette.Name",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPaletteManager)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Palettes",
+   "id": "class:Palettes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Palettes",
+   "status": "current",
+   "summary": "The color palettes currently open on screen, plus the factory calls that open palette files, open fixed libraries (PANTONE, TRUMATCH ...) and create new palettes from scratch, from the document or from the selection.",
+   "use_for": [
+    "create a client palette from the colors used in a finished logo (CreateFromDocument / CreateFromSelection)",
+    "open a PANTONE library for spot-color matching",
+    "open a palette file shipped with a brand kit"
+   ],
+   "avoid": [
+    "looking for a palette that is loaded but not shown: use PaletteManager.GetPalette"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPalettes. Reach it as Application.Palettes (or PaletteManager.OpenPalettes). Item is base 1 by index or by name. OpenFixed takes a cdrPaletteID such as cdrPANTONECoated.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of open palettes"
+    },
+    {
+     "name": "Item",
+     "use": "open palette by base-1 index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over open palettes"
+    },
+    {
+     "name": "Open",
+     "use": "open a palette file"
+    },
+    {
+     "name": "OpenFixed",
+     "use": "open a fixed library by cdrPaletteID"
+    },
+    {
+     "name": "Create",
+     "use": "new empty custom palette (Name, FileName, Overwrite)"
+    },
+    {
+     "name": "CreateFromDocument",
+     "use": "palette of the colors used in the document"
+    },
+    {
+     "name": "CreateFromSelection",
+     "use": "palette of the colors in the selected shapes"
+    }
+   ],
+   "gotchas": [
+    "Create / CreateFromDocument with a name that already exists fails unless Overwrite is True (unverified error text).",
+    "CreateFromSelection reads the current selection; select the shapes first (ActiveSelection), or the palette comes out empty (unverified)."
+   ],
+   "example": "Dim pal As Palette\nSet pal = Palettes.CreateFromSelection(\"Logo colors\", , True)\nDebug.Print pal.Name, pal.ColorCount\nSet pal = Palettes.OpenFixed(cdrPANTONECoated)\nDebug.Print Palettes.Count",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPalettes)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PatternCanvas",
+   "id": "class:PatternCanvas",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PatternCanvas",
+   "status": "current",
+   "summary": "The pixel grid of a two-color bitmap pattern (the 1-bit tile used by two-color pattern fills): size, individual pixels and simple drawing operations. Front and back colors come from the PatternFill, not from the canvas.",
+   "use_for": [
+    "generate a custom two-color tile (stripes, checks, dots) for a screen-print or textile mock-up",
+    "read or tweak the tile of an existing two-color pattern fill"
+   ],
+   "avoid": [
+    "full-color or vector patterns: those come from files through PatternFill.Load / Fill.ApplyPatternFill with a FileName",
+    "fine artwork: the canvas is a small 1-bit grid (16, 32, 64 px or custom)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPatternCanvas. Make one with Application.CreatePatternCanvas, read one from Shape.Fill.Pattern.Canvas, or take a preset from Application.PatternCanvases.Item(i). Assign it back to PatternFill.Canvas to use it.",
+   "key_members": [
+    {
+     "name": "Size",
+     "use": "16x16, 32x32, 64x64 or custom (cdrPatternCanvasSize)"
+    },
+    {
+     "name": "Width",
+     "use": "canvas width in pixels (custom size)"
+    },
+    {
+     "name": "Height",
+     "use": "canvas height in pixels (custom size)"
+    },
+    {
+     "name": "Pixel",
+     "use": "on/off state of the pixel at (x, y)"
+    },
+    {
+     "name": "FillArea",
+     "use": "set a rectangle of pixels on (or off with State False)"
+    },
+    {
+     "name": "CopyArea",
+     "use": "copy a pixel rectangle to a new origin"
+    },
+    {
+     "name": "FlipArea",
+     "use": "mirror a pixel rectangle"
+    },
+    {
+     "name": "RotateArea",
+     "use": "rotate a pixel rectangle"
+    },
+    {
+     "name": "Clear",
+     "use": "blank the canvas"
+    },
+    {
+     "name": "Select",
+     "use": "load a preset tile by index"
+    },
+    {
+     "name": "PutCopy",
+     "use": "copy another canvas into this one"
+    },
+    {
+     "name": "Line",
+     "use": "draw a line of pixels"
+    },
+    {
+     "name": "PSet",
+     "use": "set one pixel"
+    },
+    {
+     "name": "Data",
+     "use": "the whole canvas as a string (save / restore)"
+    }
+   ],
+   "gotchas": [
+    "Pixel coordinates are whole numbers; whether they start at 0 or 1 is not in the harvest (unverified).",
+    "Changing the Canvas object read from a fill may not update the fill until it is assigned back to PatternFill.Canvas (unverified).",
+    "PSet and Line take Step / Flags and Color arguments whose meaning is not documented in the harvest (unverified); FillArea is the safer way to draw."
+   ],
+   "example": "Dim cv As PatternCanvas\nSet cv = CreatePatternCanvas\ncv.Size = cdrPatternCanvas16x16\ncv.Clear\ncv.FillArea 0, 0, 7, 7, True\ncv.FillArea 8, 8, 15, 15, True\nActiveShape.Fill.ApplyPatternFill cdrTwoColorPattern\nActiveShape.Fill.Pattern.Canvas = cv",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPatternCanvas)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PatternCanvases",
+   "id": "class:PatternCanvases",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PatternCanvases",
+   "status": "current",
+   "summary": "The application's list of two-color pattern tiles offered in the two-color pattern picker. Scripts read tiles from it and add their own so they can be applied by index.",
+   "use_for": [
+    "register a generated two-color tile so ApplyPatternFill can use it by PatternCanvasIndex",
+    "list the stock two-color tiles for a pattern swatch sheet"
+   ],
+   "avoid": [
+    "storing full-color or vector patterns: this list holds only two-color canvases"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPatternCanvases. Reach it as Application.PatternCanvases. Item is base 1 and writable; Add returns the new index, which Fill.ApplyPatternFill accepts as PatternCanvasIndex.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tiles"
+    },
+    {
+     "name": "Item",
+     "use": "tile by base-1 index (get or set)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over tiles"
+    },
+    {
+     "name": "Add",
+     "use": "add a PatternCanvas and return its index"
+    },
+    {
+     "name": "Remove",
+     "use": "remove the tile at Index"
+    }
+   ],
+   "gotchas": [
+    "The list is application-wide; whether added tiles persist to the next session is not in the harvest (unverified).",
+    "Removing a tile shifts the indexes of later tiles; macros that stored indexes break."
+   ],
+   "example": "Dim cv As PatternCanvas, i As Long\nSet cv = CreatePatternCanvas\ncv.Size = cdrPatternCanvas16x16\ncv.FillArea 0, 0, 15, 3, True\ni = PatternCanvases.Add(cv)\nActiveShape.Fill.ApplyPatternFill cdrTwoColorPattern, , i",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPatternCanvases)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PatternFill",
+   "id": "class:PatternFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PatternFill",
+   "status": "current",
+   "summary": "The settings of a pattern fill on a shape: pattern type (two-color, full-color / vector, bitmap), colors for two-color tiles, the tile canvas or source file, tile size, origin, row/column offset, skew, rotation, mirroring and whether the pattern transforms with the shape.",
+   "use_for": [
+    "tile a texture or brand motif across a background shape",
+    "set tile size and rotation of a fabric or wallpaper pattern mock-up",
+    "recolor a two-color pattern to brand colors",
+    "lock a pattern so it scales and rotates with the object"
+   ],
+   "avoid": [
+    "reading Pattern on a shape whose Fill.Type is not a pattern fill: check Fill.Type first",
+    "photo textures that must not repeat: use a bitmap PowerClip instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:PatternColor",
+    "PS": "Layer/New Fill Layer/Pattern"
+   },
+   "how": "Coclass; members are on IVGPatternFill. Apply with Shape.Fill.ApplyPatternFill(Type, FileName, PatternCanvasIndex, FrontColor, EndColor, TransformWithShape), then read or adjust Shape.Fill.Pattern. Tile sizes and origin are in document units, angles in degrees.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrTwoColorPattern, cdrFullColorPattern or cdrBitmapPattern"
+    },
+    {
+     "name": "FrontColor",
+     "use": "foreground color of a two-color pattern"
+    },
+    {
+     "name": "BackColor",
+     "use": "background color of a two-color pattern"
+    },
+    {
+     "name": "Canvas",
+     "use": "the two-color tile as a PatternCanvas"
+    },
+    {
+     "name": "Load",
+     "use": "load a pattern file"
+    },
+    {
+     "name": "FilePath",
+     "use": "file the pattern came from"
+    },
+    {
+     "name": "TileWidth",
+     "use": "tile width"
+    },
+    {
+     "name": "TileHeight",
+     "use": "tile height"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal tile origin"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical tile origin"
+    },
+    {
+     "name": "TileOffsetType",
+     "use": "offset rows or columns"
+    },
+    {
+     "name": "TileOffset",
+     "use": "row / column offset for a brick layout (percent of tile, unverified unit)"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "pattern rotation"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "pattern skew"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "pattern follows the shape's scale / rotate / skew"
+    },
+    {
+     "name": "MirrorFill",
+     "use": "mirror alternate tiles"
+    },
+    {
+     "name": "MirrorFillX",
+     "use": "mirror tiles horizontally"
+    },
+    {
+     "name": "MirrorFillY",
+     "use": "mirror tiles vertically"
+    }
+   ],
+   "gotchas": [
+    "The harvest lists three kinds (two-color bitmap, full-color bitmap, vector) but the enum is cdrTwoColorPattern / cdrFullColorPattern / cdrBitmapPattern; cdrFullColorPattern is taken here to be the vector pattern and cdrBitmapPattern the full-color bitmap (unverified mapping).",
+    "FrontColor / BackColor only matter for two-color patterns.",
+    "TileWidth / TileHeight follow ActiveDocument.Unit.",
+    "Without TransformWithShape, scaling the shape changes how many tiles show instead of scaling them."
+   ],
+   "example": "Dim pf As PatternFill\nActiveShape.Fill.ApplyPatternFill cdrTwoColorPattern\nSet pf = ActiveShape.Fill.Pattern\npf.FrontColor.CMYKAssign 0, 90, 85, 0\npf.BackColor.CMYKAssign 0, 0, 0, 0\npf.TileWidth = 5: pf.TileHeight = 5\npf.RotationAngle = 45\npf.TransformWithShape = True",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPatternFill)",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members: marked the TileOffset percent unit as unverified"
+   }
+  },
+  {
+   "name": "PDFVBASettings",
+   "id": "class:PDFVBASettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PDFVBASettings",
+   "status": "current",
+   "summary": "The Publish to PDF settings of a document: page range, PDF version / PDF/X standard, color mode and profile, font embedding, bitmap compression and downsampling, bleed and printer marks, overprints, hyperlinks, bookmarks and security. Used with Document.PublishToPDF to make print or web PDFs from a script.",
+   "use_for": [
+    "publish a press-ready PDF/X-4 with 3 mm bleed and crop marks",
+    "make a small web PDF with JPEG compression and downsampled images",
+    "export a page range of a catalog as a client proof",
+    "batch-publish many .cdr files with one saved PDF style"
+   ],
+   "avoid": [
+    "raster exports (PNG / JPG): use Document.Export or ExportBitmap",
+    "relying on settings left over from an earlier publish: call Reset or Load a named style first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:PDFSaveOptions",
+    "AI": "class:PDFSaveOptions"
+   },
+   "how": "Coclass; members are on IPDFVBASettings. Reach it as ActiveDocument.PDFSettings, set its properties, then call ActiveDocument.PublishToPDF(FileName). Load / Save use named PDF styles (the presets in the Publish to PDF dialog); ShowDialog opens that dialog for a human.",
+   "key_members": [
+    {
+     "name": "Reset",
+     "use": "back to default settings"
+    },
+    {
+     "name": "Load",
+     "use": "load a named PDF style"
+    },
+    {
+     "name": "Save",
+     "use": "save the current settings as a named style"
+    },
+    {
+     "name": "PublishRange",
+     "use": "whole document, current page, selection or page range (pdfExportRange)"
+    },
+    {
+     "name": "PageRange",
+     "use": "page list such as \"1-3,5\" when PublishRange is pdfPageRange"
+    },
+    {
+     "name": "pdfVersion",
+     "use": "Acrobat version or PDF/X / PDF/A standard"
+    },
+    {
+     "name": "ColorMode",
+     "use": "output color mode (pdfColorMode)"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "apply color management on output"
+    },
+    {
+     "name": "EmbedFonts",
+     "use": "embed document fonts"
+    },
+    {
+     "name": "SubsetFonts",
+     "use": "embed only used glyphs"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "convert all text to curves"
+    },
+    {
+     "name": "BitmapCompression",
+     "use": "none, LZW, JPEG, ZIP or JPEG 2000"
+    },
+    {
+     "name": "JPEGQualityFactor",
+     "use": "JPEG compression level"
+    },
+    {
+     "name": "DownsampleColor",
+     "use": "downsample color bitmaps"
+    },
+    {
+     "name": "ColorResolution",
+     "use": "target dpi for color bitmaps"
+    },
+    {
+     "name": "IncludeBleed",
+     "use": "extend output past the page edge"
+    },
+    {
+     "name": "Bleed",
+     "use": "bleed amount in tens of microns"
+    },
+    {
+     "name": "CropMarks",
+     "use": "add crop marks"
+    },
+    {
+     "name": "Overprints",
+     "use": "preserve overprints"
+    },
+    {
+     "name": "Hyperlinks",
+     "use": "keep hyperlinks"
+    }
+   ],
+   "gotchas": [
+    "Bleed is an integer in tens of microns (harvest description): 3 mm = 300, not 3.",
+    "Settings live on the document object for the session; a second publish inherits the first one's choices unless Reset or Load is called (unverified that they are also saved in the .cdr).",
+    "PageRange is used only when PublishRange = pdfPageRange.",
+    "The harvest descriptions of EmbedFile (bool) and EmbedFilename (string) look swapped; trust the types.",
+    "OpenPassword / PermissionPassword write passwords into the macro; keep them out of shared scripts."
+   ],
+   "example": "With ActiveDocument.PDFSettings\n    .Reset\n    .PublishRange = pdfWholeDocument\n    .pdfVersion = pdfVersionPDFX4\n    .IncludeBleed = True: .Bleed = 300\n    .CropMarks = True\nEnd With\nActiveDocument.PublishToPDF \"C:\\out\\poster.pdf\"",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPDFVBASettings)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Point",
+   "id": "class:Point",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Point",
+   "status": "current",
+   "summary": "A 2D point (x, y) with vector add / subtract and distance. A geometry helper used by curve, segment and math calls, not a visible object.",
+   "use_for": [
+    "measure the distance between two anchor positions in a layout macro",
+    "sample a position along a path (Segment.GetPointAt) to place labels or icons",
+    "build point lists for generated curves"
+   ],
+   "avoid": [
+    "placing shapes: Point does not draw anything; create shapes on a Layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Point",
+    "AI": "class:Point"
+   },
+   "how": "Coclass; members are on IVGPoint. Create one with Application.Math.CreatePoint(x, y); get them from Segment.GetPointAt, SubPath.GetPointAt, PointRange.Item / First / Last, Properties.GetPoint and the Math helpers (MidPoint, Interpolate, ClosestPointToLineSegment).",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "horizontal position"
+    },
+    {
+     "name": "y",
+     "use": "vertical position (grows upward)"
+    },
+    {
+     "name": "Add",
+     "use": "move the point by a Vector"
+    },
+    {
+     "name": "Subtract",
+     "use": "move the point back by a Vector"
+    },
+    {
+     "name": "DistanceTo",
+     "use": "distance to another point"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system and units"
+    }
+   ],
+   "gotchas": [
+    "A point that is not bound to a document may not be in the document's units (harvest: BindToDocument 'makes it use the coordinates in the document's coordinate system'); bind it before mixing with page positions.",
+    "Add / Subtract change the point in place; take GetCopy first to keep the original.",
+    "CorelDRAW y grows upward, unlike screen coordinates."
+   ],
+   "example": "Dim a As Point, b As Point\nSet a = Application.Math.CreatePoint(0, 0)\nSet b = Application.Math.CreatePoint(3, 4)\na.BindToDocument ActiveDocument\nb.BindToDocument ActiveDocument\nDebug.Print a.DistanceTo(b)",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPoint)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PointRange",
+   "id": "class:PointRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PointRange",
+   "status": "current",
+   "summary": "An ordered, editable list of points with add / insert / remove, reverse, de-duplicate and smoothing. Used to build curves from coordinates and to receive evenly spaced points sampled along a path.",
+   "use_for": [
+    "draw a chart line or route from data coordinates",
+    "scatter icons evenly along a path (SubPath.GetEvenlySpacedPoints)",
+    "smooth a jittery hand-drawn or traced polyline"
+   ],
+   "avoid": [
+    "one point: use Point",
+    "editing an existing curve's nodes: work on Curve.Nodes / Segments instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPointRange. Create with Application.Math.CreatePointRange; also returned by SubPath.GetEvenlySpacedPoints. Turn it into a curve with Curve.AppendSubpathFromPoints(Points, Close) or AppendSubpathFitToPoints, then Layer.CreateCurve(curve). Item is base 1.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of points"
+    },
+    {
+     "name": "Item",
+     "use": "point at base-1 index"
+    },
+    {
+     "name": "First",
+     "use": "first point"
+    },
+    {
+     "name": "Last",
+     "use": "last point"
+    },
+    {
+     "name": "AddPointXY",
+     "use": "append a point from x, y"
+    },
+    {
+     "name": "AddPoint",
+     "use": "append a Point"
+    },
+    {
+     "name": "AddPoints",
+     "use": "append an array of points"
+    },
+    {
+     "name": "InsertPoint",
+     "use": "insert a point at an index"
+    },
+    {
+     "name": "Remove",
+     "use": "remove one point"
+    },
+    {
+     "name": "RemoveRange",
+     "use": "remove a span of points"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "empty the list"
+    },
+    {
+     "name": "RemoveAdjacentDuplicates",
+     "use": "drop repeated consecutive points"
+    },
+    {
+     "name": "Reverse",
+     "use": "reverse point order"
+    },
+    {
+     "name": "Smoothen",
+     "use": "smooth the points over a window (Closed for loops)"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over points"
+    }
+   ],
+   "gotchas": [
+    "Like Point, an unbound range may not use document units; BindToDocument before mixing with page coordinates (unverified what the unbound unit is).",
+    "Smoothen changes the points in place; GetCopy first to keep the raw data."
+   ],
+   "example": "Dim pr As PointRange, crv As Curve\nSet pr = Application.Math.CreatePointRange\npr.AddPointXY 0, 0: pr.AddPointXY 2, 1.5: pr.AddPointXY 4, 0.5\nSet crv = Application.CreateCurve(ActiveDocument)\ncrv.AppendSubpathFromPoints pr, False\nActiveLayer.CreateCurve crv",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPointRange)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Polygon",
+   "id": "class:Polygon",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Polygon",
+   "status": "current",
+   "summary": "The live properties of a polygon or star shape drawn with the Polygon / Star tools: whether it is a polygon, star or polygon-as-star, the number of sides (points), and star sharpness.",
+   "use_for": [
+    "generate badges, seals and starbursts with an exact number of points",
+    "restyle every star on a page to the same point count and sharpness"
+   ],
+   "avoid": [
+    "shapes already converted to curves: they have no Polygon properties; edit nodes instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Shape Construction Regular Polygon Tool",
+    "PS": "polygonTool"
+   },
+   "how": "Coclass; members are on IVGPolygon. Reach it as Shape.Polygon on a shape whose Type is cdrPolygonShape. Create polygons with ActiveLayer.CreatePolygon2(CenterX, CenterY, Radius, Sides, Angle, InnerRadius, Star, Sharpness) or CreatePolygon(Left, Top, Right, Bottom, Sides ...).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrPolygon, cdrStar or cdrPolygonAsStar"
+    },
+    {
+     "name": "Sides",
+     "use": "number of sides or star points"
+    },
+    {
+     "name": "Sharpness",
+     "use": "how deep the star points are cut"
+    }
+   ],
+   "gotchas": [
+    "Shape.Polygon is only meaningful when Shape.Type = cdrPolygonShape; on other shapes it errors or returns Nothing (unverified which).",
+    "Sharpness has no visible effect on a plain cdrPolygon (unverified).",
+    "ConvertToCurves removes the live polygon; later changes to Sides are impossible."
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveLayer.CreatePolygon2(4, 4, 2, 5)\ns.Polygon.Type = cdrStar\ns.Polygon.Sides = 12\ns.Polygon.Sharpness = 30\ns.Fill.UniformColor.CMYKAssign 0, 20, 100, 0",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPolygon)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PostScriptFill",
+   "id": "class:PostScriptFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PostScriptFill",
+   "status": "current",
+   "summary": "The settings of a PostScript texture fill on a shape (the procedural textures in the PostScript Fill list, such as bricks, waves or crosshatch): which texture and its up to five numeric parameters.",
+   "use_for": [
+    "procedural line or dot textures for screen-print or engraving artwork",
+    "vintage halftone-style backgrounds that stay vector in PostScript output"
+   ],
+   "avoid": [
+    "output that is not PostScript-based (web, office printers): use a pattern fill or bitmap texture instead (unverified how each non-PostScript export renders it)",
+    "guessing what Param1-5 mean: they differ per texture"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPostScriptFill. Apply with Shape.Fill.ApplyPostscriptFill(IndexOrName), then read or change Shape.Fill.PostScript. Select switches texture by index or name; SetProperties sets up to five texture parameters in order.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "name of the current texture"
+    },
+    {
+     "name": "Index",
+     "use": "index of the current texture"
+    },
+    {
+     "name": "Select",
+     "use": "switch texture by index or name"
+    },
+    {
+     "name": "Properties",
+     "use": "texture parameter number Index (get or set)"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set up to five parameters in one call"
+    }
+   ],
+   "gotchas": [
+    "Each texture has its own parameter list (frequency, line width, gray levels ...); the harvest does not name them, so read Properties(i) from a fill set up in the UI first (unverified meanings).",
+    "PostScript textures may render exactly only on a PostScript device; screen and raster output may differ (unverified).",
+    "Texture names come from the installed list; a name that does not exist fails (unverified error).",
+    "The index base of Properties(Index) is not in the harvest (unverified: the example assumes 1)."
+   ],
+   "example": "ActiveShape.Fill.ApplyPostscriptFill 1\nWith ActiveShape.Fill.PostScript\n    Debug.Print .Index, .Name, .Properties(1), .Properties(2)\n    .SetProperties 20, 5\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPostScriptFill)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: removed an implied source for the PostScript-device claim; gotchas: flagged the unverified Properties index base the example relies on"
+   }
+  },
+  {
+   "name": "PowerClip",
+   "id": "class:PowerClip",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PowerClip",
+   "status": "current",
+   "summary": "The contents of a PowerClip container: shapes placed inside another shape and clipped to it (CorelDRAW's clipping mask / frame). Gives access to the clipped shapes, the lock between frame and contents, edit mode and extraction.",
+   "use_for": [
+    "place a product photo inside a circle or brand frame",
+    "fill text or a logo with an image",
+    "batch-swap the photos inside template frames",
+    "pull contents out of frames before a print handoff"
+   ],
+   "avoid": [
+    "calling PowerClip on a shape that has no contents: check Shape.PowerClip for Nothing first (unverified)",
+    "simple crops of a bitmap: Bitmap cropping or Shape.Bitmap.Crop may be lighter (unverified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "makeMask",
+    "PS": "Layer/Create Clipping Mask"
+   },
+   "how": "Coclass; members are on IVGPowerClip. Put content in with content.AddToPowerClip(frame, CenterInContainer) (IVGShape or IVGShapeRange), then reach the container's contents as frame.PowerClip; Document.ActivePowerClip is the one in edit mode. Shapes lists what is inside; ExtractShapes takes it all out.",
+   "key_members": [
+    {
+     "name": "Shapes",
+     "use": "shapes inside the container"
+    },
+    {
+     "name": "ContentsLocked",
+     "use": "contents move with the frame when True"
+    },
+    {
+     "name": "EnterEditMode",
+     "use": "enter Edit PowerClip mode"
+    },
+    {
+     "name": "LeaveEditMode",
+     "use": "leave edit mode"
+    },
+    {
+     "name": "ExtractShapes",
+     "use": "take the contents out and return them"
+    },
+    {
+     "name": "Parent",
+     "use": "the container shape"
+    }
+   ],
+   "gotchas": [
+    "CenterInContainer of AddToPowerClip is a cdrTriState with default -2 (cdrUndefined): pass cdrTrue or cdrFalse explicitly or the user's preference decides centering.",
+    "EnterEditMode changes UI state; always pair it with LeaveEditMode or later macros run inside the PowerClip (unverified).",
+    "Shape.PowerClip on a shape with no contents returns Nothing (unverified)."
+   ],
+   "example": "Dim photo As Shape, frame As Shape\nSet photo = ActivePage.FindShape(\"photo\")\nSet frame = ActivePage.FindShape(\"frame\")\nphoto.AddToPowerClip frame, cdrTrue\nframe.PowerClip.ContentsLocked = True\nDebug.Print frame.PowerClip.Shapes.Count",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPowerClip)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintDocuments",
+   "id": "class:PrintDocuments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintDocuments",
+   "status": "current",
+   "summary": "The read-only list of documents queued in the application's print job (PrintJob.Documents). Only a count and per-item access.",
+   "use_for": [
+    "check which documents a combined print job holds before PrintOut"
+   ],
+   "avoid": [
+    "adding documents here: use PrintJob.AddDocument"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IPrnVBAPrintDocuments. Reach it as Application.PrintJob.Documents. Item returns an IPrnVBAPrintDocument, whose members were not harvested.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "documents in the print job"
+    },
+    {
+     "name": "Item",
+     "use": "one queued document by index"
+    }
+   ],
+   "gotchas": [
+    "The IPrnVBAPrintDocument items have no harvested members, so the list is mostly useful for its Count.",
+    "Item index base is not in the harvest (unverified: 1)."
+   ],
+   "example": "With PrintJob\n    .Clear\n    .AddDocument ActiveDocument, \"1-2\"\n    Debug.Print .Documents.Count, .Pages.Count\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintDocuments)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Printer",
+   "id": "class:Printer",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Printer",
+   "status": "current",
+   "summary": "One installed printer as CorelDRAW sees it: name, driver, port, whether it is the default, ready, PostScript-capable and color-capable, plus its properties dialog.",
+   "use_for": [
+    "pick a PostScript printer for separations or in-RIP trapping",
+    "check a printer is ready before an unattended print run",
+    "list printers for a print-dispatch macro"
+   ],
+   "avoid": [
+    "choosing the printer by assigning this object when only the name is known: PrintSettings.SelectPrinter(Name) is simpler"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Printer"
+   },
+   "how": "Coclass; members are on IPrnVBAPrinter. Reach printers through Application.Printers (Item, Count, Default) or the one chosen for a document as ActiveDocument.PrintSettings.Printer.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "printer name"
+    },
+    {
+     "name": "Type",
+     "use": "driver name"
+    },
+    {
+     "name": "Port",
+     "use": "port"
+    },
+    {
+     "name": "Description",
+     "use": "description string"
+    },
+    {
+     "name": "Default",
+     "use": "True for the system default printer"
+    },
+    {
+     "name": "Ready",
+     "use": "True when the printer is ready"
+    },
+    {
+     "name": "PostScriptEnabled",
+     "use": "True for PostScript printers"
+    },
+    {
+     "name": "ColorEnabled",
+     "use": "True when color output is enabled"
+    },
+    {
+     "name": "PageSizeMatchingSupported",
+     "use": "page size matching on / off"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the printer properties dialog"
+    }
+   ],
+   "gotchas": [
+    "ShowDialog is modal: an unattended script hangs until someone closes it.",
+    "PostScript-only features (separations screening, in-RIP trapping, PrintPostScript settings) need PostScriptEnabled = True (unverified that CorelDRAW blocks them otherwise)."
+   ],
+   "example": "Dim i As Long\nFor i = 1 To Printers.Count\n    With Printers.Item(i)\n        Debug.Print .Name, .PostScriptEnabled, .ColorEnabled, .Ready\n    End With\nNext i\nDebug.Print Printers.Default.Name",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrinter)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintJob",
+   "id": "class:PrintJob",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintJob",
+   "status": "current",
+   "summary": "An application-level print job that collects pages from one or more documents and prints them in one go with one set of print settings.",
+   "use_for": [
+    "print selected pages from several open documents as one job (proof pack, imposition test)",
+    "send a batch of client proofs to one printer with shared settings"
+   ],
+   "avoid": [
+    "printing one document: ActiveDocument.PrintSettings plus PrintOut is shorter"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IPrnVBAPrintJob. Reach it as Application.PrintJob. Clear it, add pages with AddDocument(Document, PageRange) or AddPage(Page), set Settings, then PrintOut.",
+   "key_members": [
+    {
+     "name": "Clear",
+     "use": "empty the job"
+    },
+    {
+     "name": "AddDocument",
+     "use": "add a document or a page range of it"
+    },
+    {
+     "name": "AddPage",
+     "use": "add one page"
+    },
+    {
+     "name": "Settings",
+     "use": "PrintSettings for the job"
+    },
+    {
+     "name": "Documents",
+     "use": "documents in the job"
+    },
+    {
+     "name": "Pages",
+     "use": "pages in the job"
+    },
+    {
+     "name": "PrintOut",
+     "use": "send the job to the printer"
+    }
+   ],
+   "gotchas": [
+    "The job is shared at application level; clear it first or pages from an earlier macro go out too (unverified that it persists between macros).",
+    "PrintOut really prints (or writes a file when Settings.PrintToFile is True); test with a PDF printer."
+   ],
+   "example": "With PrintJob\n    .Clear\n    .AddDocument Documents(1), \"1\"\n    .AddPage Documents(2).Pages.Item(2)\n    .Settings.SelectPrinter \"Microsoft Print to PDF\"\n    .PrintOut\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintJob)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintLayout",
+   "id": "class:PrintLayout",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintLayout",
+   "status": "current",
+   "summary": "The layout part of print settings: bleed limit, tiling of oversized pages across sheets with overlap and tiling marks, and where the page sits on the printer sheet (as in document, fit, centered, corners, custom).",
+   "use_for": [
+    "tile a large poster or banner across A4 / A3 sheets with overlap",
+    "fit-to-page proofs of oversized artwork",
+    "print with a bleed limit so bleed shows on proofs"
+   ],
+   "avoid": [
+    "setting paper size here: use PrintSettings.SetPaperSize / SetCustomPaperSize"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:PrintCoordinateOptions"
+   },
+   "how": "Coclass; members are on IPrnVBAPrintLayout. Reach it as ActiveDocument.PrintSettings.Layout (or PrintJob.Settings.Layout). Placement takes a PrnPlaceType such as prnPlaceFitToPage or prnPlaceCenterPage.",
+   "key_members": [
+    {
+     "name": "Placement",
+     "use": "where the page sits on the sheet (PrnPlaceType)"
+    },
+    {
+     "name": "PrintTiledPages",
+     "use": "split large pages across sheets"
+    },
+    {
+     "name": "TileOverlap",
+     "use": "overlap between tiles"
+    },
+    {
+     "name": "PrintTilingMarks",
+     "use": "print marks for assembling tiles"
+    },
+    {
+     "name": "UseBleedLimit",
+     "use": "print bleed around pages"
+    },
+    {
+     "name": "BleedLimit",
+     "use": "how much bleed to print"
+    }
+   ],
+   "gotchas": [
+    "TileOverlap and BleedLimit units are not given in the harvest (unverified: document units).",
+    "prnPlaceFitToPage scales the artwork; do not use it for final-size proofs."
+   ],
+   "example": "With ActiveDocument.PrintSettings.Layout\n    .PrintTiledPages = True\n    .TileOverlap = 10\n    .PrintTilingMarks = True\n    .Placement = prnPlaceAsInDocument\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintLayout)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintOptions",
+   "id": "class:PrintOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintOptions",
+   "status": "current",
+   "summary": "Miscellaneous print settings: which object kinds print (vectors, bitmaps, text), text in black, color mode and color profile use, bitmap downsampling, page rasterization, fountain steps, preserving pure black, and the job information sheet.",
+   "use_for": [
+    "print a text-only proofreading copy (PrintBitmaps off)",
+    "rasterize complex transparency pages to avoid printer RIP errors",
+    "print grayscale proofs of a color layout",
+    "add a job info sheet to a print run"
+   ],
+   "avoid": [
+    "printer marks and crop marks: those are on PrintPrepress",
+    "separation settings: PrintSeparations"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IPrnVBAPrintOptions. Reach it as ActiveDocument.PrintSettings.Options (or PrintJob.Settings.Options).",
+   "key_members": [
+    {
+     "name": "PrintVectors",
+     "use": "print vector objects"
+    },
+    {
+     "name": "PrintBitmaps",
+     "use": "print bitmap images"
+    },
+    {
+     "name": "PrintText",
+     "use": "print text"
+    },
+    {
+     "name": "TextInBlack",
+     "use": "force all text to black"
+    },
+    {
+     "name": "ColorMode",
+     "use": "output color mode (PrnColorMode)"
+    },
+    {
+     "name": "ObjectsColorMode",
+     "use": "color mode all objects are output as"
+    },
+    {
+     "name": "BitmapColorMode",
+     "use": "color mode for color bitmaps"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "apply ICC profile while printing"
+    },
+    {
+     "name": "PreservePureBlack",
+     "use": "keep 100K black pure in conversions"
+    },
+    {
+     "name": "RasterizePage",
+     "use": "rasterize the whole page before sending"
+    },
+    {
+     "name": "RasterizeResolution",
+     "use": "resolution for page rasterization"
+    },
+    {
+     "name": "DownsampleColor",
+     "use": "downsample color bitmaps"
+    },
+    {
+     "name": "ColorResolution",
+     "use": "target dpi for color bitmaps"
+    },
+    {
+     "name": "FountainSteps",
+     "use": "default steps for fountain fills"
+    },
+    {
+     "name": "JobInformation",
+     "use": "print a job information sheet"
+    }
+   ],
+   "gotchas": [
+    "RasterizePage turns vectors and text into pixels on output; keep RasterizeResolution at device resolution or text gets soft.",
+    "Low FountainSteps shows banding in gradients on press."
+   ],
+   "example": "With ActiveDocument.PrintSettings.Options\n    .PrintBitmaps = False\n    .TextInBlack = True\n    .PreservePureBlack = True\n    .FountainSteps = 256\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintOptions)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintPages",
+   "id": "class:PrintPages",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintPages",
+   "status": "current",
+   "summary": "The read-only list of pages queued in the application's print job (PrintJob.Pages): a count and per-page access.",
+   "use_for": [
+    "confirm the page count of a combined print job before sending it"
+   ],
+   "avoid": [
+    "adding pages here: use PrintJob.AddPage or AddDocument"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IPrnVBAPrintPages. Reach it as Application.PrintJob.Pages. Item returns an IPrnVBAPrintPage, whose members were not harvested.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "pages in the print job"
+    },
+    {
+     "name": "Item",
+     "use": "one queued page by index"
+    }
+   ],
+   "gotchas": [
+    "IPrnVBAPrintPage has no harvested members; use Count as the check.",
+    "Item index base is not in the harvest (unverified: 1)."
+   ],
+   "example": "With PrintJob\n    .Clear\n    .AddPage ActivePage\n    Debug.Print .Pages.Count\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintPages)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintPostScript",
+   "id": "class:PrintPostScript",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintPostScript",
+   "status": "current",
+   "summary": "PostScript output settings for printing: PostScript level, DSC conformance, JPEG compression of bitmaps, font download and TrueType conversion, OPI / DCS links, curve complexity and flatness, fountain-step handling, screen frequency, and PDF-related options for distilled output.",
+   "use_for": [
+    "make PostScript files for an older RIP (Level 2, DSC-conformant)",
+    "avoid limitcheck errors on complex curves by limiting points per curve and raising flatness",
+    "set the halftone screen frequency for a PostScript proofer"
+   ],
+   "avoid": [
+    "non-PostScript printers: these settings apply to PostScript output only (unverified that they are ignored otherwise)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:PrintPostScriptOptions"
+   },
+   "how": "Coclass; members are on IPrnVBAPrintPostScript. Reach it as ActiveDocument.PrintSettings.PostScript (or PrintJob.Settings.PostScript).",
+   "key_members": [
+    {
+     "name": "Level",
+     "use": "PostScript level (PrnPostScriptLevel)"
+    },
+    {
+     "name": "ConformToDSC",
+     "use": "write DSC-compliant PostScript only"
+    },
+    {
+     "name": "JPEGCompression",
+     "use": "JPEG-compress bitmaps"
+    },
+    {
+     "name": "JPEGQuality",
+     "use": "JPEG quality factor"
+    },
+    {
+     "name": "DownloadType1",
+     "use": "download Type 1 fonts"
+    },
+    {
+     "name": "TrueTypeToType1",
+     "use": "convert TrueType to Type 1 before download"
+    },
+    {
+     "name": "MaintainOPILinks",
+     "use": "keep OPI links"
+    },
+    {
+     "name": "ResolveDCSLinks",
+     "use": "resolve DCS links"
+    },
+    {
+     "name": "MaxPointsPerCurve",
+     "use": "limit nodes per curve"
+    },
+    {
+     "name": "Flatness",
+     "use": "curve flatness"
+    },
+    {
+     "name": "AutoIncreaseFlatness",
+     "use": "raise flatness automatically when needed"
+    },
+    {
+     "name": "OptimizeFountainFills",
+     "use": "lower fountain steps for short fills"
+    },
+    {
+     "name": "AutoIncreaseFountainSteps",
+     "use": "raise fountain steps for long fills"
+    },
+    {
+     "name": "ScreenFrequency",
+     "use": "halftone screen frequency"
+    }
+   ],
+   "gotchas": [
+    "Raising Flatness makes curves visibly faceted at large sizes; use it only to get past RIP errors.",
+    "Level and JPEG settings must match what the RIP supports; Level 3 features fail on Level 2 devices (unverified behaviour per device)."
+   ],
+   "example": "With ActiveDocument.PrintSettings.PostScript\n    .ConformToDSC = True\n    .MaxPointsPerCurve = 2000\n    .AutoIncreaseFlatness = True\n    .ScreenFrequency = 150\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintPostScript)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintPrepress",
+   "id": "class:PrintPrepress",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintPrepress",
+   "status": "current",
+   "summary": "Prepress marks and film options for printing: crop / fold marks, registration marks and their style, color calibration bar, densitometer scale, file information and page numbers, job name slug, negative and mirrored output.",
+   "use_for": [
+    "add crop and registration marks to press proofs",
+    "print film negatives or emulsion-down output for screen printing",
+    "slug every proof with job name and page numbers"
+   ],
+   "avoid": [
+    "PDF output marks: PDFVBASettings has its own CropMarks / RegistrationMarks"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PrintPageMarksOptions",
+    "PS": "class:DocumentPrintSettings"
+   },
+   "how": "Coclass; members are on IPrnVBAPrintPrepress. Reach it as ActiveDocument.PrintSettings.Prepress (or PrintJob.Settings.Prepress).",
+   "key_members": [
+    {
+     "name": "CropMarks",
+     "use": "print crop / fold marks"
+    },
+    {
+     "name": "ExteriorCropMarks",
+     "use": "only exterior crop marks"
+    },
+    {
+     "name": "RegistrationMarks",
+     "use": "print registration marks"
+    },
+    {
+     "name": "RegistrationStyle",
+     "use": "registration mark style"
+    },
+    {
+     "name": "ColorCalibrationBar",
+     "use": "print a color bar"
+    },
+    {
+     "name": "DensitometerScale",
+     "use": "print a densitometer scale"
+    },
+    {
+     "name": "Densities",
+     "use": "density value at Index for the scale"
+    },
+    {
+     "name": "FileInfo",
+     "use": "print file information"
+    },
+    {
+     "name": "PageNumbers",
+     "use": "print page numbers"
+    },
+    {
+     "name": "JobName",
+     "use": "job name / slug line"
+    },
+    {
+     "name": "InfoWithinPage",
+     "use": "place info inside the page area"
+    },
+    {
+     "name": "MarksToObjects",
+     "use": "place marks around the objects instead of the page"
+    },
+    {
+     "name": "Invert",
+     "use": "negative output"
+    },
+    {
+     "name": "Mirror",
+     "use": "flip output horizontally"
+    }
+   ],
+   "gotchas": [
+    "Marks need paper larger than the page; on same-size paper they are cut off (unverified whether CorelDRAW warns).",
+    "Invert and Mirror are for film / screen-print output; leaving them on ruins normal proofs."
+   ],
+   "example": "With ActiveDocument.PrintSettings.Prepress\n    .CropMarks = True\n    .RegistrationMarks = True\n    .ColorCalibrationBar = True\n    .FileInfo = True\n    .JobName = \"Client X - poster v3\"\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintPrepress)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintSeparations",
+   "id": "class:PrintSeparations",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintSeparations",
+   "status": "current",
+   "summary": "Color separation print settings: turn separations on, print plates in color, hexachrome, convert spots to CMYK, empty plates, overprint handling, automatic spreading (trapping), imaging resolution, screen frequency, halftone dot and screening technology, and the plate list.",
+   "use_for": [
+    "print one plate per ink for screen printing or offset film",
+    "convert stray spot colors to process for a CMYK-only job",
+    "always overprint black text to avoid registration gaps"
+   ],
+   "avoid": [
+    "PDF separations: publish a composite PDF and let the RIP separate",
+    "in-RIP trapping settings: PrintTrapping"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:PrintColorSeparationOptions"
+   },
+   "how": "Coclass; members are on IPrnVBAPrintSeparations. Reach it as ActiveDocument.PrintSettings.Separations (or PrintJob.Settings.Separations). Plates returns the separation plates collection.",
+   "key_members": [
+    {
+     "name": "Enabled",
+     "use": "print separations"
+    },
+    {
+     "name": "InColor",
+     "use": "print each plate in its ink color"
+    },
+    {
+     "name": "SpotToCMYK",
+     "use": "convert spot colors to process"
+    },
+    {
+     "name": "EmptyPlates",
+     "use": "print plates with nothing on them"
+    },
+    {
+     "name": "PreserveOverprints",
+     "use": "keep document overprints"
+    },
+    {
+     "name": "AlwaysOverprintBlack",
+     "use": "overprint all black objects"
+    },
+    {
+     "name": "AutoSpreading",
+     "use": "automatic spread trapping"
+    },
+    {
+     "name": "AutoSpreadAmount",
+     "use": "spread amount"
+    },
+    {
+     "name": "AutoSpreadTextAbove",
+     "use": "smallest text size that gets trapped"
+    },
+    {
+     "name": "Plates",
+     "use": "the separation plates"
+    },
+    {
+     "name": "Resolution",
+     "use": "imaging resolution"
+    },
+    {
+     "name": "BasicScreen",
+     "use": "basic screen frequency"
+    },
+    {
+     "name": "HalftoneType",
+     "use": "halftone dot shape"
+    },
+    {
+     "name": "ScreenTechnology",
+     "use": "screening technology"
+    },
+    {
+     "name": "Hexachrome",
+     "use": "separate in hexachrome"
+    }
+   ],
+   "gotchas": [
+    "BasicScreen, HalftoneType and ScreenTechnology are strings that must match names the printer / PPD offers (unverified list).",
+    "AlwaysOverprintBlack also overprints large black areas, which can show objects beneath through the black."
+   ],
+   "example": "With ActiveDocument.PrintSettings.Separations\n    .Enabled = True\n    .SpotToCMYK = True\n    .AlwaysOverprintBlack = True\n    .EmptyPlates = False\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintSeparations)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintSettings",
+   "id": "class:PrintSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintSettings",
+   "status": "current",
+   "summary": "All print settings of a document or print job: destination printer or file, page range, copies, paper size and orientation, and the sub-objects for separations, prepress marks, PostScript, trapping, layout and options, plus print styles and the print dialog.",
+   "use_for": [
+    "unattended printing of proofs with a saved print style",
+    "print a page range to a PostScript file for a service bureau",
+    "set paper size and orientation for a poster tile run",
+    "print color proofs with a proof profile (PrintColorProof)"
+   ],
+   "avoid": [
+    "PDF delivery: use PDFVBASettings and Document.PublishToPDF instead of printing to a PDF driver"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PrintOptions",
+    "PS": "class:DocumentPrintSettings"
+   },
+   "how": "Coclass; members are on IPrnVBAPrintSettings. Reach it as ActiveDocument.PrintSettings or Application.PrintJob.Settings. Load / Save use print style files; SelectPrinter picks the device by name; PrintOut prints.",
+   "key_members": [
+    {
+     "name": "Reset",
+     "use": "back to defaults"
+    },
+    {
+     "name": "Load",
+     "use": "load a print style"
+    },
+    {
+     "name": "Save",
+     "use": "save settings as a print style"
+    },
+    {
+     "name": "SelectPrinter",
+     "use": "choose the printer by name"
+    },
+    {
+     "name": "Printer",
+     "use": "destination Printer"
+    },
+    {
+     "name": "PrintToFile",
+     "use": "write to a file instead of the device"
+    },
+    {
+     "name": "FileName",
+     "use": "output file path"
+    },
+    {
+     "name": "PrintRange",
+     "use": "whole document, current page, selection or page range"
+    },
+    {
+     "name": "PageRange",
+     "use": "page list for prnPageRange"
+    },
+    {
+     "name": "Copies",
+     "use": "number of copies"
+    },
+    {
+     "name": "Collate",
+     "use": "collate copies"
+    },
+    {
+     "name": "SetPaperSize",
+     "use": "preset paper size and orientation"
+    },
+    {
+     "name": "SetCustomPaperSize",
+     "use": "custom paper width, height, orientation"
+    },
+    {
+     "name": "Separations",
+     "use": "separation settings"
+    },
+    {
+     "name": "Prepress",
+     "use": "marks and film settings"
+    },
+    {
+     "name": "PostScript",
+     "use": "PostScript settings"
+    },
+    {
+     "name": "Layout",
+     "use": "tiling and placement"
+    },
+    {
+     "name": "Options",
+     "use": "miscellaneous print options"
+    },
+    {
+     "name": "PrintOut",
+     "use": "print now"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the Print dialog"
+    }
+   ],
+   "gotchas": [
+    "PrintOut prints for real; route tests to a PDF printer or PrintToFile.",
+    "ShowDialog is modal and blocks an unattended run.",
+    "PageRange is read only when PrintRange = prnPageRange."
+   ],
+   "example": "With ActiveDocument.PrintSettings\n    .Reset\n    .SelectPrinter \"Microsoft Print to PDF\"\n    .PrintRange = prnPageRange\n    .PageRange = \"1-2\"\n    .Prepress.CropMarks = True\n    .PrintOut\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintSettings)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintTrapping",
+   "id": "class:PrintTrapping",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PrintTrapping",
+   "status": "current",
+   "summary": "In-RIP color trapping settings sent with PostScript print output: trap width for colors and black, color scaling, step and sliding-trap limits, black limits, and how traps treat bitmap images.",
+   "use_for": [
+    "offset jobs where the RIP must trap adjacent spot or process colors",
+    "tune trap width for a press with loose registration"
+   ],
+   "avoid": [
+    "devices without in-RIP trapping (unverified: PostScript 3 devices with trapping support)",
+    "simple overprint fixes: AlwaysOverprintBlack / AutoSpreading on PrintSeparations"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IPrnVBAPrintTrapping. Reach it as ActiveDocument.PrintSettings.Trapping (or PrintJob.Settings.Trapping). Layers returns the trapping layers collection.",
+   "key_members": [
+    {
+     "name": "Enabled",
+     "use": "turn in-RIP trapping on"
+    },
+    {
+     "name": "Width",
+     "use": "how far one color spreads into another"
+    },
+    {
+     "name": "BlackWidth",
+     "use": "how far black spreads"
+    },
+    {
+     "name": "ColorScaling",
+     "use": "trap color reduction percent"
+    },
+    {
+     "name": "StepLimit",
+     "use": "step limit threshold"
+    },
+    {
+     "name": "BlackColorLimit",
+     "use": "black ink density counted as pure black"
+    },
+    {
+     "name": "BlackDensityLimit",
+     "use": "neutral density of black ink"
+    },
+    {
+     "name": "SlidingTrapLimit",
+     "use": "density difference where traps slide"
+    },
+    {
+     "name": "ImageTrap",
+     "use": "trap placement against bitmaps"
+    },
+    {
+     "name": "ObjectsToImage",
+     "use": "trap objects to images"
+    },
+    {
+     "name": "InternalImageTrapping",
+     "use": "trap inside images"
+    },
+    {
+     "name": "TrapMonoBitmaps",
+     "use": "trap 1-bit bitmaps"
+    },
+    {
+     "name": "Layers",
+     "use": "trapping layers"
+    }
+   ],
+   "gotchas": [
+    "Settings only matter on a RIP that performs in-RIP trapping; elsewhere they are ignored silently (unverified).",
+    "Width units are not stated in the harvest (unverified).",
+    "The example values 0.003 / 0.005 assume inches (unverified); check Width after setting it."
+   ],
+   "example": "With ActiveDocument.PrintSettings.Trapping\n    .Enabled = True\n    .Width = 0.003\n    .BlackWidth = 0.005\n    .ObjectsToImage = True\nEnd With",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IPrnVBAPrintTrapping)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: flagged the unit assumed by the example values"
+   }
+  },
+  {
+   "name": "ProofColorSettings",
+   "id": "class:ProofColorSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ProofColorSettings",
+   "status": "current",
+   "summary": "Soft-proof settings: the color context (output profile and rendering intent) to simulate, the out-of-gamut warning with its overlay color and transparency, and whether color values are preserved. Drives on-screen proofing, proof printing and proofed exports.",
+   "use_for": [
+    "preview how RGB artwork will look on a newspaper or uncoated CMYK press",
+    "flag out-of-gamut brand colors before sending to print",
+    "print or export a hard proof that simulates the press profile"
+   ],
+   "avoid": [
+    "converting the document's colors: proofing only simulates; use the color conversion / document color settings to change values"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "View/Proof Setup/Custom",
+    "AI": "proof-custom"
+   },
+   "how": "Coclass; members are on IVGProofColorSettings. Make one with Application.CreateProofColorSettings(ProfileName, RenderingIntent, PreserveColorValues); the live view's settings are ActiveWindow.ActiveView.ProofColorSettings; export options carry one in StructExportOptions.ProofColorSettings; PrintSettings.PrintColorProof(ProofSettings) prints with one.",
+   "key_members": [
+    {
+     "name": "ColorContext",
+     "use": "profile context being simulated"
+    },
+    {
+     "name": "ShowOutOfGamutWarning",
+     "use": "show the gamut alarm overlay"
+    },
+    {
+     "name": "OutOfGamutColor",
+     "use": "overlay color for out-of-gamut areas"
+    },
+    {
+     "name": "OutOfGamutTransparency",
+     "use": "overlay transparency"
+    },
+    {
+     "name": "PreserveColorValues",
+     "use": "keep numbers when no model conversion is needed"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy settings from another object"
+    }
+   ],
+   "gotchas": [
+    "ProfileName must match an installed profile's name exactly (unverified error when it does not).",
+    "Editing a copy does not change the view; assign it back or use CopyAssign on the view's object (unverified whether the view object is live)."
+   ],
+   "example": "Dim pcs As ProofColorSettings\nSet pcs = CreateProofColorSettings(\"Coated FOGRA39 (ISO 12647-2:2004)\")\npcs.ShowOutOfGamutWarning = True\npcs.OutOfGamutColor.RGBAssign 0, 255, 0\nActiveDocument.PrintSettings.PrintColorProof pcs",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGProofColorSettings)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Properties",
+   "id": "class:Properties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Properties",
+   "status": "current",
+   "summary": "A hidden key-value store attached to a document, page, layer or shape (or to the application session): values are addressed by a section name plus a numeric ID and are saved with the file. Also stores files, points, vectors and curves.",
+   "use_for": [
+    "tag template placeholders with a role (headline, price, photo) so a fill macro can find them",
+    "remember the source data row a generated shape came from",
+    "store per-document pipeline state (version, client id) inside the .cdr",
+    "keep macro settings between runs (Application.GlobalUserData)"
+   ],
+   "avoid": [
+    "data a designer should see or edit: use Object Data fields (Shape.ObjectData / DataFields)",
+    "large binaries in every shape: PutFile on many shapes bloats the file (unverified size impact)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Tags"
+   },
+   "how": "Coclass; members are on IVGProperties. Reach it as Shape.Properties, Page.Properties, Layer.Properties, Document.Properties, Application.GlobalUserData / SessionUserData, or Application.CreateProperties for a free-standing set. Item(Name, ID) gets or sets a variant; Name is a section string, ID a long.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "get or set the value at (Name, ID)"
+    },
+    {
+     "name": "Exists",
+     "use": "True when (Name, ID) is set"
+    },
+    {
+     "name": "Delete",
+     "use": "remove (Name, ID)"
+    },
+    {
+     "name": "DeleteAll",
+     "use": "remove every item of a section name"
+    },
+    {
+     "name": "Count",
+     "use": "number of stored items"
+    },
+    {
+     "name": "ItemByIndex",
+     "use": "value by position"
+    },
+    {
+     "name": "Index",
+     "use": "position of (Name, ID)"
+    },
+    {
+     "name": "DeleteByIndex",
+     "use": "remove by position"
+    },
+    {
+     "name": "Description",
+     "use": "read the name and ID at a position"
+    },
+    {
+     "name": "PutFile",
+     "use": "store a file under (Name, ID)"
+    },
+    {
+     "name": "GetFile",
+     "use": "write a stored file back to disk"
+    },
+    {
+     "name": "SetPoint",
+     "use": "store a Point under a UUID name"
+    },
+    {
+     "name": "GetPoint",
+     "use": "read a stored Point"
+    },
+    {
+     "name": "SetCurve",
+     "use": "store a Curve"
+    },
+    {
+     "name": "GetCurve",
+     "use": "read a stored Curve"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over values"
+    }
+   ],
+   "gotchas": [
+    "Use a distinctive section Name (for example your tool's name) to avoid clashing with other macros' data.",
+    "Reading Item for a key that does not exist raises an error (unverified); test with Exists first.",
+    "SessionUserData lasts only while CorelDRAW runs; GlobalUserData is meant to persist across sessions (unverified where it is stored).",
+    "Whether Properties travel with a shape when it is duplicated or copied to another document is not in the harvest (unverified)."
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveShape\ns.Properties.Item(\"PGD\", 1) = \"headline\"\nIf s.Properties.Exists(\"PGD\", 1) Then\n    Debug.Print s.Properties.Item(\"PGD\", 1)\nEnd If\nActiveDocument.Properties.Item(\"PGD\", 1) = \"v3\"",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGProperties)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PSScreenOptions",
+   "id": "class:PSScreenOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/PSScreenOptions",
+   "status": "current",
+   "summary": "The PostScript halftone screen of one object's fill or outline: screen (dot) type, angle and frequency in lines per inch. This is the object-level 'PostScript Options' halftone setting used when the object is output to PostScript.",
+   "use_for": [
+    "give a spot-color object a coarse decorative line or dot screen on film",
+    "set a specific screen angle to avoid moire on a spot plate"
+   ],
+   "avoid": [
+    "whole-job screening: set it on PrintSeparations / PrintPostScript",
+    "non-PostScript output: the screen is not applied there (unverified)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGPSScreenOptions. Reach it as Shape.Fill.PSScreen or Shape.Outline.PSScreen. Select or SetProperties(IndexOrName, Angle, Frequency) picks the screen type; NameByIndex lists the available types.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "current screen type name"
+    },
+    {
+     "name": "Index",
+     "use": "current screen type index"
+    },
+    {
+     "name": "Angle",
+     "use": "screen angle in degrees"
+    },
+    {
+     "name": "Frequency",
+     "use": "screen frequency in lines per inch"
+    },
+    {
+     "name": "Select",
+     "use": "choose a screen type by index or name"
+    },
+    {
+     "name": "SetProperties",
+     "use": "type, angle and frequency in one call"
+    },
+    {
+     "name": "NameByIndex",
+     "use": "name of screen type n (empty when n is out of range)"
+    },
+    {
+     "name": "Reset",
+     "use": "back to the default screen"
+    },
+    {
+     "name": "UserAssign",
+     "use": "open the halftone screen dialog"
+    }
+   ],
+   "gotchas": [
+    "In CorelDRAW the object-level halftone screen is offered for spot-color fills and outlines; on process colors it may have no effect (unverified).",
+    "UserAssign opens a modal dialog and blocks an unattended run."
+   ],
+   "example": "Dim ps As PSScreenOptions, i As Long\nSet ps = ActiveShape.Fill.PSScreen\nFor i = 0 To 10\n    Debug.Print i, ps.NameByIndex(i)\nNext i\nps.SetProperties ps.NameByIndex(1), 45, 30",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGPSScreenOptions)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RecentFile",
+   "id": "class:RecentFile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/RecentFile",
+   "status": "current",
+   "summary": "One entry of CorelDRAW's recent-files list (File > Open Recent): its name, folder and full path, its position, and calls to open it or remove it from the list.",
+   "use_for": [
+    "reopen the last edited client file at the start of a session macro",
+    "clean stale network paths out of the recent list"
+   ],
+   "avoid": [
+    "deleting the file itself: Delete only removes the list entry"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGRecentFile. Reach it as Application.RecentFiles.Item(i) or as the result of RecentFiles.Add(Name, Path).",
+   "key_members": [
+    {
+     "name": "FullName",
+     "use": "full path of the file"
+    },
+    {
+     "name": "Name",
+     "use": "file name"
+    },
+    {
+     "name": "Path",
+     "use": "folder"
+    },
+    {
+     "name": "Index",
+     "use": "position in the list"
+    },
+    {
+     "name": "Open",
+     "use": "open the file (returns the document)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the entry from the list"
+    }
+   ],
+   "gotchas": [
+    "Open on an entry whose file was moved or deleted raises an error (unverified); check the path with Dir first.",
+    "Open returns a generic IDispatch; assign it to a Document variable.",
+    "Name / Path / FullName are writable but only change the list entry, not the file on disk."
+   ],
+   "example": "Dim d As Document\nIf RecentFiles.Count > 0 Then\n    Debug.Print RecentFiles.Item(1).FullName\n    Set d = RecentFiles.Item(1).Open\nEnd If",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGRecentFile)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RecentFiles",
+   "id": "class:RecentFiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/RecentFiles",
+   "status": "current",
+   "summary": "CorelDRAW's most-recently-used file list: count, maximum length, per-entry access and adding entries.",
+   "use_for": [
+    "list recent client files in a session-start dashboard macro",
+    "add files a script generated so designers find them in File > Open Recent"
+   ],
+   "avoid": [
+    "tracking pipeline output: keep your own log file; this list is short and user-facing"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGRecentFiles. Reach it as Application.RecentFiles. Item is base 1; Add(Name, Path) adds an entry.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "entries in the list"
+    },
+    {
+     "name": "Maximum",
+     "use": "maximum entries kept"
+    },
+    {
+     "name": "Item",
+     "use": "entry by base-1 index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over entries"
+    },
+    {
+     "name": "Add",
+     "use": "add an entry from name and folder"
+    }
+   ],
+   "gotchas": [
+    "Adding beyond Maximum is expected to push the oldest entry out (unverified).",
+    "Whether Path in Add needs a trailing backslash is not in the harvest (unverified); compare FullName of an existing entry."
+   ],
+   "example": "Dim rf As RecentFile\nFor Each rf In RecentFiles\n    Debug.Print rf.Index, rf.FullName\nNext rf\nDebug.Print RecentFiles.Count & \" of \" & RecentFiles.Maximum",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGRecentFiles)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: marked the Maximum overflow behaviour as unverified"
+   }
+  },
+  {
+   "name": "Rect",
+   "id": "class:Rect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Rect",
+   "status": "current",
+   "summary": "A rectangle value (x, y of the lower-left corner, width, height) with edge and center getters and geometry helpers: intersect, union, offset, inflate, point-in-rect. Used for bounding boxes and for creating rectangles from a box.",
+   "use_for": [
+    "measure the content area of a page before fitting or exporting",
+    "check whether two elements overlap in a layout QC macro",
+    "draw a background panel with margin around a group (CreateRectangleRect)",
+    "align shapes to the edges or center of another object's box"
+   ],
+   "avoid": [
+    "changing a shape's size by editing its BoundingBox Rect: resize the shape (SetSize / SetBoundingBox) instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Rectangle",
+    "AI": "class:Rectangle"
+   },
+   "how": "Coclass; members are on IVGRect. Make one with Application.CreateRect(x, y, Width, Height); get them from Shape.BoundingBox, ShapeRange.BoundingBox, Page.BoundingBox, Page.GetObjectsBoundingBox, Curve / Segment.BoundingBox. Layer.CreateRectangleRect(Rect) draws one.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "left edge"
+    },
+    {
+     "name": "y",
+     "use": "bottom edge"
+    },
+    {
+     "name": "Width",
+     "use": "width"
+    },
+    {
+     "name": "Height",
+     "use": "height"
+    },
+    {
+     "name": "Left",
+     "use": "left edge (read-only)"
+    },
+    {
+     "name": "Right",
+     "use": "right edge"
+    },
+    {
+     "name": "Top",
+     "use": "top edge"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottom edge"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal center"
+    },
+    {
+     "name": "CenterY",
+     "use": "vertical center"
+    },
+    {
+     "name": "SetRect",
+     "use": "set position and size"
+    },
+    {
+     "name": "Intersect",
+     "use": "overlap of two rects (new Rect)"
+    },
+    {
+     "name": "Union",
+     "use": "box around two rects (new Rect)"
+    },
+    {
+     "name": "Offset",
+     "use": "move by dx, dy"
+    },
+    {
+     "name": "Inflate",
+     "use": "grow by left, top, right, bottom"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "point-in-rect test"
+    },
+    {
+     "name": "IsEmpty",
+     "use": "True for an empty rect"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "ChangeContext",
+     "use": "translate coordinates between documents"
+    }
+   ],
+   "gotchas": [
+    "y is the bottom edge (CorelDRAW y grows upward), so Top = y + Height, unlike screen rectangles (see ScreenRect).",
+    "Values follow ActiveDocument.Unit.",
+    "Shape.BoundingBox may exclude the outline width; GetBoundingBox has a UseOutline flag when the stroke must count (unverified default).",
+    "Intersect of non-overlapping rects comes back empty; test IsEmpty before using it."
+   ],
+   "example": "Dim r As Rect\nSet r = ActivePage.GetObjectsBoundingBox(False, False)\nr.Inflate 5, 5, 5, 5\nActiveLayer.CreateRectangleRect r\nDebug.Print r.Left, r.Bottom, r.Width, r.Height",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGRect)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rectangle",
+   "id": "class:Rectangle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Rectangle",
+   "status": "current",
+   "summary": "The live corner properties of a rectangle shape: per-corner roundness or radius, corner type (round, scallop, chamfer), whether corners are equal, the largest possible radius, and relative corner scaling.",
+   "use_for": [
+    "make buttons, cards and badges with exact corner radii",
+    "chamfered or scalloped corners for labels and tickets",
+    "keep corner radii fixed when a card is resized (RelativeCornerScaling off)"
+   ],
+   "avoid": [
+    "rectangles converted to curves: no corner properties remain",
+    "drawing the rectangle: use Layer.CreateRectangle2 / CreateRectangleRect, then style corners here"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Rectangle Shape Tool",
+    "PS": "rectangleTool"
+   },
+   "how": "Coclass; members are on IVGRectangle. Reach it as Shape.Rectangle on a shape whose Type is cdrRectangleShape. Create rectangles with ActiveLayer.CreateRectangle2(x, y, Width, Height, RadiusUL, RadiusUR, RadiusLR, RadiusLL) or CreateRectangle(Left, Top, Right, Bottom, CornerUL ...).",
+   "key_members": [
+    {
+     "name": "CornerType",
+     "use": "round, scallop or chamfer"
+    },
+    {
+     "name": "SetRadius",
+     "use": "same radius on all corners"
+    },
+    {
+     "name": "SetRoundness",
+     "use": "same roundness on all corners"
+    },
+    {
+     "name": "RadiusUpperLeft",
+     "use": "upper-left radius"
+    },
+    {
+     "name": "RadiusUpperRight",
+     "use": "upper-right radius"
+    },
+    {
+     "name": "RadiusLowerLeft",
+     "use": "lower-left radius"
+    },
+    {
+     "name": "RadiusLowerRight",
+     "use": "lower-right radius"
+    },
+    {
+     "name": "CornerUpperLeft",
+     "use": "upper-left roundness"
+    },
+    {
+     "name": "CornerUpperRight",
+     "use": "upper-right roundness"
+    },
+    {
+     "name": "CornerLowerLeft",
+     "use": "lower-left roundness"
+    },
+    {
+     "name": "CornerLowerRight",
+     "use": "lower-right roundness"
+    },
+    {
+     "name": "EqualCorners",
+     "use": "True when all corners match"
+    },
+    {
+     "name": "MaxRadius",
+     "use": "largest radius the rectangle allows"
+    },
+    {
+     "name": "RelativeCornerScaling",
+     "use": "scale corners with the shape"
+    }
+   ],
+   "gotchas": [
+    "Corner* are whole-number roundness values (relative, 0-100 of the maximum, unverified scale) while Radius* are absolute lengths in document units; do not mix them up.",
+    "A radius above MaxRadius is clamped or rejected (unverified which).",
+    "Shape.Rectangle on a non-rectangle shape errors or returns Nothing (unverified)."
+   ],
+   "example": "Dim s As Shape\nActiveDocument.Unit = cdrMillimeter\nSet s = ActiveLayer.CreateRectangle2(0, 0, 85, 55)\ns.Rectangle.CornerType = cdrCornerTypeRound\ns.Rectangle.SetRadius 3\ns.Rectangle.RelativeCornerScaling = False\nDebug.Print s.Rectangle.MaxRadius, s.Rectangle.EqualCorners",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGRectangle)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rulers",
+   "id": "class:Rulers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Rulers",
+   "status": "current",
+   "summary": "The ruler units of a document's drawing window: horizontal and vertical ruler unit. Display only.",
+   "use_for": [
+    "switch rulers to pixels for screen work or millimeters for print in a document setup macro",
+    "give horizontal and vertical rulers different units for technical drawings"
+   ],
+   "avoid": [
+    "changing the units a script measures in: that is ActiveDocument.Unit, not the rulers"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Preferences/Units & Rulers",
+    "AI": "Edit/Preferences/Units..."
+   },
+   "how": "Coclass; members are on IVGRulers. Reach it as ActiveDocument.Rulers. HUnits and VUnits take cdrUnit values.",
+   "key_members": [
+    {
+     "name": "HUnits",
+     "use": "horizontal ruler unit"
+    },
+    {
+     "name": "VUnits",
+     "use": "vertical ruler unit"
+    },
+    {
+     "name": "Parent",
+     "use": "the Document"
+    }
+   ],
+   "gotchas": [
+    "Ruler units and Document.Unit are separate: changing rulers does not change the numbers macros read and write.",
+    "Ruler origin and drawing scale are not on this object (not in the harvested members)."
+   ],
+   "example": "With ActiveDocument.Rulers\n    .HUnits = cdrMillimeter\n    .VUnits = cdrMillimeter\nEnd With\nActiveDocument.Unit = cdrMillimeter",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGRulers)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ScreenRect",
+   "id": "class:ScreenRect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ScreenRect",
+   "status": "current",
+   "summary": "A rectangle in screen pixels (left, top, width, height, y growing downward) used by the CorelDRAW UI framework for window, docker and view positions, with move, resize, offset, inflate, union and intersect helpers.",
+   "use_for": [
+    "position a custom docker or floating window from a UI add-on",
+    "read where a view or dock item sits on screen for UI automation"
+   ],
+   "avoid": [
+    "document geometry: use Rect, which is in document units with y growing upward"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members are on ICUIScreenRect. Make one with Application.FrameWork.Application.CreateScreenRect(Left, Top, Width, Height); window objects expose theirs as ICUIFrameWindow.Position, ICUIViewWindow.Position, ICUIDockItem.Position, ICUIDockHost.Position and ICUIViewHost.Position.",
+   "key_members": [
+    {
+     "name": "Left",
+     "use": "left edge in pixels"
+    },
+    {
+     "name": "Top",
+     "use": "top edge in pixels"
+    },
+    {
+     "name": "Right",
+     "use": "right edge"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottom edge"
+    },
+    {
+     "name": "Width",
+     "use": "width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "height in pixels"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal center"
+    },
+    {
+     "name": "CenterY",
+     "use": "vertical center"
+    },
+    {
+     "name": "SetPosition",
+     "use": "set left, top, width, height"
+    },
+    {
+     "name": "Move",
+     "use": "move to left, top"
+    },
+    {
+     "name": "Resize",
+     "use": "set width, height"
+    },
+    {
+     "name": "Offset",
+     "use": "move by dx, dy"
+    },
+    {
+     "name": "Inflate",
+     "use": "grow each side"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "point-in-rect test"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "True when the rect cannot be changed"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached copy"
+    },
+    {
+     "name": "Union",
+     "use": "box around two rects"
+    },
+    {
+     "name": "Intersect",
+     "use": "overlap of two rects"
+    }
+   ],
+   "gotchas": [
+    "Screen y grows downward (Top < Bottom), the opposite of Rect.",
+    "Any size or position change on a ReadOnly rect fails (harvest description).",
+    "Whether changing a window's Position rect moves the window live is not in the harvest (unverified); GetCopy returns a detached copy that never moves anything.",
+    "Values are physical pixels; on high-DPI displays they may not match logical pixels (unverified)."
+   ],
+   "example": "Dim sr As ScreenRect\nSet sr = Application.FrameWork.Application.CreateScreenRect(100, 100, 400, 300)\nsr.Offset 20, 20\nDebug.Print sr.Left, sr.Top, sr.Right, sr.Bottom\nDebug.Print sr.IsPointInside(150, 150)",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface ICUIScreenRect)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: matched the harvest wording (fails) instead of claiming an error is raised"
+   }
+  },
+  {
+   "name": "Segment",
+   "id": "class:Segment",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Segment",
+   "status": "current",
+   "summary": "One segment (line or Bezier curve) of a curve between two nodes: its type, length, control handles, and geometry queries at any offset along it (point, tangent, perpendicular, curvature), plus splitting, node insertion and intersections.",
+   "use_for": [
+    "place text, icons or dimension ticks at exact positions along a path",
+    "measure path lengths for cutting, sewing or laser jobs",
+    "add nodes at fixed intervals before distorting a shape",
+    "find where two paths cross"
+   ],
+   "avoid": [
+    "shapes that are not curves (rectangles, ellipses, text): convert to curves first or read their Curve copy",
+    "moving nodes: edit Node objects (StartNode / EndNode or Curve.Nodes)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members are on IVGSegment. Reach it as Shape.Curve.Segments.Item(i), Curve.SubPaths.Item(n).Segments, or Segment.Next / Previous. Offsets take an OffsetType: cdrRelativeSegmentOffset (0..1 along the segment), cdrAbsoluteSegmentOffset (document units) or cdrParamSegmentOffset (Bezier parameter, the default).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "line or curve segment"
+    },
+    {
+     "name": "Length",
+     "use": "segment length in document units"
+    },
+    {
+     "name": "StartNode",
+     "use": "node at the start"
+    },
+    {
+     "name": "EndNode",
+     "use": "node at the end"
+    },
+    {
+     "name": "AbsoluteIndex",
+     "use": "index within the whole curve"
+    },
+    {
+     "name": "Index",
+     "use": "index within its subpath"
+    },
+    {
+     "name": "SubPath",
+     "use": "subpath it belongs to"
+    },
+    {
+     "name": "GetPointPositionAt",
+     "use": "x, y at an offset"
+    },
+    {
+     "name": "GetPointAt",
+     "use": "Point at an offset"
+    },
+    {
+     "name": "GetTangentAt",
+     "use": "tangent angle at an offset"
+    },
+    {
+     "name": "GetPerpendicularAt",
+     "use": "perpendicular angle at an offset"
+    },
+    {
+     "name": "GetCurvatureAt",
+     "use": "curvature at an offset"
+    },
+    {
+     "name": "AddNodeAt",
+     "use": "insert a node"
+    },
+    {
+     "name": "BreakApartAt",
+     "use": "split the path at an offset"
+    },
+    {
+     "name": "GetIntersections",
+     "use": "crossing points with another segment"
+    },
+    {
+     "name": "StartingControlPointLength",
+     "use": "length of the start handle"
+    },
+    {
+     "name": "EndingControlPointLength",
+     "use": "length of the end handle"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "Rect around the segment"
+    },
+    {
+     "name": "Next",
+     "use": "following segment"
+    },
+    {
+     "name": "Previous",
+     "use": "preceding segment"
+    }
+   ],
+   "gotchas": [
+    "The default OffsetType is cdrParamSegmentOffset (enum value 2), where 0.5 is not the visual midpoint of an uneven Bezier; pass cdrRelativeSegmentOffset for 'halfway along'.",
+    "Shape.Curve exists only on curve shapes (Shape.Type = cdrCurveShape); other shapes need ConvertToCurves first or return Nothing (unverified).",
+    "AddNodeAt / BreakApartAt change the shape and renumber later segments; loop backwards when inserting.",
+    "Angles from GetTangentAt are in degrees (unverified)."
+   ],
+   "example": "Dim seg As Segment, x As Double, y As Double\nFor Each seg In ActiveShape.Curve.Segments\n    seg.GetPointPositionAt x, y, 0.5, cdrRelativeSegmentOffset\n    Debug.Print seg.AbsoluteIndex, seg.Type, seg.Length, x, y\nNext seg",
+   "source": "cdr_api_22 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface IVGSegment)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

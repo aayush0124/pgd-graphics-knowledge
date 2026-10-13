@@ -1,0 +1,526 @@
+{
+ "cards": [
+  {
+   "name": "Poster Edges",
+   "id": "Live PSAdapter_plugin_PstE",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Poster Edges",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that posterizes the rasterized artwork to a few flat tones and draws dark black lines along its contrast edges, giving a printed-poster / comic look. On flat vector art the main visible change is dark, slightly ragged black outlines (thick only at a high Edge Thickness) around every shape plus banding in gradients.",
+   "use_for": [
+    "comic or pop-art outline treatment on a flat illustration",
+    "gritty gig-poster or zine look on placed artwork",
+    "stylising a placed photo inside an Illustrator layout to match a cartoon set",
+    "banding a gradient into flat poster tones with inked edges"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Clean vector outlines: the edges are raster and pixel-sized; for crisp scalable outlines use a stroke, Effect > Path > Offset Path or Outline Stroke instead.",
+    "Small type: the black edge lines fill in counters and kill legibility.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send the effect's settings (render check of the scripted apply barely changed the probe, mean diff 0.51)."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Poster Edges"
+   },
+   "look": [
+    "poster",
+    "comic outlines",
+    "black edges",
+    "inked",
+    "posterized",
+    "cartoon",
+    "pop art",
+    "gritty print"
+   ],
+   "params": [
+    {
+     "name": "Edge Thickness",
+     "does": "width of the black lines drawn along contrast edges",
+     "typical": "2 for a fine ink line, 6-8 for heavy comic outlines"
+    },
+    {
+     "name": "Edge Intensity",
+     "does": "how dark the edge lines are and how many lower-contrast edges also get lines",
+     "typical": "1-2 subtle, 4-6 strong inked look"
+    },
+    {
+     "name": "Posterization",
+     "does": "sets how many tone levels the colours are reduced to (the posterize step); shows as banding in gradients and photos, little change on flat fills",
+     "typical": "2 (dialog value at harvest) for clear poster banding"
+    }
+   ],
+   "demo_settings": {
+    "Edge Thickness": 10,
+    "Edge Intensity": 10,
+    "Posterization": 2
+   },
+   "pairs_with": [
+    "Effect > Artistic > Cutout for flatter colour shapes under the outlines",
+    "Effect > Texture > Grain for a printed-paper finish",
+    "Document Raster Effects Settings (raise to 300 ppi for print before judging line weight)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_PstE\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Edge Thickness / Edge Intensity / Posterization live in the binary 'data' descriptor that Dict data cannot carry, so the result uses whatever settings the plug-in falls back to. For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_PstE'), which opens the 'Poster Edges (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "Posterization 'does' no longer claims a direction (higher = stronger reduction was unsupported by the harvest, which has no range); summary no longer calls the outlines thick at the harvested Edge Thickness 2."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/151a155d6052.png",
+    "note": "At Edge Thickness 10 / Intensity 10 (the re-rendered demo) the photo is posterized to a few flat tones with dark ragged ink lines along every contrast edge and the grey ramp broken into steps, the printed-poster / comic look the card describes; demo_settings restored to the values the frame was rendered with.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Rough Pastels",
+   "id": "Live PSAdapter_plugin_RghP",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Rough Pastels",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that redraws the artwork as coloured pastel-chalk strokes over an embossed texture (canvas by default): bright areas get thick chalk with little texture, darker areas look scraped so the texture shows through. Flat vector fills turn into streaky chalk on a lit, bumpy surface.",
+   "use_for": [
+    "hand-drawn chalk or pastel look for a poster illustration",
+    "textured, crafty treatment of flat icons or badges",
+    "children's book or menu artwork that should feel drawn rather than vector",
+    "adding paper / canvas tooth to a flat colour block"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document.",
+    "Text and fine line art: chalk strokes break up thin strokes and small type.",
+    "When only a surface texture is wanted without streaks: use Effect > Texture > Texturizer instead.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send stroke, texture or light settings."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Rough Pastels",
+    "CDR": "Effects/Art Strokes/Pastels"
+   },
+   "look": [
+    "pastel",
+    "chalk",
+    "crayon",
+    "textured strokes",
+    "canvas texture",
+    "hand drawn",
+    "embossed paper",
+    "crafty"
+   ],
+   "params": [
+    {
+     "name": "Stroke Length",
+     "does": "length of the chalk strokes; longer gives streakier, more directional marks",
+     "typical": "6 (dialog value at harvest) subtle, 20-30 bold streaks"
+    },
+    {
+     "name": "Stroke Detail",
+     "does": "how sharply the chalk strokes are imprinted; higher gives crisper, more visible marks",
+     "typical": "4-12"
+    },
+    {
+     "name": "Texture Type",
+     "does": "surface texture under the chalk (the dialog offers several, e.g. canvas, brick, burlap, sandstone); the harvest recorded only the default code TxCa",
+     "typical": "TxCa (default)"
+    },
+    {
+     "name": "Scaling",
+     "does": "size of the texture pattern in percent",
+     "typical": "100 default, 150-180 for a coarse visible weave"
+    },
+    {
+     "name": "Relief",
+     "does": "depth of the embossed texture",
+     "typical": "20 default, 30-40 strongly embossed"
+    },
+    {
+     "name": "Light Direction",
+     "does": "side the texture is lit from, which sets where the emboss highlights fall",
+     "typical": "Top Left or Bottom"
+    },
+    {
+     "name": "Invert Texture",
+     "does": "swaps texture peaks and valleys",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "Stroke Length": 25,
+    "Stroke Detail": 12,
+    "Scaling": 170,
+    "Relief": 35,
+    "Light Direction": "Top Left",
+    "Invert Texture": false
+   },
+   "enum_labels": {
+    "Light Direction": {
+     "LDBt": "Bottom",
+     "LDBL": "Bottom Left",
+     "LDLf": "Left",
+     "LDTL": "Top Left",
+     "LDTp": "Top",
+     "LDTR": "Top Right",
+     "LDRg": "Right",
+     "LDBR": "Bottom Right"
+    }
+   },
+   "pairs_with": [
+    "Effect > Distort & Transform > Roughen for wobbly hand-drawn edges before the chalk",
+    "Effect > Texture > Grain for extra paper speckle",
+    "Document Raster Effects Settings (stroke size is in pixels, so the look gets finer at higher ppi)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_RghP\"><Dict data=\"I dataSize 129 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but every chalk / texture / light setting lives in the binary 'data' descriptor that Dict data cannot carry, so the scripted result uses the plug-in's fallback settings. For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_RghP') (opens the 'Rough Pastels (100%)' dialog with last-used values, needs OK), or save a hand-made version as a Graphic Style and doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel; Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium-high: Filter Gallery stroke plus texture pass at the Document Raster Effects resolution (PrevDres 300 recorded); noticeably slow on large objects",
+   "review": {
+    "by": "adversarial",
+    "changes": "Stroke Detail 'does' reworded (the claim that it keeps more of the artwork's edge detail was unsupported)."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/a385f1743ad4.png",
+    "note": "The photo is redrawn as streaky diagonal pastel-chalk strokes over a bumpy, lit canvas texture, the strip blocks streaked at their edges and the type broken up, as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Smudge Stick",
+   "id": "Live PSAdapter_plugin_SmdS",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Smudge Stick",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that softens the artwork with short diagonal strokes that smear the darker areas, while lighter areas get brighter and lose detail. Flat vector shapes get smudged, diagonally streaked edges and a slightly blown-out, chalky-bright interior.",
+   "use_for": [
+    "soft smudged-crayon or charcoal-smear look on illustration",
+    "knocking crisp vector edges back into a painterly, rubbed texture",
+    "dreamy, washed background artwork behind sharp headline type"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document.",
+    "Type and logos that must stay readable: the diagonal smear and highlight wash eat thin strokes.",
+    "When the aim is just softness: Effect > Blur > Gaussian Blur gives a clean blur without streaks or brightening.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send the stroke settings.",
+    "flat vector fills: on flat or very smooth art this filter has nothing to stroke and only remaps brightness, so at these values every colour without a channel at 255 (gradients, dark greys, a flat red) is only scaled darker (the test plate's gradient to about x0.82, with no strokes) while fills with a full channel (pure orange, pure blue) survive; that is Illustrator's own result (a dialog-applied control matched the scripted render pixel for pixel), so give it a photo or textured art"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Smudge Stick"
+   },
+   "look": [
+    "smudged",
+    "smeared",
+    "diagonal strokes",
+    "soft painterly",
+    "chalky",
+    "rubbed charcoal",
+    "washed highlights"
+   ],
+   "params": [
+    {
+     "name": "Stroke Length",
+     "does": "length of the diagonal smudge strokes",
+     "typical": "2 (dialog value at harvest) subtle, 6-8 clearly streaked"
+    },
+    {
+     "name": "Highlight Area",
+     "does": "how much of the lighter range is pushed brighter and flattened",
+     "typical": "0 (dialog value at harvest) none, 8-12 bright washed highlights"
+    },
+    {
+     "name": "Intensity",
+     "does": "strength of the highlight brightening",
+     "typical": "10 (dialog value at harvest) for strong brightening, 4-8 gentler"
+    }
+   ],
+   "demo_settings": {
+    "Stroke Length": 10,
+    "Highlight Area": 20,
+    "Intensity": 10
+   },
+   "pairs_with": [
+    "Effect > Texture > Grain or Texturizer to add paper tooth under the smear",
+    "Effect > Brush Strokes > Dark Strokes for a darker, moodier variant",
+    "Document Raster Effects Settings (stroke length is in pixels)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_SmdS\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Stroke Length / Highlight Area / Intensity live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result uses fallback settings (the harvest probe darkened slightly, mean diff 2.47). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_SmdS') (opens the 'Smudge Stick (100%)' dialog with last-used values, needs OK), or apply a hand-made Graphic Style with doc.graphicStyles.getByName('<style>').applyTo(item). The stored random seed differs on every application, so two applies never match pixel for pixel. Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel; Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: one Filter Gallery pass at the Document Raster Effects resolution (PrevDres 300 recorded)",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo Intensity 7 -> 10 (the harvested dialog value, so it is in range and makes the highlight wash obvious on a flat vector fill); Intensity typical now cites the harvested 10."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/49845b742ce0.png",
+    "note": "At Stroke Length 10 / Highlight Area 20 / Intensity 10 (the re-rendered demo) the darker areas are smeared with short diagonal strokes and the light areas brighten into a washed, blown-out yellow, losing detail, the smudge-stick look the card describes; demo_settings restored to the values the frame was rendered with.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Sponge",
+   "id": "Live PSAdapter_plugin_Spng",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Sponge",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that simulates sponge painting: the artwork breaks into highly textured, mottled patches of contrasting colour. Flat fills become blotchy, porous dabs and edges go soft and irregular.",
+   "use_for": [
+    "sponge-painted or stamped texture inside flat colour shapes",
+    "rustic, faux-finish treatment for posters, labels and packaging art",
+    "breaking up large flat areas so they feel hand-made"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document.",
+    "Small type and thin lines: the mottling dissolves them.",
+    "When an even film-grain speckle is wanted rather than blotches: use Effect > Texture > Grain or Effect > Artistic > Film Grain.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send the brush settings."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Sponge"
+   },
+   "look": [
+    "sponge painted",
+    "mottled",
+    "blotchy texture",
+    "porous",
+    "faux finish",
+    "dabbed paint",
+    "grungy"
+   ],
+   "params": [
+    {
+     "name": "Brush Size",
+     "does": "size of the sponge dabs",
+     "typical": "2 (dialog value at harvest) fine, 7-9 big blotches"
+    },
+    {
+     "name": "Definition",
+     "does": "contrast and crispness of the dab pattern; higher gives harder, darker mottling",
+     "typical": "12 (dialog value at harvest), 18-22 strong"
+    },
+    {
+     "name": "Smoothness",
+     "does": "softens the dab edges; low values look rougher",
+     "typical": "1-3 rough, 5 (dialog value at harvest) softer"
+    }
+   ],
+   "demo_settings": {
+    "Brush Size": 9,
+    "Definition": 20,
+    "Smoothness": 2
+   },
+   "pairs_with": [
+    "Effect > Artistic > Cutout first to flatten colour, then Sponge for the texture",
+    "Opacity / blend mode in the Appearance panel to tone the mottling down",
+    "Document Raster Effects Settings (dab size is in pixels)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Spng\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Brush Size / Definition / Smoothness live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result uses fallback settings. For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Spng') (opens the 'Sponge (100%)' dialog with last-used values, needs OK), or apply a hand-made Graphic Style with doc.graphicStyles.getByName('<style>').applyTo(item). The stored random seed differs on every application. Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel; Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: one Filter Gallery pass at the Document Raster Effects resolution (PrevDres 300 recorded)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/d314f7dde5dc.png",
+    "note": "The whole photo, strip and ramp break into porous, mottled sponge patches of contrasting tone, the sponge-painted look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Underpainting",
+   "id": "Live PSAdapter_plugin_Undr",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Underpainting",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that paints the artwork onto a textured background and then paints the image again over it, giving a soft, blurred, slightly muted painting on embossed canvas. Vector shapes lose their crisp edges to broad brushwork with visible canvas texture.",
+   "use_for": [
+    "soft painted-on-canvas look for a poster or book-cover illustration",
+    "turning flat vector art into a fine-art print feel",
+    "muted textured background art behind sharp type"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document.",
+    "Anything that must stay sharp (logos, small type): the brushwork blurs edges heavily at large Brush Size.",
+    "When only canvas texture is needed without the blur: Effect > Texture > Texturizer.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send brush, texture or light settings."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Underpainting",
+    "CDR": "Effects/Texture/Underpainting"
+   },
+   "look": [
+    "painted canvas",
+    "soft painterly",
+    "blurred brushwork",
+    "canvas texture",
+    "fine art",
+    "muted",
+    "oil painting"
+   ],
+   "params": [
+    {
+     "name": "Brush Size",
+     "does": "size of the underpainting brush; larger blurs shapes more",
+     "typical": "6 (dialog value at harvest) light, 20-30 broad and soft"
+    },
+    {
+     "name": "Texture Coverage",
+     "does": "how much of the image the textured underpainting covers",
+     "typical": "16 (dialog value at harvest), 25-35 heavy texture"
+    },
+    {
+     "name": "Texture Type",
+     "does": "surface texture (the dialog offers several, e.g. canvas, brick, burlap, sandstone); the harvest recorded only the default code TxCa",
+     "typical": "TxCa (default)"
+    },
+    {
+     "name": "Scaling",
+     "does": "size of the texture pattern in percent",
+     "typical": "100 default, 150-180 coarse"
+    },
+    {
+     "name": "Relief",
+     "does": "depth of the embossed texture",
+     "typical": "4 (dialog value at harvest) faint, 15-25 clearly embossed"
+    },
+    {
+     "name": "Light Direction",
+     "does": "side the texture is lit from",
+     "typical": "Top (dialog value at harvest) or Top Left"
+    },
+    {
+     "name": "Invert Texture",
+     "does": "swaps texture peaks and valleys",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "Brush Size": 22,
+    "Texture Coverage": 30,
+    "Scaling": 170,
+    "Relief": 20,
+    "Light Direction": "Top Left",
+    "Invert Texture": false
+   },
+   "enum_labels": {
+    "Light Direction": {
+     "LDBt": "Bottom",
+     "LDBL": "Bottom Left",
+     "LDLf": "Left",
+     "LDTL": "Top Left",
+     "LDTp": "Top",
+     "LDTR": "Top Right",
+     "LDRg": "Right",
+     "LDBR": "Bottom Right"
+    }
+   },
+   "pairs_with": [
+    "Effect > Artistic > Dry Brush or Paint Daubs stacked above for more defined strokes",
+    "Effect > Texture > Texturizer for a stronger single texture",
+    "Document Raster Effects Settings (brush size is in pixels)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Undr\"><Dict data=\"I dataSize 129 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but every brush / texture / light setting lives in the binary 'data' descriptor that Dict data cannot carry, so the scripted result uses fallback settings (the harvest probe barely changed, mean diff 0.52). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Undr') (opens the 'Underpainting (100%)' dialog with last-used values, needs OK), or apply a hand-made Graphic Style with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel; Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium-high: brush plus texture pass at the Document Raster Effects resolution (PrevDres 300 recorded); large Brush Size is slow on big objects",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/179caf2f0a56.png",
+    "note": "The photo is repainted soft and blurred, slightly muted, over a visible embossed canvas texture, the strip and type softened, as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Watercolor",
+   "id": "Live PSAdapter_plugin_Wtrc",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Artistic/Watercolor",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery) that repaints the artwork in a watercolour style with a medium wet brush that simplifies detail and saturates colour where strong tonal edges occur. The result is blotchy, saturated and noticeably darker, with dark pooled edges; it is a stylised filter look, not a light transparent wash.",
+   "use_for": [
+    "quick painted, blotchy colour treatment on illustration or placed photos",
+    "saturated, inky watercolour-style poster art",
+    "stylising flat icons so they read as painted"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document.",
+    "Wanting a light, airy wash: this filter darkens and muddies; keep Shadow Intensity low or use transparent fills with Effect > Stylize > Feather instead.",
+    "Small type: the brush simplification swallows it.",
+    "flat vector fills: on flat or very smooth art this filter has nothing to stroke and only remaps brightness, so at these values every colour without a channel at 255 (gradients, dark greys, a flat red) goes near-solid black while fills with a full channel (pure orange, pure blue) survive; that is Illustrator's own result (a dialog-applied control matched the scripted render pixel for pixel), so give it a photo or textured art"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Artistic/Watercolor",
+    "CDR": "Effects/Art Strokes/Watercolor"
+   },
+   "look": [
+    "watercolor",
+    "painted",
+    "blotchy",
+    "saturated",
+    "dark edges",
+    "wet paint",
+    "inky"
+   ],
+   "params": [
+    {
+     "name": "Brush Detail",
+     "does": "how much detail the brush keeps; low values give big simplified blobs",
+     "typical": "9 (dialog value at harvest), 3-6 for a looser painted look"
+    },
+    {
+     "name": "Shadow Intensity",
+     "does": "how strongly dark areas are deepened; high values go nearly black",
+     "typical": "1 (dialog value at harvest); keep 0-3, higher goes muddy"
+    },
+    {
+     "name": "Texture",
+     "does": "amount of paper-like texture in the paint",
+     "typical": "1 (dialog value at harvest) smooth, 3 clearly textured"
+    }
+   ],
+   "demo_settings": {
+    "Brush Detail": 5,
+    "Shadow Intensity": 2,
+    "Texture": 3
+   },
+   "pairs_with": [
+    "Effect > Texture > Texturizer for a paper surface",
+    "Appearance panel Opacity / Multiply over a light paper fill to soften the darkening",
+    "Document Raster Effects Settings (brush is pixel-sized)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Wtrc\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Brush Detail / Shadow Intensity / Texture live in the binary 'data' descriptor that Dict data cannot carry; the harvest's scripted render of a flat red came out solid black, which is this filter's brightness remap on flat fills (a dialog-applied control gives the same), not a route fault. For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Wtrc') (opens the 'Watercolor (100%)' dialog with last-used values, needs OK), or apply a hand-made Graphic Style with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel; Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: one Filter Gallery pass at the Document Raster Effects resolution (PrevDres 300 recorded)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Texture typical no longer states 3 as the maximum (no range in the harvest); Shadow Intensity typical now cites the harvested 1."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/2783a12b533d.png",
+    "note": "On the photo detail is simplified into blotchy, saturated and noticeably darker patches with dark pooled edges (the dark areas go near-black, the strip stays saturated), the watercolour filter look the card describes; the old black gradient on the vector plate was its brightness remap on flat fills, now a card fact, not a route fault.",
+    "rerender": false
+   }
+  }
+ ]
+}

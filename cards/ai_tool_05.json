@@ -1,0 +1,393 @@
+{
+ "cards": [
+  {
+   "name": "Mesh Tool",
+   "id": "Adobe Mesh Editing Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Mesh Editing Tool",
+   "status": "current",
+   "summary": "Turns a filled path into a gradient mesh object and edits it: each click adds a mesh point with crossing mesh lines, every point (and patch) can take its own colour, and colours blend smoothly between points, giving painterly, photo-real shading on a vector shape.",
+   "how": "Select a fill colour, then click inside a filled path: the path becomes a mesh object and the click adds a mesh point carrying that colour. Click on an existing mesh line to add one new line; Shift+click adds a point without applying the current fill colour; Alt+click on a mesh point deletes it. Drag a point to move it (Shift+drag keeps it on its mesh line) and drag its direction handles to bend the mesh lines and steer the colour flow. Recolour by selecting points with this tool or the Direct Selection Tool and picking a colour in the Swatches / Color panel, or by dragging a swatch onto a point or patch. For an even grid start with Object > Create Gradient Mesh (rows, columns, flat / to-centre / to-edge highlight). Compound paths, text and linked EPS cannot be turned into a mesh. Shortcut U; the harvest places it in the Default toolbar and next to the Gradient Tool in the Basic and Getting Started toolbars.",
+   "shortcut": "U",
+   "scriptable": "no",
+   "script_api": "Selection only: app.selectTool(\"Adobe Mesh Editing Tool\"). MeshItem has no members for mesh points, lines or their colours (only the generic move / duplicate / remove and the inherited PageItem transforms), so a script cannot add or colour mesh points. app.executeMenuCommand(\"make mesh\") (Object > Create Gradient Mesh...) opens the grid dialog, which needs a person to confirm. For scripted smooth colour use a linear or radial GradientColor fill instead.",
+   "use_for": [
+    "photo-real shading on a vector fruit, product bottle or cosmetic tube",
+    "soft skin and fabric-fold shading in a vector portrait or fashion illustration",
+    "glossy highlights on a logo emblem or app icon that a linear / radial gradient cannot follow",
+    "organic multi-colour backgrounds that bend around a shape"
+   ],
+   "avoid": [
+    "for a simple blend of a few colours: the Gradient Tool's freeform gradient is far easier to set up and edit",
+    "on files for print shops with old RIPs or for SVG / web export: meshes are heavy and export as rasterised or many small objects",
+    "on compound paths and live text: outline or release them first, or use a gradient fill",
+    "when the work has to be built by a script: the mesh cannot be created or coloured from the DOM"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Fill Tools/Mesh Fill"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: toolbar note omitted the Getting Started toolbar, where the batch also pairs it with the Gradient Tool; script_api: 'MeshItem exposes only move / duplicate / remove' was wrong (it inherits PageItem translate / resize / rotate / transform), now says it has no mesh-point or colour members. Rest checked: U, no, make mesh (ai_menu harvest), CDR Mesh Fill."
+   }
+  },
+  {
+   "name": "Add Anchor Point Tool",
+   "id": "Adobe Add Anchor Point Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Pen Tool",
+   "status": "current",
+   "summary": "Adds an anchor point where you click on a path segment without changing the path's shape: a point on a straight segment comes in as a corner point, a point on a curve as a smooth point with handles, ready to be dragged.",
+   "how": "Select the path (or just hover over it), then click on a segment to add a point; drag the new point afterwards with the Direct Selection Tool (hold Ctrl to switch to it temporarily). Holding Alt switches to the Delete Anchor Point Tool. The Pen Tool does the same when it hovers over a selected path, unless Auto Add/Delete is turned off in Preferences > General. To add a point midway along every segment at once use Object > Path > Add Anchor Points. Shortcut = (plus key without Shift); in the harvest the tool sits only in the Default toolbar's Pen flyout.",
+   "shortcut": "=",
+   "scriptable": "partial",
+   "script_api": "The harvest has no invoke for this id: app.selectTool on it could not be verified (PARM error), and clicking cannot be scripted anyway. Instead: app.executeMenuCommand(\"Add Anchor Points2\") (Object > Path > Add Anchor Points) adds a midpoint to every segment of the selected paths; for a point at a chosen spot, read pathItem.pathPoints, compute the split and rebuild the path with pathItem.setEntirePath() plus each PathPoint's anchor / leftDirection / rightDirection / pointType (pathPoints.add() only appends at the end).",
+   "use_for": [
+    "adding a point to a logo outline so a corner can be pulled out or bent",
+    "giving an icon or badge edge enough points for a notch or bump",
+    "splitting a long segment so one part of a ribbon, wave or banner edge can be reshaped"
+   ],
+   "avoid": [
+    "when you are drawing anyway: the Pen Tool with Auto Add/Delete adds points without switching tools",
+    "to change a point between smooth and corner: use the Anchor Point Tool",
+    "adding many points to smooth a curve: extra points make bumpy curves; use Object > Path > Simplify or the Smooth Tool instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "addKnotTool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: = shortcut, Default-only toolbar, partial, Add Anchor Points2 (ai_menu harvest), PathItem setEntirePath / PathPoint members (API harvest), PS addKnotTool, CDR Shape."
+   }
+  },
+  {
+   "name": "Anchor Point Tool",
+   "id": "Adobe Anchor Point Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Pen Tool",
+   "status": "current",
+   "summary": "Converts anchor points between smooth and corner and reshapes curves: clicking a smooth point collapses its handles into a sharp corner, dragging from a corner pulls out smooth handles, dragging one handle breaks the pair, and dragging a segment bends it.",
+   "how": "Shortcut Shift+C, or hold Alt while using the Pen Tool to get it temporarily. Click a smooth point to make it a corner (handles retracted); drag out from a corner point to make it smooth with symmetric handles; drag a single direction handle to move it independently of its partner (a cusp point); drag directly on a segment to curve it. The Control / Properties panel also has 'Convert selected anchor points to corner / smooth' buttons for several selected points at once. The harvest lists it in the Pen flyout of the Default, Basic and Getting Started toolbars.",
+   "shortcut": "Shift+C",
+   "scriptable": "yes",
+   "script_api": "No invoke in the harvest (app.selectTool on this id could not be verified, PARM error), but the result is fully scriptable: pathItem.convertAnchorToCorner(index) and pathItem.convertAnchorToSmooth(index) convert a point, pathItem.isAnchorPointCorner(index) reads it, and each PathPoint's leftDirection / rightDirection / pointType can be set directly to place handles exactly.",
+   "use_for": [
+    "sharpening the corners of a traced logo that came out rounded",
+    "turning a polygon corner into a smooth curve on an icon or badge",
+    "breaking handles to make a cusp in lettering, leaf tips or flame shapes",
+    "bending a straight segment into an arc on a custom shape"
+   ],
+   "avoid": [
+    "for rounding a corner by a set radius: drag the live corner widget or use Effect > Stylize > Round Corners for an even radius",
+    "for drawing smooth curves from scratch: the Curvature Tool needs fewer handle adjustments",
+    "converting many points one by one: select them with the Direct Selection Tool and use the convert buttons in the Control panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "convertKnotTool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: Shift+C, three toolbars, convertAnchorToCorner / convertAnchorToSmooth / isAnchorPointCorner are harvested PathItem methods, PS convertKnotTool, CDR Shape."
+   }
+  },
+  {
+   "name": "Delete Anchor Point Tool",
+   "id": "Adobe Delete Anchor Point Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Pen Tool",
+   "status": "current",
+   "summary": "Removes the anchor point you click while keeping the path joined: the two neighbouring points connect with one segment, so a closed shape stays closed but its outline changes around the removed point.",
+   "how": "Select the path, then click an anchor point to remove it. Holding Alt switches to the Add Anchor Point Tool; the Pen Tool does the same when it hovers over a point of a selected path (unless Auto Add/Delete is off in Preferences > General). For several points, select them with the Direct Selection Tool and use Object > Path > Remove Anchor Points (or the Control panel button); pressing Delete instead removes the points together with their segments and opens the path. Shortcut - (minus); in the harvest it sits only in the Default toolbar's Pen flyout.",
+   "shortcut": "-",
+   "scriptable": "yes",
+   "script_api": "No invoke in the harvest (app.selectTool on this id could not be verified, PARM error). A script removes a point directly with pathItem.pathPoints[i].remove(); for the selected points app.executeMenuCommand(\"Remove Anchor Points menu\") runs Object > Path > Remove Anchor Points.",
+   "use_for": [
+    "cleaning surplus points from an auto-traced logo or scanned lettering",
+    "turning a rectangle into a triangle or a pentagon into a simpler badge shape",
+    "removing a bump from a shape outline in an icon"
+   ],
+   "avoid": [
+    "to simplify a whole path with many points: Object > Path > Simplify keeps the shape better",
+    "when you want to cut the path open: use the Scissors Tool or Delete with the Direct Selection Tool",
+    "when the removed point carried a deliberate curve: the neighbouring handles define the new segment and the outline can shift a lot; adjust with the Anchor Point Tool afterwards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "deleteKnotTool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: minus shortcut, Default-only toolbar, PathPoint.remove and Remove Anchor Points menu (harvested), PS deleteKnotTool, CDR Shape."
+   }
+  },
+  {
+   "name": "Pen Tool",
+   "id": "Adobe Pen Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Pen Tool",
+   "status": "current",
+   "summary": "Draws precise Bezier paths point by point: a click sets a corner point and a straight segment, a click-and-drag sets a smooth point with handles and a curved segment; the result is an open or closed vector path that takes the current fill and stroke.",
+   "how": "Shortcut P. Click to place corner points, click-and-drag to pull handles for curves; Shift constrains segments and handles to 45 degree steps. Alt while dragging (or Alt-clicking the last point) breaks the handles so the next segment can change direction; hold Space while dragging to move the point being placed; hold Ctrl to switch temporarily to the selection tool. Close the shape by clicking the first point (a small circle shows on the cursor); end an open path with Enter / Esc or a Ctrl-click away. Over a selected path the tool adds or deletes points automatically (Preferences > General > Disable Auto Add/Delete turns this off); Rubber Band in the Selection & Anchor Display preferences previews the next segment.",
+   "shortcut": "P",
+   "scriptable": "yes",
+   "script_api": "No invoke in the harvest (app.selectTool on this id could not be verified, PARM error), but any pen path can be built in the DOM: var p = app.activeDocument.pathItems.add(); p.setEntirePath([[x1,y1],[x2,y2],...]) for the anchors, then set each pathPoints[i].leftDirection / rightDirection / pointType for curves, and p.closed = true for a closed shape.",
+   "use_for": [
+    "redrawing a logo or wordmark as clean vector outlines",
+    "custom icons and pictograms with exact corners and curves",
+    "cut-out paths and clipping masks around placed product photos",
+    "lettering and illustration outlines that need few, well-placed points"
+   ],
+   "avoid": [
+    "for flowing curves drawn quickly: the Curvature Tool needs no handle dragging",
+    "for basic geometry (rectangles, circles, polygons, stars): the shape tools are exact and stay live",
+    "for converting a raster logo wholesale: Image Trace gets a first pass, then clean it up with the Pen Tool",
+    "for sketch-like freehand lines: the Pencil, Paintbrush or Blob Brush tools"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "penTool",
+    "CDR": "Toolbox/Curve Tools/Pen"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: P, PARM error noted, setEntirePath / PathPoint members harvested, PS penTool, CDR Curve Tools/Pen."
+   }
+  },
+  {
+   "name": "Quick Pen Tool",
+   "id": "Adobe Quick Pen Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Pen Tool",
+   "status": "unusable",
+   "summary": "A two-mode path tool in the Pen flyout of the Default and Basic toolbars (internally PathCoreUI's 'Geometry Tool'). The Quick Pen Tool Help installed with Illustrator 30.2.1 says it draws in Lines or Arc mode, flips and resizes arcs while drawing, and edits paths with on-canvas widgets. Not tested live: selecting it from a script crashed Illustrator.",
+   "how": "Shift+Q (the batch shortcut, also given in the app's Quick Pen Tool Help). From that help and the PathCoreUI strings, not from a live test: a Quick Pen toolbar (HUD) switches between Lines and Arc modes and key 1 toggles them; key 2 flips the arc while drawing; Alt+scroll increases or decreases the arc size; holding Shift snaps while creating or editing paths or using the sweep controls; drag the widgets to modify paths. The HUD can show or hide Sweep Control and Parallel Extenders, the 1 / 2 keys can be changed in Edit > Keyboard Shortcuts, and the tool has a 'Quick Pen Tool Options' dialog. The harvest could not tie it to a Keyboard Shortcuts dialog entry. Try it by hand in a scratch document before relying on it.",
+   "shortcut": "Shift+Q",
+   "scriptable": "no",
+   "script_api": "None. app.selectTool(\"Adobe Quick Pen Tool\") crashed Illustrator 30.2.1 during the harvest (2026-10-04, WerFault): never select this id from a script. Build paths with pathItems.add() + setEntirePath() instead (see the Pen Tool card).",
+   "use_for": [
+    "by hand only, after a test in a scratch document: quick outlines of straight lines and arcs for icons, signage pictograms and technical diagrams",
+    "nothing in an automated pipeline: scripted drawing goes through pathItems.add() + setEntirePath()"
+   ],
+   "avoid": [
+    "in any script: selecting it crashed Illustrator",
+    "for production paths until its behaviour has been checked by hand: use the Pen Tool or Curvature Tool"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / how said what it draws was unknown and only guessed at the options dialog; the app's own Quick Pen Tool Help (OnBoarding extension locale/en_US/messages.properties) and PathCoreUI.aip strings describe Lines / Arc modes, key 1 toggles mode, key 2 flips the arc, Alt+scroll arc size, Shift snapping, sweep control, parallel extenders and a 'Quick Pen Tool Options' dialog, so summary / how / use_for now say that, still marked as untested; 'does not appear in the Keyboard Shortcuts dialog' softened to 'the harvest could not tie it to an entry'; added empty equivalents. Kept unusable / no / low (selectTool crashed 30.2.1)."
+   }
+  },
+  {
+   "name": "Ellipse Tool",
+   "id": "Adobe Ellipse Shape Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Draws ellipses and circles as Live Shapes: a closed four-point path whose size, rotation and pie angles stay editable in the Transform / Properties panel and via the pie widget on the bounding box.",
+   "how": "Shortcut L. Drag to draw; Shift makes a perfect circle, Alt draws from the centre, Space while dragging repositions the shape. Click once without dragging to type exact Width and Height in the Ellipse dialog. Drag the pie widget on the side of a selected ellipse to cut it into a pie wedge, or set the start and end angles in the Properties panel. Smart Guides snap the size to other objects.",
+   "shortcut": "L",
+   "scriptable": "yes",
+   "script_api": "Select it with app.selectTool(\"Adobe Ellipse Shape Tool\") (verified live), but the drawing itself is done with app.activeDocument.pathItems.ellipse(top, left, width, height, reversed, inscribed). top is a y value in scripting coordinates (y runs upward, so shapes below the artboard top have negative top). Pie angles are not exposed in the DOM, so treat the result as a plain closed path.",
+   "use_for": [
+    "circular badges, seals and logo marks",
+    "dots, buttons and avatar frames in UI mock-ups and icons",
+    "pie-wedge shapes for simple infographics",
+    "circle bases for text on a path in stamps and labels"
+   ],
+   "avoid": [
+    "for a precise ring or donut: draw two circles and use Pathfinder Minus Front or a thick stroke instead",
+    "for data-accurate pie charts: use the Pie Graph Tool",
+    "for ovals that must be tilted perspective circles: draw the ellipse and rotate it, or use the Perspective Grid"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "ellipseTool",
+    "CDR": "Toolbox/Ellipse Tools/Ellipse"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: L, verified invoke, pathItems.ellipse signature matches the API harvest, PS ellipseTool, CDR Ellipse."
+   }
+  },
+  {
+   "name": "Flare Tool",
+   "id": "Adobe Flare Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Creates a vector lens-flare object: a bright centre, a soft halo, radiating rays and a trail of rings, built from semi-transparent fills, that looks like light catching a camera lens and stays editable as a flare object.",
+   "how": "No default shortcut; in the harvest it is only in the Default toolbar's shape flyout. Drag from where the light should be to set the centre and halo size (Shift constrains the ray angle, Up / Down arrows add or remove rays), release, then click or drag again to set the end of the flare and its ring trail (Up / Down arrows change the number of rings). Click once without dragging to open the Flare Tool Options dialog (centre diameter, opacity, brightness; halo growth and fuzziness; number, length and fuzziness of rays; ring path distance, number, largest size and direction). Double-click the tool with a flare selected to edit it; Object > Expand turns it into plain objects. It shows best on dark backgrounds.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Selection only: app.selectTool(\"Adobe Flare Tool\") (verified live). The DOM has no call that creates or edits a flare object, so the drawing itself cannot be scripted; a script can only move, duplicate or recolour an existing expanded flare like any other art.",
+   "use_for": [
+    "a light glint on a chrome logo, car headlight or jewellery illustration",
+    "a sun or star burst in a night-sky or space poster",
+    "a retro sci-fi lens-flare accent on a title or album cover"
+   ],
+   "avoid": [
+    "on light or white backgrounds: the semi-transparent flare washes out and nearly disappears",
+    "for a photographic flare on a photo: Photoshop's Lens Flare filter or a flare overlay image looks more real",
+    "in files for SVG / web or print shops with old RIPs: the transparency may need flattening, test the output first",
+    "when the art must be built by a script: no DOM call creates a flare"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "lensFlare",
+    "CDR": "Effects/Camera/Lens Flare"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: no shortcut, Default-only toolbar, Flare Tool Options fields match FlareUI.aip strings (Center / Halo / Rays / Rings), PS lensFlare, CDR Effects/Camera/Lens Flare."
+   }
+  },
+  {
+   "name": "Polygon Tool",
+   "id": "Adobe Shape Construction Regular Polygon Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Draws regular polygons (equal sides, drawn from the centre) as Live Shapes, so the number of sides, the radius, rotation and corner rounding stay editable afterwards.",
+   "how": "No default shortcut. Drag out from the centre; drag around to rotate, Shift keeps the polygon upright, Up / Down arrows while dragging add or remove sides. Click once without dragging to set Radius and Sides in the Polygon dialog. On a selected polygon, drag the diamond side widget on the bounding box to change the side count and drag the corner widgets to round all corners; the Properties / Transform panel has the same Live Shape values. The harvest lists it in the Default, Basic and Getting Started toolbars.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select it with app.selectTool(\"Adobe Shape Construction Regular Polygon Tool\") (verified live), but draw with app.activeDocument.pathItems.polygon(centerX, centerY, radius, sides, reversed). The DOM does not expose the Live Shape side widget or corner radius, so treat the result as a plain closed path.",
+   "use_for": [
+    "hexagon badges, honeycomb patterns and tech backgrounds",
+    "triangle play buttons, warning signs and arrows in icons",
+    "octagon stickers and seal outlines for packaging",
+    "rounded-corner polygons for modern logo marks"
+   ],
+   "avoid": [
+    "for stars or spiky badges: use the Star Tool",
+    "for irregular polygons with unequal sides: draw with the Pen Tool (click only, no drag)",
+    "when the side count must change in a scripted build: rebuild the shape with pathItems.polygon()"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "polygonTool",
+    "CDR": "Toolbox/Shape Tools/Polygon"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: no shortcut, three toolbars, pathItems.polygon signature matches the API harvest, PS polygonTool, CDR Polygon."
+   }
+  },
+  {
+   "name": "Rectangle Tool",
+   "id": "Adobe Rectangle Shape Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Draws rectangles and squares as Live Shapes whose width, height, rotation and per-corner style (round, inverted round, chamfer) and radius stay editable via the corner widgets and the Transform / Properties panel.",
+   "how": "Shortcut M. Drag to draw; Shift makes a square, Alt draws from the centre, Space while dragging repositions it. Click once without dragging to enter exact Width and Height. Drag a corner widget (the dots inside the corners) to round all corners, or one corner after selecting it with the Direct Selection Tool; corner type and radius per corner are in the Transform / Properties panel. Smart Guides snap the size to other objects and artboard edges.",
+   "shortcut": "M",
+   "scriptable": "yes",
+   "script_api": "Select it with app.selectTool(\"Adobe Rectangle Shape Tool\") (verified live), but draw with app.activeDocument.pathItems.rectangle(top, left, width, height, reversed). top is a y value in scripting coordinates (y runs upward, so a box below the artboard top has a negative top). For rounded corners use pathItems.roundedRectangle(); per-corner Live Shape settings are not exposed in the DOM.",
+   "use_for": [
+    "background panels, colour blocks and frames for posters and flyers",
+    "buttons, cards and layout grids in UI mock-ups",
+    "image frames and clipping masks for placed photos",
+    "bleed and safe-area guides on print layouts"
+   ],
+   "avoid": [
+    "for a box that must follow changing text: Effect > Convert to Shape > Rectangle or Rounded Rectangle resizes with the text",
+    "for a frame that must match the artboard exactly: click once and type the size, or script it from the artboard's artboardRect; dragging is imprecise",
+    "for a whole layout grid: Object > Path > Split Into Grid makes rows and columns in one go"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "rectangleTool",
+    "CDR": "Toolbox/Rectangle Tools/Rectangle"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none. Checked: M, verified invoke, rectangle / roundedRectangle are harvested PathItems methods, PS rectangleTool, CDR Rectangle."
+   }
+  },
+  {
+   "name": "Rounded Rectangle Tool",
+   "id": "Adobe Rounded Rectangle Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Draws rectangles with all four corners rounded by the same radius, as a Live Shape whose radius can be changed afterwards with the corner widgets or the Transform / Properties panel.",
+   "how": "No default shortcut; in the harvest it is only in the Default toolbar's shape flyout. Drag to draw; while dragging, Up / Down arrows increase or decrease the corner radius and Left / Right arrows switch to square or fully rounded (pill) corners; Shift makes a square, Alt draws from the centre. Click once without dragging to type Width, Height and Corner Radius. The starting radius comes from Preferences > General > Corner Radius.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select it with app.selectTool(\"Adobe Rounded Rectangle Tool\") (verified live), but draw with app.activeDocument.pathItems.roundedRectangle(top, left, width, height, horizontalRadius, verticalRadius, reversed). Pass both radii: the AI API harvest gives unequal defaults (horizontalRadius 15, verticalRadius 20), which make slightly oval corners. top is a y value in scripting coordinates, which run upward.",
+   "use_for": [
+    "buttons, pills and tags in UI mock-ups and web banners",
+    "app-icon and card backgrounds",
+    "label and sticker shapes for packaging",
+    "rounded frames and clipping masks for photos in social posts"
+   ],
+   "avoid": [
+    "when the radius must differ per corner: draw with the Rectangle Tool and set each corner in the Transform panel",
+    "for a button behind text that changes length: Effect > Convert to Shape > Rounded Rectangle resizes with the text",
+    "for a true iOS-style squircle: rounded rectangles have visible curvature breaks; draw the squircle with the Pen Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "rectangleTool",
+    "CDR": "Toolbox/Rectangle Tools/Rectangle"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api named only the horizontalRadius default (15) as if it were the corner radius; the API harvest has verticalRadius defaulting to 20, so omitting the radii gives oval corners. Now says to pass both. Rest checked: no shortcut, Default-toolbar-only, PS rectangleTool (PS Rounded Rectangle Tool is obsolete), CDR Rectangle."
+   }
+  },
+  {
+   "name": "Star Tool",
+   "id": "Adobe Shape Construction Star Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rectangle Shape Tool",
+   "status": "current",
+   "summary": "Draws a star from its centre with a set number of points and an outer and inner radius, from a classic five-point star to sunbursts and seal edges. In Illustrator 30.2.1 the star is a Live Shape: point count, radii, angle and corner rounding stay editable afterwards with on-canvas widgets and the Properties panel.",
+   "how": "No default shortcut. Drag out from the centre; drag around to rotate, Shift keeps it upright, Up / Down arrows while dragging add or remove points, Ctrl while dragging changes only the outer radius (deeper or shallower points), Alt keeps the arms straight so opposite edges line up, Space repositions it. Click once without dragging to type Radius 1, Radius 2 and the number of Points. Afterwards drag the star's points and radius widgets, or use Star Properties in the Properties panel: Star Side Count, Star Angle, Radius 1 / Radius 2, corner type (round, inverted, chamfer) and radius for two corner sets (Corner 1 / Corner 2, linkable), and Make Sides Equal to balance the sides of a star that was scaled unevenly. The harvest lists it in the Default, Basic and Getting Started toolbars.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select it with app.selectTool(\"Adobe Shape Construction Star Tool\") (verified live), but draw with app.activeDocument.pathItems.star(centerX, centerY, radius, innerRadius, points, reversed) for exact radii and point count. The DOM has no members for the live star settings (angle, corner type, corner radius), so treat the scripted result as a plain closed path.",
+   "use_for": [
+    "price and 'sale' starbursts on retail flyers and packaging",
+    "rating stars in UI mock-ups and review graphics",
+    "seal and badge edges with many shallow points",
+    "decorative sparkles in posters and greeting cards"
+   ],
+   "avoid": [
+    "when a script must set corner rounding or the star angle: the DOM cannot reach the live star settings; pathItems.star() gives only radii and points",
+    "for a regular polygon without inner points: use the Polygon Tool",
+    "for even sunburst rays behind a title: rotate copies of one thin triangle around a centre (Rotate tool with Alt-click, Copy, then Ctrl+D) for cleaner, equal rays"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "StarTool",
+    "CDR": "Toolbox/Shape Tools/Star"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary said the star is a plain path, not a Live Shape, and avoid told users to redraw to change points; Illustrator 30.2.1 ships Star as a Live Shape (ShapeCoreUI.aip 'Star Live Shape' / Star Properties UI, onboarding text 'Introducing Star as a live shape'). Rewrote summary, the after-drawing part of how (Star Properties: side count, angle, Radius 1/2, Corner 1/2 type and radius, Make Sides Equal), script_api and avoid. Rest checked: no shortcut, toolbars, PS StarTool, CDR Star."
+   }
+  }
+ ]
+}

@@ -1,0 +1,1006 @@
+{
+ "cards": [
+  {
+   "name": "Black & White",
+   "id": "adjustmentLayer:blackAndWhite",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Black & White",
+   "status": "current",
+   "summary": "Adjustment layer that turns everything below it into a black-and-white image, with six colour sliders (reds, yellows, greens, cyans, blues, magentas) that decide how light or dark each colour range becomes in the gray result, like shooting through a coloured lens filter. Tinting washes the result in one colour (default a warm sepia, RGB 225/211/179) for a toned monotone.",
+   "use_for": [
+    "editorial or poster photo turned monochrome with control over which colours go light or dark",
+    "dramatic B&W portrait: brighten reds/yellows for clean skin, darken blues for a deep sky or suit",
+    "sepia or cool-toned monotone photos via tinting",
+    "desaturated background behind one full-colour subject (paint the layer mask)",
+    "checking the tonal contrast of a colour layout"
+   ],
+   "avoid": [
+    "colours of similar lightness (a red and a green, say) merge into the same flat gray unless their sliders are pulled apart",
+    "extreme slider values posterize skies and add noise on 8-bit JPEGs; the scripted values are not clamped (the harvest stored 1e6 as sent), so keep them to what the panel slider allows",
+    "a quick conversion with no control is simpler with Image > Adjustments > Desaturate",
+    "split toning (different shadow and highlight colours) is not possible with one tint: add a Gradient Map or Color Balance above it"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Convert to Grayscale",
+    "CDR": "Effects/Adjust/Black & White"
+   },
+   "look": [
+    "black and white",
+    "monochrome",
+    "grayscale",
+    "b&w photo",
+    "sepia",
+    "toned monotone",
+    "red filter",
+    "infrared look",
+    "film noir",
+    "high contrast b&w"
+   ],
+   "params": [
+    {
+     "name": "red",
+     "does": "how light reds turn in the gray result; higher = lighter",
+     "typical": "40 (default); 80-150 to brighten skin, lips and strong reds; below 0 for near-black reds"
+    },
+    {
+     "name": "yellow",
+     "does": "lightness of yellows (skin, warm light, wood)",
+     "typical": "60 (default); 80-120 for glowing skin"
+    },
+    {
+     "name": "grain",
+     "does": "lightness of greens (key 'Grn ', reads back as grain)",
+     "typical": "40 (default); raise for bright foliage / infrared, lower for dark greens"
+    },
+    {
+     "name": "cyan",
+     "does": "lightness of cyans (skies, water)",
+     "typical": "60 (default)"
+    },
+    {
+     "name": "blue",
+     "does": "lightness of blues (sky, denim, dark suits)",
+     "typical": "20 (default); -30 to 0 for a dramatic dark sky"
+    },
+    {
+     "name": "magenta",
+     "does": "lightness of magentas and purples",
+     "typical": "80 (default)"
+    },
+    {
+     "name": "useTint",
+     "does": "true colours the gray result with tintColor (monotone / sepia)",
+     "typical": "false; true for a toned print look"
+    },
+    {
+     "name": "tintColor",
+     "does": "colour of the tint; a more saturated colour gives stronger toning",
+     "typical": "#E1D3B3 (default sepia); a pale blue for a cyanotype feel"
+    },
+    {
+     "name": "using",
+     "does": "loads a Black & White preset file (.blw)",
+     "typical": "Presets/Black and White: Red Filter, High Contrast Red Filter, Infrared, Maximum White ..."
+    },
+    {
+     "name": "auto",
+     "does": "the panel's Auto button: Photoshop picks a mix from the image's colours (declared key, not read back)",
+     "typical": "false; try it once as a starting point"
+    },
+    {
+     "name": "presetKind",
+     "does": "records whether the values are default, a factory / user preset or custom",
+     "typical": "presetKindCustom when sending your own slider values"
+    }
+   ],
+   "demo_settings": {
+    "presetKind": "presetKindCustom",
+    "red": 120,
+    "yellow": 100,
+    "grain": 40,
+    "cyan": 0,
+    "blue": -20,
+    "magenta": 80,
+    "useTint": false
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "Curves (add contrast after the conversion)",
+    "Grain adjustment layer (film look)",
+    "Gradient Map in Soft Light or Color mode (split toning)",
+    "layer mask (keep one element in colour)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putEnumerated(s(\"presetKind\"), s(\"presetKindType\"), s(\"presetKindCustom\")); a.putInteger(s(\"red\"), 120); a.putInteger(s(\"yellow\"), 100); a.putInteger(s(\"grain\"), 40); a.putInteger(s(\"cyan\"), 0); a.putInteger(s(\"blue\"), -20); a.putInteger(s(\"magenta\"), 80); a.putBoolean(s(\"useTint\"), false); /* sepia: send true, tintColor below sets the tone */ var c = new ActionDescriptor(); c.putDouble(s(\"red\"), 225); c.putDouble(s(\"grain\"), 211); c.putDouble(s(\"blue\"), 179); a.putObject(s(\"tintColor\"), s(\"RGBColor\"), c); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"blackAndWhite\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Black & White is the destructive version)",
+   "cost": "cheap: live preview, no render wait",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added presetKind presetKindCustom so the spec matches the scripting call"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/a4768d350d33.png",
+    "note": "Frame is greyscale (photo saturation 0): the red, orange and yellow blocks go white and the cyan and blue blocks black at red 120 / yellow 100 / blue -20, the lens-filter mapping the card describes; no tint (useTint false).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Brightness/Contrast",
+   "id": "adjustmentLayer:brightnessEvent",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Brightness/Contrast",
+   "status": "current",
+   "summary": "Adjustment layer with two sliders: Brightness lightens or darkens the image while (in the default, non-legacy mode) protecting the brightest and darkest tones, and Contrast spreads or compresses tones around the midtones. A fast global punch-up or flattening; Use Legacy switches to the old linear version that shifts every value and clips.",
+   "use_for": [
+    "quick fix for a dull, flat or slightly dark photo before it goes into a layout",
+    "lowering contrast of a background photo so overlaid text reads",
+    "matching the overall brightness of several photos in a collage",
+    "fast moody look: darker and punchier for a dramatic poster"
+   ],
+   "avoid": [
+    "precise tonal work (setting black and white points, lifting only shadows): use Levels or Curves",
+    "Use Legacy on photos: it clips highlights and shadows to pure white / black; leave it off except to match old files",
+    "large contrast boosts on skin and skies look harsh and oversaturated: a gentle Curves S-curve is cleaner",
+    "scripted values clamp to -100..100 (harvest probe)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Brightness/Contrast/Intensity"
+   },
+   "look": [
+    "brighter",
+    "darker",
+    "more contrast",
+    "punchy",
+    "flat",
+    "low contrast",
+    "faded",
+    "washed out"
+   ],
+   "params": [
+    {
+     "name": "brightness",
+     "does": "overall lightness; positive lifts midtones without hard clipping (non-legacy), negative darkens",
+     "typical": "+10 to +40; -10 to -30 to darken"
+    },
+    {
+     "name": "center",
+     "does": "Contrast (harvested under key center): positive = punchier darks and brights, negative = flatter, faded",
+     "typical": "+20 to +60 for punch; -30 to -50 for a faded backdrop"
+    },
+    {
+     "name": "useLegacy",
+     "does": "true = old linear Brightness/Contrast that shifts every value and clips",
+     "typical": "false"
+    },
+    {
+     "name": "auto",
+     "does": "the panel's Auto button: Photoshop sets both values from the image (declared key, not read back)",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "brightness": 30,
+    "center": 80,
+    "useLegacy": false
+   },
+   "pairs_with": [
+    "Curves (finer tonal shaping)",
+    "Color and vibrance (bring colour back after a contrast cut)",
+    "Layer > Create Clipping Mask (limit it to the one photo below)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putInteger(s(\"brightness\"), 30); a.putInteger(s(\"center\"), 80); /* center = Contrast */ a.putBoolean(s(\"useLegacy\"), false); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"brightnessEvent\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Brightness/Contrast is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "params.center: dropped the 4-char code 'Cntr', which is not in the batch (the harvest gives key center, name Contrast); pairs_with: replaced the unharvested Alt-click gesture with the harvested menu command Layer > Create Clipping Mask"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/b2c81c73f9fb.png",
+    "note": "Brighter and punchier than the plate (photo mean 138/108/70 to 166/128/73, grey ramp 63/127/191 to 58/166/234) with the ends held near black and white, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Channel Mixer",
+   "id": "adjustmentLayer:channelMixer",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Channel Mixer",
+   "status": "current",
+   "summary": "Adjustment layer that rebuilds each output colour channel as a percentage mix of the source channels plus a constant. Small changes shift colour casts, swapping channels gives surreal false-colour or infrared looks, and Monochromatic gives a single gray output for a custom film-filter black-and-white conversion.",
+   "use_for": [
+    "false-colour / infrared poster looks (swap the red and blue sources)",
+    "custom B&W with film-filter control (Monochromatic, or the Black & White with Red / Orange Filter (RGB) presets)",
+    "correcting a strong cast channel by channel",
+    "borrowing detail from a clean channel when one channel is noisy or damaged"
+   ],
+   "avoid": [
+    "a source mix whose total is far above 100% blows out that channel; keep each row near 100% to hold brightness",
+    "B&W with named colour sliders is easier in Black & White",
+    "in CMYK documents the outputs are cyan / magenta / yellow / black, so RGB recipes do not carry over",
+    "Monochromatic with no output mix sent renders solid black (0 % of every source: the gallery frame before the matrices were sent): send the mono mix explicitly"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Channel Mixer"
+   },
+   "look": [
+    "false colour",
+    "infrared",
+    "channel swap",
+    "surreal colours",
+    "custom black and white",
+    "colour cast correction"
+   ],
+   "params": [
+    {
+     "name": "monochromatic",
+     "does": "true = one gray output (black-and-white result) mixed from the source channels",
+     "typical": "true for B&W conversions, false for colour work"
+    },
+    {
+     "name": "red",
+     "does": "Output Red: channelMatrix of source red / green (key grain) / blue percentages plus constant",
+     "typical": "100 / 0 / 0 identity; 0 / 0 / 100 to put the blue channel into red"
+    },
+    {
+     "name": "grain",
+     "does": "Output Green: channelMatrix (reads back as grain)",
+     "typical": "0 / 100 / 0 identity"
+    },
+    {
+     "name": "blue",
+     "does": "Output Blue: channelMatrix",
+     "typical": "0 / 0 / 100 identity; 100 / 0 / 0 to put the red channel into blue"
+    },
+    {
+     "name": "using",
+     "does": "loads a Channel Mixer preset file (.cha)",
+     "typical": "Presets/Channel Mixer: Black & White Infrared (RGB), Black & White with Orange Filter (RGB) ..."
+    },
+    {
+     "name": "presetKind",
+     "does": "records whether the values are default, a factory / user preset or custom",
+     "typical": "presetKindCustom when sending your own matrices"
+    }
+   ],
+   "demo_settings": {
+    "presetKind": "presetKindCustom",
+    "monochromatic": false,
+    "red": {
+     "red": 0,
+     "grain": 0,
+     "blue": 100,
+     "constant": 0
+    },
+    "grain": {
+     "red": 0,
+     "grain": 100,
+     "blue": 0,
+     "constant": 0
+    },
+    "blue": {
+     "red": 100,
+     "grain": 0,
+     "blue": 0,
+     "constant": 0
+    }
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "Curves (contrast after a mono mix)",
+    "Hue/Saturation (tame false colours)",
+    "layer opacity (blend the swap with the original)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); var P = s(\"percentUnit\"); function row(r, g, b) { var m = new ActionDescriptor(); m.putUnitDouble(s(\"red\"), P, r); m.putUnitDouble(s(\"grain\"), P, g); m.putUnitDouble(s(\"blue\"), P, b); m.putUnitDouble(s(\"constant\"), P, 0); return m; } a.putEnumerated(s(\"presetKind\"), s(\"presetKindType\"), s(\"presetKindCustom\")); a.putBoolean(s(\"monochromatic\"), false); a.putObject(s(\"red\"), s(\"channelMatrix\"), row(0, 0, 100)); a.putObject(s(\"grain\"), s(\"channelMatrix\"), row(0, 100, 0)); a.putObject(s(\"blue\"), s(\"channelMatrix\"), row(100, 0, 0)); /* red/blue swap */ var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"channelMixer\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Channel Mixer is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added presetKind presetKindCustom so the spec matches the scripting call; demo still shows a mono mix, not the channel swap (the matrices are object params)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/82ddd083a71d.png",
+    "note": "Exact red / blue channel swap (frame equals the plate with R and B exchanged, mean difference 0.0): the red colour bar and red stripes turn blue, the blue bar turns red, the warm wall goes cool, green is untouched: the false-colour look the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "gallery/ps_adjustment/82ddd083a71d.png",
+     "note": "The frame is uniform black (one colour, 0/0/0): with Monochromatic on and no Gray channel weights the output channel is 0 % of every source. The demo is the cause, not the effect. A channel swap (red and blue exchanged) is proposed in demo_proposed; it cannot go into demo_settings yet because validate_cards.py treats object params as unsettable and the renderer's buildDesc has no object encoding.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "broken",
+      "cause": "demo",
+      "note": "Re-checked: the frame is one colour (0/0/0), no plate or harness fault (the renderer's scripted route matched the dialogs pixel for pixel in the control); monochrome with no weights is the cause. The proposed matrices stay inside the harvested channelMatrix keys (red / grain / blue / constant, percent) and will show a clear change (red-blue swap on a warm photo; a 40/40/20 grey mix), but they need object support in validate_cards.py and the renderer before a rerender can use them."
+     }
+    }
+   }
+  },
+  {
+   "name": "Clarity and dehaze",
+   "id": "adjustmentLayer:clarity",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Clarity and dehaze",
+   "status": "current",
+   "summary": "Adjustment layer with two Camera Raw-style sliders: Clarity raises local midtone contrast so edges and texture look crisper and more defined (negative softens into a glow), and Dehaze cuts atmospheric haze, deepening contrast and colour in washed-out areas (negative adds fog). The harvest read no defaults or slider ranges back, so the exact behaviour at extremes is unconfirmed.",
+   "use_for": [
+    "hazy or soft event and press photos that need definition before going into a layout",
+    "landscape or city backdrops shot through haze or smog",
+    "gritty, detailed texture for sports or action posters (positive clarity)",
+    "soft dreamy glow on beauty shots (negative clarity)",
+    "fog or atmosphere on a background plate (negative dehaze)"
+   ],
+   "avoid": [
+    "high positive clarity on faces exaggerates pores and wrinkles: mask it off skin or keep it low",
+    "strong values draw halos along high-contrast edges and type",
+    "dehaze also darkens and saturates: check skin and brand colours, pull back with Color and vibrance",
+    "plain global contrast is more predictable with Curves or Brightness/Contrast",
+    "values are stored without clamping (16-bit integers per the harvest): stay within the amounts the panel slider offers"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "clarity",
+    "dehaze",
+    "crisp",
+    "defined",
+    "midtone contrast",
+    "gritty texture",
+    "haze removal",
+    "fog",
+    "soft glow",
+    "dreamy"
+   ],
+   "params": [
+    {
+     "name": "clarity",
+     "does": "local midtone contrast: positive = crisper detail and texture, negative = softer, glowing",
+     "typical": "+20 to +50 for definition; -20 to -50 for a soft glow"
+    },
+    {
+     "name": "dehaze",
+     "does": "haze removal: positive cuts haze (more contrast and colour), negative adds haze / fog",
+     "typical": "+15 to +40 on hazy photos; -20 to -40 for atmosphere"
+    }
+   ],
+   "demo_settings": {
+    "clarity": 60,
+    "dehaze": 50
+   },
+   "notes": "the harvest made the layer with an empty descriptor and neither key read back, so the defaults (presumably 0 = no change) and the panel ranges are not confirmed.",
+   "pairs_with": [
+    "Color and vibrance (rebalance colour after dehaze)",
+    "layer mask (keep clarity off skin)",
+    "Curves (final contrast)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putInteger(s(\"clarity\"), 60); a.putInteger(s(\"dehaze\"), 50); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"clarity\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched",
+   "cost": "moderate: local-contrast filtering is recomputed across the image, noticeable on large files",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/05b603ae5459.png",
+    "note": "Darker, crisper and more saturated than the plate (photo saturation 0.50 to 0.65, ramp mid 127 to 104): the dehaze / midtone-contrast look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Color and vibrance",
+   "id": "adjustmentLayer:vibrance",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Color and vibrance",
+   "status": "current",
+   "summary": "Adjustment layer (adjustment class vibrance, the former Vibrance layer) that combines Temperature and Tint white balance with Vibrance and Saturation. Vibrance boosts muted colours more than already-saturated ones and spares skin tones, Saturation scales every colour equally, Temperature shifts between blue and yellow and Tint between green and magenta.",
+   "use_for": [
+    "warming or cooling a photo to fit a brand palette or match a photo set",
+    "removing a yellow tungsten or green fluorescent cast from event photos",
+    "making dull product or food photos pop without oversaturating skin (vibrance)",
+    "muted, desaturated editorial look (negative saturation / vibrance)"
+   ],
+   "avoid": [
+    "high saturation on skin, strong reds and logos clips and blotches: raise vibrance instead",
+    "changing one hue only: use Hue/Saturation or Selective Color",
+    "Use Legacy: the harvest shows the switch (default false) but not what it changes, presumably the older vibrance algorithm; leave it off",
+    "the temperature / tint / vibrance / saturation keys did not read back on a fresh layer and are stored without clamping (16-bit integers): stay within the panel slider amounts"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Saturate...",
+    "CDR": "Effects/Adjust/Vibrance"
+   },
+   "look": [
+    "vibrance",
+    "saturation",
+    "vivid",
+    "muted",
+    "desaturated",
+    "warm",
+    "cool",
+    "white balance",
+    "colour temperature",
+    "tint"
+   ],
+   "params": [
+    {
+     "name": "temperature",
+     "does": "white balance blue-yellow: negative cools, positive warms (direction as in Camera Raw, not confirmed by the harvest)",
+     "typical": "-30 to +30"
+    },
+    {
+     "name": "tint",
+     "does": "white balance green-magenta: negative greener, positive more magenta",
+     "typical": "-15 to +15 to neutralise fluorescent casts"
+    },
+    {
+     "name": "vibrance",
+     "does": "boosts muted colours most, protecting skin and already-vivid colours",
+     "typical": "+20 to +60"
+    },
+    {
+     "name": "saturation",
+     "does": "scales every colour's saturation equally",
+     "typical": "-30 to +20"
+    },
+    {
+     "name": "useLegacy",
+     "does": "legacy switch (default false); exact effect not documented in the harvest",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "temperature": -50,
+    "vibrance": 70,
+    "saturation": 20,
+    "useLegacy": false
+   },
+   "pairs_with": [
+    "Curves (contrast)",
+    "Clarity and dehaze",
+    "layer mask (protect skin from saturation)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putBoolean(s(\"useLegacy\"), false); a.putInteger(s(\"temperature\"), -50); a.putInteger(s(\"tint\"), 0); a.putInteger(s(\"vibrance\"), 70); a.putInteger(s(\"saturation\"), 20); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"vibrance\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Vibrance is the destructive version of the Vibrance / Saturation part only: it has no Temperature or Tint)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the destructive Image > Adjustments > Vibrance only has vibrance and saturation (harvest), so it is not a full destructive twin of this layer"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/53632b28205c.png",
+    "note": "Temperature -50 gives a strong cool cast (photo mean 138/108/70 to 89/115/148) and the muted wall gains colour, matching the Temperature / Vibrance description.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Color Balance",
+   "id": "adjustmentLayer:colorBalance",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Color Balance",
+   "status": "current",
+   "summary": "Adjustment layer that shifts colour along three axes (Cyan-Red, Magenta-Green, Yellow-Blue) separately for the shadows, midtones and highlights; Preserve Luminosity keeps brightness steady while the colour moves. Used to remove casts or to split-tone, e.g. teal shadows with warm highlights.",
+   "use_for": [
+    "removing a colour cast from stage, event or indoor photos",
+    "teal-and-orange or other split-tone grades for posters and thumbnails",
+    "warming skin in the midtones while keeping shadows neutral",
+    "matching colour between photos in a collage"
+   ],
+   "avoid": [
+    "Preserve Luminosity off lets colour shifts also change brightness (a fresh scripted layer reads back false, so send true explicitly)",
+    "values near the ends of the sliders give garish, posterized casts",
+    "+-40 in the shadows is already strong: in the gallery frame the dark greys went navy (grey 42 -> 0 / 3 / 56) and lost their red entirely although Preserve Luminosity was on; stay nearer +-20 on dark photos",
+    "correcting to exact neutral gray is more precise with per-channel Curves or Levels",
+    "changing one hue only (just the reds): use Selective Color or Hue/Saturation"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Adjust Color Balance...",
+    "CDR": "Effects/Adjust/Color Balance"
+   },
+   "look": [
+    "colour cast",
+    "split tone",
+    "teal and orange",
+    "warm highlights",
+    "cool shadows",
+    "cinematic grade",
+    "colour correction"
+   ],
+   "params": [
+    {
+     "name": "shadowLevels",
+     "does": "[cyan-red, magenta-green, yellow-blue] shift in the shadows; positive = red / green / blue, negative = cyan / magenta / yellow",
+     "typical": "[-20, 0, 25] for teal shadows"
+    },
+    {
+     "name": "midtoneLevels",
+     "does": "the same three shifts for the midtones",
+     "typical": "[10, 0, -10] for slightly warmer skin"
+    },
+    {
+     "name": "highlightLevels",
+     "does": "the same three shifts for the highlights",
+     "typical": "[20, 0, -25] for warm highlights"
+    },
+    {
+     "name": "preserveLuminosity",
+     "does": "keeps brightness constant while colours shift",
+     "typical": "true"
+    }
+   ],
+   "demo_settings": {
+    "shadowLevels": [
+     -40,
+     0,
+     40
+    ],
+    "midtoneLevels": [
+     -25,
+     0,
+     25
+    ],
+    "highlightLevels": [
+     30,
+     0,
+     -30
+    ],
+    "preserveLuminosity": true
+   },
+   "pairs_with": [
+    "Curves (contrast for the grade)",
+    "Color and vibrance",
+    "layer opacity (dial the grade back)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); function lv(c, m, y) { var l3 = new ActionList(); l3.putInteger(c); l3.putInteger(m); l3.putInteger(y); return l3; } a.putList(s(\"shadowLevels\"), lv(-20, 0, 25)); a.putList(s(\"midtoneLevels\"), lv(0, 0, 0)); a.putList(s(\"highlightLevels\"), lv(20, 0, -25)); a.putBoolean(s(\"preserveLuminosity\"), true); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"colorBalance\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Color Balance is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/f746adc87061.png",
+    "note": "Clear split tone on the grey ramp: dark greys go blue-teal (42 -> 0 / 3 / 56, 79 -> 0 / 54 / 95), mid grey cools (127 -> 89 / 120 / 142), light greys go warm peach (212 -> 255 / 237 / 218); the colour bars saturate and the photo shadows turn navy while the wall stays warm: teal shadows with warm highlights as described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "Render failed (gallery/ps_adjustment/failed.json): \"General Photoshop error occurred ... The parameters for command \"Make\" are not currently valid.\" The demo is the cause: it carries only preserveLuminosity, and Color Balance needs its three level lists (the harvest probe hit the same error). Proposed teal-and-orange level lists (three integers each, as harvested; no min/max was harvested, values kept within +-40) are in demo_proposed; they cannot go into demo_settings until validate_cards.py and the renderer accept list values.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "broken",
+      "cause": "demo",
+      "note": "Re-checked failed.json and the harvest probe (same \"not currently valid\" error with no level lists): the demo, not the effect or the plate, broke the render. Proposed lists are three integers each like the harvested defaults, moderate (+-40) and opposite in shadows and highlights, so they will read on the warm photo; blocked until list values are accepted by validate_cards.py and encoded by the renderer."
+     }
+    }
+   }
+  },
+  {
+   "name": "Color Lookup",
+   "id": "adjustmentLayer:colorLookup",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Color Lookup",
+   "status": "needs_input",
+   "summary": "Adjustment layer that remaps every colour through a lookup table: a 3D LUT file (.cube, .3dl, .look) or an abstract / device-link colour profile. Loading a table gives an instant film-stock or cinematic grade (teal-orange, bleach bypass, moonlight, day-for-night); with no table loaded the layer changes nothing.",
+   "use_for": [
+    "one-click cinematic grade for key art, thumbnails and posters",
+    "matching stills to a video edit graded with the same .cube LUT",
+    "film emulation with the shipped Fuji / Kodak (by Adobe) .cube stocks",
+    "one consistent look across a photo series"
+   ],
+   "avoid": [
+    "no table loaded = no change: it needs a LUT or profile file",
+    "LUTs made for log camera footage crush and oversaturate normal photos",
+    "full-strength LUTs are often too heavy: lower the layer opacity or set the layer to Color mode",
+    "scripts: the harvest did not capture the keys that carry the LUT file (the LUTFormat, dataOrder and tableOrder probes errored), so record one load with ScriptListener and replay it"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "LUT",
+    "colour grade",
+    "cinematic",
+    "film look",
+    "film emulation",
+    "teal and orange",
+    "bleach bypass",
+    "moonlight",
+    "day for night",
+    "vintage"
+   ],
+   "params": [
+    {
+     "name": "lookupType",
+     "does": "kind of table: 3D LUT file, abstract profile or device link profile",
+     "typical": "3DLUT"
+    },
+    {
+     "name": "dither",
+     "does": "adds slight noise so smooth gradients do not band",
+     "typical": "true"
+    }
+   ],
+   "demo_settings": {
+    "lookupType": "3DLUT",
+    "dither": true
+   },
+   "notes": "the visible look needs a LUT file, which no harvested param can carry. Shipped tables (Presets/3DLUTs): TealOrangePlusContrast.3DL, Bleach Bypass.look, Moonlight.3DL, NightFromDay.CUBE, Kodak 5218 Kodak 2383 (by Adobe).cube and more; the gallery should load TealOrangePlusContrast.3DL.",
+   "enum_labels": {
+    "lookupType": {
+     "abstractProfile": "abstract profile",
+     "deviceLinkProfile": "device link profile",
+     "3DLUT": "3D lookup table"
+    }
+   },
+   "pairs_with": [
+    "layer blend mode Color (take only the LUT's colour)",
+    "Curves (fix contrast after the LUT)",
+    "Grain adjustment layer (film look)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putEnumerated(s(\"lookupType\"), s(\"colorLookupType\"), s(\"3DLUT\")); a.putBoolean(s(\"dither\"), true); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"colorLookup\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);  // creates an empty Color Lookup layer; load the table (e.g. Presets/3DLUTs/TealOrangePlusContrast.3DL) in the Properties panel or replay a ScriptListener-recorded load",
+   "scriptable": "partial",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Color Lookup is the destructive version)",
+   "cost": "cheap once the table is loaded",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: status needs_input (a LUT file is required and none is supplied), so the gallery skipped it (not_rendered.json).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "input / status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Curves",
+   "id": "adjustmentLayer:curves",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Curves",
+   "status": "current",
+   "summary": "Adjustment layer that remaps tones through an editable curve, for the composite image or for each colour channel. An S-curve adds contrast, raising the bottom end fades the blacks, and per-channel curves shift colour in the shadows or highlights: the most precise tone and colour control in Photoshop.",
+   "use_for": [
+    "S-curve contrast for posters, thumbnails and product shots",
+    "matte / faded film look (lift the black point)",
+    "per-channel colour grading (cross process, cool shadows, warm highlights)",
+    "fixing only the shadows or only the highlights of a photo",
+    "shipped looks via presets: Strong Contrast (RGB), Cross Process (RGB), Negative (RGB)"
+   ],
+   "avoid": [
+    "steep curves on 8-bit JPEGs band and posterize: use gentle curves or a 16-bit document",
+    "a strong composite curve also boosts saturation: set the layer to Luminosity mode to keep colour",
+    "one-slider fixes are quicker with Brightness/Contrast or Exposure",
+    "scripts: own points go in the adjustment list, one curvesAdjustment per channel (channel = a reference to channel.composite / red ..., curve = a list of points with horizontal / vertical); the gallery rendered an S-curve this way and the tones landed on the points"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Tone Curve"
+   },
+   "look": [
+    "s-curve",
+    "contrast",
+    "matte",
+    "faded blacks",
+    "cross process",
+    "tone curve",
+    "colour grade",
+    "negative"
+   ],
+   "params": [
+    {
+     "name": "adjustment",
+     "does": "list of curvesAdjustment objects: one per channel (composite or a colour channel) with its curve points",
+     "typical": "composite S-curve: pull the quarter tones down, push the three-quarter tones up"
+    },
+    {
+     "name": "using",
+     "does": "loads a Curves preset file (.acv)",
+     "typical": "Presets/Curves: Strong Contrast (RGB), Medium Contrast (RGB), Cross Process (RGB), Negative (RGB), Color Negative (RGB), Darker (RGB), Lighter (RGB)"
+    },
+    {
+     "name": "presetKind",
+     "does": "records whether the curve is default, a factory / user preset or custom",
+     "typical": "presetKindCustom when sending your own curve"
+    }
+   ],
+   "demo_settings": {
+    "presetKind": "presetKindCustom",
+    "adjustment": [
+     {
+      "channel": "composite",
+      "curve": [
+       [
+        0,
+        0
+       ],
+       [
+        64,
+        40
+       ],
+       [
+        128,
+        128
+       ],
+       [
+        192,
+        215
+       ],
+       [
+        255,
+        255
+       ]
+      ]
+     }
+    ]
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "blend mode Luminosity (contrast without a saturation shift)",
+    "Color Balance",
+    "Black & White (contrast after a mono conversion)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putPath(s(\"using\"), new File(app.path + \"/Presets/Curves/Strong Contrast (RGB).acv\")); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"curves\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);  // own points instead of the .acv: a.putList(s(\"adjustment\"), adj), adj = ActionList of curvesAdjustment objects (channel: reference channel.composite; curve: ActionList of \"paint\" objects with horizontal / vertical doubles), the structure the gallery rendered",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Curves is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/a6fe75795afd.png",
+    "note": "S-curve contrast that lands on the sent points: plate tone 64 -> 40, 128 -> 128, 192 -> 215 (40 -> 21, 215 -> 234), so shadows deepen and highlights brighten while mid grey holds; colours gain punch, no colour shift on the grey ramp.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "gallery/ps_adjustment/a6fe75795afd.png",
+     "note": "Untested: the frame is identical to the plate (diff 0.0) because the demo can only send presetKind; the curve points live in the Adjustment object (curvesAdjustment), whose inner keys the harvest did not read and which the renderer cannot encode. No curve was applied, so the effect was not tested.",
+     "rerender": false,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "not_rendered",
+      "cause": "harness",
+      "note": "Frame vs ref diff 0.0 confirmed in index.json: nothing was applied, so the effect is untested rather than broken; the card text is not contradicted by the frame."
+     }
+    }
+   }
+  },
+  {
+   "name": "Exposure",
+   "id": "adjustmentLayer:exposure",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Exposure",
+   "status": "current",
+   "summary": "Adjustment layer designed for HDR / linear-light correction: Exposure brightens or darkens in photographic stops (mainly the highlight end), Offset moves the shadows and midtones with little effect on highlights, and Gamma Correction bends the midtones with a power curve. It also works on 8/16-bit images, where big values clip quickly.",
+   "use_for": [
+    "fixing an under- or over-exposed photo by whole stops",
+    "bright, blown-out high-key look or a dark low-key look for posters",
+    "lifting or crushing blacks with Offset for a matte or punchy finish",
+    "tone work on 32-bit HDR composites"
+   ],
+   "avoid": [
+    "+2 stops or more blows highlights to flat white on 8-bit images: use Curves or Shadows/Highlights for gentler lifts",
+    "Offset is very sensitive (range -0.5..0.5): small steps only",
+    "everyday brightness tweaks on 8-bit photos are more predictable with Curves or Levels"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "exposure",
+    "overexposed",
+    "blown out",
+    "high key",
+    "underexposed",
+    "low key",
+    "matte blacks",
+    "washed out"
+   ],
+   "params": [
+    {
+     "name": "exposure",
+     "does": "exposure in stops (-20..20); +1 doubles the linear light",
+     "typical": "-1.5 to +1.5"
+    },
+    {
+     "name": "offset",
+     "does": "shifts shadows and midtones (-0.5..0.5): positive lifts the blacks (faded), negative deepens them",
+     "typical": "-0.05 to +0.05"
+    },
+    {
+     "name": "gammaCorrection",
+     "does": "power-curve gamma for the midtones (0.01..9.99, 1 = neutral)",
+     "typical": "0.8 to 1.2"
+    },
+    {
+     "name": "using",
+     "does": "loads an Exposure preset file (.eap)",
+     "typical": "Presets/Exposure: Plus 1.0, Plus 2.0, Minus 1.0, Minus 2.0"
+    },
+    {
+     "name": "presetKind",
+     "does": "records whether the values are default, a factory / user preset or custom",
+     "typical": "presetKindCustom when sending your own values"
+    }
+   ],
+   "demo_settings": {
+    "presetKind": "presetKindCustom",
+    "exposure": 1.5,
+    "offset": -0.05,
+    "gammaCorrection": 1.0
+   },
+   "enum_labels": {
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "Curves (shape the result)",
+    "Color and vibrance",
+    "layer mask (expose one area only)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); a.putEnumerated(s(\"presetKind\"), s(\"presetKindType\"), s(\"presetKindCustom\")); a.putDouble(s(\"exposure\"), 1.5); a.putDouble(s(\"offset\"), -0.05); a.putDouble(s(\"gammaCorrection\"), 1.0); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"exposure\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Exposure is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings: added presetKind presetKindCustom so the spec matches the scripting call"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/b282534caa2d.png",
+    "note": "Exposure +1.5 brightens strongly, blowing the light wall and the light half of the grey ramp to white, while Offset -0.05 drops the darkest ramp step to 0: as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Gradient Map",
+   "id": "adjustmentLayer:gradientMapClass",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Layer/New Adjustment Layer/Gradient Map",
+   "status": "current",
+   "summary": "Adjustment layer that maps the image's luminance onto a gradient: the darkest tones take the gradient's left-hand colour and the lightest its right-hand colour. Black-to-white gives a B&W conversion; two or three colours give duotone / tritone, neon or heat-map looks. It replaces the original colours (use Soft Light / Color mode or lower opacity to keep some of them).",
+   "use_for": [
+    "duotone posters and social graphics in brand colours (e.g. navy to orange)",
+    "neon / synthwave colour treatments of photos",
+    "unifying mismatched photos in one layout under one palette",
+    "subtle colour grading: a gradient map at low opacity or in Soft Light mode",
+    "heat-map or thermal look with a multi-stop gradient"
+   ],
+   "avoid": [
+    "the default gradient is Foreground to Background, so it follows whatever swatches are current (the harvest got green to black): scripts should always send the gradient",
+    "a low-contrast photo uses only a narrow slice of the gradient: add Curves contrast below it first",
+    "smooth skies with few stops can band in 8-bit: keep dither on",
+    "photos where the subject and background have the same lightness merge into one colour"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Lens/Custom Color Map"
+   },
+   "look": [
+    "duotone",
+    "tritone",
+    "gradient map",
+    "neon",
+    "synthwave",
+    "heat map",
+    "colour toning",
+    "monotone",
+    "brand colour photo"
+   ],
+   "params": [
+    {
+     "name": "gradient",
+     "does": "With: the gradient object (colour stops with RGB colour, location 0-4096 and midpoint; opacity stops)",
+     "typical": "2-3 stops: dark colour at 0, accent at 2048, light colour at 4096"
+    },
+    {
+     "name": "reverse",
+     "does": "flips the map so the darks take the right-hand colour",
+     "typical": "false"
+    },
+    {
+     "name": "dither",
+     "does": "adds slight noise to avoid banding",
+     "typical": "true"
+    },
+    {
+     "name": "gradientsInterpolationMethod",
+     "does": "Method: how colours blend between stops",
+     "typical": "perceptual or smooth (default)"
+    }
+   ],
+   "demo_settings": {
+    "reverse": false,
+    "dither": true,
+    "gradientsInterpolationMethod": "perceptual"
+   },
+   "notes": "the gradient object cannot be set from a spec, so the gallery frame uses whatever the renderer's Foreground to Background gradient is; the duotone look needs the gradient as in scripting (navy RGB 20/24/82 > orange 240/90/40 > cream 255/236/190). Without that, reset the swatches to the default black / white first: Foreground to Background puts the foreground colour on the darks, so the harvest's green-to-black state would map the darks to green and the lights to black.",
+   "enum_labels": {
+    "gradientsInterpolationMethod": {
+     "classic": "Classic",
+     "linear": "Linear",
+     "perceptual": "Perceptual",
+     "smooth": "Smooth",
+     "stripes": "Stripes"
+    }
+   },
+   "pairs_with": [
+    "Curves below it (spread the tones first)",
+    "blend mode Soft Light or Color",
+    "Black & White (control which colours map dark or light)"
+   ],
+   "scripting": "var s = stringIDToTypeID; var a = new ActionDescriptor(); function stop(r, g, b, loc) { var c = new ActionDescriptor(); c.putDouble(s(\"red\"), r); c.putDouble(s(\"grain\"), g); c.putDouble(s(\"blue\"), b); var t = new ActionDescriptor(); t.putObject(s(\"color\"), s(\"RGBColor\"), c); t.putEnumerated(s(\"type\"), s(\"colorStopType\"), s(\"userStop\")); t.putInteger(s(\"location\"), loc); t.putInteger(s(\"midpoint\"), 50); return t; } function op(loc) { var t = new ActionDescriptor(); t.putUnitDouble(s(\"opacity\"), s(\"percentUnit\"), 100); t.putInteger(s(\"location\"), loc); t.putInteger(s(\"midpoint\"), 50); return t; } var cl = new ActionList(); cl.putObject(s(\"colorStop\"), stop(20, 24, 82, 0)); cl.putObject(s(\"colorStop\"), stop(240, 90, 40, 2048)); cl.putObject(s(\"colorStop\"), stop(255, 236, 190, 4096)); var tl = new ActionList(); tl.putObject(s(\"transferSpec\"), op(0)); tl.putObject(s(\"transferSpec\"), op(4096)); var g = new ActionDescriptor(); g.putString(s(\"name\"), \"Navy Orange Cream\"); g.putEnumerated(s(\"gradientForm\"), s(\"gradientForm\"), s(\"customStops\")); g.putDouble(s(\"interfaceIconFrameDimmed\"), 4096); g.putList(s(\"colors\"), cl); g.putList(s(\"transparency\"), tl); a.putObject(s(\"gradient\"), s(\"gradientClassEvent\"), g); a.putBoolean(s(\"reverse\"), false); a.putBoolean(s(\"dither\"), true); a.putEnumerated(s(\"gradientsInterpolationMethod\"), s(\"gradientInterpolationMethodType\"), s(\"perceptual\")); var l = new ActionDescriptor(); l.putObject(s(\"type\"), s(\"gradientMapClass\"), a); var d = new ActionDescriptor(); var r = new ActionReference(); r.putClass(s(\"adjustmentLayer\")); d.putReference(s(\"null\"), r); d.putObject(s(\"using\"), s(\"adjustmentLayer\"), l); executeAction(s(\"make\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes: an adjustment layer with its own mask; settings stay editable in the Properties panel and the pixels below are untouched (Image > Adjustments > Gradient Map is the destructive version)",
+   "cost": "cheap: live preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "notes: tell the renderer to reset the swatches when it cannot send the gradient (the harvested green-to-black state gives an inverted green frame)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/53cd5fd4305f.png",
+    "note": "The default black-to-white gradient (colours reset) turns the plate into a black-and-white image; Perceptual interpolation darkens the mid greys (ramp mid 127 to 99). This is the B&W case of the summary; duotone looks need a gradient object, which the demo does not pass.",
+    "rerender": false
+   }
+  }
+ ]
+}

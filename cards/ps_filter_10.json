@@ -1,0 +1,469 @@
+{
+ "cards": [
+  {
+   "name": "Color Halftone",
+   "id": "colorHalftone",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Color Halftone",
+   "status": "current",
+   "summary": "Simulates an enlarged halftone screen: each colour channel is cut into a grid of cells and every cell is replaced by a circle whose size follows that channel's brightness, with the grid of each channel rotated to its own screen angle. The photo turns into overlapping coloured dots with a rosette pattern, the classic pop-art / comic-print / newspaper look.",
+   "use_for": [
+    "pop-art or comic-book treatment of a portrait or press photo for a poster or thumbnail",
+    "a retro newsprint / screen-printed texture on a background image behind a headline",
+    "a dotted overlay layer (set to Multiply, Overlay or Screen) that adds print texture without replacing the photo",
+    "big-dot graphic backgrounds for social cards and event banners"
+   ],
+   "avoid": [
+    "expecting black ink dots on white straight from an RGB file: in RGB the dots are red, green and blue light over dark gaps; convert to CMYK (Image > Mode) for ink-style CMYK dots, or, for a single-colour dot screen, use Grayscale mode (only Channel 1 is used) or a desaturated copy with all channel angles set to the same value (at the default 108/162/90 the red, green and blue grids sit at different angles, so a desaturated RGB copy still breaks into coloured dots)",
+    "faces at a large Radius: eyes and mouth dissolve into dots; keep faces on a masked unfiltered layer or use a smaller Radius",
+    "real print screening: this is a visual effect baked into the pixels, not a printer's halftone; send continuous-tone files to print",
+    "a missing key in a script: the harvest shows Photoshop reuses this filter's last-used value for an omitted key, so always send radius and all four angles"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_ClrH",
+    "CDR": "Effects/Color Transform/Halftone"
+   },
+   "look": [
+    "halftone",
+    "pop art",
+    "comic dots",
+    "Ben-Day dots",
+    "newsprint",
+    "CMYK rosette",
+    "screen print",
+    "retro print"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "maximum dot radius in pixels (the dialog's Max. Radius); sets the size of the halftone cells, bigger = coarser, more graphic dots",
+     "typical": "4-10 px for a fine print texture, 15-40 px for bold pop-art dots on a 1920 px image"
+    },
+    {
+     "name": "Channel 1",
+     "does": "screen angle in degrees for the first channel (red in RGB, cyan in CMYK, the only channel used in Grayscale)",
+     "typical": "108 (Photoshop's default) in RGB; 15 for cyan in CMYK"
+    },
+    {
+     "name": "Channel 2",
+     "does": "screen angle in degrees for the second channel (green in RGB, magenta in CMYK)",
+     "typical": "162 (default) in RGB; 75 for magenta in CMYK"
+    },
+    {
+     "name": "Channel 3",
+     "does": "screen angle in degrees for the third channel (blue in RGB, yellow in CMYK)",
+     "typical": "90 (default) in RGB; 0 for yellow in CMYK"
+    },
+    {
+     "name": "Channel 4",
+     "does": "screen angle in degrees for the fourth channel (black in CMYK); not used by RGB or Grayscale images",
+     "typical": "45 (default, the classic black-screen angle)"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 20,
+    "Channel 1": 108,
+    "Channel 2": 162,
+    "Channel 3": 90,
+    "Channel 4": 45
+   },
+   "pairs_with": [
+    "Gaussian Blur or Median before it (smoother tones give cleaner, rounder dots)",
+    "Image > Mode > CMYK Color before it (ink-style CMYK rosette)",
+    "a duplicate layer in Multiply or Overlay with a layer mask (dot texture over the original photo)",
+    "Hue/Saturation or Vibrance afterwards (punchier pop-art colour)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"radius\"), 20); d.putInteger(stringIDToTypeID(\"angle1\"), 108); d.putInteger(stringIDToTypeID(\"angle2\"), 162); d.putInteger(stringIDToTypeID(\"angle3\"), 90); d.putInteger(stringIDToTypeID(\"angle4\"), 45); executeAction(stringIDToTypeID(\"colorHalftone\"), d, DialogModes.NO);  // radius clamps to 4-127 px (harvest probe)",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); applied to a Smart Object it becomes an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light-medium: 376 ms on the harvest's 480x270 test layer; time grows with image size",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'work on a desaturated copy for a single-colour dot screen' was wrong with the card's own default angles (each RGB channel is screened on its own rotated grid, so identical grey channels still give offset coloured dots); now says Grayscale mode (Channel 1 only) or a desaturated copy with all angles equal. Rest checked against the batch (keys radius/angle1-4, int type, 4-127 clamp, defaults 108/162/90/45, demo in range, event colorHalftone, AI ClrH + CDR Halftone exist) and unchanged."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/4fc0f26b1a75.png",
+    "note": "The whole frame is enlarged overlapping CMY-style dots on rotated grids with a rosette pattern, saturated pure colours, the pop-art halftone look.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Crystallize",
+   "id": "crystallize",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Crystallize",
+   "status": "current",
+   "summary": "Clumps pixels into irregular polygonal cells (like crystals or a Voronoi pattern) and fills each cell with one solid colour taken from the image under it. The image becomes a faceted, shattered-glass mosaic with no outlines between cells; Cell Size sets how big the shards are.",
+   "use_for": [
+    "an abstract faceted background from a photo for a poster, title card or slide",
+    "a stylised shattered-glass / geometric treatment of a portrait for a thumbnail",
+    "obscuring a busy background (crowd, venue) while keeping its colours and composition",
+    "a colour-block base layer to trace or to combine with edge filters for a low-poly-like look"
+   ],
+   "avoid": [
+    "text, logos and thin lines: they break into shards and become unreadable; keep them on separate layers above",
+    "censoring a face or plate: irregular shards read as a decorative effect and small cells leave features recognisable; use Mosaic with a big Cell Size, or a solid filled box for anything sensitive",
+    "a leaded stained-glass look with dark borders between cells: Crystallize has no outlines; use Stained Glass (Filter Gallery) for that",
+    "a missing key in a script: the harvest shows Photoshop reuses this filter's last-used Cell Size when the key is omitted"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_Crst",
+    "CDR": "Effects/Creative/Crystalize"
+   },
+   "look": [
+    "crystal",
+    "faceted",
+    "shattered glass",
+    "polygon mosaic",
+    "voronoi",
+    "geometric abstract",
+    "low poly"
+   ],
+   "params": [
+    {
+     "name": "Cell Size",
+     "does": "average size of each crystal cell in pixels; bigger = fewer, larger flat-colour shards and more abstraction",
+     "typical": "8-20 for a textured look that keeps the subject, 30-80 for a bold abstract background on a 1920 px image"
+    }
+   ],
+   "demo_settings": {
+    "Cell Size": 40
+   },
+   "pairs_with": [
+    "Find Edges or Poster Edges on a copy (draws outlines around the cells)",
+    "Gaussian Blur on a copy blended back (softer frosted-glass look)",
+    "Layer mask (keeps the subject sharp while the background crystallises)",
+    "Hue/Saturation or Gradient Map afterwards (recolours the facets for a brand palette)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"cellSize\"), 40); executeAction(stringIDToTypeID(\"crystallize\"), d, DialogModes.NO);  // cellSize clamps to 3-300 (harvest probe)",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "medium: 431 ms on the harvest's 480x270 test layer, the slowest filter in this batch",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unverified claim that each cell's colour is averaged (docs and harvest only say pixels clump into one solid colour); avoid: the censoring bullet said 'large cells keep colours and shapes readable', which contradicts what large cells do, rewritten. cellSize int 3-300, demo 40, event crystallize, AI Crst + CDR Creative/Crystalize checked and unchanged."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/6de9b249d2eb.png",
+    "note": "Irregular polygonal single-colour cells over everything, no outlines; the strip and type break into shard edges.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Facet",
+   "id": "facet",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Facet",
+   "status": "current",
+   "summary": "One-step filter with no settings that clusters pixels of similar colour into small blocks of like-coloured pixels, smoothing out fine detail and grain so a photo starts to look hand-painted. A single pass is subtle on a large image (especially an already soft frame); designers usually run it several times in a row.",
+   "use_for": [
+    "a light hand-painted / painterly base before Oil Paint, Poster Edges or Cutout",
+    "breaking up scanner or video-compression grain into small flat-colour patches",
+    "a subtle illustrative texture on a background photo behind text"
+   ],
+   "avoid": [
+    "expecting a strong, obvious effect from one pass on a 1920 px image: the change is small and easy to miss (the gallery sample may look nearly unchanged); repeat it several times or use Crystallize, Cutout or Oil Paint for a bold look",
+    "needing control: it has no settings at all; for adjustable smoothing use Median, Surface Blur or Oil Paint",
+    "sharp text and hairlines: edges get slightly blotchy; keep type on its own layer"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "painterly",
+    "hand-painted",
+    "subtle posterize",
+    "colour clusters",
+    "blotchy",
+    "smoothed grain"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Facet again (repeat 2-5 times for a stronger effect)",
+    "Oil Paint or Poster Edges (finishes the painted look)",
+    "Smart Sharpen afterwards (restores edge definition)",
+    "Median (a stronger, adjustable version of the same clean-up)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"facet\"), new ActionDescriptor(), DialogModes.NO);  // no parameters; loop the call to repeat it",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as a Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: 141 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "none: no params in the batch so no demo_settings; parameterless facet event call, status/scriptable and 141 ms cost match; the subtle-on-a-soft-plate warning is in avoid; no AI Pixelate or CDR item does the same job, so equivalents stay empty."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/ca7fcd046940.png",
+    "note": "Subtle as the card says: on the soft plate one pass shifts the photo by about 1 level on average (7 % of pixels over 4 levels), seen at 2x zoom as slightly firmer, blotchier edges (radial lines, fine detail); no 1:1 crop was made for it.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Fragment",
+   "id": "fragment",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Fragment",
+   "status": "current",
+   "summary": "One-step filter with no settings that makes four copies of the pixels, offsets them a few pixels from each other and averages them, so every edge appears quadrupled. The result looks like a shaken camera or double vision: a soft, ghosted, jittery blur rather than a smooth one.",
+   "use_for": [
+    "a dazed / dizzy / earthquake or shaken-camera feel on a still for a reel thumbnail or meme",
+    "a quick ghosted-edges glitch on a background photo behind text",
+    "suggesting impact or vibration on an object when combined with a mask"
+   ],
+   "avoid": [
+    "needing control over the amount or direction: there are no settings and the offset is a fixed few pixels, so on a large or already soft image (like a 1920 px video frame) it is subtle; repeat it, or use Motion Blur or duplicate layers offset by hand for a stronger, directed ghost",
+    "text and logos: type gets four overlapping outlines and reads as out of focus; keep it on a separate layer",
+    "a clean soft-focus look: use Gaussian Blur or Lens Blur instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "shaky",
+    "double vision",
+    "ghosting",
+    "jitter",
+    "camera shake",
+    "dizzy",
+    "quadrupled edges"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Fragment again (repeat to widen the ghosting)",
+    "Motion Blur (adds a direction to the shake)",
+    "RGB channel offset (Layer Style > Advanced Blending channel toggles on shifted copies) for a chromatic glitch",
+    "Layer mask (limits the shake to one subject)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"fragment\"), new ActionDescriptor(), DialogModes.NO);  // no parameters; loop the call to repeat it",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as a Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: 144 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "none: no params in the batch so no demo_settings; parameterless fragment event call, status/scriptable and 144 ms cost match; no AI or CDR counterpart found (CDR has only a Fragment brush bitmap preset), equivalents stay empty."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/5172cf7b97e1.png",
+    "note": "Every edge is ghosted four times: the PGD type and hairlines read as doubled outlines and the photo looks shaken, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Mezzotint",
+   "id": "mezzotint",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Mezzotint",
+   "status": "current",
+   "summary": "Converts the image into a random pattern of dots, lines or strokes in which every channel is pushed to fully on or fully off, so a colour photo becomes a grainy pattern of pure saturated colours (red, green, blue, cyan, magenta, yellow, black, white) and a grayscale one becomes black and white. Tone survives only as the density of the pattern, giving a gritty engraving / photocopy / noise texture.",
+   "use_for": [
+    "a gritty, high-energy grunge texture on a poster or album-style cover",
+    "a black-and-white engraved / photocopied look on a grayscale portrait (convert to grayscale first)",
+    "a streaky horizontal scan-line texture using a Lines or Strokes type, faded back over the photo",
+    "a noise overlay layer blended at low opacity for a print-grain feel"
+   ],
+   "avoid": [
+    "colour-accurate work: every channel is thresholded, so skin tones and brand colours turn into harsh primaries; convert to Grayscale mode first (Photoshop documents black-and-white areas for grayscale images) or blend the result back at low opacity",
+    "reproducible output: the pattern is random, so two runs never match exactly",
+    "faces and small type at full strength: they break up into noise; mask them or blend the effect",
+    "a regular dot screen: Mezzotint is random; use Color Halftone for an even dot grid"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_Mztn"
+   },
+   "look": [
+    "mezzotint",
+    "grainy",
+    "gritty",
+    "engraving",
+    "photocopy",
+    "noise texture",
+    "dithered",
+    "scan lines",
+    "grunge"
+   ],
+   "params": [
+    {
+     "name": "Type",
+     "does": "shape of the random pattern: dots (fine to coarse), horizontal lines (short to long) or strokes (short to long)",
+     "typical": "coarseDots or grainyDots for a grainy engraving look; longLines or longStrokes for streaky scan-line texture"
+    }
+   ],
+   "demo_settings": {
+    "Type": "coarseDots"
+   },
+   "enum_labels": {
+    "fineDots": "Fine Dots",
+    "mediumDots": "Medium Dots",
+    "grainyDots": "Grainy Dots",
+    "coarseDots": "Coarse Dots",
+    "shortLines": "Short Lines",
+    "mediumLines": "Medium Lines",
+    "longLines": "Long Lines",
+    "shortStrokes": "Short Strokes",
+    "mediumStrokes": "Medium Strokes",
+    "longStrokes": "Long Strokes"
+   },
+   "pairs_with": [
+    "Image > Mode > Grayscale before it (pure black-and-white mezzotint instead of primary-colour noise; a merely desaturated RGB layer is still screened channel by channel and is not guaranteed to stay neutral)",
+    "Gaussian Blur after it (softens the grain into a smoother texture)",
+    "Edit > Fade or reduced layer opacity / Overlay blend (keeps the photo, adds the grain)",
+    "Gradient Map (recolours the two-tone result into brand colours)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putEnumerated(stringIDToTypeID(\"mezzotintType\"), stringIDToTypeID(\"mezzotintType\"), stringIDToTypeID(\"coarseDots\")); executeAction(stringIDToTypeID(\"mezzotint\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: 298 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid + pairs_with: recommended Desaturate / Black & White to get a black-and-white mezzotint, but the filter works per channel on an RGB layer; now points to Image > Mode > Grayscale, the mode the documented black-and-white result applies to. use_for: dropped 'rain' (the card's own Lines are horizontal). Enum key mezzotintType, 10 values + labels, demo coarseDots, AI Mztn checked and unchanged."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/ee9a847e45fc.png",
+    "crop": "gallery/ps_filter/ee9a847e45fc_1to1.png",
+    "note": "Coarse random dots with every channel pushed to on or off: the photo becomes gritty pure yellow, red, white and black speckle, the blocks speckled in their primaries.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Mosaic",
+   "id": "mosaic",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Mosaic",
+   "status": "current",
+   "summary": "Clumps pixels into a grid of square blocks and fills each block with one solid colour averaged from its pixels: the classic pixelation / censor effect. Cell Size sets the block width in pixels; large cells turn the image into a coarse grid of colour squares.",
+   "use_for": [
+    "pixelating faces, licence plates or screens in a news or reel thumbnail (select the area first)",
+    "8-bit / pixel-art and retro-game styling of a photo or background",
+    "an abstract colour-grid background from a photo for a title card",
+    "a pixelate-to-reveal sequence of stills (several Cell Sizes stepping down)"
+   ],
+   "avoid": [
+    "redacting text or numbers with small cells: pixelation can be partly reversed or guessed; for sensitive information use a solid filled box",
+    "running it on the whole layer when only one face needs hiding: make a selection or work on a masked copy",
+    "crisp pixel art at a different output size: resizing afterwards blurs the block edges; resize with Nearest Neighbor or apply Mosaic at the final size",
+    "a missing key in a script: the harvest shows Photoshop reuses this filter's last-used Cell Size when the key is omitted"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Create Object Mosaic...",
+    "CDR": "Effects/Distort/Pixelate"
+   },
+   "look": [
+    "pixelated",
+    "pixelate",
+    "censor blocks",
+    "8-bit",
+    "pixel art",
+    "square mosaic",
+    "blocky",
+    "retro game"
+   ],
+   "params": [
+    {
+     "name": "Cell Size",
+     "does": "width and height of each square block in pixels; bigger = blockier, less recognisable",
+     "typical": "10-20 px for a light pixel texture, 30-60 px to fully hide a face on a 1920 px frame"
+    }
+   ],
+   "demo_settings": {
+    "Cell Size": 32
+   },
+   "pairs_with": [
+    "Rectangular / Elliptical Marquee or Select Subject (pixelates only the face or plate)",
+    "Posterize or Indexed Color (limited palette for pixel-art styling)",
+    "Image Size with Nearest Neighbor resampling (keeps block edges hard when scaling)",
+    "Find Edges or a grid pattern overlay (adds tile borders between blocks)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putUnitDouble(stringIDToTypeID(\"cellSize\"), stringIDToTypeID(\"pixelsUnit\"), 32); executeAction(stringIDToTypeID(\"mosaic\"), d, DialogModes.NO);  // cellSize is a pixel unit value, clamps to 2-200 (harvest probe)",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "very light: 77 ms on the harvest's 480x270 test layer, the fastest filter in this batch",
+   "review": {
+    "by": "adversarial",
+    "changes": "none: cellSize sent as pixelsUnit (declared_params), number 2-200, demo 32 in range and unmistakable on the plate, event mosaic; AI Create Object Mosaic... (ai_menu) and CDR Effects/Distort/Pixelate exist and do the same square-tile job (CDR Effects/Creative/Mosaic is a tile/grout look, correctly not used)."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/4396119eb551.png",
+    "note": "Square pixel blocks of one averaged colour each (16 px in the 960 frame), the classic pixelation.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Pointillize",
+   "id": "pointillize",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Pixelate/Pointillize",
+   "status": "current",
+   "summary": "Breaks the image into randomly placed round dots of colour, like a pointillist painting, and fills the gaps between the dots with the current background colour from the Tools panel. Cell Size sets the dot size; large cells give a confetti-like field of coloured dots on a plain canvas.",
+   "use_for": [
+    "a pointillist / Seurat-style painterly treatment of a portrait or landscape for a poster",
+    "a festive confetti or bokeh-dot background made from a photo's colours",
+    "an abstract dotted texture layer blended over the original image"
+   ],
+   "avoid": [
+    "forgetting the background colour: the canvas between dots is the Tools panel background colour (not a filter setting), so set it first (white for paper, black for a night look) or the gaps may come out an unexpected colour",
+    "reproducible output: dot placement is random, so two runs never match exactly",
+    "an even, print-like dot grid: use Color Halftone instead",
+    "faces and type at large Cell Size: they dissolve into dots; mask them or keep them on separate layers"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_Pntl",
+    "CDR": "Effects/Art Strokes/Pointillist"
+   },
+   "look": [
+    "pointillism",
+    "dots",
+    "painterly",
+    "confetti",
+    "Seurat",
+    "stippled",
+    "dotted texture"
+   ],
+   "params": [
+    {
+     "name": "Cell Size",
+     "does": "size of each colour dot in pixels; bigger = larger, sparser dots and more of the background colour showing",
+     "typical": "5-12 for a fine painterly texture, 20-40 for a bold confetti-dot look on a 1920 px image"
+    }
+   ],
+   "demo_settings": {
+    "Cell Size": 24
+   },
+   "pairs_with": [
+    "Set the background colour first (white, black or a brand colour for the gaps)",
+    "Gaussian Blur afterwards (melts the dots into soft bokeh)",
+    "Reduced layer opacity over the original (dotted texture that keeps the subject readable)",
+    "Vibrance or Hue/Saturation (brighter dot colours)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"cellSize\"), 24); executeAction(stringIDToTypeID(\"pointillize\"), d, DialogModes.NO);  // cellSize clamps to 3-300 (harvest probe); the gap colour is app.backgroundColor, set it before the call",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object it is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "light: 225 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "none: cellSize int 3-300, demo 24 in range, event pointillize, background-colour gap note matches Photoshop behaviour; AI Pntl and CDR Art Strokes/Pointillist exist."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/e43093d0c778.png",
+    "note": "Random round colour dots with white gaps (the white background swatch) over the whole frame, confetti-like.",
+    "rerender": false
+   }
+  }
+ ]
+}

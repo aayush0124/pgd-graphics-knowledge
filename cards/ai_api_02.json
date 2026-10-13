@@ -1,0 +1,2327 @@
+{
+ "cards": [
+  {
+   "name": "RadialRepeatItems",
+   "id": "class:RadialRepeatItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/RadialRepeatItems",
+   "status": "current",
+   "summary": "Collection of Radial Repeat art (Object > Repeat > Radial): live groups that copy source art around a circle. Its add() turns page items into a new radial repeat from a RadialRepeatConfig.",
+   "use_for": [
+    "rosettes and mandala ornaments",
+    "clock faces, dials and badge/seal borders",
+    "radial icon or petal arrays that stay editable"
+   ],
+   "avoid": [
+    "when the copies must be independent paths for further editing: expand the repeat first, or duplicate() and rotate() plain paths",
+    "scripts that must run on Illustrator builds older than the Repeat scripting API: check typeof RadialRepeatConfig first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Collection on Document, Layer and GroupItem: app.activeDocument.radialRepeatItems. add(sourceArt, config) takes the page item(s) to repeat and a RadialRepeatConfig (numberOfInstances, radius, reverseOverlap) and returns a RadialRepeatItem; change it later with item.setRadialConfiguration(config, RadialRepeatUpdate flag such as RADIALALL).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create radial repeat art from sourceArt + a RadialRepeatConfig; returns the RadialRepeatItem"
+    },
+    {
+     "name": "length",
+     "use": "how many radial repeats the container holds"
+    },
+    {
+     "name": "getByName",
+     "use": "fetch a repeat by its Layers-panel name; throws when there is none"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every radial repeat in this container, art included"
+    },
+    {
+     "name": "parent",
+     "use": "the Document / Layer / GroupItem the collection belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "\"RadialRepeatItems\""
+    }
+   ],
+   "gotchas": [
+    "config must be a RadialRepeatConfig; the type library marks it creatable, so new RadialRepeatConfig() works. COM defaults: numberOfInstances 8, reverseOverlap false, radius -1 (meaning of -1 unverified, likely automatic)",
+    "the source art is absorbed into the repeat group, so keep a reference to the returned item, not the old selection (unverified)",
+    "removeAll deletes the repeated artwork too, not just the repeat setting"
+   ],
+   "example": "var doc = app.activeDocument;\nvar cfg = new RadialRepeatConfig();\ncfg.numberOfInstances = 12;\ncfg.radius = 150;\nvar rr = doc.radialRepeatItems.add(doc.selection[0], cfg);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: setRadialConfiguration takes (config, RadialRepeatUpdate); constructor gotcha was '(unverified)': harvest RadialRepeatConfig coclass is 'cancreate'; added its COM defaults; example comment no longer calls the constructor unverified"
+   }
+  },
+  {
+   "name": "RasterItems",
+   "id": "class:RasterItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/RasterItems",
+   "status": "current",
+   "summary": "Collection of the embedded bitmap images in a document, layer or group (embedded photos, rasterized art). It has no add(): images arrive by placing and embedding or by rasterizing.",
+   "use_for": [
+    "preflight audit of embedded images (colour space, bit depth, embedded or not)",
+    "finding RGB images inside a CMYK print file",
+    "batch Image Trace or colorize of embedded bitmaps"
+   ],
+   "avoid": [
+    "looking for linked images: those are PlacedItems (doc.placedItems), not raster items"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Collection on Document, Layer and GroupItem: app.activeDocument.rasterItems. Index it or use getByName; each RasterItem exposes imageColorSpace, bitsPerChannel, embedded, status, matrix and trace() / colorize().",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of embedded images in the container"
+    },
+    {
+     "name": "getByName",
+     "use": "fetch an image by its Layers-panel name; throws when missing"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every raster item in the container"
+    },
+    {
+     "name": "parent",
+     "use": "owning Document / Layer / GroupItem"
+    },
+    {
+     "name": "typename",
+     "use": "\"RasterItems\""
+    }
+   ],
+   "gotchas": [
+    "no add() method: place a file with placedItems and embed it, or rasterize art, to create one",
+    "linked images are not listed here, so an audit must walk placedItems as well",
+    "doc.rasterItems includes images nested in groups and clipping masks; layer.rasterItems is only that layer's (unverified for nested sublayers)"
+   ],
+   "example": "var r = app.activeDocument.rasterItems;\nfor (var i = 0; i < r.length; i++) {\n  $.writeln(r[i].name + \" \" + r[i].imageColorSpace + \" \" + r[i].bitsPerChannel);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Spots",
+   "id": "class:Spots",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Spots",
+   "status": "current",
+   "summary": "The document's custom colour definitions (spot and global process colours), the colours behind spot / global swatches. add() creates a new Spot to name and define.",
+   "use_for": [
+    "setting up brand Pantone or spot inks for screen print and packaging",
+    "die-line, varnish or white-ink separation plates",
+    "global process colours that recolour every use at once"
+   ],
+   "avoid": [
+    "one-off fills that never need a separation or global edit: assign a CMYKColor / RGBColor directly"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "app.activeDocument.spots. add() returns a new Spot; set its name, color (a CMYKColor / RGBColor / LabColor) and colorType (ColorModel.SPOT or PROCESS). Paint with it by wrapping it in a SpotColor (spot + tint).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new spot / global colour definition"
+    },
+    {
+     "name": "getByName",
+     "use": "find a spot by name, e.g. \"PANTONE 186 C\"; throws when missing"
+    },
+    {
+     "name": "length",
+     "use": "number of spot definitions, including [Registration]"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable spot definitions"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Spots\""
+    }
+   ],
+   "gotchas": [
+    "the [Registration] colour is part of the collection and cannot be deleted or edited (unverified that removeAll skips it rather than throwing)",
+    "adding a Spot also adds a matching swatch to doc.swatches (unverified)",
+    "getByName throws instead of returning null: wrap lookups in try/catch"
+   ],
+   "example": "var doc = app.activeDocument;\nvar s = doc.spots.add();\ns.name = \"Brand Red\";\nvar c = new CMYKColor(); c.cyan = 0; c.magenta = 100; c.yellow = 90; c.black = 0;\ns.color = c;\ns.colorType = ColorModel.SPOT;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Stories",
+   "id": "class:Stories",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Stories",
+   "status": "current",
+   "summary": "Collection of text stories: each story is one run of text that may flow through several threaded text frames. It is read-only (no add); stories appear when text frames are made or threaded.",
+   "use_for": [
+    "exporting or spell-checking each article once even when it spans linked frames",
+    "word counts per text block in brochures and menus",
+    "finding which frames share one threaded story"
+   ],
+   "avoid": [
+    "styling or positioning frames: use textFrames for that"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "app.activeDocument.stories (also textFrame.story for one frame's story). Each Story exposes textRange, textFrames, characters, words, paragraphs and lines over its whole flow.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of separate stories in the document"
+    },
+    {
+     "name": "getByName",
+     "use": "named lookup; stories have no panel name, so indexing is the normal route"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Stories\""
+    }
+   ],
+   "gotchas": [
+    "iterating textFrames counts threaded text once per frame; iterate stories to touch each story once",
+    "no add() and no removeAll(): create or delete text through textFrames"
+   ],
+   "example": "var st = app.activeDocument.stories;\nfor (var i = 0; i < st.length; i++) {\n  $.writeln(st[i].textFrames.length + \" frames: \" + st[i].textRange.contents);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Swatches",
+   "id": "class:Swatches",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Swatches",
+   "status": "current",
+   "summary": "The document's Swatches panel as a collection: process, spot, gradient and pattern swatches. add() creates a swatch; getSelected() returns the swatches selected in the panel.",
+   "use_for": [
+    "building a brand palette into a template",
+    "reading the swatches a designer picked to drive a recolour script",
+    "cleaning or auditing swatch lists before handoff"
+   ],
+   "avoid": [
+    "defining a separation ink: create a Spot through doc.spots (a matching swatch should follow, unverified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Colors"
+   },
+   "how": "app.activeDocument.swatches. add() returns a Swatch; set name and color (any Color subclass). getSelected(includeSwatchInGroup) returns an array of the swatches selected in the Swatches panel.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new swatch"
+    },
+    {
+     "name": "getByName",
+     "use": "find a swatch by its panel name; throws when missing"
+    },
+    {
+     "name": "getSelected",
+     "use": "array of swatches selected in the Swatches panel; pass true to include ones inside groups"
+    },
+    {
+     "name": "length",
+     "use": "number of swatches, including [None] and [Registration]"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable swatches"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Swatches\""
+    }
+   ],
+   "gotchas": [
+    "[None] and [Registration] always come first in the list and cannot be deleted (unverified order)",
+    "getSelected returns an array, not a Swatches collection",
+    "swatch.color for a spot swatch is a SpotColor, so read .spot.color for the ink's values"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sw = doc.swatches.add();\nsw.name = \"Sky\";\nvar c = new RGBColor(); c.red = 40; c.green = 150; c.blue = 230;\nsw.color = c;\ndoc.selection[0].fillColor = sw.color;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid stated as fact what the Spots card marks unverified (spot adds a swatch); hedged"
+   }
+  },
+  {
+   "name": "SwatchGroups",
+   "id": "class:SwatchGroups",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/SwatchGroups",
+   "status": "current",
+   "summary": "Collection of swatch folders (colour groups) in the Swatches panel. add() makes a new group to fill with swatches or spots.",
+   "use_for": [
+    "grouping a brand palette or a colour harmony in the template",
+    "exporting a named colour set for a client",
+    "reading the colour group a designer selected"
+   ],
+   "avoid": [
+    "when only one flat palette is needed: plain doc.swatches is simpler"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Palettes"
+   },
+   "how": "app.activeDocument.swatchGroups. add() returns a SwatchGroup; set its name and move swatches in with addSwatch() / addSpot(). getSelected() returns the groups selected in the panel.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create an empty swatch group"
+    },
+    {
+     "name": "getByName",
+     "use": "find a group by name; throws when missing"
+    },
+    {
+     "name": "getSelected",
+     "use": "array of the groups selected in the Swatches panel"
+    },
+    {
+     "name": "length",
+     "use": "number of groups (the default container for ungrouped swatches may count as one, unverified)"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every removable group"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"SwatchGroups\""
+    }
+   ],
+   "gotchas": [
+    "the first group is the default container for ungrouped swatches (unverified)",
+    "deleting a group may delete the swatches inside it (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar g = doc.swatchGroups.add();\ng.name = \"Brand\";\ng.addSwatch(doc.swatches.getByName(\"Sky\"));",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "length stated the default group as fact while the gotcha marks it unverified; hedged"
+   }
+  },
+  {
+   "name": "SymbolItems",
+   "id": "class:SymbolItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/SymbolItems",
+   "status": "current",
+   "summary": "Collection of placed symbol instances in a document, layer or group. add(symbol) places a new instance of a Symbol definition, which stays linked to the master.",
+   "use_for": [
+    "repeating logos, icons or map pins that must update together",
+    "light files with many copies (trees, crowds, confetti)",
+    "template slots that a script swaps between symbol masters"
+   ],
+   "avoid": [
+    "copies that each need individual edits: use duplicate() on plain art, or breakLink() the instance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Symbol"
+   },
+   "how": "Collection on Document, Layer and GroupItem: app.activeDocument.symbolItems. add(symbol) takes a Symbol from doc.symbols and returns a SymbolItem; position it with the PageItem position / translate members.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "place an instance of the given Symbol"
+    },
+    {
+     "name": "length",
+     "use": "number of instances in the container"
+    },
+    {
+     "name": "getByName",
+     "use": "find an instance by its Layers-panel name; throws when missing"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all instances in the container (the symbol masters stay)"
+    },
+    {
+     "name": "parent",
+     "use": "owning Document / Layer / GroupItem"
+    },
+    {
+     "name": "typename",
+     "use": "\"SymbolItems\""
+    }
+   ],
+   "gotchas": [
+    "a new instance lands at a default spot (unverified where), so always set position after add()",
+    "removeAll removes instances only; masters are in doc.symbols",
+    "editing an instance's appearance does not change the master; breakLink() turns it into plain art"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sym = doc.symbols.getByName(\"Star\");\nfor (var i = 0; i < 5; i++) {\n  var it = doc.symbolItems.add(sym);\n  it.position = [i * 60, -100];\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbols",
+   "id": "class:Symbols",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Symbols",
+   "status": "current",
+   "summary": "The symbol definitions (masters) in the Symbols panel. add() turns page art into a new symbol; addWith9SliceScaling() does the same with 9-slice scaling guides switched on.",
+   "use_for": [
+    "turning a logo or icon into a reusable master",
+    "UI buttons and frames that must scale without stretching corners (9-slice)",
+    "building a symbol library for data-driven layouts"
+   ],
+   "avoid": [
+    "art used once: a symbol adds indirection for nothing"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:SymbolDefinitions"
+   },
+   "how": "app.activeDocument.symbols. add(sourceArt, registrationPoint) returns a Symbol (name it afterwards); registrationPoint is a SymbolRegistrationPoint value such as SYMBOLCENTERPOINT. Place instances with doc.symbolItems.add(symbol).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a symbol master from a page item"
+    },
+    {
+     "name": "addWith9SliceScaling",
+     "use": "create a master with 9-slice scaling guides enabled"
+    },
+    {
+     "name": "getByName",
+     "use": "find a master by its Symbols-panel name; throws when missing"
+    },
+    {
+     "name": "length",
+     "use": "number of symbol masters"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all symbol masters"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Symbols\""
+    }
+   ],
+   "gotchas": [
+    "the source art stays on the artboard as plain art after add(); it is not swapped for an instance as in the UI (unverified)",
+    "removing a master that still has instances may expand or delete those instances (unverified)",
+    "the 9-slice grid is scriptable too: doc.setSymbol9SliceGrid(index, left, top, right, bottom), read back with getSymbol9SliceGrid(index); doc.isSymbolGuidesEnabled(index) tests the switch"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sym = doc.symbols.add(doc.selection[0], SymbolRegistrationPoint.SYMBOLCENTERPOINT);\nsym.name = \"Star\";\nvar inst = doc.symbolItems.add(sym);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha said 9-slice guides can only be set in the UI; Document.setSymbol9SliceGrid / getSymbol9SliceGrid / isSymbolGuidesEnabled exist in the harvest"
+   }
+  },
+  {
+   "name": "SymmetryRepeatItems",
+   "id": "class:SymmetryRepeatItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/SymmetryRepeatItems",
+   "status": "current",
+   "summary": "Collection of Mirror Repeat art (Object > Repeat > Mirror): live groups that reflect source art across an axis. add() builds one from page items and a SymmetryRepeatConfig.",
+   "use_for": [
+    "symmetric logos, crests and ornaments",
+    "character and face drawing where one half mirrors the other",
+    "butterfly, leaf and vase shapes that stay editable"
+   ],
+   "avoid": [
+    "a one-time flip: duplicate() the art and reflect it with a transform instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Symmetry/Create New Symmetry"
+   },
+   "how": "Collection on Document, Layer and GroupItem: app.activeDocument.symmetryRepeatItems. add(sourceArt, config) takes the art plus a SymmetryRepeatConfig (axisRotationAngleInRadians) and returns a SymmetryRepeatItem; change it later with item.setSymmetryConfiguration(config, SymmetryRepeatUpdate flag such as SYMMETRYALL).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create mirror repeat art from sourceArt + a SymmetryRepeatConfig"
+    },
+    {
+     "name": "length",
+     "use": "number of mirror repeats in the container"
+    },
+    {
+     "name": "getByName",
+     "use": "find one by its Layers-panel name; throws when missing"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every mirror repeat in the container, art included"
+    },
+    {
+     "name": "parent",
+     "use": "owning Document / Layer / GroupItem"
+    },
+    {
+     "name": "typename",
+     "use": "\"SymmetryRepeatItems\""
+    }
+   ],
+   "gotchas": [
+    "the axis angle is in radians, measured anti-clockwise from the x-axis; the COM default is 1.57 (a vertical axis)",
+    "config must be a SymmetryRepeatConfig; the type library marks it creatable, so new SymmetryRepeatConfig() works",
+    "removeAll deletes the art inside the repeats as well"
+   ],
+   "example": "var doc = app.activeDocument;\nvar cfg = new SymmetryRepeatConfig();\ncfg.axisRotationAngleInRadians = 0; // horizontal axis; default 1.57 is vertical\nvar m = doc.symmetryRepeatItems.add(doc.selection[0], cfg);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: setSymmetryConfiguration takes (config, SymmetryRepeatUpdate); axis gotcha: added direction and the harvested 1.57 default; constructor no longer unverified (coclass 'cancreate'); example set the axis to PI/2, which is the default; now sets 0 so the call visibly changes something"
+   }
+  },
+  {
+   "name": "Tags",
+   "id": "class:Tags",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Tags",
+   "status": "current",
+   "summary": "Name/value tags attached to a page item (and to the document): hidden metadata that saves with the .ai file and is only visible to scripts. add() creates a tag.",
+   "use_for": [
+    "marking template slots (\"headline\", \"price\") for a fill script",
+    "keeping export ids or SKU numbers on objects",
+    "leaving QC flags for a later automated pass"
+   ],
+   "avoid": [
+    "data a designer must see or edit in the UI: use the object name or the Variables panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Properties"
+   },
+   "how": "pageItem.tags (or app.activeDocument.tags). add() returns a Tag; set its name and value (strings). Read back with getByName(name).value.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new tag on the item"
+    },
+    {
+     "name": "getByName",
+     "use": "read a tag by name; throws when it is not there"
+    },
+    {
+     "name": "length",
+     "use": "number of tags on the item"
+    },
+    {
+     "name": "removeAll",
+     "use": "strip every tag from the item"
+    },
+    {
+     "name": "parent",
+     "use": "the page item (or document) that owns the tags"
+    },
+    {
+     "name": "typename",
+     "use": "\"Tags\""
+    }
+   ],
+   "gotchas": [
+    "tag names with spaces or punctuation can throw; use identifier-style names (unverified)",
+    "values are stored as strings; convert numbers yourself",
+    "getByName throws when the tag is missing: wrap it in try/catch for an optional tag",
+    "tags travel only in native .ai / PDF-compatible saves; exports drop them (unverified)"
+   ],
+   "example": "var it = app.activeDocument.selection[0];\nvar t = it.tags.add();\nt.name = \"sku\";\nt.value = \"A-1042\";\nvar back = it.tags.getByName(\"sku\").value;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFonts",
+   "id": "class:TextFonts",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/TextFonts",
+   "status": "current",
+   "summary": "Collection of the fonts Illustrator can use (app.textFonts), with lookups by PostScript name, an availability check and the current font name.",
+   "use_for": [
+    "preflighting a template's fonts before filling it",
+    "enforcing brand typography in a generated layout",
+    "choosing a fallback when a font is missing"
+   ],
+   "avoid": [
+    "asking for a font by family + style text: look up the PostScript name"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:TextFonts",
+    "CDR": "class:FontList"
+   },
+   "how": "app.textFonts. getByName(postScriptName) returns a TextFont (family, style, name); assign it to textRange.characterAttributes.textFont. isFontAvailable(name) tests before use; getFontByName(name) returns a substitute when the font is missing.",
+   "key_members": [
+    {
+     "name": "getByName",
+     "use": "TextFont by PostScript name, e.g. \"MyriadPro-Bold\"; throws when not installed"
+    },
+    {
+     "name": "isFontAvailable",
+     "use": "true when the original font with that name is installed"
+    },
+    {
+     "name": "getFontByName",
+     "use": "TextFont by name, or a substitute font when the original is missing"
+    },
+    {
+     "name": "getCurrentFont",
+     "use": "name of the current font (the Character panel default, unverified)"
+    },
+    {
+     "name": "length",
+     "use": "number of available fonts"
+    },
+    {
+     "name": "parent",
+     "use": "the Application"
+    },
+    {
+     "name": "typename",
+     "use": "\"TextFonts\""
+    }
+   ],
+   "gotchas": [
+    "names are PostScript names (no spaces, hyphen before style), not menu names",
+    "getFontByName never fails: it can silently hand back a substitute, so test isFontAvailable first",
+    "looping over every font is slow on machines with thousands of fonts",
+    "Adobe Fonts that are not activated are not listed (unverified)"
+   ],
+   "example": "var name = \"MyriadPro-Bold\";\nif (app.textFonts.isFontAvailable(name)) {\n  var f = app.textFonts.getByName(name);\n  app.activeDocument.textFrames[0].textRange.characterAttributes.textFont = f;\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFrameItems",
+   "id": "class:TextFrameItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/TextFrameItems",
+   "status": "current",
+   "summary": "Collection of text frames (point, area and on-path text) in a document, layer or group, with factory methods for each kind: add / pointText, areaText and pathText.",
+   "use_for": [
+    "headlines and labels generated from data",
+    "area text body copy inside a shape",
+    "text on a curve for badges and seals",
+    "finding every text frame for a find/replace pass"
+   ],
+   "avoid": [
+    "large paragraph layouts with styles and threading across pages: build them in InDesign"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Collection on Document, Layer and GroupItem, reached as app.activeDocument.textFrames (the class is TextFrameItems). pointText(anchor) makes point text, areaText(pathItem) fills a shape, pathText(pathItem, startT, endT) puts text on a path; then set contents.",
+   "key_members": [
+    {
+     "name": "pointText",
+     "use": "point text at an [x, y] anchor, optional TextOrientation"
+    },
+    {
+     "name": "areaText",
+     "use": "area text inside a PathItem; baseFrame threads it after an existing frame"
+    },
+    {
+     "name": "pathText",
+     "use": "text on a PathItem between startTValue and endTValue"
+    },
+    {
+     "name": "add",
+     "use": "empty point text frame; set contents and position afterwards"
+    },
+    {
+     "name": "getByName",
+     "use": "find a frame by its Layers-panel name; throws when missing"
+    },
+    {
+     "name": "length",
+     "use": "number of text frames in the container"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every text frame in the container"
+    },
+    {
+     "name": "parent",
+     "use": "owning Document / Layer / GroupItem"
+    },
+    {
+     "name": "typename",
+     "use": "\"TextFrameItems\""
+    }
+   ],
+   "gotchas": [
+    "areaText and pathText turn the given path into the text container, so the path's fill/stroke is lost",
+    "script y values increase upward, so points below the artboard top have negative y; the origin depends on app.coordinateSystem",
+    "baseFrame + postFix thread the new frame to an existing one; omit them for a standalone frame"
+   ],
+   "example": "var doc = app.activeDocument;\nvar t = doc.textFrames.pointText([100, -100]);\nt.contents = \"SALE 50%\";\nvar box = doc.pathItems.rectangle(-200, 100, 300, 120);\nvar area = doc.textFrames.areaText(box);\narea.contents = \"Body copy flows inside the box.\";",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextRanges",
+   "id": "class:TextRanges",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/TextRanges",
+   "status": "current",
+   "summary": "A read-only list of TextRange objects inside a frame, story or range. It is reached as textRanges; each element is a stretch of text that a script can read or style.",
+   "use_for": [
+    "walking mixed-style text to read or normalise its formatting",
+    "copying formatting run by run between frames"
+   ],
+   "avoid": [
+    "word- or character-level work: words / characters give exact units",
+    "editing contents while iterating: changing text re-splits the ranges"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:TextRanges"
+   },
+   "how": "textFrame.textRanges, story.textRanges or textRange.textRanges. Each element is a TextRange with contents, characterAttributes and paragraphAttributes. The split is by runs of identical formatting (unverified).",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of ranges in the list"
+    },
+    {
+     "name": "getByName",
+     "use": "named lookup; ranges have no names, so index the list instead"
+    },
+    {
+     "name": "parent",
+     "use": "the frame, story or range it came from"
+    },
+    {
+     "name": "typename",
+     "use": "\"TextRanges\""
+    }
+   ],
+   "gotchas": [
+    "what one element covers (a style run) is unverified; test on a frame with mixed styles before relying on it",
+    "no add/removeAll: insert text through words / characters / contents",
+    "re-fetch the list after any change to the text"
+   ],
+   "example": "var runs = app.activeDocument.textFrames[0].textRanges;\nfor (var i = 0; i < runs.length; i++) {\n  $.writeln(runs[i].contents + \" / \" + runs[i].characterAttributes.size);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Variables",
+   "id": "class:Variables",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Variables",
+   "status": "current",
+   "summary": "The document's data-driven variables (Window > Variables): named slots of type text, image, visibility or graph that data sets fill in. add() creates a variable.",
+   "use_for": [
+    "name badges, price tags, certificates and product cards from a spreadsheet",
+    "social templates where headline, photo and visibility change per record"
+   ],
+   "avoid": [
+    "a handful of one-off changes: set contents directly with a script instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Variables/Define",
+    "CDR": "File/Print Merge/Create/load Print Merge"
+   },
+   "how": "app.activeDocument.variables. add() returns a Variable; set kind (VariableKind.TEXTUAL / IMAGE / VISIBILITY / GRAPH) and name, then bind it from the art side: textFrame.contentVariable, rasterItem.contentVariable, pageItem.visibilityVariable. doc.importVariables(xml) loads variables plus data sets in one go.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a variable"
+    },
+    {
+     "name": "getByName",
+     "use": "find a variable by name; throws when missing"
+    },
+    {
+     "name": "length",
+     "use": "number of variables"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every variable (art stays, bindings go)"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Variables\""
+    }
+   ],
+   "gotchas": [
+    "binding is done on the page item (contentVariable / visibilityVariable), not on the variable",
+    "doc.importVariables overwrites the existing variables and data sets",
+    "variable names follow XML naming: no spaces, not starting with a digit (unverified)",
+    "doc.variablesLocked = true blocks changes"
+   ],
+   "example": "var doc = app.activeDocument;\nvar v = doc.variables.add();\nv.kind = VariableKind.TEXTUAL;\nv.name = \"headline\";\ndoc.textFrames[0].contentVariable = v;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Views",
+   "id": "class:Views",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Views",
+   "status": "current",
+   "summary": "Collection of the window views of a document (zoom, centre point, screen mode of each window). It is read-only; views come from open windows.",
+   "use_for": [
+    "zoom to 100% before a pixel check or screenshot",
+    "centring the view on an artboard for a capture",
+    "resetting screen mode after automation"
+   ],
+   "avoid": [
+    "changing the artwork: views only change what is on screen"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:ActiveView"
+   },
+   "how": "app.activeDocument.views (or doc.activeView for the front window). Each View has zoom, centerPoint, bounds, rotateAngle and screenMode / setScreenMode().",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of windows open on this document"
+    },
+    {
+     "name": "getByName",
+     "use": "named lookup; views are usually indexed instead"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Views\""
+    }
+   ],
+   "gotchas": [
+    "call app.redraw() after changing zoom or centerPoint or the screen may not update mid-script",
+    "use doc.activeView for the front window; the order of doc.views is not documented (unverified)"
+   ],
+   "example": "var vs = app.activeDocument.views;\nfor (var i = 0; i < vs.length; i++) {\n  vs[i].zoom = 1;\n}\napp.redraw();",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Words",
+   "id": "class:Words",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Words",
+   "status": "current",
+   "summary": "The words of a text frame, story or range; each element is a TextRange covering one word. add() appends a word and addBefore() inserts one.",
+   "use_for": [
+    "highlighting keywords in a headline (colour, weight)",
+    "word counts and length checks for copy",
+    "building a sentence word by word"
+   ],
+   "avoid": [
+    "finding phrases that cross word boundaries: search contents and use characters instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:TextWords"
+   },
+   "how": "textFrame.words, story.words or textRange.words. Index it to get a TextRange per word, then style via characterAttributes or read contents.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of words"
+    },
+    {
+     "name": "add",
+     "use": "create a word with the given contents; ExtendScript lists only contents, the COM signature adds optional relativeObject + insertionLocation, so where it lands is unverified"
+    },
+    {
+     "name": "addBefore",
+     "use": "insert a word with the given contents (no description in the harvest: placement inferred from the name)"
+    },
+    {
+     "name": "getByName",
+     "use": "named lookup; index the collection instead"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every word, emptying the text"
+    },
+    {
+     "name": "parent",
+     "use": "the frame, story or range"
+    },
+    {
+     "name": "typename",
+     "use": "\"Words\""
+    }
+   ],
+   "gotchas": [
+    "each element is a TextRange, so formatting goes through characterAttributes",
+    "whether add() inserts a separating space is unverified; check the result",
+    "punctuation attached to a word may count as part of it (unverified)"
+   ],
+   "example": "var red = new RGBColor(); red.red = 230;\nvar w = app.activeDocument.textFrames[0].words;\nfor (var i = 0; i < w.length; i++) {\n  if (w[i].contents == \"FREE\") w[i].characterAttributes.fillColor = red;\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "add was described as 'append'; harvest says only 'Create a word', and COM Add takes optional relativeObject/insertionLocation"
+   }
+  },
+  {
+   "name": "CMYKColor",
+   "id": "class:CMYKColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/CMYKColor",
+   "status": "current",
+   "summary": "A CMYK colour value: cyan, magenta, yellow and black, each 0-100 percent. Assign it to fills, strokes, text, swatches or spot definitions.",
+   "use_for": [
+    "print colour specs from a brand guide",
+    "rich black mixes (CMY under full K) for large dark areas",
+    "CMYK definitions of spot or global colours"
+   ],
+   "avoid": [
+    "screen-only work in an RGB document: use RGBColor, since CMYK values get converted anyway"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:CMYKColor",
+    "CDR": "class:Color"
+   },
+   "how": "var c = new CMYKColor(); set cyan, magenta, yellow, black (0-100); assign to pathItem.fillColor / strokeColor, characterAttributes.fillColor, swatch.color or spot.color.",
+   "key_members": [
+    {
+     "name": "cyan",
+     "use": "cyan ink percent, 0-100 (default 0)"
+    },
+    {
+     "name": "magenta",
+     "use": "magenta ink percent, 0-100"
+    },
+    {
+     "name": "yellow",
+     "use": "yellow ink percent, 0-100"
+    },
+    {
+     "name": "black",
+     "use": "black ink percent, 0-100"
+    }
+   ],
+   "gotchas": [
+    "values are percentages 0-100, not 0-1",
+    "in an RGB document the colour is converted on assignment, and reading it back gives an RGBColor",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var c = new CMYKColor();\nc.cyan = 0; c.magenta = 100; c.yellow = 100; c.black = 0;\nvar p = app.activeDocument.pathItems.rectangle(0, 0, 200, 100);\np.fillColor = c;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for quoted a rich-black recipe (C60 M40 Y40) that is not in the harvest; made generic"
+   }
+  },
+  {
+   "name": "Color",
+   "id": "class:Color",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/Color",
+   "status": "current",
+   "summary": "Abstract parent of every Illustrator colour value (RGBColor, CMYKColor, GrayColor, LabColor, SpotColor, GradientColor, PatternColor, NoColor). It has no members of its own and is never created directly.",
+   "use_for": [
+    "typing: fillColor, strokeColor, swatch.color and spot.color accept any subclass",
+    "branching a recolour script on the colour's concrete class"
+   ],
+   "avoid": [
+    "new Color(): build the concrete subclass you need"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Color",
+    "CDR": "class:Color"
+   },
+   "how": "Not created directly. Properties typed Color return one of the subclasses; test its typename (\"RGBColor\", \"CMYKColor\", \"SpotColor\" ...) and read that subclass's members.",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "no harvested members: it is only the declared type of colour properties; work with the concrete subclass"
+    }
+   ],
+   "gotchas": [
+    "the harvest lists no members, so anything shared lives on the subclasses",
+    "the harvest has no creatable class for Color (its COM entry is null, while every subclass has a creatable coclass), so never construct it",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var col = app.activeDocument.selection[0].fillColor;\nif (col.typename == \"CMYKColor\") $.writeln(col.cyan + \"/\" + col.magenta + \"/\" + col.yellow + \"/\" + col.black);\nelse if (col.typename == \"RGBColor\") $.writeln(col.red + \",\" + col.green + \",\" + col.blue);\nelse if (col.typename == \"SpotColor\") $.writeln(col.spot.name + \" @ \" + col.tint + \"%\");",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "new Color() gotcha firmed up from the harvest's COM data"
+   }
+  },
+  {
+   "name": "GradientColor",
+   "id": "class:GradientColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/GradientColor",
+   "status": "current",
+   "summary": "A gradient paint: points at a Gradient (stops and type) and places it on the object with origin, angle, length and highlight settings. Assign it as a fill or stroke.",
+   "use_for": [
+    "gradient backgrounds and buttons",
+    "metallic or glossy fills on badges and type",
+    "radial glows behind a product"
+   ],
+   "avoid": [
+    "freeform multi-point colour blends: use a gradient mesh or a Freeform gradient in the UI",
+    "expecting angle/origin set here to stick: transform the object's fill instead (see gotchas)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/New Fill Layer/Gradient",
+    "CDR": "class:FountainFill"
+   },
+   "how": "var gc = new GradientColor(); gc.gradient = doc.gradients[i] (or a new doc.gradients.add()); assign to fillColor / strokeColor. Stops and type (LINEAR/RADIAL) live on the Gradient object.",
+   "key_members": [
+    {
+     "name": "gradient",
+     "use": "the Gradient (stops, linear/radial) being painted"
+    },
+    {
+     "name": "angle",
+     "use": "gradient vector angle in degrees (default 0)"
+    },
+    {
+     "name": "origin",
+     "use": "start point of the gradient vector"
+    },
+    {
+     "name": "length",
+     "use": "length of the gradient vector"
+    },
+    {
+     "name": "hiliteAngle",
+     "use": "highlight angle, radial gradients"
+    },
+    {
+     "name": "hiliteLength",
+     "use": "highlight distance, radial gradients"
+    },
+    {
+     "name": "matrix",
+     "use": "extra transform picked up when the path was transformed"
+    }
+   ],
+   "gotchas": [
+    "angle and origin set before assignment are often ignored: Illustrator fits the gradient to the object (unverified for 30.2); rotate the fill with pageItem.rotate(angle, false, false, true) to turn only the gradient",
+    "colour stops are not here: edit gradient.gradientStops",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var doc = app.activeDocument;\nvar g = doc.gradients.add();\ng.type = GradientType.RADIAL;\nvar gc = new GradientColor();\ngc.gradient = g;\ndoc.selection[0].fillColor = gc;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GrayColor",
+   "id": "class:GrayColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/GrayColor",
+   "status": "current",
+   "summary": "A greyscale colour value with one gray component from 0 to 100, read as a percentage of black: 0 is white, 100 is black.",
+   "use_for": [
+    "one-ink black-and-white artwork",
+    "neutral tints of black for print",
+    "greyscale documents and stamps"
+   ],
+   "avoid": [
+    "neutral greys in an RGB screen design: use RGBColor with equal channels"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:GrayColor",
+    "CDR": "class:Color"
+   },
+   "how": "var g = new GrayColor(); g.gray = 40; assign to fillColor / strokeColor / swatch.color.",
+   "key_members": [
+    {
+     "name": "gray",
+     "use": "tint percent 0-100, where 100 = solid black (default 0)"
+    }
+   ],
+   "gotchas": [
+    "the scale is ink coverage, so a higher value is darker, the opposite of RGB brightness",
+    "in RGB or CMYK documents the value is converted on assignment",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var g = new GrayColor();\ng.gray = 40;\napp.activeDocument.selection[0].strokeColor = g;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LabColor",
+   "id": "class:LabColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/LabColor",
+   "status": "current",
+   "summary": "A CIE L*a*b* colour value: l (lightness 0-100), a (green to red, -128 to 127) and b (blue to yellow, -128 to 127). It describes colour independent of any device.",
+   "use_for": [
+    "defining spot colours from Pantone or measured Lab values",
+    "matching a brand colour measured with a spectrophotometer"
+   ],
+   "avoid": [
+    "ordinary fills in a CMYK/RGB document: the value is converted to document space on assignment anyway"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:LabColor",
+    "CDR": "class:Color"
+   },
+   "how": "var c = new LabColor(); set l, a, b; most useful as spot.color so the spot keeps its Lab definition (spot.spotKind reads SPOTLAB).",
+   "key_members": [
+    {
+     "name": "l",
+     "use": "lightness 0-100"
+    },
+    {
+     "name": "a",
+     "use": "green (-) to red (+), -128 to 127"
+    },
+    {
+     "name": "b",
+     "use": "blue (-) to yellow (+), -128 to 127"
+    }
+   ],
+   "gotchas": [
+    "assigned straight to a fill it is converted to the document colour mode",
+    "on-screen appearance depends on colour settings, so Lab values look slightly different between machines (unverified)",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var lab = new LabColor();\nlab.l = 48; lab.a = 68; lab.b = 47;\nvar s = app.activeDocument.spots.add();\ns.name = \"Measured Red\";\ns.color = lab;\ns.colorType = ColorModel.SPOT;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "NoColor",
+   "id": "class:NoColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/NoColor",
+   "status": "current",
+   "summary": "The 'none' colour: assigning it removes a fill or stroke, and reading an unpainted fill or stroke returns it. It has no members.",
+   "use_for": [
+    "outline-only shapes and keylines",
+    "removing strokes from imported or traced art",
+    "detecting unpainted paths in a preflight"
+   ],
+   "avoid": [
+    "hiding an object: set hidden or opacity instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:NoColor"
+   },
+   "how": "pathItem.fillColor = new NoColor(); also works on strokeColor and characterAttributes. Test a colour with typename == \"NoColor\". PathItem.filled = false / stroked = false do the same job.",
+   "key_members": [
+    {
+     "name": "NoColor",
+     "use": "no harvested members: the constructor new NoColor() is the whole API"
+    }
+   ],
+   "gotchas": [
+    "assigning NoColor to text fill and stroke makes the text invisible but still there",
+    "filled / stroked flags and NoColor can disagree on imported art; check both in a preflight (unverified)"
+   ],
+   "example": "var p = app.activeDocument.selection[0];\np.fillColor = new NoColor();\nvar k = new GrayColor(); k.gray = 100;\np.strokeColor = k;\np.strokeWidth = 1;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Pattern",
+   "id": "class:Pattern",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/Pattern",
+   "status": "current",
+   "summary": "A pattern definition from the Swatches panel (doc.patterns): the named tile that PatternColor paints with. A script can rename or delete it, but not read or edit the tile art.",
+   "use_for": [
+    "looking up a brand pattern by name to apply with PatternColor",
+    "renaming or cleaning unused patterns in a template"
+   ],
+   "avoid": [
+    "building or editing the tile artwork by script: use Object > Pattern > Make in the UI"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "app.activeDocument.patterns[i] or patterns.getByName(\"Grid\"). Paint with it through new PatternColor() + .pattern.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the pattern's swatch name"
+    },
+    {
+     "name": "remove",
+     "use": "delete this pattern"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all patterns of the parent collection"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Pattern\""
+    }
+   ],
+   "gotchas": [
+    "the tile contents are not exposed in the DOM",
+    "deleting a pattern still used by fills may leave those objects with a different fill (unverified)",
+    "doc.patterns.add() exists, but no member sets the tile art, so a script cannot build a usable pattern (what add() produces is unverified)"
+   ],
+   "example": "var pats = app.activeDocument.patterns;\nfor (var i = 0; i < pats.length; i++) {\n  $.writeln(pats[i].name);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "added gotcha: Patterns.add() exists in the harvest but the tile art is not settable"
+   }
+  },
+  {
+   "name": "PatternColor",
+   "id": "class:PatternColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/PatternColor",
+   "status": "current",
+   "summary": "A pattern paint: points at a Pattern and sets how the tile sits in the shape (scale, rotation, shift, reflection, shear). Assign it as a fill or stroke.",
+   "use_for": [
+    "textile, wallpaper and packaging fills",
+    "halftone or line textures inside shapes",
+    "brand pattern backgrounds"
+   ],
+   "avoid": [
+    "moving the tile after it is applied by editing these values: transform the fill with the PageItem transform flags instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/New Fill Layer/Pattern",
+    "CDR": "class:PatternFill"
+   },
+   "how": "var pc = new PatternColor(); pc.pattern = doc.patterns.getByName(\"Grid\"); assign to fillColor / strokeColor. Transform settings are read from an applied fill.",
+   "key_members": [
+    {
+     "name": "pattern",
+     "use": "the Pattern swatch being painted"
+    },
+    {
+     "name": "scaleFactor",
+     "use": "[x, y] scale applied to the tile"
+    },
+    {
+     "name": "rotation",
+     "use": "tile rotation angle"
+    },
+    {
+     "name": "shiftDistance",
+     "use": "distance the tile is moved"
+    },
+    {
+     "name": "shiftAngle",
+     "use": "direction the tile is moved"
+    },
+    {
+     "name": "reflect",
+     "use": "mirror the tile (default false)"
+    },
+    {
+     "name": "reflectAngle",
+     "use": "axis of the reflection"
+    },
+    {
+     "name": "shearAngle",
+     "use": "slant of the tile"
+    },
+    {
+     "name": "shearAxis",
+     "use": "axis the shear is measured from"
+    },
+    {
+     "name": "matrix",
+     "use": "extra transform picked up when the path was transformed"
+    }
+   ],
+   "gotchas": [
+    "the harvest calls scaleFactor 'the fraction to scale the prototype', so [1, 1] is probably full size (unverified); read it from an applied fill first",
+    "to scale only the pattern use pageItem.resize(sx, sy, false, true, false) so positions stay put",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var doc = app.activeDocument;\nvar pc = new PatternColor();\npc.pattern = doc.patterns.getByName(\"Grid\");\nvar p = doc.selection[0];\np.fillColor = pc;\np.resize(50, 50, false, true, false);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scaleFactor gotcha now cites the harvest wording ('fraction')"
+   }
+  },
+  {
+   "name": "RGBColor",
+   "id": "class:RGBColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/RGBColor",
+   "status": "current",
+   "summary": "An RGB colour value: red, green and blue, each 0-255. The everyday colour for screen, web and social graphics.",
+   "use_for": [
+    "web and social graphics",
+    "UI mockups and icons",
+    "colours from hex codes in a brand guide"
+   ],
+   "avoid": [
+    "print jobs in a CMYK document: give CMYK values so no conversion picks the ink mix"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:RGBColor",
+    "CDR": "class:Color"
+   },
+   "how": "var c = new RGBColor(); set red, green, blue (0-255); assign to fillColor / strokeColor / characterAttributes.fillColor / swatch.color.",
+   "key_members": [
+    {
+     "name": "red",
+     "use": "red channel 0-255 (default 0)"
+    },
+    {
+     "name": "green",
+     "use": "green channel 0-255"
+    },
+    {
+     "name": "blue",
+     "use": "blue channel 0-255"
+    }
+   ],
+   "gotchas": [
+    "there is no hex property: parse \"#RRGGBB\" yourself",
+    "in a CMYK document the colour is converted on assignment and reads back as CMYKColor",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var hex = \"1E90FF\";\nvar c = new RGBColor();\nc.red = parseInt(hex.substr(0, 2), 16); c.green = parseInt(hex.substr(2, 2), 16); c.blue = parseInt(hex.substr(4, 2), 16);\napp.activeDocument.selection[0].fillColor = c;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Spot",
+   "id": "class:Spot",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/Spot",
+   "status": "current",
+   "summary": "One custom colour definition from doc.spots: a name, a colour (CMYK, RGB or Lab) and a type (spot ink, global process or registration). Objects paint with it through a SpotColor.",
+   "use_for": [
+    "Pantone or brand inks for screen print and packaging",
+    "technical plates such as die-line, varnish or white ink",
+    "global process colours"
+   ],
+   "avoid": [
+    "painting an object directly with a Spot: wrap it in a SpotColor with a tint"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "app.activeDocument.spots.getByName(\"Brand Red\") or spots.add(). Set name, color and colorType (ColorModel.SPOT / PROCESS / REGISTRATION). spotKind tells whether it is defined in CMYK, RGB or Lab; getInternalColor() returns the component values as an array.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the colour's name as shown on the swatch and in separations"
+    },
+    {
+     "name": "color",
+     "use": "the defining colour value (CMYKColor / RGBColor / LabColor)"
+    },
+    {
+     "name": "colorType",
+     "use": "ColorModel: SPOT (own plate), PROCESS (global CMYK) or REGISTRATION"
+    },
+    {
+     "name": "spotKind",
+     "use": "read-only SpotColorKind: SPOTCMYK, SPOTRGB or SPOTLAB"
+    },
+    {
+     "name": "getInternalColor",
+     "use": "array of the stored component values"
+    },
+    {
+     "name": "remove",
+     "use": "delete this spot definition"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Spot\""
+    }
+   ],
+   "gotchas": [
+    "colorType PROCESS makes it a global colour that separates into CMYK, not its own plate",
+    "the [Registration] spot cannot be edited or removed",
+    "removing a spot that is in use converts those fills to process colour (unverified)"
+   ],
+   "example": "var s = app.activeDocument.spots.getByName(\"Brand Red\");\nvar sc = new SpotColor();\nsc.spot = s;\nsc.tint = 60;\napp.activeDocument.selection[0].fillColor = sc;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SpotColor",
+   "id": "class:SpotColor",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/SpotColor",
+   "status": "current",
+   "summary": "The paint that uses a Spot colour at a tint (0-100 percent). This is what fillColor holds when an object is painted with a spot or global swatch.",
+   "use_for": [
+    "applying Pantone inks at full strength or as tints",
+    "screen-print and packaging separations",
+    "global brand colours that update everywhere"
+   ],
+   "avoid": [
+    "one-off colours that need no separation or global edit: plain CMYKColor / RGBColor"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Color"
+   },
+   "how": "var sc = new SpotColor(); sc.spot = doc.spots.getByName(\"...\"); sc.tint = 100; assign to fillColor / strokeColor / characterAttributes.fillColor.",
+   "key_members": [
+    {
+     "name": "spot",
+     "use": "the Spot definition being used"
+    },
+    {
+     "name": "tint",
+     "use": "tint percent 0-100 (default 100)"
+    }
+   ],
+   "gotchas": [
+    "the spot must come from the same document's spots (unverified that a foreign spot throws)",
+    "the ink's own values live on .spot.color, not here",
+    "colour objects are values: changing a colour read from fillColor does nothing until you assign it back"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sc = new SpotColor();\nsc.spot = doc.spots.getByName(\"PANTONE 186 C\");\nsc.tint = 100;\ndoc.selection[0].fillColor = sc;",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Swatch",
+   "id": "class:Swatch",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/Swatch",
+   "status": "current",
+   "summary": "One swatch from the Swatches panel: a name plus a colour value (process, spot, gradient or pattern paint).",
+   "use_for": [
+    "applying brand colours by name",
+    "renaming or re-colouring swatches in a template",
+    "reading the palette for a recolour or export script"
+   ],
+   "avoid": [
+    "defining a separation ink from a swatch: create the Spot in doc.spots"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Color"
+   },
+   "how": "app.activeDocument.swatches.getByName(\"Sky\") or swatches[i]. Read or set name and color; assign swatch.color to a fill to paint with it.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the swatch name in the panel"
+    },
+    {
+     "name": "color",
+     "use": "its colour value: RGBColor / CMYKColor / SpotColor / GradientColor / PatternColor ..."
+    },
+    {
+     "name": "remove",
+     "use": "delete this swatch"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all swatches of the parent collection"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Swatch\""
+    }
+   ],
+   "gotchas": [
+    "for spot swatches color is a SpotColor; its ink values are at color.spot.color",
+    "[None] and [Registration] cannot be deleted",
+    "renaming a spot swatch may rename the spot as well (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sw = doc.swatches.getByName(\"Sky\");\nfor (var i = 0; i < doc.selection.length; i++) {\n  doc.selection[i].fillColor = sw.color;\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SwatchGroup",
+   "id": "class:SwatchGroup",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Color classes for Adobe Illustrator/SwatchGroup",
+   "status": "current",
+   "summary": "One swatch folder (colour group) in the Swatches panel: a name plus the swatches and spots placed in it.",
+   "use_for": [
+    "grouping a brand palette in a template",
+    "reading a colour group to drive a recolour script",
+    "keeping per-client or per-season palettes apart"
+   ],
+   "avoid": [
+    "when only a flat list of colours is needed: doc.swatches"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "class:Palette"
+   },
+   "how": "app.activeDocument.swatchGroups.getByName(\"Brand\") or swatchGroups.add(). addSwatch(swatch) / addSpot(spot) put colours in; getAllSwatches() returns them as an array.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the group name"
+    },
+    {
+     "name": "addSwatch",
+     "use": "put an existing Swatch into the group"
+    },
+    {
+     "name": "addSpot",
+     "use": "put an existing Spot into the group"
+    },
+    {
+     "name": "getAllSwatches",
+     "use": "array of the swatches in the group"
+    },
+    {
+     "name": "remove",
+     "use": "delete this group"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all groups of the parent collection"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"SwatchGroup\""
+    }
+   ],
+   "gotchas": [
+    "addSwatch moves the swatch into the group rather than copying it (unverified)",
+    "addSpot takes a Spot, not a SpotColor or Swatch",
+    "getAllSwatches returns a plain array"
+   ],
+   "example": "var g = app.activeDocument.swatchGroups.getByName(\"Brand\");\nvar list = g.getAllSwatches();\nfor (var i = 0; i < list.length; i++) {\n  $.writeln(list[i].name);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DataSet",
+   "id": "class:DataSet",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Commands and classes for controling Adobe Illustrator's dynamic publishing behavior/DataSet",
+   "status": "current",
+   "summary": "One captured data set of the Variables panel: one record of values for the document's variables. display() puts that record onto the artboard; update() re-applies the active data set.",
+   "use_for": [
+    "batch output of name badges, price tags, certificates or social cards, one file per record",
+    "checking each record of a data-driven template visually"
+   ],
+   "avoid": [
+    "filling only a few fields: set contents directly"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Variables/Data Sets",
+    "CDR": "File/Print Merge/Create Merged Document"
+   },
+   "how": "Usually loaded with doc.importVariables(File(xml)), then reached as app.activeDocument.dataSets[i] or doc.activeDataSet. Loop: display() a set, export, move to the next.",
+   "key_members": [
+    {
+     "name": "display",
+     "use": "show this data set's values on the artboard"
+    },
+    {
+     "name": "update",
+     "use": "re-apply the active data set's dynamic data to the artboard"
+    },
+    {
+     "name": "name",
+     "use": "the data set name"
+    },
+    {
+     "name": "remove",
+     "use": "delete this data set"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all data sets"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"DataSet\""
+    }
+   ],
+   "gotchas": [
+    "doc.importVariables replaces existing variables and data sets",
+    "text that overflows its frame for a long record is not reported; check each output (unverified)",
+    "image variables need the linked files reachable from the paths in the XML"
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.importVariables(File(\"C:/data/cards.xml\"));\nfor (var i = 0; i < doc.dataSets.length; i++) {\n  doc.dataSets[i].display();\n  doc.exportFile(File(\"C:/out/card_\" + i + \".png\"), ExportType.PNG24);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Variable",
+   "id": "class:Variable",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Commands and classes for controling Adobe Illustrator's dynamic publishing behavior/Variable",
+   "status": "current",
+   "summary": "One data-driven variable: a named slot of kind text, image, visibility or graph that page items bind to and data sets fill.",
+   "use_for": [
+    "headline, price and photo slots in templates",
+    "show/hide layers per record (visibility variable)",
+    "chart data from a data set (graph variable)"
+   ],
+   "avoid": [
+    "binding from the variable side: there is no such member; bind on the page item"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Variables/Define"
+   },
+   "how": "app.activeDocument.variables.getByName(\"headline\") or variables.add(). Set kind (VariableKind) and name; bind with textFrame.contentVariable, rasterItem.contentVariable or pageItem.visibilityVariable; pageItems lists the bound art.",
+   "key_members": [
+    {
+     "name": "kind",
+     "use": "VariableKind: TEXTUAL, IMAGE, VISIBILITY, GRAPH (Unknown before it is set)"
+    },
+    {
+     "name": "name",
+     "use": "variable name used in the XML data"
+    },
+    {
+     "name": "pageItems",
+     "use": "read-only list of the art bound to this variable"
+    },
+    {
+     "name": "remove",
+     "use": "delete the variable"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all variables"
+    },
+    {
+     "name": "parent",
+     "use": "the Document"
+    },
+    {
+     "name": "typename",
+     "use": "\"Variable\""
+    }
+   ],
+   "gotchas": [
+    "the kind must match the art: TEXTUAL to text frames, IMAGE to placed or raster images (unverified that a mismatch throws)",
+    "the harvest describes pageItems as 'all the artwork in this document'; expect only bound art (unverified)",
+    "names must be valid XML names (unverified)"
+   ],
+   "example": "var vars = app.activeDocument.variables;\nfor (var i = 0; i < vars.length; i++) {\n  $.writeln(vars[i].name + \" \" + vars[i].kind + \" bound to \" + vars[i].pageItems.length);\n}",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportForScreensItemToExport",
+   "id": "class:ExportForScreensItemToExport",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensItemToExport",
+   "status": "current",
+   "summary": "Says what doc.exportForScreens writes: a range of artboards, a list of assets from the Asset Export panel, and/or the whole document as one file.",
+   "use_for": [
+    "exporting chosen artboards of a social or app-icon set",
+    "exporting Asset Export panel assets by id",
+    "one-file export of the whole document"
+   ],
+   "avoid": [
+    "single-file classic exports: doc.exportFile with ExportType is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "var what = new ExportForScreensItemToExport(); set artboards / assets / document; pass it as the 4th argument of doc.exportForScreens(folder, type, options, what, prefix).",
+   "key_members": [
+    {
+     "name": "artboards",
+     "use": "artboard range string: 'all' (default), '' for none, or a range like '1-3,5'"
+    },
+    {
+     "name": "assets",
+     "use": "array of Asset.assetID numbers from doc.assets (default empty)"
+    },
+    {
+     "name": "document",
+     "use": "also export the whole document as one file (default false)"
+    }
+   ],
+   "gotchas": [
+    "artboards defaults to 'all', so set it to '' when you only want assets or the document",
+    "artboard numbers in the range are 1-based like the Artboards panel (unverified)",
+    "asset ids are doc.assets[i].assetID numbers, not asset names"
+   ],
+   "example": "var doc = app.activeDocument;\nvar what = new ExportForScreensItemToExport();\nwhat.artboards = \"1-2\";\nvar opt = new ExportForScreensOptionsPNG24();\nopt.scaleTypeValue = 2;\ndoc.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_PNG24, opt, what, \"hero_\");",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha now names the real member (Asset.assetID); assets key_member names Asset.assetID"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsAVIF",
+   "id": "class:ExportForScreensOptionsAVIF",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsAVIF",
+   "status": "current",
+   "summary": "Settings for AVIF output from Export for Screens: lossless or lossy (quality 0-63), alpha, ICC profile, metadata, anti-aliasing, PPI, matte colour and scale.",
+   "use_for": [
+    "small, high-quality web images with transparency",
+    "modern web/app assets where AVIF is supported"
+   ],
+   "avoid": [
+    "targets that cannot decode AVIF (older email clients, some CMSs): use PNG24 or JPEG options",
+    "single-file doc.exportFile(file, ExportType.AVIF, ...): that call takes ExportOptionsAVIF, not this class"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "var o = new ExportForScreensOptionsAVIF(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_AVIF, o, itemToExport, prefix).",
+   "key_members": [
+    {
+     "name": "losslessCompression",
+     "use": "true (default) = lossless; false = lossy with imageQuality"
+    },
+    {
+     "name": "imageQuality",
+     "use": "lossy quality 0-63 (default 63)"
+    },
+    {
+     "name": "isTransparent",
+     "use": "keep the alpha channel (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor background when not transparent"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED, TYPEOPTIMIZED (default)"
+    },
+    {
+     "name": "PPI",
+     "use": "resolution in pixels per inch (default 72)"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the colour profile (default false)"
+    },
+    {
+     "name": "includeMetadata",
+     "use": "write XMP metadata (default false)"
+    },
+    {
+     "name": "scaleType",
+     "use": "ExportForScreensScaleType: SCALEBYFACTOR (default), SCALEBYWIDTH, SCALEBYHEIGHT, SCALEBYRESOLUTION"
+    },
+    {
+     "name": "scaleTypeValue",
+     "use": "the factor, width/height in px or resolution, per scaleType (default 1)"
+    }
+   ],
+   "gotchas": [
+    "imageQuality tops out at 63, not 100",
+    "imageQuality only matters with losslessCompression = false; the default lossless output is large",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsAVIF();\no.losslessCompression = false;\no.imageQuality = 45;\no.scaleTypeValue = 2;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_AVIF, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "added avoid: exportFile with ExportType.AVIF uses the separate ExportOptionsAVIF class"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsJPEG",
+   "id": "class:ExportForScreensOptionsJPEG",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsJPEG",
+   "status": "current",
+   "summary": "Settings for JPEG output from Export for Screens: compression method, progressive scans, anti-aliasing, ICC profile and scale. The quality level is picked by the export type (JPEG100/80/50/20), not here.",
+   "use_for": [
+    "photo-heavy social posts and banners",
+    "web hero images where file size matters",
+    "client previews"
+   ],
+   "avoid": [
+    "art that needs transparency or crisp flat colour: use PNG24 / PNG8 / SVG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:JPEGSaveOptions",
+    "CDR": "class:JPGExport"
+   },
+   "how": "var o = new ExportForScreensOptionsJPEG(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_JPEG80, o, ...). Choose SE_JPEG100 / SE_JPEG80 / SE_JPEG50 / SE_JPEG20 for quality.",
+   "key_members": [
+    {
+     "name": "compressionMethod",
+     "use": "JPEGCompressionMethodType: BASELINESTANDARD (default), BASELINEOPTIMIZED, PROGRESSIVE"
+    },
+    {
+     "name": "progressiveScan",
+     "use": "number of progressive scans 3-5 (default 3), PROGRESSIVE only"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED (default), TYPEOPTIMIZED"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the colour profile (default false)"
+    },
+    {
+     "name": "scaleType",
+     "use": "ExportForScreensScaleType: SCALEBYFACTOR (default), SCALEBYWIDTH, SCALEBYHEIGHT, SCALEBYRESOLUTION"
+    },
+    {
+     "name": "scaleTypeValue",
+     "use": "the factor, width/height in px or resolution, per scaleType (default 1)"
+    }
+   ],
+   "gotchas": [
+    "there is no quality member: the quality comes from the ExportForScreensType you pass",
+    "JPEG has no transparency, so transparent areas come out on white (unverified colour)",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsJPEG();\no.compressionMethod = JPEGCompressionMethodType.PROGRESSIVE;\no.scaleType = ExportForScreensScaleType.SCALEBYWIDTH;\no.scaleTypeValue = 1080;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_JPEG80, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsPNG24",
+   "id": "class:ExportForScreensOptionsPNG24",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsPNG24",
+   "status": "current",
+   "summary": "Settings for 24-bit PNG output from Export for Screens: transparency, anti-aliasing, black or white background, interlacing and scale.",
+   "use_for": [
+    "logos and stickers with transparent backgrounds",
+    "UI and app assets at 1x/2x/3x",
+    "social graphics with crisp type"
+   ],
+   "avoid": [
+    "photos where file size matters: JPEG or WebP",
+    "vector delivery: Web-optimized SVG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:PNGSaveOptions",
+    "CDR": "class:PNGExport"
+   },
+   "how": "var o = new ExportForScreensOptionsPNG24(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_PNG24, o, ...).",
+   "key_members": [
+    {
+     "name": "transparency",
+     "use": "keep transparent areas (default true)"
+    },
+    {
+     "name": "backgroundBlack",
+     "use": "with transparency off, flatten on black (true) or white (false, default)"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED (default), TYPEOPTIMIZED"
+    },
+    {
+     "name": "interlaced",
+     "use": "interlaced PNG (default false)"
+    },
+    {
+     "name": "scaleType",
+     "use": "ExportForScreensScaleType: SCALEBYFACTOR (default), SCALEBYWIDTH, SCALEBYHEIGHT, SCALEBYRESOLUTION"
+    },
+    {
+     "name": "scaleTypeValue",
+     "use": "the factor, width/height in px or resolution, per scaleType (default 1)"
+    }
+   ],
+   "gotchas": [
+    "backgroundBlack only matters when transparency = false",
+    "there is no PPI member: size the output with scaleType / scaleTypeValue",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsPNG24();\no.transparency = true;\no.scaleTypeValue = 3;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_PNG24, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsPNG8",
+   "id": "class:ExportForScreensOptionsPNG8",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsPNG8",
+   "status": "current",
+   "summary": "Settings for 8-bit (indexed) PNG output from Export for Screens: colour count 2-256, transparency, matte colour, interlacing, anti-aliasing and scale.",
+   "use_for": [
+    "small flat-colour icons and logos for the web",
+    "favicon-style graphics with few colours",
+    "email graphics where size is tight"
+   ],
+   "avoid": [
+    "gradients, shadows and photos: banding shows; use PNG24 or JPEG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:ExportOptionsSaveForWeb",
+    "CDR": "class:PNGExport"
+   },
+   "how": "var o = new ExportForScreensOptionsPNG8(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_PNG8, o, ...).",
+   "key_members": [
+    {
+     "name": "colorCount",
+     "use": "palette size 2-256 (default 128)"
+    },
+    {
+     "name": "transparency",
+     "use": "keep transparent areas (default true)"
+    },
+    {
+     "name": "matte",
+     "use": "matte the artboard with matteColor (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor used for matting (default white)"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED (default), TYPEOPTIMIZED"
+    },
+    {
+     "name": "interlaced",
+     "use": "interlaced PNG (default false)"
+    },
+    {
+     "name": "scaleType",
+     "use": "ExportForScreensScaleType: SCALEBYFACTOR (default), SCALEBYWIDTH, SCALEBYHEIGHT, SCALEBYRESOLUTION"
+    },
+    {
+     "name": "scaleTypeValue",
+     "use": "the factor, width/height in px or resolution, per scaleType (default 1)"
+    }
+   ],
+   "gotchas": [
+    "8-bit transparency is on/off per pixel, so anti-aliased edges take the matte colour: set matteColor to the page background",
+    "low colorCount bands gradients",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsPNG8();\no.colorCount = 32;\nvar bg = new RGBColor(); bg.red = 255; bg.green = 255; bg.blue = 255;\no.matteColor = bg;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_PNG8, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "matte said 'matte soft edges'; harvest says 'Should the artboard be matted with a color'"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsWebOptimizedSVG",
+   "id": "class:ExportForScreensOptionsWebOptimizedSVG",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsWebOptimizedSVG",
+   "status": "current",
+   "summary": "Settings for web-optimised SVG output from Export for Screens: text as SVG text or outlines, coordinate precision, CSS placement, id naming, minify, responsive sizing and how raster images are stored.",
+   "use_for": [
+    "icons and logos for websites and apps",
+    "animated or CSS-styled web graphics",
+    "small vector assets for developers"
+   ],
+   "avoid": [
+    "print or editable round-trips: save as .ai / PDF",
+    "art full of effects and raster content: PNG"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:SVGExport"
+   },
+   "how": "var o = new ExportForScreensOptionsWebOptimizedSVG(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_SVG, o, ...).",
+   "key_members": [
+    {
+     "name": "fontType",
+     "use": "SVGFontType: SVGFONT (live text, default) or OUTLINEFONT (text to outlines)"
+    },
+    {
+     "name": "coordinatePrecision",
+     "use": "decimal places 1-7 (default 3)"
+    },
+    {
+     "name": "cssProperties",
+     "use": "SVGCSSPropertyLocation: STYLEATTRIBUTES (default), PRESENTATIONATTRIBUTES, STYLEELEMENTS, ENTITIES"
+    },
+    {
+     "name": "svgId",
+     "use": "SVGIdType: SVGIDREGULAR (default), SVGIDMINIMAL, SVGIDUNIQUE"
+    },
+    {
+     "name": "svgMinify",
+     "use": "strip whitespace for smaller files (default false)"
+    },
+    {
+     "name": "svgResponsive",
+     "use": "drop fixed width/height so the SVG scales to its container (default true)"
+    },
+    {
+     "name": "rasterImageLocation",
+     "use": "RasterImageLocation: PRESERVE (default), EMBED, LINK"
+    }
+   ],
+   "gotchas": [
+    "svgResponsive = true removes width/height, so the icon can blow up to its container: set false for fixed-size icons",
+    "SVGFONT text depends on the viewer having the font; OUTLINEFONT is safer for logos",
+    "SVGIDUNIQUE helps when several SVGs are inlined on one page (unverified that REGULAR collides)",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsWebOptimizedSVG();\no.fontType = SVGFontType.OUTLINEFONT;\no.svgResponsive = false;\no.svgMinify = true;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_SVG, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportForScreensOptionsWebP",
+   "id": "class:ExportForScreensOptionsWebP",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensOptionsWebP",
+   "status": "current",
+   "summary": "Settings for WebP output from Export for Screens: lossless or lossy (quality 0-100), alpha, ICC profile, metadata, anti-aliasing, PPI, matte colour and scale.",
+   "use_for": [
+    "lightweight web images and banners with or without transparency",
+    "e-commerce and CMS uploads that accept WebP"
+   ],
+   "avoid": [
+    "print or editing round-trips",
+    "platforms that reject WebP: PNG24 / JPEG",
+    "single-file doc.exportFile(file, ExportType.WEBP, ...): that call takes ExportOptionsWebP, not this class"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:WEBPExport"
+   },
+   "how": "var o = new ExportForScreensOptionsWebP(); set members; doc.exportForScreens(folder, ExportForScreensType.SE_WEBP, o, ...).",
+   "key_members": [
+    {
+     "name": "losslessCompression",
+     "use": "true (default) = lossless; false = lossy with imageQuality"
+    },
+    {
+     "name": "imageQuality",
+     "use": "lossy quality 0-100 (default 100)"
+    },
+    {
+     "name": "isTransparent",
+     "use": "keep the alpha channel (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor background when not transparent"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED, TYPEOPTIMIZED (default)"
+    },
+    {
+     "name": "PPI",
+     "use": "resolution in pixels per inch (default 72)"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the colour profile (default false)"
+    },
+    {
+     "name": "includeMetadata",
+     "use": "write XMP metadata (default false)"
+    },
+    {
+     "name": "scaleType",
+     "use": "ExportForScreensScaleType: SCALEBYFACTOR (default), SCALEBYWIDTH, SCALEBYHEIGHT, SCALEBYRESOLUTION"
+    },
+    {
+     "name": "scaleTypeValue",
+     "use": "the factor, width/height in px or resolution, per scaleType (default 1)"
+    }
+   ],
+   "gotchas": [
+    "imageQuality is ignored unless losslessCompression = false",
+    "the AVIF options class looks the same but its quality scale is 0-63",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensOptionsWebP();\no.losslessCompression = false;\no.imageQuality = 80;\no.scaleTypeValue = 2;\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_WEBP, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "added avoid: exportFile with ExportType.WEBP uses the separate ExportOptionsWebP class"
+   }
+  },
+  {
+   "name": "ExportForScreensPDFOptions",
+   "id": "class:ExportForScreensPDFOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportForScreensPDFOptions",
+   "status": "current",
+   "summary": "Settings for PDF output from Export for Screens: just the name of the Adobe PDF preset to use.",
+   "use_for": [
+    "one PDF per artboard for proofs or print",
+    "batch PDF export with a house preset (e.g. PDF/X-4)"
+   ],
+   "avoid": [
+    "fine-grained PDF control (marks, bleeds, compression one by one): Save As PDF with PDFSaveOptions"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:PDFSaveOptions",
+    "CDR": "class:PDFVBASettings"
+   },
+   "how": "var o = new ExportForScreensPDFOptions(); o.pdfPreset = \"[High Quality Print]\"; doc.exportForScreens(folder, ExportForScreensType.SE_PDF, o, ...). Valid names are in app.PDFPresetsList.",
+   "key_members": [
+    {
+     "name": "pdfPreset",
+     "use": "name of an installed Adobe PDF preset (max 255 bytes)"
+    }
+   ],
+   "gotchas": [
+    "the name must match an entry of app.PDFPresetsList exactly, brackets included",
+    "which preset is used when pdfPreset is left empty is unverified",
+    "options only apply when the matching ExportForScreensType is passed to doc.exportForScreens"
+   ],
+   "example": "var o = new ExportForScreensPDFOptions();\no.pdfPreset = app.PDFPresetsList[0];\nvar what = new ExportForScreensItemToExport();\nwhat.artboards = \"all\";\napp.activeDocument.exportForScreens(Folder(\"C:/out\"), ExportForScreensType.SE_PDF, o, what);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsAutoCAD",
+   "id": "class:ExportOptionsAutoCAD",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsAutoCAD",
+   "status": "current",
+   "summary": "Settings for exporting to AutoCAD DWG or DXF: file format, AutoCAD release, units and scale, colour depth, raster format, editability vs appearance, selected art only, outlined text and line-weight scaling.",
+   "use_for": [
+    "sending logos, die-lines or signage paths to CAD, CNC, laser and vinyl-cutting vendors",
+    "handing floor-plan or wayfinding art to architects"
+   ],
+   "avoid": [
+    "art with heavy effects, gradients or transparency: CAD keeps geometry, not appearance"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "class:DXFExport"
+   },
+   "how": "var o = new ExportOptionsAutoCAD(); set members; doc.exportFile(File(path), ExportType.AUTOCAD, o).",
+   "key_members": [
+    {
+     "name": "exportFileFormat",
+     "use": "AutoCADExportFileFormat: DWG (default) or DXF"
+    },
+    {
+     "name": "version",
+     "use": "AutoCADCompatibility release, default AutoCADRelease24"
+    },
+    {
+     "name": "unit",
+     "use": "AutoCADUnit the drawing maps to (default Millimeters)"
+    },
+    {
+     "name": "unitScaleRatio",
+     "use": "scale ratio between Illustrator and CAD units (default 1.0)"
+    },
+    {
+     "name": "exportOption",
+     "use": "AutoCADExportOption: MaximumEditability (default) or PreserveAppearance"
+    },
+    {
+     "name": "colors",
+     "use": "AutoCADColors: Max8Colors, Max16Colors, Max256Colors, TrueColors (default)"
+    },
+    {
+     "name": "rasterFormat",
+     "use": "AutoCADRasterFormat for raster art: PNG (default) or JPEG"
+    },
+    {
+     "name": "exportSelectedArtOnly",
+     "use": "export only the selection (default false)"
+    },
+    {
+     "name": "convertTextToOutlines",
+     "use": "outline text so CAD needs no fonts (default false)"
+    },
+    {
+     "name": "alterPathsForAppearance",
+     "use": "change paths to keep their look, e.g. expand strokes (default false)"
+    },
+    {
+     "name": "scaleLineweights",
+     "use": "scale stroke weights with the drawing (default false)"
+    }
+   ],
+   "gotchas": [
+    "check the scale in the CAD app: unit + unitScaleRatio decide real-world size (unverified mapping)",
+    "PreserveAppearance may expand or rasterise effects; MaximumEditability keeps paths but drops appearance",
+    "older releases (e.g. AutoCADRelease13) for old vendor software lose some features (unverified)"
+   ],
+   "example": "var o = new ExportOptionsAutoCAD();\no.exportFileFormat = AutoCADExportFileFormat.DXF;\no.unit = AutoCADUnit.Millimeters;\no.convertTextToOutlines = true;\napp.activeDocument.exportFile(File(\"C:/out/dieline.dxf\"), ExportType.AUTOCAD, o);",
+   "source": "ai_api_02 agent (omv harvest + app knowledge)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

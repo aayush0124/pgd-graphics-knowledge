@@ -1,0 +1,1384 @@
+{
+ "cards": [
+  {
+   "name": "IVGDuotoneInk",
+   "id": "class:IVGDuotoneInk",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDuotoneInk",
+   "status": "current",
+   "summary": "One ink of a bitmap's monotone / duotone / tritone / quadtone setting: its colour plus the tone curve that decides how much of that ink prints at each grey level of the source image.",
+   "use_for": [
+    "two-colour print jobs: turning a grayscale photo into a Pantone duotone",
+    "brand-colour duotone poster imagery done inside CorelDRAW",
+    "reusing a house ink curve across many bitmaps via .cik files"
+   ],
+   "avoid": [
+    "RGB screen work where a duotone mode is not needed: a lens or a fill-based colourise is simpler",
+    "colour photos you want to keep: the bitmap has to be converted to Duotone mode, which discards the original colour"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) for one ink inside an IVGDuotone. Reach it from a bitmap shape: Shape.Bitmap.Duotone returns the IVGDuotone, and Duotone.Inks(i) returns this object (InkCount says how many). Edit Color and the curve (AddHandle / HandleX / HandleY / PutHandles), then apply with Bitmap.ConvertToDuotone(duotone).",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "IVGColor of the ink (often a spot / Pantone colour); read-write"
+    },
+    {
+     "name": "HandleCount",
+     "use": "read-only number of handles on the tone curve"
+    },
+    {
+     "name": "HandleX",
+     "use": "HandleX(Index): input (source grey) position of one curve handle; read-write"
+    },
+    {
+     "name": "HandleY",
+     "use": "HandleY(Index): output ink level of one curve handle; read-write"
+    },
+    {
+     "name": "AddHandle",
+     "use": "AddHandle(x, y) adds a curve point and returns its index"
+    },
+    {
+     "name": "RemoveHandle",
+     "use": "RemoveHandle(Index) deletes a curve point; returns success"
+    },
+    {
+     "name": "FindHandle",
+     "use": "FindHandle(x, y) returns the index of the handle at those coordinates"
+    },
+    {
+     "name": "Reset",
+     "use": "reset the tone curve to its default"
+    },
+    {
+     "name": "GetCurveLevels",
+     "use": "array of 256 resulting ink levels, one per input level"
+    },
+    {
+     "name": "CurveLevel",
+     "use": "CurveLevel(Index): read-only ink level at one input level"
+    },
+    {
+     "name": "GetHandles",
+     "use": "all handle positions as one array"
+    },
+    {
+     "name": "PutHandles",
+     "use": "replace every handle from an array (optional NumElements)"
+    },
+    {
+     "name": "Load",
+     "use": "Load(FileName) reads ink settings from a .cik file"
+    },
+    {
+     "name": "Save",
+     "use": "Save(FileName) writes ink settings to a .cik file"
+    }
+   ],
+   "gotchas": [
+    "The bitmap must end up in Duotone mode: editing an ink of the IVGDuotone you read may not change the image until you pass it back with Bitmap.ConvertToDuotone (unverified)",
+    "Handle coordinates are long integers and the typelib gives no range for them; GetCurveLevels returns 256 levels, so read GetHandles on a default curve to learn the scale before writing (unverified)",
+    "Layout of the GetHandles / PutHandles array (interleaved x,y pairs or two blocks) is not documented in the typelib; read GetHandles first and mirror its shape (unverified)",
+    "Inks(i) indexing is assumed 1-based like other CorelDRAW collections (unverified)"
+   ],
+   "example": "Dim d As Duotone, ink As DuotoneInk\nSet d = ActiveShape.Bitmap.Duotone\nSet ink = d.Inks(1)\nink.Reset\nink.AddHandle 128, 170\nActiveShape.Bitmap.ConvertToDuotone d",
+   "equivalents": {
+    "PS": "Image/Mode/Duotone"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Reset use no longer claims a linear default curve (typelib only says it resets the curve); removed the invented 0-255 handle range from a gotcha."
+   }
+  },
+  {
+   "name": "IVGDuotoneOverprint",
+   "id": "class:IVGDuotoneOverprint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDuotoneOverprint",
+   "status": "current",
+   "summary": "One overprint combination of a duotone / tritone / quadtone bitmap: the colour shown where two or more of its inks overlap, with an optional override colour. The typelib calls Cyan / Magenta / Yellow / Black the colour components of the ink combination; whether they are percentages or flags naming which inks take part is not confirmed.",
+   "use_for": [
+    "making the on-screen preview of a duotone match the printer's actual overprint colour",
+    "proofing two-spot-colour jobs where the ink mix looks wrong on screen"
+   ],
+   "avoid": [
+    "changing what prints: overprint colours set how the ink overlap is shown, not the ink curves; edit IVGDuotoneInk curves instead (unverified)"
+   ],
+   "confidence": "low",
+   "how": "Dispinterface (dual). From a bitmap: Shape.Bitmap.Duotone gives the IVGDuotone; Duotone.Overprints(i) returns this object (OverprintCount says how many combinations exist). Set Duotone.UseOverprints = True for the overrides to be used, and Duotone.ResetOverprints restores the defaults.",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "IVGColor override shown for this overlap combination"
+    },
+    {
+     "name": "Cyan",
+     "use": "long: cyan component of the combination (meaning of the value unconfirmed)"
+    },
+    {
+     "name": "Magenta",
+     "use": "long: magenta component of the combination"
+    },
+    {
+     "name": "Yellow",
+     "use": "long: yellow component of the combination"
+    },
+    {
+     "name": "Black",
+     "use": "long: black component of the combination"
+    },
+    {
+     "name": "SetValues",
+     "use": "SetValues(Cyan, Magenta, Yellow, Black) sets all four components in one call"
+    },
+    {
+     "name": "Reset",
+     "use": "restore this combination's default overprint colour"
+    }
+   ],
+   "gotchas": [
+    "Overrides are ignored unless the parent IVGDuotone has UseOverprints = True (unverified)",
+    "A monotone has no ink overlaps, so OverprintCount is expected to be 0 there (unverified)",
+    "Typelib descriptions do not say whether Cyan..Black are percentages or ink-membership values; read them back from a known duotone before writing (unverified)"
+   ],
+   "example": "Dim d As Duotone, o As DuotoneOverprint\nSet d = ActiveShape.Bitmap.Duotone\nd.UseOverprints = True\nSet o = d.Overprints(1)\no.Color.CMYKAssign 0, 60, 100, 20\nActiveShape.Bitmap.ConvertToDuotone d",
+   "review": {
+    "by": "adversarial",
+    "changes": "Removed the invented 0-100 range from a gotcha; avoid no longer claims overprint colours change separations (contradicted its own preview-only use_for)."
+   }
+  },
+  {
+   "name": "IVGEdgeSnapPoint",
+   "id": "class:IVGEdgeSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEdgeSnapPoint",
+   "status": "current",
+   "summary": "The extra data of a snap point that sits on a curve's edge rather than on a node: which segment it lies on and how far along that segment (a parametric offset).",
+   "use_for": [
+    "finding exactly where a snapped connector, dimension or guide touches a path",
+    "splitting or adding a node at the spot a snap point marks"
+   ],
+   "avoid": [
+    "node snap points: use the snap point's Node instead; Edge is only meaningful for edge-type points"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual), read-only. Reached from an IVGSnapPoint whose Type is cdrSnapPointEdge via SnapPoint.Edge; the snap point itself comes from Shape.SnapPoints, Shape.SnapPointsOfType or Shape.FindSnapPoint(ReferenceData).",
+   "key_members": [
+    {
+     "name": "SegmentIndex",
+     "use": "read-only index of the curve segment the point lies on"
+    },
+    {
+     "name": "SegmentOffset",
+     "use": "read-only parametric position (time t) along that segment"
+    }
+   ],
+   "gotchas": [
+    "SegmentOffset is the curve's time parameter, not a length: on a Bezier segment 0.5 is not necessarily the halfway distance (unverified)",
+    "Edge on a snap point of another type (node, bbox, object) is expected to fail or return Nothing; check SnapPoint.Type first (unverified)",
+    "Edge snap points are usually created on the fly by connectors and dimensions, so SnapPoints may not list them (unverified)"
+   ],
+   "example": "Dim sp As SnapPoint\nFor Each sp In ActiveShape.SnapPoints\n  If sp.Type = cdrSnapPointEdge Then\n    Debug.Print sp.Edge.SegmentIndex, sp.Edge.SegmentOffset\n  End If\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffect",
+   "id": "class:IVGEffect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffect",
+   "status": "current",
+   "summary": "The generic handle for one live (dynamic) effect on a shape (blend, contour, drop shadow, inner shadow, extrude, envelope, distortion, perspective, lens, text on path, custom): Type says which, a typed property returns its settings, and Clear / Separate remove it or break it into plain shapes.",
+   "use_for": [
+    "auditing a file for live effects before sending it to print or a cutter",
+    "breaking shadows / blends / contours apart into editable shapes for hand-finishing",
+    "stripping effects from imported client artwork"
+   ],
+   "avoid": [
+    "bitmap effects from the Effects menu such as Gaussian blur: cdrEffectType has no bitmap-effect type; they go through Bitmap.ApplyBitmapEffect and Shape.FlattenEffects instead",
+    "reading a typed property that does not match Type: check Type first"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Returned by every Shape.CreateXxx effect call (CreateDropShadow, CreateBlend, CreateContour ...), by Shape.Effects.Item(i) and the Shape.Effects shortcuts (DropShadowEffect, ContourEffect ...), and by Shape.Effect on an effect's own group. Branch on Type (cdrEffectType) and then use the matching typed property.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrEffectType: cdrBlend, cdrExtrude, cdrEnvelope, cdrTextOnPath, cdrControlPath, cdrDropShadow, cdrContour, cdrDistortion, cdrPerspective, cdrLens, cdrCustomEffect, cdrInnerShadow"
+    },
+    {
+     "name": "Blend",
+     "use": "IVGEffectBlend settings when Type = cdrBlend"
+    },
+    {
+     "name": "Contour",
+     "use": "IVGEffectContour settings"
+    },
+    {
+     "name": "DropShadow",
+     "use": "IVGEffectDropShadow settings"
+    },
+    {
+     "name": "InnerShadow",
+     "use": "IVGEffectInnerShadow settings"
+    },
+    {
+     "name": "Extrude",
+     "use": "IVGEffectExtrude settings"
+    },
+    {
+     "name": "Envelope",
+     "use": "IVGEffectEnvelope settings"
+    },
+    {
+     "name": "Distortion",
+     "use": "IVGEffectDistortion settings"
+    },
+    {
+     "name": "Perspective",
+     "use": "IVGEffectPerspective settings"
+    },
+    {
+     "name": "Lens",
+     "use": "IVGEffectLens settings"
+    },
+    {
+     "name": "TextOnPath",
+     "use": "IVGEffectTextOnPath settings"
+    },
+    {
+     "name": "ControlPath",
+     "use": "IVGEffectControlPath when the shape is a path driving blends / fitted text"
+    },
+    {
+     "name": "Custom",
+     "use": "IVGCustomEffect for plug-in (custom) effects"
+    },
+    {
+     "name": "Clear",
+     "use": "remove the effect and return the shape to its plain state"
+    },
+    {
+     "name": "Separate",
+     "use": "break the effect into ordinary shapes; returns the resulting IVGShapeRange"
+    },
+    {
+     "name": "Clones",
+     "use": "effects cloned from this one (Object > Clone Effect)"
+    },
+    {
+     "name": "CloneParent",
+     "use": "the effect this one was cloned from"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGEffects collection holding this effect"
+    }
+   ],
+   "gotchas": [
+    "The typelib text says Clear and Separate act on 'the blend effect', but they are generic and act on whatever effect this is (unverified)",
+    "A typed property that does not match Type (e.g. .Blend on a drop shadow) errors or returns Nothing; branch on Type (unverified)",
+    "After Separate or Clear the IVGEffect reference is dead; re-query Shape.Effects instead of reusing it (unverified)",
+    "Separating a drop or inner shadow leaves a bitmap shadow, not vectors (unverified)"
+   ],
+   "example": "Dim e As Effect\nFor Each e In ActiveShape.Effects\n  Select Case e.Type\n    Case cdrDropShadow: e.DropShadow.Opacity = 40\n    Case cdrContour: e.Contour.Steps = 3\n  End Select\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "Clones: menu path corrected to Object > Clone Effect (harvested cdr_menu path); avoid no longer calls PowerClip a bitmap effect and names the real bitmap-effect calls (Bitmap.ApplyBitmapEffect, Shape.FlattenEffects)."
+   }
+  },
+  {
+   "name": "IVGEffectBlend",
+   "id": "class:IVGEffectBlend",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectBlend",
+   "status": "current",
+   "summary": "Settings of a live blend (Blend tool): a group of intermediate shapes that morph shape and colour from a start object to an end object, either as a fixed number of steps or spaced along a path, optionally rotating to follow it.",
+   "use_for": [
+    "smooth colour transitions and stripe/stepped gradients built from vectors",
+    "repeating an object evenly along a path: dotted borders, chains, footprints",
+    "retro stacked-line and 3D-ish text effects",
+    "neon / halo glows by blending an outline to a fainter copy"
+   ],
+   "avoid": [
+    "a simple two-colour gradient: a fountain fill is lighter and edits faster",
+    "blends with hundreds of steps on complex shapes: heavy files and slow redraw; lower Steps or use a fountain fill"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with StartShape.CreateBlend(EndShape, Steps, ...) which returns an IVGEffect; its .Blend property is this object. Also reached via Shape.Effects.BlendEffects(i).Blend. Change Steps / Spacing / Path / colour options in place; BlendGroup is the generated intermediate group.",
+   "key_members": [
+    {
+     "name": "StartShape",
+     "use": "control object the blend starts from; settable"
+    },
+    {
+     "name": "EndShape",
+     "use": "control object the blend ends on; settable"
+    },
+    {
+     "name": "Steps",
+     "use": "number of intermediate shapes"
+    },
+    {
+     "name": "Mode",
+     "use": "cdrBlendMode: cdrBlendSteps (fixed count) or cdrBlendSpacing (fixed distance)"
+    },
+    {
+     "name": "Spacing",
+     "use": "distance between intermediates when Mode = cdrBlendSpacing"
+    },
+    {
+     "name": "Path",
+     "use": "curve shape the blend follows; set to put the blend on a path"
+    },
+    {
+     "name": "FullPath",
+     "use": "stretch the blend over the whole path"
+    },
+    {
+     "name": "RotateShapes",
+     "use": "rotate intermediates to follow the path direction"
+    },
+    {
+     "name": "Angle",
+     "use": "rotation spread across the intermediates"
+    },
+    {
+     "name": "Loop",
+     "use": "loop the rotation (works with Angle)"
+    },
+    {
+     "name": "ColorBlendType",
+     "use": "cdrFountainFillBlendType: direct or rainbow (CW / CCW) colour progression"
+    },
+    {
+     "name": "SpacingAcceleration",
+     "use": "bunch intermediates toward one end (long)"
+    },
+    {
+     "name": "ColorAcceleration",
+     "use": "push the colour change toward one end (long)"
+    },
+    {
+     "name": "LinkAcceleration",
+     "use": "lock colour acceleration to spacing acceleration"
+    },
+    {
+     "name": "AccelerateSize",
+     "use": "apply acceleration to size as well"
+    },
+    {
+     "name": "MapNodes",
+     "use": "use StartPoint / EndPoint to choose which nodes map to each other"
+    },
+    {
+     "name": "BlendGroup",
+     "use": "read-only group of the generated intermediates"
+    },
+    {
+     "name": "Split",
+     "use": "Split(StepNo) splits the blend at an intermediate, making it a new control shape"
+    },
+    {
+     "name": "FuseStart",
+     "use": "fuse a split / compound blend back at its start"
+    },
+    {
+     "name": "CopyFrom",
+     "use": "copy all blend settings from another IVGEffectBlend"
+    }
+   ],
+   "gotchas": [
+    "Spacing only works when the blend sits on a Path; on a straight blend use Steps (unverified)",
+    "Typelib describes Parent with the wrong text ('application'); it returns the owning IVGEffect",
+    "Start and end shapes with different node counts twist mid-blend; set MapNodes with StartPoint / EndPoint to control the morph (unverified)",
+    "SpacingAcceleration / ColorAcceleration are longs, not booleans, despite the 'whether or not' wording; the typelib gives no range"
+   ],
+   "example": "Dim s1 As Shape, s2 As Shape, e As Effect\nSet s1 = ActiveLayer.CreateEllipse2(1, 1, 0.3)\nSet s2 = ActiveLayer.CreateEllipse2(6, 1, 0.3)\nSet e = s1.CreateBlend(s2, 12)\ne.Blend.ColorBlendType = cdrRainbowCWFountainFillBlend\ne.Blend.Steps = 20",
+   "equivalents": {
+    "AI": "Object/Blend/Make"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Removed the invented -100..100 acceleration range from a gotcha."
+   }
+  },
+  {
+   "name": "IVGEffectContour",
+   "id": "class:IVGEffectContour",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectContour",
+   "status": "current",
+   "summary": "Settings of a live contour (Contour tool): concentric copies of a shape offset inside, outside or to the centre, stepping their fill and outline colours from the original to a target colour.",
+   "use_for": [
+    "cut-line / bleed outlines around stickers and die-cut labels (outside, 1 step)",
+    "layered retro outline text and topographic ring patterns",
+    "keylines and offset borders around logos"
+   ],
+   "avoid": [
+    "a soft glow: contour steps are hard-edged; use a drop shadow with zero offset or a blend",
+    "a single permanent offset outline you will edit as a path: create the contour then Separate it, or use Curve.Contour"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateContour(Direction, Offset, Steps, ...) which returns an IVGEffect; .Contour is this object. Also reached via Shape.Effects.ContourEffect.Contour. Offset is in document units; ContourGroup holds the generated rings.",
+   "key_members": [
+    {
+     "name": "Direction",
+     "use": "cdrContourDirection: cdrContourInside, cdrContourOutside, cdrContourToCenter"
+    },
+    {
+     "name": "Offset",
+     "use": "distance between rings (document units)"
+    },
+    {
+     "name": "Steps",
+     "use": "number of rings"
+    },
+    {
+     "name": "FillColor",
+     "use": "IVGColor the last ring's fill blends to"
+    },
+    {
+     "name": "FillColorTo",
+     "use": "second target colour used when the source has a fountain fill"
+    },
+    {
+     "name": "OutlineColor",
+     "use": "IVGColor the last ring's outline blends to"
+    },
+    {
+     "name": "ColorBlendType",
+     "use": "cdrFountainFillBlendType: direct or rainbow colour progression"
+    },
+    {
+     "name": "SpacingAcceleration",
+     "use": "bunch rings toward one end (long)"
+    },
+    {
+     "name": "ColorAcceleration",
+     "use": "push the colour change toward one end (long)"
+    },
+    {
+     "name": "LinkAcceleration",
+     "use": "lock colour acceleration to spacing"
+    },
+    {
+     "name": "CornerType",
+     "use": "cdrContourCornerType: bevel, round, mitered ... at cusp corners"
+    },
+    {
+     "name": "MiterLimit",
+     "use": "angle limit before mitered corners are bevelled"
+    },
+    {
+     "name": "EndCapType",
+     "use": "cdrContourEndCapType: butt / round / square ends on open paths"
+    },
+    {
+     "name": "ContourGroup",
+     "use": "read-only group of the generated contour shapes"
+    }
+   ],
+   "gotchas": [
+    "With cdrContourToCenter the step count follows from Offset and shape size; Steps is ignored (unverified)",
+    "Too large an inside Offset on thin shapes produces no rings at all (unverified)",
+    "FillColorTo only matters when the source object has a fountain fill; with a uniform fill only FillColor is used (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateContour(cdrContourOutside, 0.1, 1)\ne.Contour.CornerType = cdrContourCornerRound\ne.Contour.OutlineColor.CMYKAssign 0, 100, 0, 0",
+   "equivalents": {
+    "AI": "Effect/Path/Offset Path"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectControlPath",
+   "id": "class:IVGEffectControlPath",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectControlPath",
+   "status": "current",
+   "summary": "The role a curve plays when it drives other effects: the path that a blend follows or that text is fitted to. Its only payload is the collection of those blend and text-on-path effects.",
+   "use_for": [
+    "finding every blend / fitted text that depends on a path before moving, editing or deleting it",
+    "batch-updating all blends that run along one guide path"
+   ],
+   "avoid": [
+    "reading blend or text settings directly: go through Effects(i).Blend / .TextOnPath"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual). Reached from the path shape: Shape.Effects.ControlPathEffect returns an IVGEffect of Type cdrControlPath, whose .ControlPath is this object.",
+   "key_members": [
+    {
+     "name": "Effects",
+     "use": "IVGEffects collection of the blend and text-on-path effects driven by this path"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning IVGEffect (Type cdrControlPath)"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application object"
+    }
+   ],
+   "gotchas": [
+    "ControlPathEffect is expected to return Nothing on a curve that drives nothing; test before using it (unverified)",
+    "Deleting the control path detaches or removes the dependent blends / fitted text (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.Effects.ControlPathEffect\nIf Not e Is Nothing Then\n  Debug.Print e.ControlPath.Effects.Count\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectCustomDistortion",
+   "id": "class:IVGEffectCustomDistortion",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectCustomDistortion",
+   "status": "current",
+   "summary": "Read-only identity of a custom (non push-pull / zipper / twister) distortion on a shape; the only harvested member is DistortionID, a string naming which custom distortion was applied. The typelib carries no description and which distortions use this path is not confirmed.",
+   "use_for": [
+    "identifying a custom distortion found while auditing a file's effects"
+   ],
+   "avoid": [
+    "editing distortion settings: this interface exposes none; remove and reapply with Shape.CreateCustomDistortion"
+   ],
+   "confidence": "low",
+   "how": "Dispinterface (dual). Reached via Shape.Effects.DistortionEffects(i).Distortion.Custom when Distortion.Type = cdrDistortionCustom. Custom distortions are applied with Shape.CreateCustomDistortion(DistortionID, Parameters).",
+   "key_members": [
+    {
+     "name": "DistortionID",
+     "use": "read-only string id of the custom distortion (same id CreateCustomDistortion takes)"
+    }
+   ],
+   "gotchas": [
+    "No typelib description exists for the class or its member; the id format and the list of valid ids are unknown (unverified)",
+    "Distortion.Custom on a push-pull / zipper / twister distortion is expected to return Nothing or fail (unverified)"
+   ],
+   "example": "Dim e As Effect\nFor Each e In ActiveShape.Effects.DistortionEffects\n  If e.Distortion.Type = cdrDistortionCustom Then\n    Debug.Print e.Distortion.Custom.DistortionID\n  End If\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectDistortion",
+   "id": "class:IVGEffectDistortion",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectDistortion",
+   "status": "current",
+   "summary": "Settings of a live distortion (Distort tool): which kind it is (push and pull, zipper, twister or custom), its centre point, and the kind-specific sub-object holding the amount.",
+   "use_for": [
+    "badge and starburst shapes from a polygon (push and pull)",
+    "jagged comic-style bursts and torn edges (zipper)",
+    "swirled ornaments and spiral logos (twister)"
+   ],
+   "avoid": [
+    "precise geometric shapes: distortions are hard to control numerically; use Star / Polygon shapes or node editing",
+    "text you still need to edit cleanly: distortion makes small type unreadable fast"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual). Created with Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude), CreateZipperDistortion(...) or CreateTwisterDistortion(...), each returning an IVGEffect whose .Distortion is this object; also Shape.Effects.DistortionEffects(i).Distortion. Read Type, then use PushPull / Zipper / Twister.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrDistortionType: cdrDistortionPushPull, cdrDistortionZipper, cdrDistortionTwister, cdrDistortionCustom"
+    },
+    {
+     "name": "OriginX",
+     "use": "X of the distortion centre"
+    },
+    {
+     "name": "OriginY",
+     "use": "Y of the distortion centre"
+    },
+    {
+     "name": "CenterDistortion",
+     "use": "move the centre to the middle of the object"
+    },
+    {
+     "name": "PushPull",
+     "use": "IVGEffectPushPullDistortion (Amplitude) when Type = push-pull"
+    },
+    {
+     "name": "Zipper",
+     "use": "IVGEffectZipperDistortion settings when Type = zipper"
+    },
+    {
+     "name": "Twister",
+     "use": "IVGEffectTwisterDistortion settings when Type = twister"
+    },
+    {
+     "name": "Custom",
+     "use": "IVGEffectCustomDistortion (DistortionID) when Type = custom"
+    }
+   ],
+   "gotchas": [
+    "Only the sub-object matching Type is usable; PushPull on a twister distortion fails or returns Nothing (unverified)",
+    "Setting Type on an existing distortion is not confirmed to convert it; Clear and recreate with the right CreateXxxDistortion call (unverified)",
+    "Origin coordinates are page coordinates in document units, not offsets from the shape (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreatePushPullDistortion(0, 0, 40)\ne.Distortion.CenterDistortion\nIf e.Distortion.Type = cdrDistortionPushPull Then\n  e.Distortion.PushPull.Amplitude = -60\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectDropShadow",
+   "id": "class:IVGEffectDropShadow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectDropShadow",
+   "status": "current",
+   "summary": "Settings of a live drop shadow (Drop Shadow tool): a soft bitmap shadow behind an object, either flat and offset or a perspective shadow cast from the bottom / top / left / right, with opacity, feather, colour, fade and merge (blend) mode.",
+   "use_for": [
+    "lifting product shots, cards and buttons off the background",
+    "cast perspective shadows under cut-out products for packaging and ads",
+    "legibility shadows behind headline text on busy images"
+   ],
+   "avoid": [
+    "print jobs where a rasterised shadow over spot colours is a problem: build the shadow from a blend or a transparent vector instead",
+    "shadows inside a shape: use IVGEffectInnerShadow"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateDropShadow(Type, Opacity, Feather, OffsetX, OffsetY, Color, ...) which returns an IVGEffect; .DropShadow is this object. Existing shadows: Shape.Effects.DropShadowEffect.DropShadow.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrDropShadowType: cdrDropShadowFlat or a perspective cdrDropShadowBottom / Top / Left / Right"
+    },
+    {
+     "name": "OffsetX",
+     "use": "horizontal offset of a flat shadow (document units)"
+    },
+    {
+     "name": "OffsetY",
+     "use": "vertical offset of a flat shadow"
+    },
+    {
+     "name": "SetOffset",
+     "use": "SetOffset(OffsetX, OffsetY) in one call"
+    },
+    {
+     "name": "Opacity",
+     "use": "shadow opacity (long)"
+    },
+    {
+     "name": "Feather",
+     "use": "softness / blur length of the edge"
+    },
+    {
+     "name": "FeatherType",
+     "use": "cdrFeatherType: inside, middle, outside, average, Gaussian blur"
+    },
+    {
+     "name": "FeatherEdge",
+     "use": "cdrEdgeType falloff: linear, squared, flat, inverse squared, mesa, Gaussian"
+    },
+    {
+     "name": "Color",
+     "use": "IVGColor of the shadow"
+    },
+    {
+     "name": "MergeMode",
+     "use": "cdrMergeMode: how the shadow blends with what is below (multiply, normal ...)"
+    },
+    {
+     "name": "PerspectiveAngle",
+     "use": "angle of a perspective shadow"
+    },
+    {
+     "name": "PerspectiveStretch",
+     "use": "length of a perspective shadow"
+    },
+    {
+     "name": "Fade",
+     "use": "how much a perspective shadow fades with distance"
+    },
+    {
+     "name": "ShadowGroup",
+     "use": "read-only shape holding the rendered shadow bitmap"
+    }
+   ],
+   "gotchas": [
+    "Typelib descriptions for Type, Color, PerspectiveAngle, PerspectiveStretch and Fade say 'feather'; they are the shadow's type, colour and perspective settings",
+    "PerspectiveAngle, PerspectiveStretch and Fade only matter for the non-flat types; OffsetX / OffsetY only for cdrDropShadowFlat (unverified)",
+    "The shadow is a bitmap: it rasterises at the document's shadow resolution and separates as a bitmap when printed or exported (unverified)",
+    "Creating a shadow on a shape that already has one replaces it rather than stacking (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateDropShadow(cdrDropShadowFlat, 60, 12, 0.08, -0.08)\ne.DropShadow.MergeMode = cdrMergeMultiply\ne.DropShadow.Color.RGBAssign 20, 20, 40",
+   "equivalents": {
+    "PS": "dropShadow",
+    "AI": "Effect/Stylize/Drop Shadow"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Opacity: removed the 0-100 range, which is not in the batch."
+   }
+  },
+  {
+   "name": "IVGEffectEnvelope",
+   "id": "class:IVGEffectEnvelope",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectEnvelope",
+   "status": "current",
+   "summary": "Settings of a live envelope (Envelope tool): a container curve that the object is warped to fit, with a mapping mode (horizontal, original, putty or vertical) that sets how the object is stretched into it, optionally keeping straight lines straight.",
+   "use_for": [
+    "arched and bulged headline text for badges, labels and signage",
+    "fitting artwork onto a shield, bottle or ribbon silhouette",
+    "fake-perspective wraps for packaging mock-ups"
+   ],
+   "avoid": [
+    "true two-point perspective: use IVGEffectPerspective",
+    "text that should stay on a single line along a curve: fit text to path instead (IVGEffectTextOnPath)"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateEnvelope(PresetIndex, Mode, KeepLines), Shape.CreateEnvelopeFromShape(Source, ...) or CreateEnvelopeFromCurve(...), each returning an IVGEffect whose .Envelope is this object; existing ones via Shape.Effects.EnvelopeEffects(i).Envelope.",
+   "key_members": [
+    {
+     "name": "Container",
+     "use": "IVGCurve of the envelope outline; edit its nodes to reshape the warp"
+    },
+    {
+     "name": "Mode",
+     "use": "cdrEnvelopeMode mapping: cdrEnvelopeHorizontal, cdrEnvelopeOriginal, cdrEnvelopePutty, cdrEnvelopeVertical"
+    },
+    {
+     "name": "KeepLines",
+     "use": "keep straight lines straight instead of bending them"
+    },
+    {
+     "name": "Select",
+     "use": "Select(PresetIndex) applies one of the built-in envelope presets"
+    },
+    {
+     "name": "CopyFromShape",
+     "use": "CopyFromShape(Source, Mode, KeepLines, CopyMode, CornerIndices) uses another shape's outline as the container"
+    },
+    {
+     "name": "CopyFromCurve",
+     "use": "same, from an IVGCurve"
+    },
+    {
+     "name": "CreateFrom",
+     "use": "CreateFrom(Shape) builds a new envelope from a shape"
+    },
+    {
+     "name": "CopyFrom",
+     "use": "copy settings from another IVGEffectEnvelope"
+    },
+    {
+     "name": "CornerIndices",
+     "use": "array of 4 node indices in Container that act as the deformed rectangle's corners"
+    }
+   ],
+   "gotchas": [
+    "Typelib names this interface 'EffectExtrudeVanishingPoint' in its description; it is the envelope interface",
+    "Mode is the mapping mode (the typelib calls each value 'envelope mapping'), not the Envelope tool's straight-line / single-arc / double-arc / unconstrained editing modes; reshape the warp through Container, Select(PresetIndex) or CopyFromShape",
+    "CopyFromShape with cdrEnvelopeUseOriginal can distort badly when the template's corner nodes are not where you expect; pass CornerIndices or use cdrEnvelopeFit (unverified)",
+    "Preset index order for Select is not documented in the typelib (unverified)"
+   ],
+   "example": "Dim e As Effect, tmpl As Shape\nSet tmpl = ActiveLayer.CreateEllipse2(4, 4, 3, 1.5)\nSet e = ActiveShape.CreateEnvelopeFromShape(tmpl, cdrEnvelopePutty, False, cdrEnvelopeFit)\ntmpl.Delete",
+   "equivalents": {
+    "AI": "Object/Envelope Distort/Make with Top Object",
+    "PS": "Edit/Transform/Warp"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Summary and Mode no longer confuse cdrEnvelopeMode with the tool's straight / single-arc / double-arc / unconstrained editing modes: it is the mapping mode (horizontal, original, putty, vertical, per the typelib). Replaced the wrong gotcha that mapped Original to unconstrained, Putty to curvy fit and so on. The example builds its own template ellipse, because ActivePage.Shapes(1) could be the active shape itself."
+   }
+  },
+  {
+   "name": "IVGEffectExtrude",
+   "id": "class:IVGEffectExtrude",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectExtrude",
+   "status": "current",
+   "summary": "Settings of a live vector extrusion (Extrude tool): side faces projected toward a vanishing point or in parallel, with depth, 3D rotation, solid / object / shaded colouring, an optional bevel and up to several light sources, giving blocky 3D text and logos.",
+   "use_for": [
+    "chunky 3D headline type for posters, sale banners and retro titles",
+    "isometric-looking logo blocks and signage",
+    "bevelled badge and button art"
+   ],
+   "avoid": [
+    "photoreal 3D with materials: extrusion is flat-shaded vector; use a 3D app or Illustrator's 3D and Materials",
+    "very complex outlines: extrusion multiplies objects and slows the file"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateExtrude(Type, VPType, VPX, VPY, Depth, Shading, BaseColor, ShadingColor, ...) which returns an IVGEffect; .Extrude is this object. Existing ones: Shape.Effects.ExtrudeEffect.Extrude.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrExtrudeType: small/big back/front (vanishing point) or back/front parallel"
+    },
+    {
+     "name": "Depth",
+     "use": "extrusion depth for vanishing-point types (long)"
+    },
+    {
+     "name": "VanishingPoint",
+     "use": "IVGExtrudeVanishingPoint: where the sides converge and how it is locked"
+    },
+    {
+     "name": "AngleX",
+     "use": "rotation about X"
+    },
+    {
+     "name": "AngleY",
+     "use": "rotation about Y"
+    },
+    {
+     "name": "AngleZ",
+     "use": "rotation about Z"
+    },
+    {
+     "name": "Rotate",
+     "use": "Rotate(AngleX, AngleY, AngleZ) in one call"
+    },
+    {
+     "name": "Shading",
+     "use": "cdrExtrudeShading: object fill, solid fill or colour shading"
+    },
+    {
+     "name": "BaseColor",
+     "use": "solid colour or shading start colour"
+    },
+    {
+     "name": "ShadingColor",
+     "use": "shading end colour"
+    },
+    {
+     "name": "UseBevel",
+     "use": "turn the bevel on"
+    },
+    {
+     "name": "SetBevel",
+     "use": "SetBevel(Depth, Angle, ShowBevelOnly)"
+    },
+    {
+     "name": "BevelColor",
+     "use": "bevel colour (when not using the extrude colour)"
+    },
+    {
+     "name": "UseExtrudeColorForBevel",
+     "use": "colour the bevel like the extrusion"
+    },
+    {
+     "name": "SetLight",
+     "use": "SetLight(Index, Position, LightIntensity) adds / moves a light"
+    },
+    {
+     "name": "LightPresent",
+     "use": "LightPresent(Index): whether that light is on"
+    },
+    {
+     "name": "UseFullColorRange",
+     "use": "let lighting use the full colour range"
+    },
+    {
+     "name": "ExtrudeGroup",
+     "use": "read-only group of generated side faces"
+    },
+    {
+     "name": "FaceShape",
+     "use": "read-only control (front face) object"
+    },
+    {
+     "name": "CopyFrom",
+     "use": "copy every extrude setting from another IVGEffectExtrude"
+    }
+   ],
+   "gotchas": [
+    "How the lights combine with each Shading mode (object fill vs solid vs colour shading) is not confirmed; check the result by eye (unverified)",
+    "The typelib gives no valid range for the light Index; read LightPresent(Index) before relying on an index (unverified)",
+    "For parallel types Depth has no effect; depth comes from the vanishing point offset (unverified)",
+    "Rotating an extrusion (AngleX/Y/Z) locks the vanishing point; later VP edits may be ignored until rotation is reset (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateExtrude(cdrExtrudeSmallBack, cdrVPLockedToShape, 0, -3, 20)\ne.Extrude.Shading = cdrExtrudeColorShading\ne.Extrude.BaseColor.CMYKAssign 0, 80, 100, 0\ne.Extrude.ShadingColor.CMYKAssign 0, 100, 100, 60\ne.Extrude.SetBevel 0.05, 45, False",
+   "equivalents": {
+    "AI": "Effect/3D and Materials/3D (Classic)/Extrude & Bevel (Classic)"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Removed the invented 1-3 light-index range from a gotcha."
+   }
+  },
+  {
+   "name": "IVGEffectInnerShadow",
+   "id": "class:IVGEffectInnerShadow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectInnerShadow",
+   "status": "current",
+   "summary": "Settings of a live inner shadow (Inner Shadow tool): a soft bitmap shadow drawn inside an object's edge, offset to look cut-in or with zero offset and a Depth for an even inset all round, with opacity, feather, colour and merge mode.",
+   "use_for": [
+    "debossed / letterpress text and stamped logos",
+    "inset UI fields and pressed buttons",
+    "giving flat shapes a recessed, carved look"
+   ],
+   "avoid": [
+    "a shadow behind the object: use IVGEffectDropShadow",
+    "print jobs that must stay pure vector: the inner shadow is a bitmap"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateInnerShadow(Opacity, Feather, OffsetX, OffsetY, Color, FeatherType, FeatherEdge, MergeMode, Depth) which returns an IVGEffect; .InnerShadow is this object. Existing ones: Shape.Effects.InnerShadowEffect.InnerShadow.",
+   "key_members": [
+    {
+     "name": "OffsetX",
+     "use": "horizontal offset of the shadow inside the shape"
+    },
+    {
+     "name": "OffsetY",
+     "use": "vertical offset"
+    },
+    {
+     "name": "SetOffset",
+     "use": "SetOffset(OffsetX, OffsetY) in one call"
+    },
+    {
+     "name": "Depth",
+     "use": "inset depth used when the offset is zero (shadow all round)"
+    },
+    {
+     "name": "Opacity",
+     "use": "shadow opacity (long)"
+    },
+    {
+     "name": "Feather",
+     "use": "softness of the shadow edge"
+    },
+    {
+     "name": "FeatherType",
+     "use": "cdrFeatherType for the feather"
+    },
+    {
+     "name": "FeatherEdge",
+     "use": "cdrEdgeType falloff of the feather"
+    },
+    {
+     "name": "Color",
+     "use": "IVGColor of the shadow"
+    },
+    {
+     "name": "MergeMode",
+     "use": "cdrMergeMode: how the shadow blends with the object's fill (multiply is typical)"
+    },
+    {
+     "name": "ShadowGroup",
+     "use": "read-only shape holding the rendered inner-shadow bitmap"
+    }
+   ],
+   "gotchas": [
+    "Typelib describes Color as 'the feather color'; it is the shadow colour",
+    "Depth only matters when OffsetX and OffsetY are both 0 (per its description); with an offset the shadow is directional",
+    "The shadow is rasterised, so very large Feather values on big shapes make heavy files (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateInnerShadow(70, 6)\ne.InnerShadow.SetOffset 0.03, -0.03\ne.InnerShadow.MergeMode = cdrMergeMultiply\ne.InnerShadow.Color.RGBAssign 0, 0, 0",
+   "equivalents": {
+    "PS": "innerShadow"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Opacity: removed the 0-100 range, which is not in the batch."
+   }
+  },
+  {
+   "name": "IVGEffectLens",
+   "id": "class:IVGEffectLens",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectLens",
+   "status": "current",
+   "summary": "Settings of a live lens (Effects > Lens docker): a shape that changes how everything beneath it looks - magnify, fish eye, wireframe, colour limit, colour add, invert, brighten, tinted grayscale, heat map, transparency or a custom colour map - and can be frozen into real objects.",
+   "use_for": [
+    "magnifier call-outs on maps, diagrams and product details",
+    "tinted or inverted window areas over artwork (colour add, invert, tinted grayscale)",
+    "frozen lens results turned into editable art for print"
+   ],
+   "avoid": [
+    "ordinary transparency on a single object: use the object's transparency instead of a lens",
+    "bitmap-quality adjustments: lenses work on vector colour and can look crude over photos"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with Shape.CreateLens(Type, RateOrMagnification, Color1, Color2, ColorMapPalette) which returns an IVGEffect; .Lens is this object. Existing ones: Shape.Effects.LensEffect.Lens. Which properties matter depends on Type.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrLensType: cdrLensMagnify, cdrLensFishEye, cdrLensWireframe, cdrLensColorLimit, cdrLensColorAdd, cdrLensInvert, cdrLensBrighten, cdrLensTintedGrayscale, cdrLensHeatMap, cdrLensTransparency, cdrLensCustomColorMap"
+    },
+    {
+     "name": "Rate",
+     "use": "percentage strength for rate-based lenses (brighten, transparency, colour limit ...)"
+    },
+    {
+     "name": "Magnification",
+     "use": "zoom amount for cdrLensMagnify"
+    },
+    {
+     "name": "Color",
+     "use": "lens colour for colour add / colour limit / tinted grayscale / transparency"
+    },
+    {
+     "name": "FromColor",
+     "use": "start colour of a custom colour map"
+    },
+    {
+     "name": "ToColor",
+     "use": "end colour of a custom colour map"
+    },
+    {
+     "name": "ColorMapPalette",
+     "use": "cdrFountainFillBlendType route between FromColor and ToColor (direct or rainbow)"
+    },
+    {
+     "name": "PaletteRotation",
+     "use": "rotate the heat-map palette"
+    },
+    {
+     "name": "OutlineColor",
+     "use": "outline colour for the wireframe lens"
+    },
+    {
+     "name": "FillColor",
+     "use": "fill colour for the wireframe lens"
+    },
+    {
+     "name": "UseOutlineColor",
+     "use": "apply OutlineColor (wireframe)"
+    },
+    {
+     "name": "UseFillColor",
+     "use": "apply FillColor (wireframe)"
+    },
+    {
+     "name": "UseViewPoint",
+     "use": "show what is under a different point instead of directly beneath"
+    },
+    {
+     "name": "ViewPointX",
+     "use": "X of that viewpoint"
+    },
+    {
+     "name": "ViewPointY",
+     "use": "Y of that viewpoint"
+    },
+    {
+     "name": "RemoveFace",
+     "use": "apply the lens only where it overlaps objects, not the empty page"
+    },
+    {
+     "name": "Freeze",
+     "use": "bake the current lens view into a group of real objects"
+    },
+    {
+     "name": "Unfreeze",
+     "use": "make a frozen lens live again"
+    },
+    {
+     "name": "Frozen",
+     "use": "read-only: whether the lens is frozen"
+    },
+    {
+     "name": "Shapes",
+     "use": "sub-shapes of a frozen lens group"
+    },
+    {
+     "name": "Ungroup",
+     "use": "ungroup a frozen lens into a shape range"
+    }
+   ],
+   "gotchas": [
+    "Shapes and Ungroup only make sense after Freeze; on a live lens they are expected to be empty or fail (unverified)",
+    "The lens acts only inside the lens shape's own area; it cannot be applied to some effect groups (e.g. an extrude or blend group) (unverified)",
+    "Lenses over bitmaps can render and print slowly or differently from screen; freeze before final output (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateLens(cdrLensMagnify, 2)\ne.Lens.UseViewPoint = True\ne.Lens.ViewPointX = 3\ne.Lens.ViewPointY = 4\ne.Lens.RemoveFace = True",
+   "review": {
+    "by": "adversarial",
+    "changes": "Summary: named the menu path (Effects > Lens), which opens the Lens docker."
+   }
+  },
+  {
+   "name": "IVGEffectPerspective",
+   "id": "class:IVGEffectPerspective",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectPerspective",
+   "status": "current",
+   "summary": "Settings of a live perspective (Object > Perspective > Add Perspective): the object is distorted as if receding toward a horizontal and / or vertical vanishing point, giving one- or two-point perspective.",
+   "use_for": [
+    "putting artwork onto a wall, sign or box side in a mock-up",
+    "receding 'Star Wars' title text and floor-plane graphics"
+   ],
+   "avoid": [
+    "curved warps: use IVGEffectEnvelope",
+    "real 3D depth with sides: use IVGEffectExtrude"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual). Created with Shape.CreatePerspective(HorizVanishPointX, HorizVanishPointY, VertVanishPointX, VertVanishPointY) which returns an IVGEffect; .Perspective is this object. Existing ones: Shape.Effects.PerspectiveEffects(i).Perspective.",
+   "key_members": [
+    {
+     "name": "UseHorizVanishingPoint",
+     "use": "turn the horizontal vanishing point on or off"
+    },
+    {
+     "name": "HorizVanishingPointX",
+     "use": "X of the horizontal vanishing point"
+    },
+    {
+     "name": "HorizVanishingPointY",
+     "use": "Y of the horizontal vanishing point"
+    },
+    {
+     "name": "UseVertVanishingPoint",
+     "use": "turn the vertical vanishing point on or off"
+    },
+    {
+     "name": "VertVanishingPointX",
+     "use": "X of the vertical vanishing point"
+    },
+    {
+     "name": "VertVanishingPointY",
+     "use": "Y of the vertical vanishing point"
+    }
+   ],
+   "gotchas": [
+    "Using only one vanishing point gives one-point perspective; both gives two-point (unverified)",
+    "Vanishing points are page coordinates in document units; a point inside or very near the object folds it inside out (unverified)",
+    "Perspective cannot be applied to some live effect groups (e.g. a drop shadow group) directly (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreatePerspective(20, 4)\ne.Perspective.UseVertVanishingPoint = False\ne.Perspective.HorizVanishingPointX = 15",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Free Distort",
+    "PS": "Edit/Transform/Perspective"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Summary: menu path corrected to Object > Perspective > Add Perspective (harvested cdr_effect path)."
+   }
+  },
+  {
+   "name": "IVGEffectPushPullDistortion",
+   "id": "class:IVGEffectPushPullDistortion",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectPushPullDistortion",
+   "status": "current",
+   "summary": "The amount of a push-and-pull distortion: one Amplitude value that pushes an object's edges in toward the centre (spiky, star-like) or pulls them out (puffy, petal-like), depending on its sign.",
+   "use_for": [
+    "starburst price badges and seals from a circle or polygon",
+    "flower and petal shapes from a simple polygon"
+   ],
+   "avoid": [
+    "exact star geometry: use the Star / Polygon shape with set points and sharpness"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual). Created with Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude); the returned IVGEffect's .Distortion.PushPull is this object. Its Parent is the IVGEffectDistortion holding the centre point.",
+   "key_members": [
+    {
+     "name": "Amplitude",
+     "use": "long: strength and direction of the push / pull; sign picks push vs pull"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGEffectDistortion (Type, OriginX / OriginY, CenterDistortion)"
+    }
+   ],
+   "gotchas": [
+    "Which sign is push and which is pull, and the valid range, are not in the typelib; test on a copy (unverified)",
+    "Result depends heavily on the node count of the source shape; add nodes or use a polygon for an even burst (unverified)"
+   ],
+   "example": "Dim e As Effect\nSet e = ActivePage.Shapes(1).CreatePushPullDistortion(0, 0, 50)\ne.Distortion.CenterDistortion\ne.Distortion.PushPull.Amplitude = -80",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Pucker & Bloat"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Removed the invented -200..200 amplitude range from a gotcha."
+   }
+  },
+  {
+   "name": "IVGEffects",
+   "id": "class:IVGEffects",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffects",
+   "status": "current",
+   "summary": "The collection of live effects attached to one shape, with filtered sub-collections (blends, distortions, envelopes, perspectives, custom) and direct accessors for single-instance effects (contour, drop shadow, inner shadow, extrude, lens, text on path, control path).",
+   "use_for": [
+    "checking whether an object carries a shadow / contour / extrude before editing it",
+    "pre-press audits listing every live effect in a document",
+    "bulk-removing or bulk-retuning one kind of effect across many shapes"
+   ],
+   "avoid": [
+    "bitmap effects applied from the Effects menu to bitmaps: not listed here"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual) collection. Reached as Shape.Effects; iterate with For Each (via _NewEnum) or Item(i) with i from 1 to Count. Each element is an IVGEffect.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of effects on the shape"
+    },
+    {
+     "name": "Item",
+     "use": "Item(Index) returns one IVGEffect, 1-based"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each over the effects"
+    },
+    {
+     "name": "BlendEffects",
+     "use": "only the blends the shape takes part in"
+    },
+    {
+     "name": "DistortionEffects",
+     "use": "only distortions"
+    },
+    {
+     "name": "EnvelopeEffects",
+     "use": "only envelopes"
+    },
+    {
+     "name": "PerspectiveEffects",
+     "use": "only perspectives"
+    },
+    {
+     "name": "CustomEffects",
+     "use": "only custom (plug-in) effects"
+    },
+    {
+     "name": "ContourEffect",
+     "use": "the contour on the shape"
+    },
+    {
+     "name": "DropShadowEffect",
+     "use": "the drop shadow on the shape"
+    },
+    {
+     "name": "InnerShadowEffect",
+     "use": "the inner shadow on the shape"
+    },
+    {
+     "name": "ExtrudeEffect",
+     "use": "the extrude on the shape"
+    },
+    {
+     "name": "LensEffect",
+     "use": "the lens on the shape"
+    },
+    {
+     "name": "TextOnPathEffect",
+     "use": "the text-on-path fit on the shape"
+    },
+    {
+     "name": "ControlPathEffect",
+     "use": "the effect representing blends / text this curve drives"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGShape owning the collection"
+    }
+   ],
+   "gotchas": [
+    "Single accessors (ContourEffect, DropShadowEffect ...) are expected to return Nothing when the shape has no such effect; test with Is Nothing (unverified)",
+    "A blend shows up on both control shapes, so a document-wide loop sees each blend twice; de-duplicate by BlendGroup (unverified)",
+    "Calling Clear / Separate while iterating with For Each changes the collection under you; loop backwards with Item(i) (unverified)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n  If Not s.Effects.DropShadowEffect Is Nothing Then\n    s.Effects.DropShadowEffect.Clear\n  End If\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectTextOnPath",
+   "id": "class:IVGEffectTextOnPath",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectTextOnPath",
+   "status": "current",
+   "summary": "Settings of text fitted to a path (Text > Fit Text to Path): which text and path are linked, the text's distance from and offset along the path, how letters are oriented, its alignment, which side of the path it sits on and its vertical placement.",
+   "use_for": [
+    "circular seal and badge lettering around a logo",
+    "headlines following a wave, ribbon or road",
+    "stamp and emblem text on top and bottom arcs (PlaceOnOtherSide)"
+   ],
+   "avoid": [
+    "text that must bend as a whole block (multiple lines): use an envelope (IVGEffectEnvelope) on the text",
+    "paragraph text inside a shape: fit text into a frame instead"
+   ],
+   "confidence": "high",
+   "how": "Dispinterface (dual). Created with TextShape.Text.FitToPath(PathShape), which returns an IVGEffect; .TextOnPath is this object. Existing ones: Shape.Effects.TextOnPathEffect.TextOnPath (from the text shape).",
+   "key_members": [
+    {
+     "name": "Text",
+     "use": "the fitted text shape; settable"
+    },
+    {
+     "name": "Path",
+     "use": "the path shape the text follows; settable"
+    },
+    {
+     "name": "DistanceFromPath",
+     "use": "gap between the path and the text"
+    },
+    {
+     "name": "Offset",
+     "use": "how far along the path the text starts"
+    },
+    {
+     "name": "Orientation",
+     "use": "cdrFittedOrientation: rotate letters, vertical / horizontal skew, upright, transform"
+    },
+    {
+     "name": "Placement",
+     "use": "cdrFittedPlacement: left, right or centre alignment on the path"
+    },
+    {
+     "name": "VertPlacement",
+     "use": "cdrFittedVertPlacement: baseline, ascender, descender, centre or custom on the path"
+    },
+    {
+     "name": "PlaceOnOtherSide",
+     "use": "flip the text to the other side of the path"
+    },
+    {
+     "name": "Quadrant",
+     "use": "cdrFittedQuadrant: left / right / top / bottom placement on closed paths"
+    }
+   ],
+   "gotchas": [
+    "Quadrant is the legacy placement for closed paths (ellipses); on open paths Placement and Offset decide the position (unverified)",
+    "Typelib calls the vertical-placement enum 'cdrFittedVerPlacement' in the description; the real type is cdrFittedVertPlacement",
+    "Deleting the path leaves the text with no effect; Separate first if the path must go (unverified)"
+   ],
+   "example": "Dim t As Shape, p As Shape, e As Effect\nSet t = ActiveLayer.CreateArtisticText(0, 0, \"SEAL OF QUALITY\")\nSet p = ActiveLayer.CreateEllipse2(3, 3, 2)\nSet e = t.Text.FitToPath(p)\ne.TextOnPath.Placement = cdrCenterPlacement\ne.TextOnPath.DistanceFromPath = 0.05",
+   "equivalents": {
+    "AI": "Type/Type on a Path/Type on a Path Options..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Example now creates its own text and path instead of assuming ActivePage.Shapes(1) is text and Shapes(2) is a path."
+   }
+  }
+ ]
+}

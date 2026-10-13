@@ -1,0 +1,363 @@
+{
+ "cards": [
+  {
+   "name": "Surface Blur",
+   "id": "surfaceBlur",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur/Surface Blur",
+   "status": "current",
+   "summary": "Edge-preserving blur: averages each pixel only with neighbours (within Radius) whose brightness differs by less than Threshold, so flat areas such as skin, walls, sky and noise melt into smooth patches while strong edges, outlines and type stay crisp. Pushed hard it gives a flat, airbrushed or watercolour-poster look with plastic skin.",
+   "use_for": [
+    "smoothing skin, clothing and walls in a soft press or video still before it goes on a news card, while keeping edges and stripes defined",
+    "cleaning compression noise and grain out of a video frame without blurring its outlines",
+    "a painterly / cel-shaded base layer under a high-pass or edge layer for a stylised poster",
+    "flattening a busy background texture behind a cut-out headline"
+   ],
+   "avoid": [
+    "a high Threshold with a large Radius: everything below the threshold merges and the photo turns to plastic, banded blobs; keep Threshold low for retouching",
+    "out-of-focus or depth-of-field looks: it never softens edges, so it will not read as blurred; use Gaussian Blur, Lens Blur or Field / Iris Blur instead",
+    "skin retouching on a close-up at full strength: pores vanish completely; run it on a duplicate layer and lower the opacity or mask it",
+    "scripts trusting an out-of-range value: no min/max was harvested; the range probe sent +/-1e6 and the result still reported the last-used 5 px / 15, but that report is stale: the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels",
+    "a missing key in a script: the harvest shows Photoshop then reuses this filter's last-used value, not a fixed default, so always send both keys"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_SmrB",
+    "CDR": "Effects/Blur/Smart Blur"
+   },
+   "look": [
+    "edge-preserving blur",
+    "skin smoothing",
+    "airbrushed",
+    "plastic skin",
+    "watercolor",
+    "flat poster",
+    "noise reduction",
+    "painterly",
+    "cel shaded"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "size of the neighbourhood (px) each pixel is averaged with; bigger = smoother, larger flat patches",
+     "typical": "3-10 px for noise or skin clean-up, 20-50 px for a flat painterly look (a soft video frame needs the higher end to show)"
+    },
+    {
+     "name": "Threshold",
+     "does": "how different (in brightness levels) a neighbour may be and still be blended; low keeps more detail and edges, high merges more and flattens the image",
+     "typical": "10-25 levels for retouching, 35-60 levels for a stylised flat look"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 40,
+    "Threshold": 40
+   },
+   "pairs_with": [
+    "High Pass on a copy in Overlay / Soft Light (puts texture back over the smoothed skin)",
+    "Layer mask or reduced layer opacity (limits the smoothing to skin or background)",
+    "Find Edges or Cutout (graphic, cel-shaded poster look on top of the flattened base)",
+    "Reduce Noise (dedicated noise clean-up before the smoothing pass)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putUnitDouble(stringIDToTypeID(\"radius\"), stringIDToTypeID(\"pixelsUnit\"), 40); d.putInteger(stringIDToTypeID(\"threshold\"), 40); var r = executeAction(stringIDToTypeID(\"surfaceBlur\"), d, DialogModes.NO);  // keys and types from the harvest read-back (radius unit double in px, threshold integer); no range was harvested; do not check r: the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); yes on a Smart Object: the harvest applied it as a Smart Filter that stores radius and threshold (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut)",
+   "cost": "medium: time grows with Radius, and at large radii it is much slower than Gaussian Blur because every neighbour is tested against the threshold (general Photoshop behaviour); the harvest only timed it with both keys omitted, i.e. the last-used 5 px / 15: 113 ms on a 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented dialog ranges (1-100 px, 2-255 levels) from avoid and scripting, which the harvest never read; reworded the range-probe avoid to match the harvest (inconclusive, value apparently ignored) and made the script read the returned descriptor back; non_destructive now cites the harvest's smart-filter probe (smart_filter true, stores radius + threshold) instead of 'not probed'; cost no longer implies the 113 ms timing was at the dialog defaults or contradicts the harvest's faster-than-Gaussian measurement; softened the unsupported 'colour noise Surface Blur leaves behind' pairing"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/1d9d449855bf.png",
+    "crop": "gallery/ps_filter/1d9d449855bf_1to1.png",
+    "note": "Flat areas (wall, wood, dark areas) melt into smooth airbrushed patches while strong edges, type and hairlines stay crisp; the stale read-back (5 / 15) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid + scripting: stale descriptor"
+   }
+  },
+  {
+   "name": "Field Blur",
+   "id": "Filter/Blur Gallery/Field Blur",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur Gallery/Field Blur",
+   "status": "current",
+   "summary": "Blur Gallery filter that blurs the image with an amount set by one or more pins placed on the canvas; a single pin gives an even blur over the whole frame, and several pins with different amounts (a pin with no blur keeps its area sharp) give a smooth gradient from sharp to blurred, like a hand-painted depth of field. Its effect options can turn bright spots into bokeh highlights.",
+   "use_for": [
+    "fake shallow depth of field: keep the subjects sharp and let the backdrop fall off into blur",
+    "a graduated blur that goes from sharp at the bottom to soft at the top (or any direction) behind a headline",
+    "pushing a busy background back so poster or thumbnail text reads",
+    "a dreamy all-over soft focus with bokeh highlights from one pin"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest found no Action Manager event for it and app.runMenuItem rejects its menu command id (2225), so it cannot be applied headless and the gallery cannot render a sample; for a scripted equivalent use Gaussian Blur or Lens Blur through a layer mask",
+    "sharp subject edges against a blurred background: pins blend smoothly, so blur bleeds across the subject's outline; select the subject and blur only the background instead",
+    "text, shape or adjustment layers: it works on pixel layers (or a Smart Object); rasterise or convert first",
+    "an already soft photo: small blur amounts barely show on it; the blur needs to be clearly larger to read"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "depth of field",
+    "graduated blur",
+    "selective focus",
+    "background blur",
+    "shallow focus",
+    "bokeh",
+    "soft focus"
+   ],
+   "pairs_with": [
+    "Select Subject / layer mask (protect the sharp subject's edges)",
+    "Iris Blur or Tilt-Shift (combined in the same Blur Gallery session)",
+    "Add Noise or the Blur Gallery noise options (match grain in the blurred areas)",
+    "Convert for Smart Filters (keeps the pins editable)"
+   ],
+   "scripting": "none harvested: no Action Manager event was found in the plug-in PiPLs or Photoshop.exe's terminology, and app.runMenuItem does not accept menu command 2225; apply by hand via Filter > Blur Gallery > Field Blur (a recorded Action was not tested by the harvest)",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object the Blur Gallery is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "heavy and manual: interactive pin placement in the Blur Gallery workspace, GPU-accelerated preview; large blurs on big images take a few seconds to commit",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: replaced the unharvested '0 = sharp' value with wording; avoid: made the soft-source entry generic instead of naming the gallery test plate this item can never be rendered on"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame. No Action Manager event was harvested and app.runMenuItem rejects its menu id, so the scripted gallery cannot apply it; it needs its on-canvas pins set by hand (or a recorded action).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'current' kept."
+    }
+   }
+  },
+  {
+   "name": "Iris Blur",
+   "id": "Filter/Blur Gallery/Iris Blur",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur Gallery/Iris Blur",
+   "status": "current",
+   "summary": "Blur Gallery filter that keeps an elliptical area sharp around a pin and blurs everything outside it, with a feathered transition between the sharp zone and the full blur; the ellipse can be stretched, rotated and squared off. The result looks like a fast lens focused on one spot, a vignette made of blur rather than darkness, with optional bokeh highlights.",
+   "use_for": [
+    "isolating one face or product with a shallow-focus portrait look",
+    "drawing the eye to the centre of a thumbnail or poster image with a blurred surround",
+    "a dreamy soft-edged frame around a subject for a quote card or invitation",
+    "several iris pins to keep two subjects sharp while the room blurs"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest found no Action Manager event for it and app.runMenuItem rejects its menu command id (2224), so it cannot be applied headless and the gallery cannot render a sample; for a scripted stand-in use Gaussian Blur or Lens Blur through an elliptical feathered mask",
+    "subjects that are not roughly elliptical (a full standing figure, a long table): parts of the subject fall into the blur; use Field Blur pins or a subject mask",
+    "text, shape or adjustment layers: it works on pixel layers (or a Smart Object); rasterise or convert first",
+    "subtle amounts on an already soft frame: they barely show; the blur must be clearly stronger to read"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "iris blur",
+    "spot focus",
+    "shallow depth of field",
+    "portrait bokeh",
+    "blur vignette",
+    "selective focus",
+    "dreamy edges"
+   ],
+   "pairs_with": [
+    "Vignette (Camera Raw Filter or a darkening layer) to deepen the focus on the centre",
+    "Field Blur or Tilt-Shift in the same Blur Gallery session",
+    "Add Noise or the Blur Gallery noise options (match grain in the blurred surround)",
+    "Convert for Smart Filters (keeps the ellipse editable)"
+   ],
+   "scripting": "none harvested: no Action Manager event was found in the plug-in PiPLs or Photoshop.exe's terminology, and app.runMenuItem does not accept menu command 2224; apply by hand via Filter > Blur Gallery > Iris Blur (a recorded Action was not tested by the harvest)",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object the Blur Gallery is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "heavy and manual: interactive ellipse editing in the Blur Gallery workspace, GPU-accelerated preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame. No Action Manager event was harvested and app.runMenuItem rejects its menu id, so the scripted gallery cannot apply it; it needs its on-canvas pins set by hand (or a recorded action).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'current' kept."
+    }
+   }
+  },
+  {
+   "name": "Path Blur",
+   "id": "Filter/Blur Gallery/Path Blur",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur Gallery/Path Blur",
+   "status": "current",
+   "summary": "Blur Gallery filter that smears the image along one or more motion paths drawn on the canvas, which can be straight or curved and can taper or change speed along their length, so the streaks follow the direction of movement instead of one fixed angle. It can also add strobe-like repeated flashes, giving curved speed trails, swooshes and light-trail motion.",
+   "use_for": [
+    "motion streaks that follow a curve: a car on a bend, a thrown ball, a dancer's arm",
+    "dynamic swoosh or speed-trail backgrounds for sports and action posters",
+    "light-trail and long-exposure looks on lights or bright edges",
+    "strobe-flash multiple-exposure effects along a movement"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest found no Action Manager event for it and app.runMenuItem rejects its menu command id (2227), so it cannot be applied headless and the gallery cannot render a sample; for a straight scripted streak use Motion Blur instead",
+    "blurring the whole frame when only the moving object should streak: the paths affect the whole layer; isolate the object on its own layer or mask the result",
+    "plain one-direction motion: Motion Blur is simpler, faster and scriptable",
+    "text, shape or adjustment layers: it works on pixel layers (or a Smart Object); rasterise or convert first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Blur/Motion Blur"
+   },
+   "look": [
+    "curved motion blur",
+    "speed trails",
+    "swoosh",
+    "light trails",
+    "strobe",
+    "action motion",
+    "directional streaks"
+   ],
+   "pairs_with": [
+    "Layer mask (keep the leading edge of the subject sharp)",
+    "Motion Blur (simple straight streaks)",
+    "Spin Blur (wheels on the moving vehicle)",
+    "Convert for Smart Filters (keeps the paths editable)"
+   ],
+   "scripting": "none harvested: no Action Manager event was found in the plug-in PiPLs or Photoshop.exe's terminology, and app.runMenuItem does not accept menu command 2227; apply by hand via Filter > Blur Gallery > Path Blur (a recorded Action was not tested by the harvest)",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object the Blur Gallery is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "heavy and manual: drawing and shaping paths in the Blur Gallery workspace; long or many paths on large images are slow to preview and commit",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame. No Action Manager event was harvested and app.runMenuItem rejects its menu id, so the scripted gallery cannot apply it; it needs its on-canvas pins set by hand (or a recorded action).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'current' kept."
+    }
+   }
+  },
+  {
+   "name": "Spin Blur",
+   "id": "Filter/Blur Gallery/Spin Blur",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur Gallery/Spin Blur",
+   "status": "current",
+   "summary": "Blur Gallery filter that rotates the pixels inside one or more on-canvas ellipses around their centres, like a wheel or propeller spinning during the exposure; the blur angle sets how far they smear, and areas outside the ellipses stay sharp. Several ellipses can be placed and reshaped (including into perspective ovals) for each wheel in a scene.",
+   "use_for": [
+    "making the wheels of a car, bike or train look like they are turning",
+    "spinning propellers, fans, rotors or turntables in a product or action shot",
+    "a local swirl of motion around a logo or object in a dynamic poster",
+    "adding motion to a still before animating it into a reel"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest found no Action Manager event for it and app.runMenuItem rejects its menu command id (2229), so it cannot be applied headless and the gallery cannot render a sample; for a scripted stand-in use Radial Blur (Spin) on a selection",
+    "a twisted distortion look: Spin Blur smears, it does not twist geometry; use Twirl for a swirl distortion",
+    "whole-frame zoom or burst effects: use Radial Blur (Zoom) instead",
+    "text, shape or adjustment layers: it works on pixel layers (or a Smart Object); rasterise or convert first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live PSAdapter_plugin_RdlB",
+    "CDR": "Effects/Blur/Radial Blur"
+   },
+   "look": [
+    "spin blur",
+    "rotational blur",
+    "spinning wheel",
+    "propeller",
+    "circular motion",
+    "radial motion"
+   ],
+   "pairs_with": [
+    "Path Blur or Motion Blur on the vehicle body (forward motion to match the spinning wheels)",
+    "Layer mask on the Smart Filter (trims spin that spills past the tyre or blade)",
+    "Convert for Smart Filters (keeps the ellipses editable)"
+   ],
+   "scripting": "none harvested: no Action Manager event was found in the plug-in PiPLs or Photoshop.exe's terminology, and app.runMenuItem does not accept menu command 2229; apply by hand via Filter > Blur Gallery > Spin Blur (a recorded Action was not tested by the harvest)",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object the Blur Gallery is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "heavy and manual: one ellipse per spinning object placed by hand in the Blur Gallery workspace, GPU-accelerated preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "pairs_with: replaced 'Free Transform / perspective ellipse' (Spin Blur ellipses are reshaped by their own on-canvas handles, Free Transform plays no part) with a Smart Filter mask"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame. No Action Manager event was harvested and app.runMenuItem rejects its menu id, so the scripted gallery cannot apply it; it needs its on-canvas pins set by hand (or a recorded action).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'current' kept."
+    }
+   }
+  },
+  {
+   "name": "Tilt-Shift",
+   "id": "Filter/Blur Gallery/Tilt-Shift",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Blur Gallery/Tilt-Shift",
+   "status": "current",
+   "summary": "Blur Gallery filter that keeps a straight band of the image sharp and blurs increasingly above and below it, with feathered transition zones whose width and angle are set on canvas; it imitates a tilt-shift lens. On a high, wide view of streets or crowds it gives the classic fake-miniature, toy-town look.",
+   "use_for": [
+    "miniature / diorama look on aerial or high-angle city, rally or stadium photos",
+    "a horizontal focus band across a row of people or a stage, with soft foreground and background",
+    "a cinematic focus strip behind a lower-third or banner",
+    "angled focus bands for a dynamic poster image"
+   ],
+   "avoid": [
+    "unattended pipelines: the harvest found no Action Manager event for it and app.runMenuItem rejects its menu command id (2226), so it cannot be applied headless and the gallery cannot render a sample; for a scripted stand-in use Lens Blur or Gaussian Blur through a gradient mask",
+    "eye-level shots: the miniature illusion needs a high viewpoint; on eye-level frames it only looks like a soft top and bottom",
+    "subjects that are not in a band (a single person, a round object): use Iris Blur",
+    "text, shape or adjustment layers: it works on pixel layers (or a Smart Object); rasterise or convert first"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "tilt shift",
+    "miniature",
+    "diorama",
+    "toy town",
+    "focus band",
+    "fake miniature",
+    "selective focus"
+   ],
+   "pairs_with": [
+    "Vibrance or Hue/Saturation (boosted colour sells the toy-model look)",
+    "Curves (extra contrast for the miniature effect)",
+    "Iris Blur or Field Blur in the same Blur Gallery session",
+    "Convert for Smart Filters (keeps the band editable)"
+   ],
+   "scripting": "none harvested: no Action Manager event was found in the plug-in PiPLs or Photoshop.exe's terminology, and app.runMenuItem does not accept menu command 2226; apply by hand via Filter > Blur Gallery > Tilt-Shift (a recorded Action was not tested by the harvest)",
+   "scriptable": "no",
+   "non_destructive": "no on a plain pixel layer; on a Smart Object the Blur Gallery is kept as an editable Smart Filter (general Photoshop behaviour, not probed by the harvest)",
+   "cost": "heavy and manual: band placement in the Blur Gallery workspace, GPU-accelerated preview",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame. No Action Manager event was harvested and app.runMenuItem rejects its menu id, so the scripted gallery cannot apply it; it needs its on-canvas pins set by hand (or a recorded action).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'current' kept."
+    }
+   }
+  }
+ ]
+}

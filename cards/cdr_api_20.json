@@ -1,0 +1,802 @@
+{
+ "cards": [
+  {
+   "name": "IVGTextColumns",
+   "id": "class:IVGTextColumns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextColumns",
+   "status": "current",
+   "summary": "Collection of the text columns that a text range spans in a multi-column paragraph text frame, from TextRange.Columns. Each item comes back as an IVGTextRange holding the text of that column, so a script can read or format copy column by column.",
+   "use_for": [
+    "giving the first column of a two-column brochure panel a larger lead-in size",
+    "checking how much copy landed in each column of a newsletter frame before changing the column count",
+    "reading the text of the last column to spot a nearly empty column"
+   ],
+   "avoid": [
+    "changing how many columns a frame has or their widths: use IVGTextFrame.SetColumns",
+    "artistic text or single-column frames: there is only one column, use Paragraphs or Lines instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface, a read-only collection returned by IVGTextRange.Columns, e.g. ActiveShape.Text.Story.Columns. Items are IVGTextRange objects (not frame objects), so every character and paragraph member of TextRange works on them. Walk it with Count + Item (base 1) or For Each.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of columns the range spans"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of column Index (base 1); the optional Count (default 1) joins that many consecutive columns into one range"
+    },
+    {
+     "name": "First",
+     "use": "TextRange of the first column"
+    },
+    {
+     "name": "Last",
+     "use": "TextRange of the last column"
+    },
+    {
+     "name": "All",
+     "use": "one TextRange covering all the columns in the collection"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the columns"
+    }
+   ],
+   "gotchas": [
+    "The type library describes Item as 'the specified word': a copy-paste slip. It returns the text of a column as a TextRange.",
+    "Columns follow the current layout: a change of frame size, font size or column setup moves the column boundaries, so read Columns again after any layout change.",
+    "The collection covers the columns the RANGE touches, not every column of the frame (unverified for a range that covers only part of the text).",
+    "A column with no text flowed into it may not be counted (unverified)."
+   ],
+   "example": "Set cols = ActiveShape.Text.Story.Columns\nDebug.Print cols.Count\nIf cols.Count > 1 Then cols.First.Size = 14\nFor Each c In cols\n  Debug.Print c.Length\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextFrame",
+   "id": "class:IVGTextFrame",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextFrame",
+   "status": "current",
+   "summary": "One frame of a paragraph text story: the box, shape container or path that holds part of the text. It gives the text currently in that frame, its place in a linked chain (Previous / Next / IsFirst / IsLast), its columns and vertical alignment, its background fill, and lets a script link it to another shape so overflow text flows on.",
+   "use_for": [
+    "threading overflow copy from a magazine page frame into a frame on the next page",
+    "setting a two- or three-column layout on a flyer's body-copy frame",
+    "vertically centring copy inside a fixed-size badge, button or callout box",
+    "finding empty frames at the end of a linked chain in a template so the script can remove them",
+    "giving a text box a background tint behind the copy"
+   ],
+   "avoid": [
+    "artistic text: it has no columns or links; convert it with Text.ConvertToParagraph (an IVGText member) first",
+    "character or paragraph formatting: use the TextRange returned by Range",
+    "shrinking text to fit: use Text.FitTextToFrame on IVGText"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:TextFrameItem"
+   },
+   "how": "VGCore dual dispinterface for one frame of a paragraph text story. Get it from a text shape with ActiveShape.Text.Frame (that shape's own frame) or ActiveShape.Text.Frames.Item(i) (every frame of the linked story), or from TextRange.Frames. Frame-level layout lives here (columns, vertical alignment, linking, background fill); the characters are reached through Range.",
+   "key_members": [
+    {
+     "name": "Range",
+     "use": "TextRange of just the text that currently sits in this frame"
+    },
+    {
+     "name": "Next",
+     "use": "the next frame in the linked chain (if any)"
+    },
+    {
+     "name": "Previous",
+     "use": "the previous frame in the linked chain (if any)"
+    },
+    {
+     "name": "IsFirst",
+     "use": "True for the first frame of the chain"
+    },
+    {
+     "name": "IsLast",
+     "use": "True for the last frame of the chain"
+    },
+    {
+     "name": "Empty",
+     "use": "True when no text flows into this frame"
+    },
+    {
+     "name": "Index",
+     "use": "position of the frame in the chain"
+    },
+    {
+     "name": "VerticalAlignment",
+     "use": "cdrTopJustify / cdrCenterJustify / cdrBottomJustify / cdrFullJustify"
+    },
+    {
+     "name": "SetColumns",
+     "use": "set NumColumns, EqualColumns and a Variant array of widths and gutters"
+    },
+    {
+     "name": "ColumnCount",
+     "use": "number of columns in the frame"
+    },
+    {
+     "name": "ColumnWidth",
+     "use": "width of column Index"
+    },
+    {
+     "name": "ColumnGutter",
+     "use": "gutter (space between columns) at column Index"
+    },
+    {
+     "name": "LinkTo",
+     "use": "flow this frame's overflow into another shape"
+    },
+    {
+     "name": "UnLink",
+     "use": "break the link so the frame stops passing text on"
+    },
+    {
+     "name": "Container",
+     "use": "the shape the frame sits inside when the text is placed in an object"
+    },
+    {
+     "name": "IsInsideContainer",
+     "use": "True when the paragraph text is inside a container shape"
+    },
+    {
+     "name": "IsFittedToPath",
+     "use": "True when the text is fitted to a path"
+    },
+    {
+     "name": "Path",
+     "use": "the path shape the text is fitted to"
+    },
+    {
+     "name": "FrameShape",
+     "use": "the text shape that hosts this frame"
+    },
+    {
+     "name": "Fill",
+     "use": "background fill of the frame (not the text colour)"
+    }
+   ],
+   "gotchas": [
+    "SetColumns widths and gutters, ColumnWidth and ColumnGutter are in document units (ActiveDocument.Unit) (unverified for this class).",
+    "WidthsAndGutters is a flat Variant array; with EqualColumns = True only one width / gutter pair should matter, with False it alternates width, gutter per column (array layout unverified). Pass Array(...) of numbers even for equal columns.",
+    "ColumnWidth / ColumnGutter take an Index whose base (0 or 1) the type library does not state (unverified, try 1).",
+    "LinkTo needs a target that can hold text, such as an empty paragraph text frame or a closed curve; artistic text or an open path behaves differently (unverified).",
+    "Fill is the frame background; the colour of the letters is TextRange.Fill.",
+    "Text that fits in no frame is overflow and belongs to no frame's Range; check IVGText.Overflow."
+   ],
+   "example": "Set f = ActiveShape.Text.Frame\nf.SetColumns 2, True, Array(1.8, 0.25)   ' width, gutter (unverified)\nf.VerticalAlignment = cdrCenterJustify\nDebug.Print f.ColumnCount, f.Range.Length\nIf Not f.IsLast Then Debug.Print f.Next.Empty\nSet nextBox = ActivePage.Shapes.Item(\"NextFrame\")   ' an empty paragraph text shape\nf.LinkTo nextBox",
+   "review": {
+    "by": "adversarial",
+    "changes": "ColumnGutter use said 'space after column Index' (typelib: space between columns); removed invented 'inches unless set' document-unit default; example used an undefined nextBox; now set from ActivePage.Shapes.Item(name)"
+   }
+  },
+  {
+   "name": "IVGTextFrames",
+   "id": "class:IVGTextFrames",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextFrames",
+   "status": "current",
+   "summary": "Collection of the frames a paragraph text story flows through (its linked frame chain), from IVGText.Frames or TextRange.Frames. Gives each IVGTextFrame in link order, the frame count, and TextRanges covering one or several frames.",
+   "use_for": [
+    "walking every frame of a story threaded across pages to give them all the same column layout",
+    "finding the last frame of a chain to link a new overflow frame onto it",
+    "formatting all text in frames 2-3 of a multi-page leaflet in one call"
+   ],
+   "avoid": [
+    "reading the whole text in story order: Text.Story is simpler than joining frames",
+    "artistic text: it has a single frame and no chain"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextFrameItems"
+   },
+   "how": "VGCore dual dispinterface, a read-only collection. ActiveShape.Text.Frames lists the frames of the linked story the shape belongs to; TextRange.Frames lists only the frames that range touches. Item, First and Last return IVGTextFrame objects; Range and All return text as IVGTextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of frames"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextFrame by index, base 1"
+    },
+    {
+     "name": "First",
+     "use": "the first frame (IVGTextFrame)"
+    },
+    {
+     "name": "Last",
+     "use": "the last frame (IVGTextFrame)"
+    },
+    {
+     "name": "Range",
+     "use": "TextRange of Count frames (default 1) starting at frame Index"
+    },
+    {
+     "name": "All",
+     "use": "TextRange of the text in all frames of the collection"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the frames"
+    }
+   ],
+   "gotchas": [
+    "Item / First / Last give frame objects, but Range / All give text: Range(2) is the text of frame 2, Item(2) is the frame itself.",
+    "Frames are in link order, not page or stacking order (unverified).",
+    "After LinkTo / UnLink on a frame, read Frames again; the old collection may describe the old chain (unverified)."
+   ],
+   "example": "Set fr = ActiveShape.Text.Frames\nFor i = 1 To fr.Count\n  fr.Item(i).VerticalAlignment = cdrTopJustify\nNext\nIf fr.Count > 1 Then Debug.Print fr.Range(1, 2).Length\nDebug.Print fr.Last.Empty",
+   "review": {
+    "by": "adversarial",
+    "changes": "marked link-order claim unverified; example guarded Range(1, 2) so a one-frame story does not fail"
+   }
+  },
+  {
+   "name": "IVGTextIndentLevelStyle",
+   "id": "class:IVGTextIndentLevelStyle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextIndentLevelStyle",
+   "status": "current",
+   "summary": "Bullet or numbering settings for one indent level of a list in paragraph text: the numbering scheme (bullet, Roman, Latin letters, Hindi, Arabic and other scripts), bullet symbol and font, a format string for prefixes / suffixes, glyph size and baseline shift, and the width of the bullet area. Whether a change applies only to the paragraphs of the range it came from or to the whole story is not stated in the type library.",
+   "use_for": [
+    "building an outline-numbered agenda or step list in a brochure (I. / A. / 1. per level)",
+    "setting a custom level-1 bullet glyph and size for feature points on a flyer",
+    "matching sub-list styling (smaller dash bullets) across several text frames of a catalogue"
+   ],
+   "avoid": [
+    "simple single-level bullets: TextRange.ApplyBulletEffect is shorter",
+    "drop caps: use TextRange.ApplyDropCapEffect",
+    "choosing which level a paragraph is on: that is TextRange.IndentLevel"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ListStyle"
+   },
+   "how": "VGCore dual dispinterface for the list formatting of one indent level. Reach it with rng.IndentLevelStyles.Item(n), where rng is a paragraph-text IVGTextRange (e.g. ActiveShape.Text.Story); the level a paragraph uses is set with rng.IndentLevel. Every property except Level is read/write.",
+   "key_members": [
+    {
+     "name": "Level",
+     "use": "the indent level this style belongs to (read-only)"
+    },
+    {
+     "name": "NumberStyle",
+     "use": "numbering scheme, a cdrTextIndentLevelStyle value (cdrTextIndentLevelStyleBullet, ...UppercaseRomanNumeral, ...LowercaseLatin ...)"
+    },
+    {
+     "name": "Symbol",
+     "use": "the character used as the bullet"
+    },
+    {
+     "name": "Font",
+     "use": "font face of the bullet or number"
+    },
+    {
+     "name": "UseParagraphFont",
+     "use": "use the paragraph's own font for the number instead of Font"
+    },
+    {
+     "name": "Size",
+     "use": "size of the bullet or number in points"
+    },
+    {
+     "name": "BaselineShift",
+     "use": "vertical shift of the bullet or number from the baseline, in points"
+    },
+    {
+     "name": "Format",
+     "use": "number format string with a placeholder for the bullet / number, e.g. to add a prefix or suffix"
+    },
+    {
+     "name": "FirstCharIndent",
+     "use": "width of the bullet / number area"
+    },
+    {
+     "name": "FirstCharIndentIncludesBullet",
+     "use": "whether FirstCharIndent includes the bullet width"
+    },
+    {
+     "name": "HangingIndent",
+     "use": "hang the paragraph's following lines past the bullet"
+    }
+   ],
+   "gotchas": [
+    "The placeholder token inside Format is not documented in the type library (unverified): read the existing Format first and keep its token when adding a prefix or suffix.",
+    "NumberStyle cdrTextIndentLevelStyleBullet (0) uses Symbol; the numbering values generate numbers or letters and should ignore Symbol (unverified).",
+    "FirstCharIndent is a double, presumably in document units (unverified); Size and BaselineShift are points per the type library.",
+    "Nothing shows until the paragraphs carry a bullet / list effect (TextRange.Effect); setting a level style alone may change nothing visible (unverified).",
+    "Paragraph text only; artistic text has no list levels (unverified)."
+   ],
+   "example": "Set rng = ActiveShape.Text.Story\nrng.ApplyBulletEffect\nSet lv = rng.IndentLevelStyles.Item(1)\nlv.NumberStyle = cdrTextIndentLevelStyleUppercaseRomanNumeral\nlv.Size = 10\nDebug.Print lv.Level, lv.Format",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextIndentLevelStyles",
+   "id": "class:IVGTextIndentLevelStyles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextIndentLevelStyles",
+   "status": "current",
+   "summary": "The set of per-level list styles (bullet or numbering settings for each possible indent level) of a text range, from TextRange.IndentLevelStyles; each item is an IVGTextIndentLevelStyle.",
+   "use_for": [
+    "setting a full outline numbering scheme (I. / A. / 1.) for a multi-level agenda in one loop",
+    "reading the list setup of a template text frame to copy it onto another frame"
+   ],
+   "avoid": [
+    "putting a paragraph on a level: set TextRange.IndentLevel",
+    "single-level bullets: TextRange.ApplyBulletEffect"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ListStyle"
+   },
+   "how": "VGCore dual dispinterface, a read-only collection returned by IVGTextRange.IndentLevelStyles (e.g. ActiveShape.Text.Story.IndentLevelStyles). Count is the number of indent levels available; Item(Index) returns that level's IVGTextIndentLevelStyle.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of indent level styles available"
+    },
+    {
+     "name": "Item",
+     "use": "the IVGTextIndentLevelStyle for one level"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the levels"
+    }
+   ],
+   "gotchas": [
+    "The base of Item's Index is not stated (unverified): compare Item(i).Level with i before relying on base 1.",
+    "Count is the number of POSSIBLE levels ('all possible indent level properties'), not the number of levels the text actually uses.",
+    "Paragraph text only (unverified for artistic text)."
+   ],
+   "example": "Set lvls = ActiveShape.Text.Story.IndentLevelStyles\nDebug.Print lvls.Count\nFor Each lv In lvls\n  Debug.Print lv.Level, lv.NumberStyle, lv.Symbol\nNext\nlvls.Item(2).NumberStyle = cdrTextIndentLevelStyleLowercaseLatin",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextLines",
+   "id": "class:IVGTextLines",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextLines",
+   "status": "current",
+   "summary": "Collection of the laid-out lines of a text range, from TextRange.Lines; each item is an IVGTextRange covering one line as the text currently wraps. Lets a script read or format text by visual line (first line, last line, number of lines).",
+   "use_for": [
+    "making the first line of an article intro bold or larger as a typographic lead-in",
+    "counting lines to check that copy fits a fixed number of lines on a label, tag or banner",
+    "finding a last line with a single short word (a widow) to adjust tracking"
+   ],
+   "avoid": [
+    "paragraph formatting: use Paragraphs (a line is not a paragraph)",
+    "remembering places in the text: lines move on every reflow, store Start / End positions instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Lines"
+   },
+   "how": "VGCore dual dispinterface, a read-only collection returned by IVGTextRange.Lines, e.g. ActiveShape.Text.Story.Lines. Item(Index, Count) returns a TextRange of Count lines (default 1) starting at line Index (base 1 like Words / Columns; the type library does not state it for Lines, unverified); First, Last and All are TextRanges too.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of lines in the range"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of Count lines (default 1) from line Index (base 1 assumed, unverified)"
+    },
+    {
+     "name": "First",
+     "use": "TextRange of the first line"
+    },
+    {
+     "name": "Last",
+     "use": "TextRange of the last line"
+    },
+    {
+     "name": "All",
+     "use": "TextRange of all lines in the collection"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the lines"
+    }
+   ],
+   "gotchas": [
+    "Lines follow the current wrap: changing the font, size, frame width or columns moves line ends, so read Lines again after every formatting change.",
+    "Enlarging line 1 can push its last words onto line 2; the range you styled does not grow or shrink to follow the new line end (unverified).",
+    "In paragraph text a line is each laid-out line, whether it ends at a wrap or a hard return; artistic text only breaks at hard returns.",
+    "Text in overflow (outside every frame) may not be counted as lines (unverified)."
+   ],
+   "example": "Set ln = ActiveShape.Text.Story.Lines\nDebug.Print ln.Count\nln.First.Bold = True\nln.First.Size = 14\nIf ln.Count >= 3 Then Debug.Print ln.Item(2, 2).Text",
+   "review": {
+    "by": "adversarial",
+    "changes": "Item base 1 is not in the typelib for Lines: marked assumed/unverified; paragraph-text line definition said 'soft-wrapped' only; hard-return lines count too; marked reflow claim unverified; example guarded Item(2, 2) for short text"
+   }
+  },
+  {
+   "name": "IVGTextParagraphs",
+   "id": "class:IVGTextParagraphs",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextParagraphs",
+   "status": "current",
+   "summary": "Collection of the paragraphs (blocks ended by a hard return) in a text range, from TextRange.Paragraphs; each item is an IVGTextRange covering one or several whole paragraphs.",
+   "use_for": [
+    "styling the headline paragraph of a text frame differently from the body copy",
+    "adding space after every body paragraph except the first in an article frame",
+    "putting bullets on paragraphs 2-5 of a feature list on a product sheet"
+   ],
+   "avoid": [
+    "visual lines: use Lines",
+    "one named paragraph style everywhere: TextRange.ApplyStyle on the whole story is shorter"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Paragraphs"
+   },
+   "how": "VGCore dual dispinterface, a read-only collection returned by IVGTextRange.Paragraphs (e.g. ActiveShape.Text.Story.Paragraphs). Item(Index, Count) gives a TextRange of Count paragraphs (default 1) from paragraph Index (base 1 like Words / Columns; not stated for Paragraphs, unverified); First, Last and All are TextRanges too.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of paragraphs in the range"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of Count paragraphs (default 1) from paragraph Index (base 1 assumed, unverified)"
+    },
+    {
+     "name": "First",
+     "use": "TextRange of the first paragraph"
+    },
+    {
+     "name": "Last",
+     "use": "TextRange of the last paragraph"
+    },
+    {
+     "name": "All",
+     "use": "TextRange of all paragraphs in the collection"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the paragraphs"
+    }
+   ],
+   "gotchas": [
+    "A paragraph range probably includes its paragraph mark (unverified), so Replace on Item(i) can merge it with the next paragraph; replace a sub-range or add vbCr back.",
+    "Count and positions change when you insert or delete paragraph breaks: loop from Count down to 1 when editing text.",
+    "Paragraph-level properties (Alignment, indents, spacing) set on a range apply to the whole paragraphs it touches anyway (unverified); Paragraphs is for choosing WHICH paragraphs."
+   ],
+   "example": "Set ps = ActiveShape.Text.Story.Paragraphs\nps.First.Size = 24\nps.First.Bold = True\nIf ps.Count > 2 Then ps.Item(2, ps.Count - 2).ApplyBulletEffect\nps.Last.Alignment = cdrRightAlignment",
+   "review": {
+    "by": "adversarial",
+    "changes": "Item base 1 is not in the typelib for Paragraphs: marked assumed/unverified; marked whole-paragraph claim unverified"
+   }
+  },
+  {
+   "name": "IVGTextRange",
+   "id": "class:IVGTextRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextRange",
+   "status": "current",
+   "summary": "A run of characters inside a CorelDRAW text object (artistic or paragraph text) and the main scripting handle for text: read, insert, replace and delete characters; set character formatting (font, size, bold / italic, case, spacing, kerning, OpenType features, fill and outline) and paragraph formatting (alignment, indents, line and paragraph spacing, hyphenation, tabs, bullets, drop caps, indent levels, object styles). Sub-collections split it into characters, words, lines, paragraphs, columns and frames.",
+   "use_for": [
+    "filling names, prices or dates into a template text frame and styling only the inserted part",
+    "setting font, size, tracking and line spacing for headline versus body copy in a poster or brochure build",
+    "adding bullets or a drop cap to newsletter body copy",
+    "find-and-style: recolouring every price or keyword in a menu with FindRanges / EnumRanges",
+    "switching on OpenType ligatures or small caps for a wordmark or wedding invitation"
+   ],
+   "avoid": [
+    "frame layout (columns, linking, vertical alignment): use IVGTextFrame",
+    "converting text to curves or between artistic and paragraph text: those are shape / IVGText members",
+    "looping over Characters one by one on long text: one FindRanges or EnumRanges call does it in a single pass"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextRange",
+    "PS": "class:TextItem"
+   },
+   "how": "VGCore dual dispinterface. Get one from a text shape: ActiveShape.Text.Story (all the text), ActiveShape.Text.Selection (characters selected while editing), ActiveShape.Text.Range(Start, End), or ActiveShape.Text.Frame.Range (text in one frame). Narrow it with Range(Start, End), Characters / Words / Lines / Paragraphs .Item(...), FindRanges or EnumRanges. Every write goes straight to the document; wrap a batch of edits in ActiveDocument.BeginCommandGroup / EndCommandGroup for one undo step.",
+   "key_members": [
+    {
+     "name": "Text",
+     "use": "read or replace the whole string of the range"
+    },
+    {
+     "name": "Range",
+     "use": "sub-range by Start / End offsets relative to this range"
+    },
+    {
+     "name": "Characters",
+     "use": "collection of single characters"
+    },
+    {
+     "name": "Words",
+     "use": "collection of words"
+    },
+    {
+     "name": "Paragraphs",
+     "use": "collection of paragraphs"
+    },
+    {
+     "name": "InsertAfter",
+     "use": "insert text after the range; returns a range of only the inserted characters"
+    },
+    {
+     "name": "Replace",
+     "use": "replace the range with new text; returns the new range"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the characters"
+    },
+    {
+     "name": "Font",
+     "use": "font family name"
+    },
+    {
+     "name": "Size",
+     "use": "font size in points"
+    },
+    {
+     "name": "Bold",
+     "use": "bold on / off"
+    },
+    {
+     "name": "Fill",
+     "use": "fill of the characters (text colour); modify the returned object"
+    },
+    {
+     "name": "Alignment",
+     "use": "paragraph alignment, cdrAlignment (left, right, center, full / force justify)"
+    },
+    {
+     "name": "LineSpacing",
+     "use": "line spacing in the current LineSpacingType unit"
+    },
+    {
+     "name": "SetLineSpacing",
+     "use": "set the line spacing type and value plus space before / after in one call"
+    },
+    {
+     "name": "CharSpacing",
+     "use": "character spacing (tracking)"
+    },
+    {
+     "name": "FindRanges",
+     "use": "all character ranges matching a CQL query, as IVGTextRanges"
+    },
+    {
+     "name": "EnumRanges",
+     "use": "split the range into runs sharing attributes (cdrTextPropertySet filter)"
+    },
+    {
+     "name": "ApplyStyle",
+     "use": "apply a named object style to the text"
+    },
+    {
+     "name": "SetOpenTypeFeature",
+     "use": "set the state of an OpenType feature named by a string (a four-letter tag such as liga is assumed, unverified)"
+    }
+   ],
+   "gotchas": [
+    "The type library does not state the base of Start, End, Range(Start, End) and SetRange offsets (0-based assumed, unverified; IVGText.Replace's StartIndex defaults to 1). Words / Columns / Frames .Item are documented as base 1, Characters / Lines / Paragraphs .Item presumably too. Range(Start, End) is relative to THIS range, not the story.",
+    "Replace / Insert* / Delete shift every position after the edit: when editing several FindRanges hits, walk them through IVGTextRanges.Reverse.",
+    "LineSpacingType is read-only: change the spacing unit with SetLineSpacing(Type, LineSpacing, ParaBefore, ParaAfter); the optional values default to -1, presumably 'leave unchanged' (meaning of -1 unverified).",
+    "Paragraph properties (Alignment, indents, spacing, hyphenation, Tabs, bullets, drop cap, IndentLevel) apply to every paragraph the range touches, even partly (unverified).",
+    "Indents, HyphenHotZone, DropCapDistanceFromText and BulletHorizontalPosition are presumably in document units (ActiveDocument.Unit, unverified); BulletSize is in points per the type library, Size is the font size in points.",
+    "A property read over mixed text returns a 'mixed' value (cdrMixedAlignment, cdrMixedFontLine, cdrMixedLineSpacing, cdrTextEffectMixed); numeric properties may return a meaningless number (unverified). Use EnumRanges to read each run.",
+    "Fill and Outline are read-only properties, but the objects they return are live: change the colour through them instead of assigning a new object.",
+    "Collapse with no argument collapses to the END of the range (ToEnd defaults to True).",
+    "Select puts the shape into text editing (unverified), and Copy / Paste use the Windows clipboard: avoid them in unattended scripts.",
+    "FindRanges / Evaluate take CQL (Corel Query Language) expressions; the text property names to use in the query are not listed in the type library (unverified, test on a copy)."
+   ],
+   "example": "Set st = ActiveShape.Text.Story\nst.Font = \"Arial\"\nst.Size = 12\nSet r = st.InsertAfter(\" Rs 499\")\nr.Bold = True\nst.Paragraphs.First.Alignment = cdrCenterAlignment\nst.SetLineSpacing cdrPercentOfCharacterHeightLineSpacing, 120\nst.SetOpenTypeFeature \"liga\", 1   ' tag format and 1 = on unverified",
+   "review": {
+    "by": "adversarial",
+    "changes": "0-based offset claim and Item base 1 for Characters/Lines/Paragraphs are not in the typelib: marked unverified; -1 'unchanged' meaning, whole-paragraph and Select claims marked unverified; removed invented 'inches unless set' document-unit default; OpenType feature-tag format marked unverified"
+   }
+  },
+  {
+   "name": "IVGTextRanges",
+   "id": "class:IVGTextRanges",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextRanges",
+   "status": "current",
+   "summary": "A list of separate text ranges returned by TextRange.FindRanges (ranges matching a CQL query) and TextRange.EnumRanges (runs of characters sharing the same attributes). Each item is an IVGTextRange; Reverse gives the list back to front.",
+   "use_for": [
+    "recolouring every price or keyword found in a menu or price list",
+    "listing the font and size runs in a client's copy to audit it against a brand typography spec",
+    "replacing every run of a stray font in imported copy with the house font"
+   ],
+   "avoid": [
+    "fixed structural units (words, lines, paragraphs): use those collections on IVGTextRange",
+    "plain string search-and-replace: IVGText.Replace is simpler"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextRanges"
+   },
+   "how": "VGCore dual dispinterface, a read-only collection. Get it from IVGTextRange.FindRanges(Query) or IVGTextRange.EnumRanges(PropertyFilter) on e.g. ActiveShape.Text.Story; walk it with Count + Item or For Each, and go through Reverse before edits that change the text length.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of ranges found"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextRange by index"
+    },
+    {
+     "name": "First",
+     "use": "the first range"
+    },
+    {
+     "name": "Last",
+     "use": "the last range"
+    },
+    {
+     "name": "Reverse",
+     "use": "a new collection with the ranges in reverse order"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the ranges"
+    }
+   ],
+   "gotchas": [
+    "Each range holds character positions: Replace / Delete / Insert on an early item shifts the later ones, so edit text through rs.Reverse (formatting-only changes are safe in any order).",
+    "Reverse returns a NEW collection; the original keeps its order.",
+    "EnumRanges' PropertyFilter is a cdrTextPropertySet bit mask (Fill 1, Outline 2, Font 4, Size 8, Style 16; -1 = all, the default): the values are powers of two, so adding them should split runs only on the attributes you care about (combining unverified).",
+    "The base of Item's index is not stated for this collection (unverified, assume 1 like the other text collections)."
+   ],
+   "example": "Set rs = ActiveShape.Text.Story.EnumRanges(cdrTextPropertyFont)\nFor Each r In rs\n  Debug.Print r.Font, r.Length\nNext\nSet rv = rs.Reverse\nDebug.Print rs.Count, rv.First.Text",
+   "review": {
+    "by": "adversarial",
+    "changes": "bit-mask combining of cdrTextPropertySet values marked unverified (typelib lists single values only)"
+   }
+  },
+  {
+   "name": "IVGTextTabPosition",
+   "id": "class:IVGTextTabPosition",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextTabPosition",
+   "status": "current",
+   "summary": "One tab stop of a paragraph: its horizontal position, alignment (left, right, centre or decimal), whether the gap before it is filled with leader characters, and Delete to remove it. Items of TextRange.Tabs.",
+   "use_for": [
+    "lining up prices on a decimal tab in a restaurant menu",
+    "a dot-leader tab for a table of contents or price list",
+    "a right-aligned tab for the date column of a letterhead or invoice template"
+   ],
+   "avoid": [
+    "real tables with borders or cell fills: use a CorelDRAW table object",
+    "the leader character or spacing: those are set for all stops on IVGTextTabPositions"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TabStopInfo"
+   },
+   "how": "VGCore dual dispinterface for one tab stop. Get it from rng.Tabs.Item(i) or as the return value of rng.Tabs.Add(...), where rng is an IVGTextRange such as ActiveShape.Text.Story.",
+   "key_members": [
+    {
+     "name": "Position",
+     "use": "horizontal position of the stop in the text frame"
+    },
+    {
+     "name": "Alignment",
+     "use": "cdrTextTabLeft / cdrTextTabRight / cdrTextTabCenter / cdrTextTabDecimal"
+    },
+    {
+     "name": "Leadered",
+     "use": "fill the space before the stop with the leader character"
+    },
+    {
+     "name": "Index",
+     "use": "index of the stop among all stops (read-only)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove this tab stop"
+    }
+   ],
+   "gotchas": [
+    "Position is in document units (ActiveDocument.Unit), measured in the text frame (unverified whether from the frame edge or the left indent).",
+    "The leader character and spacing are not per stop: set LeaderCharacter / LeaderSpacing on the parent Tabs collection.",
+    "Tabs belong to paragraphs: a stop read through a range covering paragraphs with different tabs may show only the first paragraph's stops (unverified).",
+    "Changing Position may re-sort the stops, so Index can change (unverified)."
+   ],
+   "example": "Set t = ActiveShape.Text.Story.Tabs.Add(4.5, cdrTextTabDecimal, True)\nDebug.Print t.Index, t.Position\nt.Alignment = cdrTextTabRight\nt.Leadered = False\nt.Delete",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextTabPositions",
+   "id": "class:IVGTextTabPositions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextTabPositions",
+   "status": "current",
+   "summary": "All tab stops of the paragraphs in a text range (TextRange.Tabs): add one stop, add stops at a regular interval, clear them, and set the leader character and spacing used by leadered stops.",
+   "use_for": [
+    "setting up a menu or price-list layout with a dot-leader right tab in a few lines",
+    "clearing inherited tab stops from imported Word copy before applying the house template",
+    "laying out a timetable or spec sheet with evenly spaced tab columns via AddEvery"
+   ],
+   "avoid": [
+    "real tables: use a table object",
+    "changing one stop's alignment or position: use that IVGTextTabPosition"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface, a collection returned by IVGTextRange.Tabs (e.g. ActiveShape.Text.Story.Tabs). Count / Item give IVGTextTabPosition objects; Add, AddEvery and Clear edit the stops of every paragraph in the range; LeaderCharacter and LeaderSpacing apply to all leadered stops in the range.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tab stops defined for the range"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextTabPosition by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the stops"
+    },
+    {
+     "name": "Add",
+     "use": "add a stop at Position with Alignment and Leadered; returns the new IVGTextTabPosition"
+    },
+    {
+     "name": "AddEvery",
+     "use": "add stops every Position units across the frame"
+    },
+    {
+     "name": "Clear",
+     "use": "delete all tab stops in the range"
+    },
+    {
+     "name": "LeaderCharacter",
+     "use": "character(s) used to fill leadered tabs, e.g. \".\""
+    },
+    {
+     "name": "LeaderSpacing",
+     "use": "spacing between leader characters for all stops in the range"
+    }
+   ],
+   "gotchas": [
+    "Add / AddEvery default Alignment to 0 (cdrTextTabLeft) and Leadered to False: pass both for right or decimal leader tabs.",
+    "Positions are in document units (ActiveDocument.Unit) (unverified for this class).",
+    "Tabs are per paragraph: a range covering part of a paragraph edits the tabs of that whole paragraph (unverified).",
+    "LeaderSpacing is a Long whose unit is not documented (unverified).",
+    "Item index base is not stated (unverified, assume 1)."
+   ],
+   "example": "Set tb = ActiveShape.Text.Story.Tabs\ntb.Clear\ntb.Add 3.5, cdrTextTabRight, True\ntb.LeaderCharacter = \".\"\ntb.LeaderSpacing = 2\nDebug.Print tb.Count, tb.Item(1).Position",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed invented 'inches unless set' document-unit default; removed invented 'try 1-5' LeaderSpacing range; marked whole-paragraph claim unverified"
+   }
+  }
+ ]
+}

@@ -1,0 +1,1625 @@
+{
+ "cards": [
+  {
+   "name": "IImpactToolDS",
+   "id": "class:IImpactToolDS",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ImpactToolLib/IImpactToolDS",
+   "status": "current",
+   "summary": "Data source behind the property bar of the Impact tool (Toolbox/Shape Tools/Impact tool), which draws comic-style radial bursts or parallel speed lines between an inner and an outer boundary. It exposes the effect type, stroke type, line spacing and width ranges (with randomisation), angle and taper position of the selected impact effect.",
+   "use_for": [
+    "comic burst or manga focus lines behind a headline or product",
+    "speed lines on a sale / launch poster",
+    "making many impact effects share the same spacing, width and stroke settings in a batch script"
+   ],
+   "avoid": [
+    "creating the effect: this interface has no create call, the effect is drawn interactively with the Impact tool",
+    "static line patterns that never change: a plain blend or contour of lines is easier to script through VGCore"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Back end of the Impact tool property bar (ImpactToolLib, dual dispinterface). Reached at run time through the UI framework, not the document model: Application.FrameWork.Application.DataContext.GetDataSource(<registered name>) returns an ICUIDataSourceProxy; read and write this interface's members by name with proxy.GetProperty(\"Name\") / proxy.SetProperty \"Name\", value and run its methods with proxy.InvokeMethod \"Name\". DrawUI.xml binds the Impact tool property bar controls to DataSource=ImpactToolDS, so \"ImpactToolDS\" is the name to pass to GetDataSource (the live call is unverified; the source may only exist once that UI has been opened). Values act on the impact shape that is selected while the Impact tool is active (IsToolShapeSelected). Activate the tool first with FrameWork.Automation.InvokeItem \"874d2621-3a80-96b4-436e-e9f11b74bf02\" (the Impact tool GUID in the cdr_tool harvest).",
+   "key_members": [
+    {
+     "name": "IsToolShapeSelected",
+     "use": "True when an impact effect is selected; check it before writing any value"
+    },
+    {
+     "name": "EffectTypes",
+     "use": "read-only list of effect type names (radial / parallel style choices)"
+    },
+    {
+     "name": "EffectType",
+     "use": "current effect type; set to one of the names in EffectTypes"
+    },
+    {
+     "name": "StrokeTypeItems",
+     "use": "read-only list of stroke shapes for the lines"
+    },
+    {
+     "name": "StrokeType",
+     "use": "current stroke type; set to one of the names in StrokeTypeItems"
+    },
+    {
+     "name": "SpacingMin",
+     "use": "smallest gap between lines"
+    },
+    {
+     "name": "SpacingMax",
+     "use": "largest gap between lines"
+    },
+    {
+     "name": "SpacingMinLowerRange",
+     "use": "lowest value SpacingMin accepts (pair with SpacingMinUpperRange)"
+    },
+    {
+     "name": "SpacingSteps",
+     "use": "number of spacing steps between min and max"
+    },
+    {
+     "name": "SpacingRandomized",
+     "use": "randomise spacing between min and max"
+    },
+    {
+     "name": "WidthMin",
+     "use": "thinnest line width"
+    },
+    {
+     "name": "WidthMax",
+     "use": "thickest line width"
+    },
+    {
+     "name": "WidthRandomized",
+     "use": "randomise line widths between min and max"
+    },
+    {
+     "name": "RandomizeStartPoints",
+     "use": "jitter where lines start (ragged inner edge)"
+    },
+    {
+     "name": "RandomizeEndPoints",
+     "use": "jitter where lines end; only when RandomEndPointsSupported is True"
+    },
+    {
+     "name": "AngleDegrees",
+     "use": "line angle, used by the parallel-line effect type"
+    },
+    {
+     "name": "ThickestPointPosPercent",
+     "use": "where along each line it is thickest (taper position); only when ThicknessPointEnabled"
+    },
+    {
+     "name": "ActiveBoundarySelectorTool",
+     "use": "which boundary picker (inner / outer shape) is active"
+    },
+    {
+     "name": "SpacingUnit",
+     "use": "unit code the spacing values are shown in"
+    }
+   ],
+   "gotchas": [
+    "It is a UI data source, not a document object: there is no Shape-level route to it in VGCore, and nothing in the harvested object model returns IImpactToolDS.",
+    "Read the *LowerRange / *UpperRange members before setting SpacingMin/Max or WidthMin/Max; what happens to an out-of-range value (clamp or error) is not known (unverified).",
+    "EffectTypes and StrokeTypeItems are single strings; the delimiter of the list is not harvested, so print them once before parsing (unverified).",
+    "Units: DrawUI.xml feeds the spacing and width spinners internalUnit = SpacingInternalUnit / WidthInternalUnit and displayUnit = SpacingUnit / WidthUnit, so the values you get and set are in the internal unit, not the document unit; convert before writing.",
+    "With no impact shape selected, writes probably only change the tool's defaults for the next effect drawn (unverified)."
+   ],
+   "example": "Set ds = Application.FrameWork.Application.DataContext.GetDataSource(\"ImpactToolDS\")\nIf ds.GetProperty(\"IsToolShapeSelected\") Then\n  Debug.Print ds.GetProperty(\"EffectTypes\"), ds.GetProperty(\"SpacingMinLowerRange\")\n  ds.SetProperty \"SpacingRandomized\", True\n  ds.SetProperty \"WidthRandomized\", True\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "named the data source ImpactToolDS (DrawUI.xml binding) in how + example and added the tool GUID from the cdr_tool harvest; units gotcha now states what DrawUI.xml shows (values travel in the internal unit) instead of a guess"
+   }
+  },
+  {
+   "name": "IDocumentItem",
+   "id": "class:IDocumentItem",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "MruListLib/IDocumentItem",
+   "status": "current",
+   "summary": "One entry of CorelDRAW's most-recently-used document list (MruListLib): the file's path, name and folder, paths to its preview and thumbnail images, last-modified date and size in bytes. Read-only; which UI it serves is not harvested (probably the Welcome screen's recent files).",
+   "use_for": [
+    "building a recent-work picker or contact sheet from the thumbnail / preview paths",
+    "finding the last-edited client file to reopen in an automated session"
+   ],
+   "avoid": [
+    "reopening or editing the recent list from a script: use Application.RecentFiles (VGCore IVGRecentFiles has Add, Item, Count and Maximum; each IVGRecentFile has Open and Delete)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Item of an IDocumentItems collection (IDocumentItems.Item(Index)). Nothing in the harvested VGCore model returns IDocumentItems, and DrawUI.xml binds no control to MruListLib (the Welcome screen's WWelcomeScreenDataSource exposes no recent-file member), so the route to it is not known (possibly used internally by the HTML Welcome screen; unverified). For ordinary scripts the documented recent list is Application.RecentFiles.",
+   "key_members": [
+    {
+     "name": "DocumentPath",
+     "use": "full path of the document file"
+    },
+    {
+     "name": "DocumentName",
+     "use": "document name"
+    },
+    {
+     "name": "DocumentFolder",
+     "use": "folder the document is in"
+    },
+    {
+     "name": "PreviewPath",
+     "use": "path to a larger preview image of the document"
+    },
+    {
+     "name": "ThumbnailPath",
+     "use": "path to the thumbnail image shown in the gallery"
+    },
+    {
+     "name": "Date",
+     "use": "last-modified date (COM DATE)"
+    },
+    {
+     "name": "DateAsString",
+     "use": "last-modified date formatted with a Format string"
+    },
+    {
+     "name": "Size",
+     "use": "document size in bytes"
+    }
+   ],
+   "gotchas": [
+    "All properties are read-only; there is no Open or Delete here (those live on VGCore IVGRecentFile).",
+    "The Format syntax DateAsString expects is not harvested (unverified); Date returns a COM DATE you can format yourself.",
+    "PreviewPath / ThumbnailPath point at cache files that may be missing for files saved by older versions or on other machines (unverified)."
+   ],
+   "example": "' items: an IDocumentItems collection (route not harvested)\nFor Each d In items\n  Debug.Print d.DocumentName, d.DocumentFolder, d.Size, d.Date\n  thumb = d.ThumbnailPath\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid no longer puts Add on IVGRecentFile (it is on IVGRecentFiles); how/summary now say DrawUI.xml and the Welcome screen data source show no route instead of asserting the Welcome screen hands it out"
+   }
+  },
+  {
+   "name": "IDocumentItems",
+   "id": "class:IDocumentItems",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "MruListLib/IDocumentItems",
+   "status": "current",
+   "summary": "Collection of IDocumentItem entries: CorelDRAW's most-recently-used document list as kept by MruListLib (which UI uses it is not harvested). Read-only: count, indexed item and For Each enumeration.",
+   "use_for": [
+    "listing recent design files with their thumbnails for a launcher or report"
+   ],
+   "avoid": [
+    "adding, removing or opening recent files: use Application.RecentFiles (VGCore IVGRecentFiles: Add, Item, Count, Maximum)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Collection interface of MruListLib. Nothing in the harvested VGCore model returns IDocumentItems, and DrawUI.xml binds no control to MruListLib (the Welcome screen's WWelcomeScreenDataSource exposes no recent-file member), so the route to it is not known (possibly used internally by the HTML Welcome screen; unverified). Iterate with For Each (_NewEnum) or Item(Index) up to Count.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of documents in the list"
+    },
+    {
+     "name": "Item",
+     "use": "the IDocumentItem at Index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    }
+   ],
+   "gotchas": [
+    "Whether Item is 1-based like the VGCore collections is not harvested (unverified); For Each avoids the question.",
+    "This is a snapshot list for display; it may not match Application.RecentFiles exactly (unverified)."
+   ],
+   "example": "' items: an IDocumentItems collection\nFor i = 1 To items.Count   ' base not harvested; For Each is safer\n  Debug.Print items.Item(i).DocumentPath\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "how/summary: dropped the unsupported 'via the Welcome screen data source' route; DrawUI.xml shows no binding"
+   }
+  },
+  {
+   "name": "IPerspectiveGroupProperties",
+   "id": "class:IPerspectiveGroupProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "PerspectiveGroupToolLib/IPerspectiveGroupProperties",
+   "status": "current",
+   "summary": "Settings object of a perspective group (Object/Perspective/Draw in Perspective): the viewport rectangle, colour, opacity, density and visibility of the perspective and horizon lines, the lock flag, and the horizon, vanishing and camera points that define the grid. It is a detached copy: edit it, then write it back to the group.",
+   "use_for": [
+    "setting up a one-, two- or three-point perspective grid for packaging, signage or room mock-ups by script",
+    "hiding or dimming the perspective guides before export",
+    "copying one group's vanishing points to another so several scenes share a camera"
+   ],
+   "avoid": [
+    "distorting an existing object into perspective: that is the Add Perspective effect (VGCore IVGEffectPerspective)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "View/Perspective Grid/Define Grid..."
+   },
+   "how": "Obtained with IPerspectiveGroupShape.GetPropertiesCopy() on a perspective group (Shape.Custom of the group). Change properties or call the Set*Points methods on the copy, then apply it with IPerspectiveGroupShape.CopyAssignProperties(props). Points travel as VGCore IVGPointRange; planes are cdrPerspPlane values (cdrPerspPlaneNone 0, cdrPerspPlaneOrtho 1, cdrPerspPlaneTop 2, cdrPerspPlaneLeft 3, cdrPerspPlaneRight 4 in the VGCore harvest).",
+   "key_members": [
+    {
+     "name": "Viewport",
+     "use": "IVGRect area the perspective grid covers"
+    },
+    {
+     "name": "ShowPerspectiveLines",
+     "use": "show / hide the perspective guide lines"
+    },
+    {
+     "name": "ShowHorizonLines",
+     "use": "show / hide the horizon line"
+    },
+    {
+     "name": "PerspectiveLineColor",
+     "use": "IVGColor of the perspective lines"
+    },
+    {
+     "name": "HorizonLineColor",
+     "use": "IVGColor of the horizon lines"
+    },
+    {
+     "name": "PerspectiveLineOpacity",
+     "use": "opacity of the perspective lines"
+    },
+    {
+     "name": "HorizonLineOpacity",
+     "use": "opacity of the horizon line"
+    },
+    {
+     "name": "LineDensity",
+     "use": "density percentage of the guide lines"
+    },
+    {
+     "name": "Locked",
+     "use": "lock flag of the perspective group (typelib: 'the locked property')"
+    },
+    {
+     "name": "GetHorizonPointsCopy",
+     "use": "copy of the horizon points (IVGPointRange)"
+    },
+    {
+     "name": "SetHorizonPoints",
+     "use": "replace the horizon points"
+    },
+    {
+     "name": "GetVanishPointsCopy",
+     "use": "copy of the vanishing points of one plane"
+    },
+    {
+     "name": "SetVanishPoints",
+     "use": "replace the vanishing points of one plane"
+    },
+    {
+     "name": "GetCameraPointsCopy",
+     "use": "copy of the camera points of one plane and camera index"
+    },
+    {
+     "name": "SetCameraPoints",
+     "use": "replace the camera points of one plane and camera index"
+    }
+   ],
+   "gotchas": [
+    "Everything is a copy: changing this object or a point range from Get*Copy does nothing until CopyAssignProperties is called on the group.",
+    "Editing a colour in place (props.PerspectiveLineColor.RGBAssign ...) may change a temporary copy only; assign a whole IVGColor instead (unverified).",
+    "The scale of the opacity values (0-1 or 0-100) and the valid LineDensity range are not harvested (unverified); read the current values first.",
+    "What CameraIndex counts (one camera point set per plane, or several) is not documented in the typelib; read GetCameraPointsCopy before writing (unverified)."
+   ],
+   "example": "Set pg = ActiveShape.Custom          ' a perspective group\nSet p = pg.GetPropertiesCopy()\np.ShowPerspectiveLines = False\np.ShowHorizonLines = False\np.Locked = True\npg.CopyAssignProperties p",
+   "review": {
+    "by": "adversarial",
+    "changes": "listed the harvested cdrPerspPlane values; Locked no longer claims 'cannot be dragged' (typelib only says locked property)"
+   }
+  },
+  {
+   "name": "IPerspectiveGroupShape",
+   "id": "class:IPerspectiveGroupShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "PerspectiveGroupToolLib/IPerspectiveGroupShape",
+   "status": "current",
+   "summary": "A perspective group: the custom shape created by Object/Perspective/Draw in Perspective, holding a one-, two- or three-point perspective grid that objects drawn inside it are projected onto. Scripts use it to enter or leave perspective edit mode, read the active plane, and get or set the grid's properties.",
+   "use_for": [
+    "scripted packaging, storefront or interior mock-ups drawn in perspective",
+    "switching a perspective group into edit mode before adding artwork to a plane",
+    "reading or replacing the grid setup of an existing perspective drawing"
+   ],
+   "avoid": [
+    "bending a single finished object into perspective: use the Add Perspective effect (Object/Perspective/Add Perspective)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Perspective Grid Tool"
+   },
+   "how": "Inherits IVGCustomShape. Reach it with Shape.Custom on the group shape (its Shape.Type is cdrCustomShape = 21; TypeID tells which custom shape it is). Settings go through GetPropertiesCopy / CopyAssignProperties with an IPerspectiveGroupProperties object. EnterEditMode is the scripted counterpart of Object/Perspective/Edit Perspective Group (cdr_menu 70453c54-f634-4aca-9577-204f48008e7e) (unverified that they match exactly).",
+   "key_members": [
+    {
+     "name": "TypeID",
+     "use": "identifies the custom shape type (check it before assuming a perspective group)"
+    },
+    {
+     "name": "ActivePlane",
+     "use": "the plane (cdrPerspPlane) new drawing goes onto"
+    },
+    {
+     "name": "EnterEditMode",
+     "use": "enter perspective edit mode for this group"
+    },
+    {
+     "name": "LeaveEditMode",
+     "use": "leave perspective edit mode"
+    },
+    {
+     "name": "GetPropertiesCopy",
+     "use": "detached IPerspectiveGroupProperties with the grid settings"
+    },
+    {
+     "name": "CopyAssignProperties",
+     "use": "apply an edited IPerspectiveGroupProperties to the group"
+    }
+   ],
+   "gotchas": [
+    "ActivePlane is read-only and this interface has no setter for the plane, so a script cannot switch planes through it.",
+    "Always pair EnterEditMode with LeaveEditMode; a script that stops in between leaves the document in perspective edit mode (unverified).",
+    "The exact TypeID string of a perspective group is not harvested; read it from a known group before filtering on it.",
+    "Shape.Custom returns IVGCustomShape; late-bound callers (VBA Object, win32com dynamic) can call these members directly, early-bound code needs a cast (unverified).",
+    "Grid presets (One-point, Two-point, Three-point worm's-eye / bird's-eye) are not on this interface: they are the Perspective tool property-bar list PerspectiveGroupToolDS.PresetList (cdr_preset harvest)."
+   ],
+   "example": "Set s = ActiveShape\nSet pg = s.Custom\nDebug.Print pg.TypeID, pg.ActivePlane\npg.EnterEditMode\n' ... draw on the active plane ...\npg.LeaveEditMode",
+   "review": {
+    "by": "adversarial",
+    "changes": "named the harvested shape type cdrCustomShape (21) and the Edit Perspective Group menu GUID; added a gotcha pointing presets to PerspectiveGroupToolDS.PresetList"
+   }
+  },
+  {
+   "name": "IPhotoCocktailDataSource",
+   "id": "class:IPhotoCocktailDataSource",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "PhotoCocktailLib/IPhotoCocktailDataSource",
+   "status": "needs_input",
+   "summary": "Data source behind the PhotoCocktail docker (Effects/PhotoCocktail), which rebuilds the selected object (typically a photo) as a photo mosaic made of many small photos taken from a chosen folder (the image pool). It exposes the pool, output mode, tile grid density and size, output size and dpi, duplicate rules, blending amount, quality and edge handling, and the Apply / Cancel actions.",
+   "use_for": [
+    "photo-mosaic portraits or logos built from event or product photos",
+    "community / fan-wall posters where one big image is made of many submitted pictures"
+   ],
+   "avoid": [
+    "simple pixelation or square tiles: a bitmap effect is faster than indexing a photo pool",
+    "unattended runs: choosing the pool opens a folder dialog (see gotchas)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Back end of the PhotoCocktail docker (PhotoCocktailLib, dual dispinterface). Reached at run time through the UI framework, not the document model: Application.FrameWork.Application.DataContext.GetDataSource(<registered name>) returns an ICUIDataSourceProxy; read and write this interface's members by name with proxy.GetProperty(\"Name\") / proxy.SetProperty \"Name\", value and run its methods with proxy.InvokeMethod \"Name\". DrawUI.xml binds the PhotoCocktail docker (Apply button = OnApply / ApplyButtonEnabled, pool button = OnSelectImagePool) controls to DataSource=PhotoCocktailDS, so \"PhotoCocktailDS\" is the name to pass to GetDataSource (the live call is unverified; the source may only exist once that UI has been opened). Needs a selected source object and an indexed image pool before Apply is enabled. Open the docker first: Effects/PhotoCocktail, FrameWork.Automation.InvokeItem \"03687a21-eb94-d8a8-4fe6-a2c8b5251210\" (cdr_effect harvest; the item toggles the docker).",
+   "key_members": [
+    {
+     "name": "OnSelectImagePool",
+     "use": "choose the folder of photos to build the mosaic from"
+    },
+    {
+     "name": "PoolDirectory",
+     "use": "read-only: folder currently used as the image pool"
+    },
+    {
+     "name": "IndexedImageCount",
+     "use": "how many pool images are indexed"
+    },
+    {
+     "name": "SelectionInfo",
+     "use": "what is selected as the mosaic source"
+    },
+    {
+     "name": "OutputModes",
+     "use": "read-only list of output modes"
+    },
+    {
+     "name": "OutputMode",
+     "use": "chosen output mode (one of OutputModes)"
+    },
+    {
+     "name": "NumBlocksInWidth",
+     "use": "tiles across the width (mosaic density)"
+    },
+    {
+     "name": "RequestedOutputBlockSizeInPixels",
+     "use": "size of each tile in pixels"
+    },
+    {
+     "name": "RequestedOutputWidthInPixels",
+     "use": "width of the finished mosaic in pixels"
+    },
+    {
+     "name": "RequestedDpi",
+     "use": "resolution of the result"
+    },
+    {
+     "name": "AllowDuplicates",
+     "use": "let the same photo appear more than once"
+    },
+    {
+     "name": "RequestedDuplicateExclusionRadius",
+     "use": "minimum distance before a photo may repeat"
+    },
+    {
+     "name": "BlendingAmount",
+     "use": "how much the source colours are blended over the tiles"
+    },
+    {
+     "name": "QualityMode",
+     "use": "matching quality (one of QualityModes)"
+    },
+    {
+     "name": "EdgeHandlingMode",
+     "use": "how tiles at the edges are handled (one of EdgeHandlingModes)"
+    },
+    {
+     "name": "KeepOriginal",
+     "use": "keep the source object after applying"
+    },
+    {
+     "name": "ApplyButtonEnabled",
+     "use": "True once source and pool are ready"
+    },
+    {
+     "name": "OnApply",
+     "use": "build the mosaic"
+    },
+    {
+     "name": "OperationProgress",
+     "use": "progress of the running build"
+    },
+    {
+     "name": "OnCancel",
+     "use": "cancel the build"
+    }
+   ],
+   "gotchas": [
+    "PoolDirectory is read-only; the only harvested way to set the pool is OnSelectImagePool, which most likely opens a modal folder picker and hangs an unattended COM call (unverified).",
+    "OnApply on a large pool runs long; poll OperationProgress / StatusText instead of assuming the call blocks until done (unverified).",
+    "OutputModes, QualityModes and EdgeHandlingModes are single strings listing the choices; print them before setting the matching *Mode (delimiter not harvested).",
+    "ForceCustomDPI, ForceTileSize and ForceMosaicSize are read-only flags: when True the matching Requested* value is presumably fixed by the output mode (unverified)."
+   ],
+   "example": "Set ds = Application.FrameWork.Application.DataContext.GetDataSource(\"PhotoCocktailDS\")\nDebug.Print ds.GetProperty(\"PoolDirectory\"), ds.GetProperty(\"IndexedImageCount\")\nds.SetProperty \"NumBlocksInWidth\", 60\nds.SetProperty \"AllowDuplicates\", False\nds.SetProperty \"KeepOriginal\", True\nIf ds.GetProperty(\"ApplyButtonEnabled\") Then ds.InvokeMethod \"OnApply\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "named the data source PhotoCocktailDS (DrawUI.xml binding) in how + example; added the docker's menu GUID from the cdr_effect harvest"
+   }
+  },
+  {
+   "name": "IProjectTimerDataSource",
+   "id": "class:IProjectTimerDataSource",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ProjectTimerLib/IProjectTimerDataSource",
+   "status": "current",
+   "summary": "Data source behind CorelDRAW's Project Timer (DrawUI.xml: a ProjectTimer toolbar whose drop-down opens the task-log popup), which logs time spent on a document as named, tagged tasks, detects inactivity, and exports the log as CSV or text. Most members are the toolbar's and popup's labels, tooltips and button handlers; the useful ones start / pause tracking, create and rename tasks and export the log.",
+   "use_for": [
+    "billing clients by design file: export a per-task time log",
+    "pausing time tracking while a batch script runs so automated work is not billed",
+    "tagging tasks (concept, revisions, print prep) for a timesheet"
+   ],
+   "avoid": [
+    "building documents or artwork: nothing here touches the drawing",
+    "unattended export to a chosen path: ExportToCSV / ExportToTXT take no path (see gotchas)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Back end of the Project Timer toolbar and its task-log popup (ProjectTimerLib, dual dispinterface). Reached at run time through the UI framework, not the document model: Application.FrameWork.Application.DataContext.GetDataSource(<registered name>) returns an ICUIDataSourceProxy; read and write this interface's members by name with proxy.GetProperty(\"Name\") / proxy.SetProperty \"Name\", value and run its methods with proxy.InvokeMethod \"Name\". DrawUI.xml binds the Project Timer toolbar and popup controls to DataSource=ProjectTimerDS, so \"ProjectTimerDS\" is the name to pass to GetDataSource (the live call is unverified; the source may only exist once that UI has been opened). Edits follow the popup's two-step pattern: set the edit field (NameEdit, TagEdit, DurationHour ...) then invoke the matching ...Ok handler (in DrawUI.xml the TagEdit box commits with TagEditOk, the NameEdit box with NameEditEnter); which row is edited presumably follows TaskLogListCurSel (unverified).",
+   "key_members": [
+    {
+     "name": "Track",
+     "use": "tracking on / off"
+    },
+    {
+     "name": "UpdateCurrentTrackState",
+     "use": "refresh the current tracking state"
+    },
+    {
+     "name": "CurrentTaskName",
+     "use": "name of the task being timed"
+    },
+    {
+     "name": "CurrentTaskElapsedTime",
+     "use": "elapsed time of the current task (display string)"
+    },
+    {
+     "name": "CurrentTaskState",
+     "use": "state of the current task (display string)"
+    },
+    {
+     "name": "CurrentTaskTags",
+     "use": "tags of the current task"
+    },
+    {
+     "name": "TotalStatus",
+     "use": "total tracked time summary"
+    },
+    {
+     "name": "WorkBlockList",
+     "use": "read-only list of logged work blocks"
+    },
+    {
+     "name": "CreateNewTask",
+     "use": "start a new task in the log"
+    },
+    {
+     "name": "NameEdit",
+     "use": "edit buffer for a task name; commit with NameEditOk"
+    },
+    {
+     "name": "NameEditOk",
+     "use": "commit NameEdit"
+    },
+    {
+     "name": "TagEdit",
+     "use": "edit buffer for task tags; commit with TagEditOk"
+    },
+    {
+     "name": "TagEditOk",
+     "use": "commit TagEdit"
+    },
+    {
+     "name": "OnResumeTask",
+     "use": "resume the selected task"
+    },
+    {
+     "name": "ExportToCSV",
+     "use": "export the task log as CSV"
+    },
+    {
+     "name": "ExportToTXT",
+     "use": "export the task log as plain text"
+    },
+    {
+     "name": "UserInactivityDetectionMode",
+     "use": "inactivity handling (one of UserInactivityDetectionModeList)"
+    },
+    {
+     "name": "SettingsPauseTrackingOnAnotherDocumentOpen",
+     "use": "pause when another document is opened"
+    },
+    {
+     "name": "ShowDeletedTask",
+     "use": "show deleted tasks in the log"
+    }
+   ],
+   "gotchas": [
+    "ExportToCSV and ExportToTXT take no path, so they most likely open a Save dialog: a modal dialog that blocks an unattended COM call (unverified).",
+    "Many members are UI strings (tooltips such as RecordPauseTT, labels such as InactivityPromptLabel2) and dialog show/hide handlers; calling On...Show/Hide from a script drives the toolbar / popup UI, not the data.",
+    "One member is spelled ShowDeletedTaslVisible in the typelib (sic); use the exact harvested spelling.",
+    "The inactivity prompt (OnInactivityPrompt...) can appear during long scripts; set UserInactivityDetectionMode before a batch run (unverified).",
+    "DrawUI.xml enables the toolbar's task drop-down only while a document is open (AppDS DocumentAvailable); open or create a document before driving it."
+   ],
+   "example": "Set ds = Application.FrameWork.Application.DataContext.GetDataSource(\"ProjectTimerDS\")\nds.SetProperty \"Track\", False          ' pause while the batch runs\n' ... automated work ...\nds.SetProperty \"Track\", True\nds.InvokeMethod \"UpdateCurrentTrackState\"\nDebug.Print ds.GetProperty(\"CurrentTaskName\"), ds.GetProperty(\"TotalStatus\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "'Project Timer docker' was wrong: DrawUI.xml defines it as a ProjectTimer toolbar with a drop-down popup; fixed summary/how/gotcha, named the data source ProjectTimerDS in how + example, corrected the edit-commit handlers from DrawUI.xml, added the document-open gotcha"
+   }
+  },
+  {
+   "name": "ITableBorders",
+   "id": "class:ITableBorders",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableBorders",
+   "status": "current",
+   "summary": "The border outlines of a table, a cell or a cell range: one IVGOutline per side (top, left, right, bottom), the inner horizontal and vertical lines, combined sets and all borders at once, plus SetBorders to copy one outline onto any chosen set of borders.",
+   "use_for": [
+    "price lists and spec tables with hairline inner rules and a heavier outer frame",
+    "removing all borders for a clean, borderless table layout",
+    "styling just the header row's bottom rule"
+   ],
+   "avoid": [
+    "cell background colour: that is ITableCell.Fill or ITableCellRange.ApplyFill"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Returned by ITableShape.Borders (whole table), ITableCell.Borders (one cell) and ITableCellRange.Borders (a range). Each side property returns a VGCore IVGOutline; BorderKind arguments take cdrTableBorder flags (VGCore harvest): Left 1, Top 2, Right 4, Bottom 8, Horizontal 16, Vertical 32, plus the combined members Outside 15, Inside 48 and All 63; AreIdentical's BorderKind defaults to 63 (all).",
+   "key_members": [
+    {
+     "name": "Top",
+     "use": "outline of the top border"
+    },
+    {
+     "name": "Bottom",
+     "use": "outline of the bottom border"
+    },
+    {
+     "name": "Left",
+     "use": "outline of the left border"
+    },
+    {
+     "name": "Right",
+     "use": "outline of the right border"
+    },
+    {
+     "name": "Horizontal",
+     "use": "outline of the inner horizontal borders"
+    },
+    {
+     "name": "Vertical",
+     "use": "outline of the inner vertical borders"
+    },
+    {
+     "name": "All",
+     "use": "outline properties of all borders together"
+    },
+    {
+     "name": "Combined",
+     "use": "outline properties of the set of borders named by a cdrTableBorder value"
+    },
+    {
+     "name": "AreIdentical",
+     "use": "True when the given borders share the same outline"
+    },
+    {
+     "name": "SetBorders",
+     "use": "copy an IVGOutline onto the borders named by a cdrTableBorder value"
+    }
+   ],
+   "gotchas": [
+    "The side properties are read-only object references; whether setting .Width / .Color on the returned IVGOutline writes back to the table is not confirmed (unverified). SetBorders is the explicit write path.",
+    "BorderKind values are bit flags; use the named members (cdrTableBorderOutside, cdrTableBorderInside, cdrTableBorderAll ...) rather than hand-made sums.",
+    "Outline widths are in document units like the rest of the VGCore model (unverified for the table component).",
+    "With SeparatedBorders = False on the table, neighbouring cells share one border line, so a cell's Right and the next cell's Left are the same line (unverified)."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nSet b = t.Borders\nDebug.Print b.Top.Width, b.Horizontal.Width\nb.SetBorders cdrTableBorderInside, b.Top   ' inner lines copy the top outline\nSet h = t.Rows.First.Cells.All.Borders\nDebug.Print h.Bottom.Width",
+   "review": {
+    "by": "adversarial",
+    "changes": "example called SetBorders with an undefined variable 'kind' (would pass Empty); now uses cdrTableBorderInside; how lists the harvested cdrTableBorder values and the AreIdentical default 63"
+   }
+  },
+  {
+   "name": "ITableCell",
+   "id": "class:ITableCell",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableCell",
+   "status": "current",
+   "summary": "One cell of a CorelDRAW table: its row and column, size, merge state, fill, borders, text margins, the text shape that holds its text and any shapes placed inside it, plus methods to select, split, unmerge, set margins and place shapes in the cell.",
+   "use_for": [
+    "filling a price list or timetable cell by cell from data",
+    "dropping logos or icons into cells with PlaceShape (centred)",
+    "colouring alternate rows or highlighting one cell"
+   ],
+   "avoid": [
+    "resizing one cell: Width and Height are read-only here; use ITableColumn.SetWidth / ITableRow.SetHeight",
+    "styling many cells: use an ITableCellRange (ApplyFill, Borders) instead of looping"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Get it from ITableShape.Cell(Column, Row), from a collection (ITableCells.Item, ITableCellRange.Item) or by walking from another cell (CellAbove / CellBelow / CellToLeft / CellToRight).",
+   "key_members": [
+    {
+     "name": "TextShape",
+     "use": "the cell's text shape; write its text through VGCore Shape.Text.Story"
+    },
+    {
+     "name": "Fill",
+     "use": "the cell's IVGFill (ApplyUniformFill ... on it)"
+    },
+    {
+     "name": "Borders",
+     "use": "ITableBorders of this cell"
+    },
+    {
+     "name": "RowIndex",
+     "use": "row number of the cell"
+    },
+    {
+     "name": "ColumnIndex",
+     "use": "column number of the cell"
+    },
+    {
+     "name": "Width",
+     "use": "cell width (read-only)"
+    },
+    {
+     "name": "Height",
+     "use": "cell height (read-only)"
+    },
+    {
+     "name": "SetAllMargins",
+     "use": "one text margin on all four sides"
+    },
+    {
+     "name": "SetMargins",
+     "use": "left, top, right, bottom text margins"
+    },
+    {
+     "name": "PlaceShape",
+     "use": "put a shape inside the cell, optionally centred"
+    },
+    {
+     "name": "PlaceShapeRange",
+     "use": "put several shapes inside the cell"
+    },
+    {
+     "name": "Shapes",
+     "use": "shapes placed inside the cell"
+    },
+    {
+     "name": "Merged",
+     "use": "True when this cell is part of a merge"
+    },
+    {
+     "name": "RowSpan",
+     "use": "rows the cell spans"
+    },
+    {
+     "name": "ColumnSpan",
+     "use": "columns the cell spans"
+    },
+    {
+     "name": "Visible",
+     "use": "False when the cell is hidden under a merged cell"
+    },
+    {
+     "name": "SpanningCell",
+     "use": "the merged cell that covers this hidden cell"
+    },
+    {
+     "name": "Split",
+     "use": "split the cell into columns and rows"
+    },
+    {
+     "name": "Unmerge",
+     "use": "undo a merge"
+    },
+    {
+     "name": "CellBelow",
+     "use": "neighbour below (also CellAbove / CellToLeft / CellToRight)"
+    }
+   ],
+   "gotchas": [
+    "ITableShape.Cell takes (Column, Row), column first; mixing the order up silently writes to the wrong cell.",
+    "Cells covered by a merge still exist with Visible = False; write to SpanningCell instead.",
+    "Whether TextShape is Nothing for a cell that has never held text is not confirmed (unverified); test it before use.",
+    "Margins and sizes are in document units (unverified for the table component); set ActiveDocument.Unit first."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nSet c = t.Cell(1, 1)                   ' Column, Row\nc.TextShape.Text.Story.Text = \"Price\"\nc.Fill.ApplyUniformFill CreateRGBColor(255, 220, 0)\nc.SetAllMargins 0.05\nDebug.Print c.RowIndex, c.ColumnIndex, c.Merged",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITableCellRange",
+   "id": "class:ITableCellRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableCellRange",
+   "status": "current",
+   "summary": "A set of table cells handled together: merge or unmerge them, apply one fill, style their borders, select them, grow the set by cell, row, column or another range and shrink it by index, cell or range (there is no RemoveRow / RemoveColumn). Also tells whether the cells form a rectangle and can be merged.",
+   "use_for": [
+    "merging a header row across all columns",
+    "zebra-striping rows or colouring a whole column at once",
+    "applying one border style to a block of cells"
+   ],
+   "avoid": [
+    "setting text per cell: loop the range's Item cells (ITableCell.TextShape)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Returned by ITableShape.CellRange(ColumnStart, RowStart, ColumnEnd, RowEnd), ITableShape.Selection, ITableCells.All / Range / AllExcluding, or built from ITableShape.CreateEmptyCellRange plus AddCell / AddRow / AddColumn.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of cells in the range"
+    },
+    {
+     "name": "Item",
+     "use": "cell at Index"
+    },
+    {
+     "name": "IsRectangular",
+     "use": "True when the cells form a rectangular block"
+    },
+    {
+     "name": "CanMerge",
+     "use": "True when Merge is allowed"
+    },
+    {
+     "name": "Merge",
+     "use": "merge the cells into one"
+    },
+    {
+     "name": "Unmerge",
+     "use": "unmerge all merged cells in the range"
+    },
+    {
+     "name": "ApplyFill",
+     "use": "apply an IVGFill to every cell"
+    },
+    {
+     "name": "Borders",
+     "use": "ITableBorders of the range (outer and inner lines)"
+    },
+    {
+     "name": "AddCell",
+     "use": "add one cell"
+    },
+    {
+     "name": "AddRow",
+     "use": "add every cell of a row"
+    },
+    {
+     "name": "AddColumn",
+     "use": "add every cell of a column"
+    },
+    {
+     "name": "AddRange",
+     "use": "add another range"
+    },
+    {
+     "name": "RemoveCell",
+     "use": "remove one cell"
+    },
+    {
+     "name": "Rows",
+     "use": "rows touched by the range"
+    },
+    {
+     "name": "Columns",
+     "use": "columns touched by the range"
+    },
+    {
+     "name": "Select",
+     "use": "select the cells in the document"
+    }
+   ],
+   "gotchas": [
+    "Check CanMerge (and IsRectangular) before Merge; merging a non-rectangular set is refused (unverified whether it raises or does nothing).",
+    "ApplyFill needs an IVGFill object, not a colour: take the Fill of an existing shape or cell as the source.",
+    "Selection reflects the cells selected in the UI; it can be empty in a script that never selected anything."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nSet hdr = t.CellRange(1, 1, t.Columns.Count, 1)\nIf hdr.CanMerge Then hdr.Merge\nSet zebra = t.CreateEmptyCellRange()\nzebra.AddRow t.Rows.Item(2)\nzebra.ApplyFill t.Cell(1, 1).Fill",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary claimed the range shrinks by row / column; only Remove(Index), RemoveCell and RemoveRange exist"
+   }
+  },
+  {
+   "name": "ITableCells",
+   "id": "class:ITableCells",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableCells",
+   "status": "current",
+   "summary": "A collection of table cells (all cells of a table, a row, a column or a set of rows / columns) with indexed access and helpers that turn the whole collection, chosen indexes, or everything except chosen indexes into a cell range.",
+   "use_for": [
+    "looping every cell to fill a table from a CSV",
+    "styling all cells except a header block in one call via AllExcluding"
+   ],
+   "avoid": [
+    "addressing a cell by row and column: ITableShape.Cell(Column, Row) is clearer than a flat index"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Returned by ITableShape.Cells, ITableRow.Cells, ITableColumn.Cells, ITableRows.Cells and ITableColumns.Cells.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of cells"
+    },
+    {
+     "name": "Item",
+     "use": "cell at a flat Index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    },
+    {
+     "name": "All",
+     "use": "every cell as an ITableCellRange"
+    },
+    {
+     "name": "Range",
+     "use": "the cells at the given indexes as an ITableCellRange"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "every cell except the given indexes as an ITableCellRange"
+    }
+   ],
+   "gotchas": [
+    "Range and AllExcluding take an array of indexes (SAFEARRAY of Variant); from Python pass a list, from VBA Array(1, 2, 3).",
+    "The order of the flat index (row by row or column by column) is not harvested (unverified); read RowIndex / ColumnIndex of each cell when it matters.",
+    "Base of Item indexes is not harvested; VGCore collections are 1-based (unverified for this component)."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nFor Each c In t.Cells\n  c.SetAllMargins 0.04\nNext\nSet body = t.Cells.AllExcluding(Array(1, 2, 3))\nbody.ApplyFill t.Cell(1, 2).Fill",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITableColumn",
+   "id": "class:ITableColumn",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableColumn",
+   "status": "current",
+   "summary": "One column of a CorelDRAW table: its index, cells, width, neighbours and first / last flags, with methods to set the width (optionally resizing the whole table), select it or delete it.",
+   "use_for": [
+    "fixed-width price or quantity columns in a menu or spec sheet",
+    "deleting an unused column after filling a template table"
+   ],
+   "avoid": [
+    "adding columns: use ITableShape.AddColumn",
+    "equal widths for all columns: ITableColumns.DistributeWidth does it in one call"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Get it from ITableShape.Columns (ITableColumns.Item / First / Last), from a cell (ITableCell.Column) or by walking Next / Previous.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "column number"
+    },
+    {
+     "name": "Width",
+     "use": "column width (read / write)"
+    },
+    {
+     "name": "SetWidth",
+     "use": "set the width; ResizeTable = True lets the table grow or shrink, False keeps its size (how the other columns adjust is unverified)"
+    },
+    {
+     "name": "Cells",
+     "use": "cells of this column"
+    },
+    {
+     "name": "Next",
+     "use": "column to the right"
+    },
+    {
+     "name": "Previous",
+     "use": "column to the left"
+    },
+    {
+     "name": "IsFirst",
+     "use": "True for the first column"
+    },
+    {
+     "name": "IsLast",
+     "use": "True for the last column"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the column"
+    },
+    {
+     "name": "Select",
+     "use": "select all its cells"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add its cells to the selection"
+    }
+   ],
+   "gotchas": [
+    "Writing Width directly does not let you choose ResizeTable; use SetWidth when the table's overall width must stay fixed (exact Width behaviour unverified).",
+    "Widths are in document units (unverified for the table component).",
+    "After Delete the remaining columns are presumably re-indexed (unverified); re-read Count and Index before looping on."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nSet col = t.Columns.First\ncol.SetWidth 2, False                  ' keep table width\nIf Not t.Columns.Last.IsFirst Then t.Columns.Last.Delete",
+   "review": {
+    "by": "adversarial",
+    "changes": "SetWidth no longer asserts 'the neighbours give way' and the Delete re-indexing claim is marked unverified (neither is in the harvest)"
+   }
+  },
+  {
+   "name": "ITableColumns",
+   "id": "class:ITableColumns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableColumns",
+   "status": "current",
+   "summary": "The columns of a table or of a cell range: count, indexed access, first and last column, all their cells, selection, and DistributeWidth to make the columns equally wide.",
+   "use_for": [
+    "evening out column widths after filling a table",
+    "selecting or styling whole columns of a data table"
+   ],
+   "avoid": [
+    "inserting columns: ITableShape.AddColumn(ColumnIndex)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Returned by ITableShape.Columns and ITableCellRange.Columns.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of columns"
+    },
+    {
+     "name": "Item",
+     "use": "column at Index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    },
+    {
+     "name": "First",
+     "use": "first column"
+    },
+    {
+     "name": "Last",
+     "use": "last column"
+    },
+    {
+     "name": "Cells",
+     "use": "all cells of these columns"
+    },
+    {
+     "name": "DistributeWidth",
+     "use": "make the columns equally wide"
+    },
+    {
+     "name": "Select",
+     "use": "select all cells of these columns"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add those cells to the selection"
+    }
+   ],
+   "gotchas": [
+    "From ITableCellRange.Columns, the collection covers only the columns the range touches, so DistributeWidth evens out just those (unverified).",
+    "Item index base is not harvested; VGCore collections are 1-based (unverified for this component)."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nt.Columns.DistributeWidth\nDebug.Print t.Columns.Count, t.Columns.First.Width",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITableRow",
+   "id": "class:ITableRow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableRow",
+   "status": "current",
+   "summary": "One row of a CorelDRAW table: its index, cells, height, neighbours and first / last flags, with methods to set the height (optionally resizing the whole table), select it or delete it.",
+   "use_for": [
+    "taller header row in a price list or timetable",
+    "deleting empty rows after filling a template table from data"
+   ],
+   "avoid": [
+    "adding rows: use ITableShape.AddRow",
+    "equal heights for all rows: ITableRows.DistributeHeight"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Get it from ITableShape.Rows (ITableRows.Item / First / Last), from a cell (ITableCell.Row) or by walking Next / Previous.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "row number"
+    },
+    {
+     "name": "Height",
+     "use": "row height (read / write)"
+    },
+    {
+     "name": "SetHeight",
+     "use": "set the height and choose whether the table grows (ResizeTable)"
+    },
+    {
+     "name": "Cells",
+     "use": "cells of this row"
+    },
+    {
+     "name": "Next",
+     "use": "row below"
+    },
+    {
+     "name": "Previous",
+     "use": "row above"
+    },
+    {
+     "name": "IsFirst",
+     "use": "True for the first row"
+    },
+    {
+     "name": "IsLast",
+     "use": "True for the last row"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the row"
+    },
+    {
+     "name": "Select",
+     "use": "select all its cells"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add its cells to the selection"
+    }
+   ],
+   "gotchas": [
+    "Writing Height directly does not let you choose ResizeTable; use SetHeight when the table's height must stay fixed (exact behaviour unverified).",
+    "A row may not shrink below the height its text needs (unverified).",
+    "Deleting while walking with Next skips rows; walk from the last row with Previous, or collect first."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nt.Rows.First.SetHeight 0.6, True\nSet r = t.Rows.Last\nIf r.Cells.Item(1).TextShape.Text.Story.Text = \"\" Then r.Delete",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITableRows",
+   "id": "class:ITableRows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableRows",
+   "status": "current",
+   "summary": "The rows of a table or of a cell range: count, indexed access, first and last row, all their cells, selection, and DistributeHeight to make the rows equally tall.",
+   "use_for": [
+    "evening out row heights in a timetable or spec table",
+    "zebra striping by looping Item and filling every second row"
+   ],
+   "avoid": [
+    "inserting rows: ITableShape.AddRow(RowIndex)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Returned by ITableShape.Rows and ITableCellRange.Rows.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of rows"
+    },
+    {
+     "name": "Item",
+     "use": "row at Index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    },
+    {
+     "name": "First",
+     "use": "first row"
+    },
+    {
+     "name": "Last",
+     "use": "last row"
+    },
+    {
+     "name": "Cells",
+     "use": "all cells of these rows"
+    },
+    {
+     "name": "DistributeHeight",
+     "use": "make the rows equally tall"
+    },
+    {
+     "name": "Select",
+     "use": "select all cells of these rows"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add those cells to the selection"
+    }
+   ],
+   "gotchas": [
+    "From ITableCellRange.Rows the collection covers only the rows the range touches (unverified).",
+    "Item index base is not harvested; VGCore collections are 1-based (unverified for this component)."
+   ],
+   "example": "Set t = ActiveShape.Custom             ' a table\nt.Rows.DistributeHeight\nFor i = 2 To t.Rows.Count Step 2\n  t.Rows.Item(i).Cells.All.ApplyFill t.Cell(1, 1).Fill\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITableShape",
+   "id": "class:ITableShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/ITableShape",
+   "status": "current",
+   "summary": "A CorelDRAW table object (Table/Create New Table): rows, columns and cells, table borders, cell spacing and separated / collapsed borders, the current cell selection, and methods to add rows and columns, address a cell or a block of cells, and convert the table to text.",
+   "use_for": [
+    "price lists, menus, timetables and spec sheets filled from data",
+    "invoice or certificate templates with a grid of fields",
+    "turning a table back into delimited text (ConvertToText, or Table/Convert Table to Text)"
+   ],
+   "avoid": [
+    "page layout grids: guides or PowerClip frames are lighter than a table",
+    "text that only needs tab alignment: paragraph text with tab stops"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "A table is a VGCore custom shape: Shape.Custom on the table shape (Shape.Type = cdrCustomShape, 21) returns this interface (TypeID identifies it). New tables come from Layer.CreateCustomShape with the table's TypeID and its parameters (exact parameter list not harvested), or from the Table/Create New Table menu. Cells are addressed Cell(Column, Row).",
+   "key_members": [
+    {
+     "name": "TypeID",
+     "use": "custom shape type of the table (check before casting)"
+    },
+    {
+     "name": "Cell",
+     "use": "one cell by (Column, Row)"
+    },
+    {
+     "name": "CellRange",
+     "use": "block of cells by ColumnStart, RowStart, ColumnEnd, RowEnd"
+    },
+    {
+     "name": "Rows",
+     "use": "ITableRows"
+    },
+    {
+     "name": "Columns",
+     "use": "ITableColumns"
+    },
+    {
+     "name": "Cells",
+     "use": "all cells"
+    },
+    {
+     "name": "Borders",
+     "use": "ITableBorders of the whole table"
+    },
+    {
+     "name": "AddRow",
+     "use": "insert a row; RowIndex is optional and defaults to 0; returns the new ITableRow"
+    },
+    {
+     "name": "AddColumn",
+     "use": "insert a column; ColumnIndex is optional and defaults to 0; returns the new ITableColumn"
+    },
+    {
+     "name": "SeparatedBorders",
+     "use": "separated (True) or collapsed (False) cell borders"
+    },
+    {
+     "name": "SetCellSpacing",
+     "use": "horizontal and vertical spacing between cells"
+    },
+    {
+     "name": "CellSpacingX",
+     "use": "horizontal cell spacing"
+    },
+    {
+     "name": "CellSpacingY",
+     "use": "vertical cell spacing"
+    },
+    {
+     "name": "Selection",
+     "use": "cells currently selected"
+    },
+    {
+     "name": "CreateEmptyCellRange",
+     "use": "empty range to build up with AddCell / AddRow"
+    },
+    {
+     "name": "ConvertToText",
+     "use": "convert the table to delimited text; DeleteTable defaults to True, so the table is removed unless you pass False"
+    },
+    {
+     "name": "ClearSelection",
+     "use": "deselect all cells"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the table"
+    }
+   ],
+   "gotchas": [
+    "Cell and CellRange take the column before the row.",
+    "The TypeID string a table reports and the parameter list CreateCustomShape expects for it are not harvested; read TypeID from an existing table and test creation once (unverified).",
+    "Shape.Custom is typed IVGCustomShape; late-bound callers can call table members directly, early-bound code needs a cast (unverified).",
+    "Sizes and spacing are in document units (unverified for the table component); set ActiveDocument.Unit before writing numbers.",
+    "ConvertToText's DeleteTable defaults to True: a call with no arguments removes the table and invalidates its cell references; pass DeleteTable:=False to keep it. The default separators (ColumnSeparator / RowSeparator are optional Variants) are not harvested.",
+    "AddRow / AddColumn default their index to 0; where 0 puts the new row or column, and whether a positive index inserts before or after it, is not harvested (unverified); check Rows.Count / Columns.Count after the call."
+   ],
+   "example": "Set s = ActiveShape                    ' a table made with Table/Create New Table\nSet t = s.Custom\nDebug.Print t.TypeID, t.Columns.Count, t.Rows.Count\nt.Cell(1, 1).TextShape.Text.Story.Text = \"Item\"\nSet r = t.AddRow()                ' RowIndex defaults to 0\nt.Columns.DistributeWidth",
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested defaults the card missed: ConvertToText DeleteTable = True (a bare call deletes the table), AddRow / AddColumn index = 0; example no longer passes an index past the last row; 'tab-separated' (separator defaults not harvested) -> delimited; named cdrCustomShape (21)"
+   }
+  },
+  {
+   "name": "TableBorders",
+   "id": "class:TableBorders",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableBorders",
+   "status": "current",
+   "summary": "COM class (coclass) for the border outlines of a table, cell or cell range in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableBorders.",
+   "use_for": [
+    "styling table rules (hairline inner borders, heavier outer frame)"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.Borders, ITableCell.Borders or ITableCellRange.Borders; see the ITableBorders card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableBorders (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.Borders, ITableCell.Borders or ITableCellRange.Borders and call ITableBorders members on it.",
+   "key_members": [
+    {
+     "name": "ITableBorders",
+     "use": "default interface: all properties and methods of TableBorders are on ITableBorders (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableBorders card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set b = ActiveShape.Custom.Borders   ' a TableBorders object\nDebug.Print b.Top.Width",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableCell",
+   "id": "class:TableCell",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableCell",
+   "status": "current",
+   "summary": "COM class (coclass) for one table cell in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableCell.",
+   "use_for": [
+    "filling and styling individual table cells"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.Cell(Column, Row) or an item of a cell collection; see the ITableCell card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableCell (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.Cell(Column, Row) or an item of a cell collection and call ITableCell members on it.",
+   "key_members": [
+    {
+     "name": "ITableCell",
+     "use": "default interface: all properties and methods of TableCell are on ITableCell (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableCell card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set c = ActiveShape.Custom.Cell(1, 1)   ' a TableCell object\nDebug.Print c.RowIndex, c.ColumnIndex",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableCellRange",
+   "id": "class:TableCellRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableCellRange",
+   "status": "current",
+   "summary": "COM class (coclass) for a set of table cells handled together in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableCellRange.",
+   "use_for": [
+    "merging or filling blocks of table cells"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.CellRange, ITableShape.Selection, ITableShape.CreateEmptyCellRange or ITableCells.All; see the ITableCellRange card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableCellRange (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.CellRange, ITableShape.Selection, ITableShape.CreateEmptyCellRange or ITableCells.All and call ITableCellRange members on it.",
+   "key_members": [
+    {
+     "name": "ITableCellRange",
+     "use": "default interface: all properties and methods of TableCellRange are on ITableCellRange (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableCellRange card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set r = ActiveShape.Custom.Cells.All   ' a TableCellRange object\nDebug.Print r.Count, r.IsRectangular",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableCells",
+   "id": "class:TableCells",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableCells",
+   "status": "current",
+   "summary": "COM class (coclass) for a collection of table cells in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableCells.",
+   "use_for": [
+    "looping over table cells"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.Cells, ITableRow.Cells or ITableColumn.Cells; see the ITableCells card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableCells (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.Cells, ITableRow.Cells or ITableColumn.Cells and call ITableCells members on it.",
+   "key_members": [
+    {
+     "name": "ITableCells",
+     "use": "default interface: all properties and methods of TableCells are on ITableCells (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableCells card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set cs = ActiveShape.Custom.Cells   ' a TableCells object\nDebug.Print cs.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableColumn",
+   "id": "class:TableColumn",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableColumn",
+   "status": "current",
+   "summary": "COM class (coclass) for one table column in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableColumn.",
+   "use_for": [
+    "setting a column width or deleting a column"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableColumns.Item / First / Last or ITableCell.Column; see the ITableColumn card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableColumn (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableColumns.Item / First / Last or ITableCell.Column and call ITableColumn members on it.",
+   "key_members": [
+    {
+     "name": "ITableColumn",
+     "use": "default interface: all properties and methods of TableColumn are on ITableColumn (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableColumn card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set col = ActiveShape.Custom.Columns.First   ' a TableColumn object\nDebug.Print col.Index, col.Width",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableColumns",
+   "id": "class:TableColumns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableColumns",
+   "status": "current",
+   "summary": "COM class (coclass) for the columns of a table or cell range in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableColumns.",
+   "use_for": [
+    "evening out column widths"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.Columns or ITableCellRange.Columns; see the ITableColumns card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableColumns (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.Columns or ITableCellRange.Columns and call ITableColumns members on it.",
+   "key_members": [
+    {
+     "name": "ITableColumns",
+     "use": "default interface: all properties and methods of TableColumns are on ITableColumns (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableColumns card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set cols = ActiveShape.Custom.Columns   ' a TableColumns object\ncols.DistributeWidth",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableRow",
+   "id": "class:TableRow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableRow",
+   "status": "current",
+   "summary": "COM class (coclass) for one table row in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableRow.",
+   "use_for": [
+    "setting a row height or deleting a row"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableRows.Item / First / Last or ITableCell.Row; see the ITableRow card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableRow (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableRows.Item / First / Last or ITableCell.Row and call ITableRow members on it.",
+   "key_members": [
+    {
+     "name": "ITableRow",
+     "use": "default interface: all properties and methods of TableRow are on ITableRow (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableRow card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set r = ActiveShape.Custom.Rows.First   ' a TableRow object\nDebug.Print r.Index, r.Height",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableRows",
+   "id": "class:TableRows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableRows",
+   "status": "current",
+   "summary": "COM class (coclass) for the rows of a table or cell range in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableRows.",
+   "use_for": [
+    "evening out row heights"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from ITableShape.Rows or ITableCellRange.Rows; see the ITableRows card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableRows (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from ITableShape.Rows or ITableCellRange.Rows and call ITableRows members on it.",
+   "key_members": [
+    {
+     "name": "ITableRows",
+     "use": "default interface: all properties and methods of TableRows are on ITableRows (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableRows card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set rows = ActiveShape.Custom.Rows   ' a TableRows object\nrows.DistributeHeight",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TableShape",
+   "id": "class:TableShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "TableToolLib/TableShape",
+   "status": "current",
+   "summary": "COM class (coclass) for a CorelDRAW table object in CorelDRAW's table component (TableToolLib). It carries no members of its own: everything a script calls on it belongs to its default interface ITableShape.",
+   "use_for": [
+    "price lists, menus, timetables and spec sheets built by script"
+   ],
+   "avoid": [
+    "creating it with CreateObject / New: get it from Shape.Custom on a table shape (Table/Create New Table, or Layer.CreateCustomShape); see the ITableShape card for the members"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Concrete class behind ITableShape (default interface, flag cancreate in the typelib). Scripts normally do not construct it; they receive it from Shape.Custom on a table shape (Table/Create New Table, or Layer.CreateCustomShape) and call ITableShape members on it.",
+   "key_members": [
+    {
+     "name": "ITableShape",
+     "use": "default interface: all properties and methods of TableShape are on ITableShape (see that card)"
+    }
+   ],
+   "gotchas": [
+    "The typelib marks it cancreate, but a free-standing instance would not belong to any table or document; always obtain it from an existing table (unverified).",
+    "Read the ITableShape card for the members and their traps; this card only identifies the class."
+   ],
+   "example": "Set t = ActiveShape.Custom   ' a TableShape object\nDebug.Print t.TypeID, t.Rows.Count, t.Columns.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,1510 @@
+{
+ "cards": [
+  {
+   "name": "IVGCommentThread",
+   "id": "class:IVGCommentThread",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCommentThread",
+   "status": "current",
+   "summary": "One review-comment thread from CorelDRAW's Comments docker: the opening comment plus its replies, pinned to a target on a page, with an open / resolved / reopened status and an on-canvas annotation marker.",
+   "use_for": [
+    "resolving every addressed client comment before final print handoff",
+    "auto-replying to or logging proof feedback per page",
+    "exporting a who-said-what review log for a job folder"
+   ],
+   "avoid": [
+    "setting Status directly: it is read-only, call Resolve or Reopen",
+    "carrying production data in comments: they are review markup, not artwork; use Shape.ObjectData instead"
+   ],
+   "confidence": "medium",
+   "how": "Wrapper for one thread in a document's review markup. Reach it per page with ActivePage.Markup.Threads(i) (IVGPageMarkup.Threads), by GUID with ActiveDocument.Markup.FindThread(guid), or from a comment's Thread. A new thread starts when a page-markup Create... call (CreateHotspot, CreateRectangle ...) adds its first comment. Comments holds the opening comment and the replies; Reply adds one, Resolve / Reopen change Status, Delete removes the whole thread.",
+   "key_members": [
+    {
+     "name": "Target",
+     "use": "IVGCommentTarget the thread is pinned to (its Shape / Guid)"
+    },
+    {
+     "name": "Comments",
+     "use": "IVGComments: the opening comment first, then the replies"
+    },
+    {
+     "name": "Status",
+     "use": "read-only cdrCommentStatus: Open 0, Resolved 1, Reopened 2"
+    },
+    {
+     "name": "Reply",
+     "use": "Reply(Text, [Author]) adds a reply and returns the new IVGComment"
+    },
+    {
+     "name": "Resolve",
+     "use": "marks the thread resolved, optionally as a given Author"
+    },
+    {
+     "name": "Reopen",
+     "use": "reopens a resolved thread (Status becomes Reopened, not Open)"
+    },
+    {
+     "name": "Delete",
+     "use": "removes the thread with all its replies"
+    },
+    {
+     "name": "PageMarkup",
+     "use": "IVGPageMarkup of the page the thread sits on"
+    },
+    {
+     "name": "Annotation",
+     "use": "IVGCommentAnnotation: the on-canvas marker (hotspot, rectangle, arrow ...) and its geometry"
+    }
+   ],
+   "gotchas": [
+    "A reopened thread reports cdrCommentStatusReopened (2), not Open (0); test Status <> cdrCommentStatusResolved when you mean 'still needs work'",
+    "Author is optional on Reply / Resolve / Reopen; when omitted the action is credited to the current or default comment author (unverified)",
+    "Comment markers are not shapes: they do not appear in Page.Shapes and do not print or export as artwork (unverified)",
+    "Threads synced through cloud collaboration also carry an online ID; look those up with Markup.FindThreadByOnlineID, not FindThread (unverified)"
+   ],
+   "example": "Dim t As Object\nFor Each t In ActivePage.Markup.Threads\n  If t.Status <> cdrCommentStatusResolved Then\n    t.Reply \"Fixed in v2\"\n    t.Resolve\n  End If\nNext t",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGCommentThreads",
+   "id": "class:IVGCommentThreads",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCommentThreads",
+   "status": "current",
+   "summary": "Read-only collection of the comment threads on one page's review markup, indexed by number or thread GUID; used to walk every review comment on a page.",
+   "use_for": [
+    "counting open review comments per page before sign-off",
+    "building a page-by-page review report",
+    "fetching a known thread by GUID on a given page"
+   ],
+   "avoid": [
+    "searching the whole document for one GUID page by page: ActiveDocument.Markup.FindThread does it in one call",
+    "trying to add threads here: there is no Add; start one with a page-markup Create... call"
+   ],
+   "confidence": "medium",
+   "how": "Returned by IVGPageMarkup.Threads (ActivePage.Markup.Threads, or ActiveDocument.Pages(i).Markup.Threads). Enumerate with For Each, or call Item with an index (presumably 1-based) or a GUID string; First / Last are shortcuts.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "Item(IndexOrGuid): a thread by index (presumably 1-based, unverified) or GUID string (default member)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each over the page's threads"
+    },
+    {
+     "name": "Count",
+     "use": "number of threads on the page"
+    },
+    {
+     "name": "First",
+     "use": "first thread on the page"
+    },
+    {
+     "name": "Last",
+     "use": "last (usually newest) thread on the page (unverified ordering)"
+    }
+   ],
+   "gotchas": [
+    "The collection is per page; for a document-wide count loop ActiveDocument.Pages and read each page's Markup.Threads",
+    "First / Last on a page with no comments likely raise an error; check Count first (unverified)",
+    "Includes resolved threads; filter on each thread's Status"
+   ],
+   "example": "Dim p As Object, n As Long\nFor Each p In ActiveDocument.Pages\n  n = n + p.Markup.Threads.Count\nNext p\nMsgBox n & \" comment threads\"",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "Item / how no longer state 1-based indexing as fact: the typelib gives no base for this collection (marked presumably, unverified)"
+   }
+  },
+  {
+   "name": "IVGComponent",
+   "id": "class:IVGComponent",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGComponent",
+   "status": "current",
+   "summary": "One CorelDRAW component (presumably a feature module or add-on) identified only by its ComponentID string; the typelib gives it no description and no other members, so what a given ID provides is not documented here.",
+   "use_for": [
+    "listing the component IDs present on a workstation",
+    "finding the ComponentID to pass to Document.CustomCommand / Shape.CustomCommand"
+   ],
+   "avoid": [
+    "checking for one known component: Components.IsComponentInstalled(id) answers directly",
+    "expecting a name, version or enabled flag: only ComponentID exists"
+   ],
+   "confidence": "low",
+   "how": "Item of a Components collection: Application.Components (application-specific, per the typelib) or ActiveDocument.Components (document-specific), by index or name. Its only member, ComponentID, is the string the CustomCommand(ComponentID, CommandID, Parameters) methods on IVGDocument and IVGShape take first.",
+   "key_members": [
+    {
+     "name": "ComponentID",
+     "use": "read-only identifier string of the component; feed it to CustomCommand"
+    }
+   ],
+   "gotchas": [
+    "No description in the typelib; the meaning of each ComponentID and the CommandIDs it accepts are not exposed by the API (unverified)",
+    "IDs may be GUID-like strings rather than readable feature names (unverified); print them before relying on one"
+   ],
+   "example": "Dim c As Object\nFor Each c In Application.Components\n  Debug.Print c.ComponentID\nNext c",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: Application.Components is 'application-specific components' per the typelib, not 'installed'; summary's feature-module/add-on reading marked as presumed"
+   }
+  },
+  {
+   "name": "IVGComponents",
+   "id": "class:IVGComponents",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGComponents",
+   "status": "current",
+   "summary": "Collection of CorelDRAW components (presumably feature modules / add-ons), at application level or per document, with a direct test of whether a given component ID is installed.",
+   "use_for": [
+    "guarding a macro that depends on an optional add-on before calling CustomCommand",
+    "inventorying installed modules on studio machines"
+   ],
+   "avoid": [
+    "assuming component IDs are human-readable feature names: list ComponentID values first"
+   ],
+   "confidence": "medium",
+   "how": "Application.Components (described as the application-specific components) or ActiveDocument.Components (described as the document-specific components). Item takes an index or a name; IsComponentInstalled(ComponentID) answers True/False without enumerating.",
+   "key_members": [
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the components"
+    },
+    {
+     "name": "Item",
+     "use": "Item(IndexOrName): one IVGComponent"
+    },
+    {
+     "name": "Count",
+     "use": "number of components in the collection"
+    },
+    {
+     "name": "IsComponentInstalled",
+     "use": "IsComponentInstalled(ComponentID) -> True if that component is installed"
+    }
+   ],
+   "gotchas": [
+    "Item's 'name' key is not documented; it is probably the ComponentID string (unverified)",
+    "Document.Components and Application.Components can differ; check the one the CustomCommand call runs against (unverified)"
+   ],
+   "example": "Dim id As String\nid = Application.Components(1).ComponentID\nIf Application.Components.IsComponentInstalled(id) Then\n  Debug.Print id & \" is installed\"\nEnd If",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: Application.Components is described as application-specific components, not 'everything installed'; summary's add-on reading marked as presumed"
+   }
+  },
+  {
+   "name": "IVGConnector",
+   "id": "class:IVGConnector",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGConnector",
+   "status": "current",
+   "summary": "Geometry of a connector-line shape (Connector tool): its start and end snap points and its routing type (straight, right-angle, B-spline, Bezier or object). The line stays attached when the connected objects move.",
+   "use_for": [
+    "flowcharts and org charts whose lines follow the boxes",
+    "process, wiring and assembly diagrams in technical illustration",
+    "linking callout labels to parts so they survive re-layout"
+   ],
+   "avoid": [
+    "plain arrows that must not stay attached: draw a curve with an arrowhead instead",
+    "freely shaped decorative lines: this API exposes only the two end snap points and a read-only Type, no node editing; draw a curve instead"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Connector on a shape whose Type is cdrConnectorShape. Create one with ActiveLayer.CreateConnector(Start, End) or CreateConnectorEx(Type, Start, End), passing IVGSnapPoint objects (from Shape.SnapPointsOfType, or ActiveDocument.CreateFreeSnapPoint for a loose end). Reassign StartPoint / EndPoint to re-route it to other objects.",
+   "key_members": [
+    {
+     "name": "StartPoint",
+     "use": "IVGSnapPoint the connector starts at (read/write: assign another snap point to re-attach)"
+    },
+    {
+     "name": "EndPoint",
+     "use": "IVGSnapPoint the connector ends at (read/write)"
+    },
+    {
+     "name": "Type",
+     "use": "read-only cdrConnectorType: Straight 0, RightAngle 1, BSpline 2, Bezier 3, Object 4"
+    }
+   ],
+   "gotchas": [
+    "Type is read-only; to change straight to right-angle, create a new connector with CreateConnectorEx (unverified)",
+    "Shape.Connector is only meaningful when Shape.Type = cdrConnectorShape; on other shapes it errors or returns Nothing (unverified)",
+    "Ends are snap points, not coordinates: read a position via StartPoint.PositionX / PositionY"
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveLayer.CreateConnectorEx(cdrConnectorRightAngle, _\n  ActiveDocument.CreateFreeSnapPoint(1, 1), ActiveDocument.CreateFreeSnapPoint(4, 3))\nDebug.Print s.Connector.Type, s.Connector.EndPoint.PositionX",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: replaced the unsupported 'path driven by type, not editable nodes' claim with what the API actually exposes"
+   }
+  },
+  {
+   "name": "IVGCrossPoint",
+   "id": "class:IVGCrossPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCrossPoint",
+   "status": "current",
+   "summary": "One intersection between two paths, as returned by SubPath.GetIntersections or Segment.GetIntersections: its X/Y position and how far along each of the two paths it lies.",
+   "use_for": [
+    "marking where two paths cross for over-under knotwork or weaves",
+    "splitting or adding a node exactly at a crossing",
+    "placing rivets, dots or labels at line intersections in technical drawings"
+   ],
+   "avoid": [
+    "boolean shape building: use Weld / Intersect / Trim (Curve.WeldEx) instead of rebuilding geometry from points"
+   ],
+   "confidence": "medium",
+   "how": "Item of an IVGCrossPoints collection. PositionX / PositionY are page coordinates in document units; Offset is the position along the calling (first) path, Offset2 along the target path, expressed in the cdrSegmentOffsetType passed to GetIntersections (absolute, relative or parametric).",
+   "key_members": [
+    {
+     "name": "PositionX",
+     "use": "horizontal coordinate of the crossing, document units"
+    },
+    {
+     "name": "PositionY",
+     "use": "vertical coordinate of the crossing, document units"
+    },
+    {
+     "name": "Offset",
+     "use": "where the crossing lies along the first path (in the requested offset type)"
+    },
+    {
+     "name": "Offset2",
+     "use": "where the crossing lies along the second (target) path"
+    }
+   ],
+   "gotchas": [
+    "All four values are read-only snapshots; they do not update when either path moves (unverified)",
+    "Offset meaning depends on the OffsetType given to GetIntersections; use the same type when feeding it to AddNodeAt / BreakApartAt (unverified)"
+   ],
+   "example": "Dim a As Shape, b As Shape, x As Object\nSet a = ActiveSelectionRange(1): Set b = ActiveSelectionRange(2)\nFor Each x In a.Curve.SubPaths(1).GetIntersections(b.Curve.SubPaths(1), cdrRelativeSegmentOffset)\n  Debug.Print x.PositionX, x.PositionY, x.Offset, x.Offset2\nNext x",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example used undeclared shapes a / b (runtime 'Object required'); now takes the first two selected curves; 'snapshot' gotcha marked unverified"
+   }
+  },
+  {
+   "name": "IVGCrossPoints",
+   "id": "class:IVGCrossPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCrossPoints",
+   "status": "current",
+   "summary": "Read-only, 1-based collection of the intersection points found between two paths by SubPath.GetIntersections or Segment.GetIntersections.",
+   "use_for": [
+    "testing where two paths cross and how many times",
+    "driving node insertion or dot placement at every crossing"
+   ],
+   "avoid": [
+    "a plain yes/no overlap test of two whole curves: Curve.IntersectsWith is simpler"
+   ],
+   "confidence": "medium",
+   "how": "Returned by IVGSubPath.GetIntersections(Target, OffsetType) or IVGSegment.GetIntersections(Target, OffsetType). Enumerate with For Each or index Item(1..Count).",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "Item(Index): one IVGCrossPoint, base 1 (default member)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the crossings"
+    },
+    {
+     "name": "Count",
+     "use": "number of crossings; 0 when the paths do not meet"
+    }
+   ],
+   "gotchas": [
+    "Index is base 1, per the typelib",
+    "Tangent touches and overlapping collinear segments may report no point or many points (unverified)",
+    "Intersections are per subpath / segment; for multi-subpath curves loop over every SubPaths pair"
+   ],
+   "example": "Dim a As Shape, b As Shape, xs As Object\nSet a = ActiveSelectionRange(1): Set b = ActiveSelectionRange(2)\nSet xs = a.Curve.SubPaths(1).GetIntersections(b.Curve.SubPaths(1), cdrAbsoluteSegmentOffset)\nIf xs.Count > 0 Then Debug.Print xs(1).PositionX, xs(1).PositionY",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example used undeclared shapes a / b (runtime 'Object required'); now takes the first two selected curves"
+   }
+  },
+  {
+   "name": "IVGCurve",
+   "id": "class:IVGCurve",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCurve",
+   "status": "current",
+   "summary": "The editable vector geometry of a curve shape (and the display geometry of any shape): subpaths, nodes and segments, plus path math such as length, area, contour offset, weld, point-in-shape tests and node reduction. It can also live as a free curve that is on no page.",
+   "use_for": [
+    "generating vector paths from data (charts, patterns, CNC / laser and vinyl-cut outlines)",
+    "offset cut lines around sticker artwork via Contour",
+    "cleaning traced artwork: AutoReduceNodes, JoinTouchingSubpaths",
+    "hit-testing points against shapes in layout scripts"
+   ],
+   "avoid": [
+    "primitives you will keep editing: create rectangle / ellipse shapes instead so they stay live",
+    "a contour that should stay live and editable: use the Contour effect on the shape rather than Curve.Contour"
+   ],
+   "confidence": "high",
+   "how": "Shape.Curve on a curve shape (Shape.ConvertToCurves first for rectangles, ellipses, text); Shape.DisplayCurve reads the drawn geometry of any shape. Build new geometry with ActiveDocument.CreateCurve plus AppendSubpath... / CreateSubPath, then place it with ActiveLayer.CreateCurve(curve). GetCopy gives a free copy; CopyAssign writes geometry back into an existing curve.",
+   "key_members": [
+    {
+     "name": "SubPaths",
+     "use": "IVGSubPaths: each closed or open path inside the curve"
+    },
+    {
+     "name": "Nodes",
+     "use": "IVGNodes: every node, for node-level edits"
+    },
+    {
+     "name": "Segments",
+     "use": "IVGSegments: every segment (line or Bezier)"
+    },
+    {
+     "name": "Closed",
+     "use": "get/set whether the curve is closed"
+    },
+    {
+     "name": "Length",
+     "use": "total path length in document units"
+    },
+    {
+     "name": "Area",
+     "use": "area of a closed curve"
+    },
+    {
+     "name": "CreateSubPath",
+     "use": "CreateSubPath(x, y): start a new subpath, then append segments to it"
+    },
+    {
+     "name": "AppendSubpathFromPoints",
+     "use": "add a polyline subpath from a points array, optionally closed"
+    },
+    {
+     "name": "AppendSubpathFitToPoints",
+     "use": "add a smooth Bezier subpath fitted through points"
+    },
+    {
+     "name": "AppendCurve",
+     "use": "append all subpaths of another curve (combine)"
+    },
+    {
+     "name": "GetCopy",
+     "use": "free copy of the geometry, safe to modify without touching the shape"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "replace this curve's geometry with another curve's"
+    },
+    {
+     "name": "GetCurveInfo",
+     "use": "low-level CurveElement array of all nodes/segments"
+    },
+    {
+     "name": "PutCurveInfo",
+     "use": "rebuild the curve from a CurveElement array"
+    },
+    {
+     "name": "Contour",
+     "use": "Contour(Offset, ...) -> new offset curve (inside/outside, end caps, corners)"
+    },
+    {
+     "name": "WeldEx",
+     "use": "boolean with another curve: union, intersect, subtract or xor (cdrWeldMethod)"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "True if x,y lies inside the closed path"
+    },
+    {
+     "name": "AutoReduceNodes",
+     "use": "simplify the path by removing redundant nodes (0-100 amount)"
+    },
+    {
+     "name": "JoinTouchingSubpaths",
+     "use": "join open subpaths whose ends touch"
+    },
+    {
+     "name": "ApplyTransformMatrix",
+     "use": "apply a transform matrix to the geometry"
+    }
+   ],
+   "gotchas": [
+    "Shape.Curve only works on curve shapes; ConvertToCurves destroys a rectangle's or text's live parameters, so use DisplayCurve when you only need to read geometry",
+    "Contour, WeldEx, WeldWith, RemoveOverlaps, GetPolyline and GetCopy return a NEW free curve and leave the source unchanged; place it with ActiveLayer.CreateCurve or CopyAssign it back",
+    "Coordinates are in ActiveDocument.Unit relative to the drawing origin; set Unit explicitly at the start of a macro",
+    "A free curve (GetCopy) is not bound to a document; some operations need BindToDocument first (unverified)",
+    "GetCurveInfo / PutCurveInfo pass a SAFEARRAY of CurveElement structs, which does not marshal cleanly from Python/win32com; prefer AppendSubpathFromPoints or CreateSubPathFromArray there (unverified)",
+    "Many node edits in a loop each add an undo step; wrap them in ActiveDocument.BeginCommandGroup / EndCommandGroup"
+   ],
+   "example": "Dim c As Curve, s As Shape\nSet c = ActiveDocument.CreateCurve\nc.AppendSubpathRectangle 0, 2, 3, 0\nc.AppendSubpathCircle 1.5, 1, 0.5\nSet s = ActiveLayer.CreateCurve(c)\nDebug.Print c.Area, c.SubPaths.Count",
+   "equivalents": {
+    "PS": "class:PathItem",
+    "AI": "class:PathItem"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGCustomEffect",
+   "id": "class:IVGCustomEffect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCustomEffect",
+   "status": "current",
+   "summary": "A custom effect (Effect.Type = cdrCustomEffect), presumably supplied by a plug-in / extension rather than one of the built-in effect types; scripts see only its EffectID string and the EffectGroup shape that holds the generated result. The typelib has no description, so what any given EffectID draws is not known from the harvest.",
+   "use_for": [
+    "auditing which add-on effects a file depends on before sending it to a machine without them",
+    "finding the generated artwork group so it can be flattened or converted for output"
+   ],
+   "avoid": [
+    "built-in effects (blend, contour, drop shadow, envelope, extrude ...): read them through their own IVGEffect members instead",
+    "reading or editing the effect's settings: nothing beyond EffectID is exposed here"
+   ],
+   "confidence": "low",
+   "how": "IVGEffect.Custom on an effect whose Type is cdrCustomEffect (Shape.Effects.CustomEffects narrows the list). Such effects are created with Shape.CreateCustomEffect(EffectID, Parameters). EffectGroup is the shape holding the result (presumably shape type cdrCustomEffectGroupShape, unverified).",
+   "key_members": [
+    {
+     "name": "EffectID",
+     "use": "read-only identifier of the add-on effect"
+    },
+    {
+     "name": "EffectGroup",
+     "use": "read-only IVGShape that holds the effect's generated artwork"
+    }
+   ],
+   "gotchas": [
+    "Valid EffectIDs and the Parameters format for CreateCustomEffect are not listed in the typelib; read EffectID from an effect applied through the UI to learn one (unverified)",
+    "Effect.Custom on a non-custom effect errors or returns Nothing; check Effect.Type = cdrCustomEffect first (unverified)"
+   ],
+   "example": "Dim e As Object\nFor Each e In ActiveShape.Effects\n  If e.Type = cdrCustomEffect Then\n    Debug.Print e.Custom.EffectID, e.Custom.EffectGroup.Type\n  End If\nNext e",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: plug-in provenance stated as presumed, tied to cdrCustomEffect; how: EffectGroup's cdrCustomEffectGroupShape type marked unverified"
+   }
+  },
+  {
+   "name": "IVGCustomShape",
+   "id": "class:IVGCustomShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCustomShape",
+   "status": "current",
+   "summary": "A shape whose type is presumably defined by a plug-in / extension (Shape.Type = cdrCustomShape); scripts see only its TypeID string. The typelib has no description, so which tools produce custom shapes is not known from the harvest.",
+   "use_for": [
+    "inventorying add-on shape types in a file",
+    "pre-flight before export: find custom shapes an older version or another app may not render, then convert them to curves"
+   ],
+   "avoid": [
+    "editing the shape's parameters by script: only TypeID is exposed; read geometry via Shape.DisplayCurve"
+   ],
+   "confidence": "low",
+   "how": "Shape.Custom on a shape of type cdrCustomShape. Such shapes are created with ActiveLayer.CreateCustomShape(TypeID, Parameters); TypeID presumably identifies the provider of the shape type (unverified).",
+   "key_members": [
+    {
+     "name": "TypeID",
+     "use": "read-only identifier of the custom shape type / its provider"
+    }
+   ],
+   "gotchas": [
+    "Valid TypeIDs and the Parameters format for CreateCustomShape are not exposed by the typelib (unverified)",
+    "ConvertToCurves freezes a custom shape into plain curves and drops its live behaviour (unverified)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n  If s.Type = cdrCustomShape Then Debug.Print s.Custom.TypeID\nNext s",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / how: plug-in provenance and 'TypeID names the provider' are inference, now marked presumed / unverified"
+   }
+  },
+  {
+   "name": "IVGDataField",
+   "id": "class:IVGDataField",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDataField",
+   "status": "current",
+   "summary": "Definition of one Object Data field (a column of the Object Data manager): its name, data type, format string, default value, constraint, width and whether it is a default for new documents or this one.",
+   "use_for": [
+    "setting up SKU / price / material fields for catalogue and signage-schedule artwork",
+    "per-object cost tallies with group summaries (SummarizeGroup)",
+    "defining the fields a data-driven labelling macro reads"
+   ],
+   "avoid": [
+    "document-level metadata (title, keywords, notes): use Document.Keywords / Notes / Metadata"
+   ],
+   "confidence": "medium",
+   "how": "Item of ActiveDocument.DataFields (by index or name); created with DataFields.Add / AddEx / AddEx2. Each shape's value for the field is an IVGDataItem in Shape.ObjectData, whose DataField points back here.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "field name; also the key for DataFields.Item and ObjectData.Item"
+    },
+    {
+     "name": "DataType",
+     "use": "cdrDataType: String, Number, Event or Action"
+    },
+    {
+     "name": "Format",
+     "use": "display format string applied to values"
+    },
+    {
+     "name": "FormatType",
+     "use": "read-only cdrDataFormatType: General, DateTime, LinearAngular, Numeric"
+    },
+    {
+     "name": "DefaultValue",
+     "use": "value new items get"
+    },
+    {
+     "name": "Constraint",
+     "use": "constraint string limiting allowed values"
+    },
+    {
+     "name": "FieldWidth",
+     "use": "column width in the Object Data manager"
+    },
+    {
+     "name": "AppDefault",
+     "use": "True = field is added to new documents too"
+    },
+    {
+     "name": "DocDefault",
+     "use": "True = field applies by default in this document"
+    },
+    {
+     "name": "SummarizeGroup",
+     "use": "True = group totals summarise children's values"
+    },
+    {
+     "name": "Index",
+     "use": "read-only position in DataFields"
+    },
+    {
+     "name": "Reorder",
+     "use": "Reorder(NewIndex): move the column"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the field definition"
+    },
+    {
+     "name": "Target",
+     "use": "target filter the data is meant for (export use, unverified)"
+    },
+    {
+     "name": "ParentName",
+     "use": "parent element name, set by AddEx2 for structured (XML-like) data (unverified)"
+    },
+    {
+     "name": "ElementName",
+     "use": "element name, set by AddEx2 for structured data (unverified)"
+    }
+   ],
+   "gotchas": [
+    "Delete removes the field and, with it, every shape's value for that field (unverified)",
+    "FormatType is read-only; it follows the Format string you set (unverified)",
+    "Renaming a field breaks macros that look values up by the old name",
+    "AppDefault = True leaks a job-specific field into every new document; keep it False for one-off schemas"
+   ],
+   "example": "Dim f As Object\nIf Not ActiveDocument.DataFields.IsPresent(\"SKU\") Then\n  Set f = ActiveDocument.DataFields.Add(\"SKU\")\n  f.DefaultValue = \"TBD\"\n  f.AppDefault = False\nEnd If",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the default field names (Name, Cost, Comments), which are not in the harvest"
+   }
+  },
+  {
+   "name": "IVGDataFields",
+   "id": "class:IVGDataFields",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDataFields",
+   "status": "current",
+   "summary": "The document's list of Object Data field definitions (the columns of the Object Data manager); add, look up and test fields here.",
+   "use_for": [
+    "setting up a data schema for product sheets, signage schedules or parts lists",
+    "checking a template has the fields a macro expects"
+   ],
+   "avoid": [
+    "reading a shape's values: those live in Shape.ObjectData (IVGDataItems)"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.DataFields. Item by 1-based index or field name; Add(Name, [Format, AppDefault, DocDefault, SummarizeGroup]) for a simple field, AddEx to also set DataType, DefaultValue, Constraint, Target and FieldWidth, AddEx2 to add parent / element names; IsPresent(FieldName) before adding.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of defined fields"
+    },
+    {
+     "name": "Item",
+     "use": "Item(IndexOrName): one IVGDataField (default member)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the fields"
+    },
+    {
+     "name": "Add",
+     "use": "add a field by name with optional format and default flags"
+    },
+    {
+     "name": "AddEx",
+     "use": "add a field with data type, default value, constraint, target and width"
+    },
+    {
+     "name": "AddEx2",
+     "use": "AddEx plus ParentName / ElementName for structured data"
+    },
+    {
+     "name": "IsPresent",
+     "use": "True if a field of that name already exists"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGDocument that owns the fields"
+    }
+   ],
+   "gotchas": [
+    "Adding a name that already exists likely errors; call IsPresent first (unverified)",
+    "Documents start with built-in fields (such as Name, Cost, Comments); leave them in shared templates (unverified)"
+   ],
+   "example": "Dim f As Object\nFor Each f In ActiveDocument.DataFields\n  Debug.Print f.Index, f.Name, f.DataType\nNext f\nIf Not ActiveDocument.DataFields.IsPresent(\"Price\") Then ActiveDocument.DataFields.AddEx \"Price\", cdrDataTypeNumber, \"0\"",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDataItem",
+   "id": "class:IVGDataItem",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDataItem",
+   "status": "current",
+   "summary": "One shape's value for one Object Data field (for example this sign's Cost = 120); Value is the raw value, FormattedValue the text with the field's format applied.",
+   "use_for": [
+    "stamping SKU / price / material on each product illustration",
+    "reading per-object data to build a parts list, quote or production schedule",
+    "driving label text from object data"
+   ],
+   "avoid": [
+    "text the viewer must see: object data is invisible metadata; put visible text in a text shape"
+   ],
+   "confidence": "medium",
+   "how": "Shape.ObjectData(name or index) returns it; ObjectData.Add(DataField, Value) creates one. DataField links to the field definition (name, type, format).",
+   "key_members": [
+    {
+     "name": "Value",
+     "use": "get/set the raw value (Variant)"
+    },
+    {
+     "name": "FormattedValue",
+     "use": "read-only text of the value using the field's Format"
+    },
+    {
+     "name": "DataField",
+     "use": "the IVGDataField this value belongs to"
+    },
+    {
+     "name": "Clear",
+     "use": "empty this value"
+    },
+    {
+     "name": "Parent",
+     "use": "the shape's IVGDataItems collection"
+    }
+   ],
+   "gotchas": [
+    "Value is a Variant; numbers can come back as strings depending on the field's DataType (unverified)",
+    "Object data travels with the shape through duplicate and copy/paste within CorelDRAW (unverified)"
+   ],
+   "example": "With ActiveShape.ObjectData(\"SKU\")\n  .Value = \"BX-204\"\n  Debug.Print .DataField.Name, .FormattedValue\nEnd With",
+   "equivalents": {
+    "AI": "class:Tag"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDataItems",
+   "id": "class:IVGDataItems",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDataItems",
+   "status": "current",
+   "summary": "The Object Data of one shape: the collection of its field values, one DataItem per field.",
+   "use_for": [
+    "dumping every metadata value of a selected object",
+    "copying object data from a master shape onto its variants"
+   ],
+   "avoid": [
+    "defining new fields: that happens on ActiveDocument.DataFields; this collection only holds values"
+   ],
+   "confidence": "medium",
+   "how": "Shape.ObjectData. Item by 1-based index or field name; Add(DataField, [Value]) attaches a value; CopyFrom(Shape) copies another shape's values; Clear wipes all of them.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of data items on the shape"
+    },
+    {
+     "name": "Item",
+     "use": "Item(IndexOrName): one IVGDataItem (default member)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the shape's values"
+    },
+    {
+     "name": "Add",
+     "use": "Add(DataField, [Value]) attach a value for a field"
+    },
+    {
+     "name": "CopyFrom",
+     "use": "CopyFrom(Shape): copy all values from another shape"
+    },
+    {
+     "name": "Clear",
+     "use": "remove all values from this shape"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGShape that owns the data"
+    }
+   ],
+   "gotchas": [
+    "Parent is the shape, not the document",
+    "Clear wipes every field value on the shape; use DataItem.Clear for a single field"
+   ],
+   "example": "Dim d As Object\nFor Each d In ActiveShape.ObjectData\n  Debug.Print d.DataField.Name & \" = \" & d.FormattedValue\nNext d",
+   "equivalents": {
+    "AI": "class:Tags"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDimension",
+   "id": "class:IVGDimension",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDimension",
+   "status": "current",
+   "summary": "Settings of a dimension-line object (from the Dimension tools): label precision, prefix / suffix, units display, boxed or centred label, placement, extension-line visibility and custom gaps; Linear or Angular holds the type-specific part.",
+   "use_for": [
+    "packaging dielines and technical drawings with live measurements",
+    "signage and fabrication spec sheets",
+    "restyling every dimension label to a house style in one pass"
+   ],
+   "avoid": [
+    "annotation that must never change: convert to curves or use plain text",
+    "screen mock-ups where a static text label is enough"
+   ],
+   "confidence": "high",
+   "how": "Shape.Dimension on a dimension shape (Shape.Type = cdrLinearDimensionShape). Created with ActiveLayer.CreateLinearDimension or CreateAngularDimension using snap points as anchors. Type says which of Linear / Angular applies.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrDimensionType: Linear 0 or Angular 1"
+    },
+    {
+     "name": "Linear",
+     "use": "IVGDimensionLinear settings (when Type = linear)"
+    },
+    {
+     "name": "Angular",
+     "use": "IVGDimensionAngular settings (when Type = angular)"
+    },
+    {
+     "name": "Precision",
+     "use": "number of decimal places in the label"
+    },
+    {
+     "name": "Prefix",
+     "use": "text before the number"
+    },
+    {
+     "name": "Suffix",
+     "use": "text after the number"
+    },
+    {
+     "name": "ShowUnits",
+     "use": "append the unit to the label"
+    },
+    {
+     "name": "LeadingZero",
+     "use": "show 0.5 rather than .5"
+    },
+    {
+     "name": "BoxedText",
+     "use": "draw a box around the label"
+    },
+    {
+     "name": "TextCentered",
+     "use": "centre the label on the dimension line"
+    },
+    {
+     "name": "Placement",
+     "use": "cdrDimensionPlacement: above, within or below the line"
+    },
+    {
+     "name": "HorizontalText",
+     "use": "keep the label horizontal regardless of line angle"
+    },
+    {
+     "name": "DynamicText",
+     "use": "keep the label updating when measured objects move"
+    },
+    {
+     "name": "TextShape",
+     "use": "the label's text shape (font, size, colour)"
+    },
+    {
+     "name": "Outline",
+     "use": "outline (line width, colour, arrows) of the dimension lines"
+    },
+    {
+     "name": "UseDistanceFromObject",
+     "use": "turn the custom object distance on"
+    },
+    {
+     "name": "SetDistanceFromObject",
+     "use": "set the custom distance of dimension lines from the object"
+    },
+    {
+     "name": "SetOverhang",
+     "use": "set the custom extension-line overhang"
+    },
+    {
+     "name": "SetTextLabelGap",
+     "use": "set the custom gap around the label"
+    },
+    {
+     "name": "ExtensionLinesVisible",
+     "use": "show or hide extension lines"
+    }
+   ],
+   "gotchas": [
+    "DistanceFromObject, Overhang and TextLabelGap are read-only; change them with SetDistanceFromObject / SetOverhang / SetTextLabelGap, and they only take effect while the matching Use... flag is True",
+    "Read Linear only when Type = cdrDimensionLinear and Angular only when Type = cdrDimensionAngular; the other one errors or returns Nothing (unverified)",
+    "DynamicText = False freezes the label: it stops updating when the measured objects move",
+    "Measured values follow the document unit and drawing scale (ActiveDocument.WorldScale); set the scale for scaled plans (unverified)",
+    "The shape-type enum only lists cdrLinearDimensionShape; angular dimensions probably report that same shape type (unverified)"
+   ],
+   "example": "With ActiveShape.Dimension\n  .Precision = 1\n  .Suffix = \" mm\"\n  .ShowUnits = False\n  .SetTextLabelGap 0.05\n  .UseTextLabelGap = True\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDimensionAngular",
+   "id": "class:IVGDimensionAngular",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDimensionAngular",
+   "status": "current",
+   "summary": "The angular part of a dimension object: centre and two arm points, label position, angle unit (degrees, radians, gradians or degree symbol) and whether the angle is measured clockwise.",
+   "use_for": [
+    "marking fold and bend angles on packaging dielines",
+    "angle callouts in technical, architectural and product drawings"
+   ],
+   "avoid": [
+    "measuring a length: use a linear dimension (IVGDimensionLinear)"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Dimension.Angular when Dimension.Type = cdrDimensionAngular. Created with ActiveLayer.CreateAngularDimension(Center, Point1, Point2, TextX, TextY, ...). Shared label settings (precision, prefix, suffix) stay on IVGDimension.",
+   "key_members": [
+    {
+     "name": "Center",
+     "use": "read-only IVGSnapPoint at the vertex of the angle"
+    },
+    {
+     "name": "Point1",
+     "use": "read-only snap point on the first arm"
+    },
+    {
+     "name": "Point2",
+     "use": "read-only snap point on the second arm"
+    },
+    {
+     "name": "TextX",
+     "use": "read-only horizontal position of the label"
+    },
+    {
+     "name": "TextY",
+     "use": "read-only vertical position of the label"
+    },
+    {
+     "name": "Units",
+     "use": "cdrDimensionAngularUnits: Degrees, Radians, Gradians, DegreesSymbol"
+    },
+    {
+     "name": "ShowUnits",
+     "use": "append the angle unit to the label"
+    },
+    {
+     "name": "Clockwise",
+     "use": "measure the angle clockwise instead of counter-clockwise"
+    },
+    {
+     "name": "InnerExtensionLinesVisible",
+     "use": "show the inner extension lines"
+    }
+   ],
+   "gotchas": [
+    "Center, Point1, Point2, TextX and TextY are read-only; re-anchoring means a new dimension or moving the snapped objects (unverified)",
+    "Clockwise switches which of the two angles (the angle or 360 minus it) is measured (unverified)",
+    "ShowUnits exists on both IVGDimension and here; which one wins when they differ is not documented (unverified)"
+   ],
+   "example": "With ActiveShape.Dimension\n  If .Type = cdrDimensionAngular Then\n    .Angular.Units = cdrDimensionUnitDegreesSymbol\n    .Angular.ShowUnits = True\n    .Precision = 0\n  End If\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDimensionLinear",
+   "id": "class:IVGDimensionLinear",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDimensionLinear",
+   "status": "current",
+   "summary": "The linear part of a dimension object: horizontal, vertical or slanted type, the two anchor points, label position and centring, number style (decimal, fractional, engineering, architectural) and unit, placement relative to the line, and arrow reversal when there is no room between the extension lines.",
+   "use_for": [
+    "width / height / bleed callouts on packaging dielines",
+    "fabrication and signage spec sheets in mm or feet-and-inches",
+    "house-style pass over all linear dimensions in a drawing"
+   ],
+   "avoid": [
+    "measuring angles: use an angular dimension (IVGDimensionAngular)"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Dimension.Linear when Dimension.Type = cdrDimensionLinear. Created with ActiveLayer.CreateLinearDimension(Type, Point1, Point2, ...), whose Type (horizontal / vertical / slanted) is fixed at creation.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrLinearDimensionType: Horizontal 0, Vertical 1, Slanted 2"
+    },
+    {
+     "name": "Point1",
+     "use": "read-only first anchor snap point"
+    },
+    {
+     "name": "Point2",
+     "use": "read-only second anchor snap point"
+    },
+    {
+     "name": "Style",
+     "use": "cdrDimensionStyle: Decimal, Fractional, Engineering, Architectural"
+    },
+    {
+     "name": "Units",
+     "use": "cdrDimensionLinearUnits: label unit (mm, cm, in, ft, pt ...)"
+    },
+    {
+     "name": "ShowUnits",
+     "use": "append the unit to the label"
+    },
+    {
+     "name": "Placement",
+     "use": "cdrDimensionPlacement: above, within or below the line"
+    },
+    {
+     "name": "TextCentered",
+     "use": "centre the label between the extension lines"
+    },
+    {
+     "name": "TextX",
+     "use": "read-only label X position"
+    },
+    {
+     "name": "TextY",
+     "use": "read-only label Y position"
+    },
+    {
+     "name": "HorizontalText",
+     "use": "keep a slanted dimension's label horizontal"
+    },
+    {
+     "name": "ReverseTerminators",
+     "use": "put the arrows outside the extension lines"
+    },
+    {
+     "name": "AutoReverseTerminators",
+     "use": "flip arrows outside automatically when space is tight"
+    },
+    {
+     "name": "UseReverseTerminatorLength",
+     "use": "use a custom length for the flipped arrow stubs"
+    },
+    {
+     "name": "SetReverseTerminatorLength",
+     "use": "set that custom stub length"
+    },
+    {
+     "name": "InnerDimensionLineVisible",
+     "use": "show the line between extension lines when arrows are flipped"
+    }
+   ],
+   "gotchas": [
+    "Type is read-only; a horizontal dimension cannot be turned slanted, create a new one",
+    "ReverseTerminatorLength is read-only; set it with SetReverseTerminatorLength and turn UseReverseTerminatorLength on",
+    "Units sets the label unit independently of the document unit; check both when numbers look off (unverified)",
+    "Placement, TextCentered, ShowUnits and HorizontalText also exist on IVGDimension; they probably write the same setting (unverified)"
+   ],
+   "example": "Dim L As Object\nSet L = ActiveShape.Dimension.Linear\nL.Style = cdrDimensionStyleDecimal\nL.Units = cdrDimensionUnitMM\nL.Placement = cdrDimensionAboveLine\nL.AutoReverseTerminators = True\nDebug.Print L.Type, L.Point1.PositionX, L.Point2.PositionX",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDocument",
+   "id": "class:IVGDocument",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDocument",
+   "status": "current",
+   "summary": "An open CorelDRAW drawing: the top-level object for its pages, layers, selection, units, save / export / PDF publishing, undo grouping, styles, colour management, object data and review markup.",
+   "use_for": [
+    "batch-producing print and web files (PDF, PNG, EPS, SVG) from templates",
+    "setting up multi-page documents and page sizes",
+    "automating layout edits that undo as one step",
+    "headless processing of many .cdr files"
+   ],
+   "avoid": [
+    "calling ActivePage / ActiveLayer helpers on a document that is not active: Activate it first",
+    "Export when filter options matter: use ExportEx / ExportBitmap and set options before Finish"
+   ],
+   "confidence": "high",
+   "how": "ActiveDocument, Application.Documents(i), or the return of Application.CreateDocument / OpenDocument. Set Unit and ReferencePoint first; work through Pages / ActivePage / ActiveLayer; wrap edits in BeginCommandGroup / EndCommandGroup so they undo as one step; output with SaveAs, ExportEx / ExportBitmap or PublishToPDF (configure PDFSettings first).",
+   "key_members": [
+    {
+     "name": "Unit",
+     "use": "cdrUnit used for every position and size the script passes"
+    },
+    {
+     "name": "ReferencePoint",
+     "use": "anchor (centre, corner ...) for positioning and sizing calls"
+    },
+    {
+     "name": "Pages",
+     "use": "IVGPages: all pages"
+    },
+    {
+     "name": "ActivePage",
+     "use": "the current page"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "the current layer, where Create... calls put new shapes"
+    },
+    {
+     "name": "AddPagesEx",
+     "use": "append pages of a given width and height"
+    },
+    {
+     "name": "SelectionRange",
+     "use": "the current selection as an IVGShapeRange"
+    },
+    {
+     "name": "BeginCommandGroup",
+     "use": "start a named single-undo step"
+    },
+    {
+     "name": "EndCommandGroup",
+     "use": "close the undo step"
+    },
+    {
+     "name": "SaveAs",
+     "use": "SaveAs(FileName, [Options]): save to a path; StructSaveAsOptions sets Filter, Version, Range, ThumbnailSize, Overwrite, embedded ICC / VBA"
+    },
+    {
+     "name": "ExportEx",
+     "use": "export to a filter, returns the filter object; call Finish to write"
+    },
+    {
+     "name": "ExportBitmap",
+     "use": "raster export with size, resolution, anti-aliasing, transparency"
+    },
+    {
+     "name": "PDFSettings",
+     "use": "PDF publish settings (preset, PDF/X, colour, marks)"
+    },
+    {
+     "name": "PublishToPDF",
+     "use": "write a PDF with the current PDFSettings"
+    },
+    {
+     "name": "CreateCurve",
+     "use": "new empty IVGCurve bound to this document"
+    },
+    {
+     "name": "DataFields",
+     "use": "Object Data field definitions"
+    },
+    {
+     "name": "Markup",
+     "use": "review comments (IVGDocumentMarkup)"
+    },
+    {
+     "name": "Activate",
+     "use": "make this the active document before Active... members"
+    },
+    {
+     "name": "Dirty",
+     "use": "True when there are unsaved changes"
+    },
+    {
+     "name": "Close",
+     "use": "close the document"
+    }
+   ],
+   "gotchas": [
+    "Unit, ReferencePoint and the drawing origin are per document and a macro inherits whatever the user left; set them first, or bracket your code with SaveSettings / RestoreSettings",
+    "ExportEx and ExportBitmap return a filter object: nothing is written until you call Finish on it",
+    "ActivePage, ActiveLayer and Selection act on the active window; call Activate before using them on another open document (unverified)",
+    "Close from a script does not ask to save; check Dirty and Save first (unverified)",
+    "Clone makes a windowless in-memory copy (IsTemporary = True); anything that needs a window or view will fail on it (unverified)",
+    "Python win32com wraps the ExportEx / ExportBitmap return as the generic ICorelExportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch (unverified)"
+   ],
+   "example": "With ActiveDocument\n  .Unit = cdrMillimeter\n  .BeginCommandGroup \"Badge\"\n  .ActiveLayer.CreateEllipse2 50, 50, 20\n  .EndCommandGroup\n  .PublishToPDF \"C:\\out\\badge.pdf\"\nEnd With",
+   "equivalents": {
+    "PS": "class:Document",
+    "AI": "class:Document"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "SaveAs key member claimed a compression option StructSaveAsOptions does not have; now lists its real fields. Summary no longer calls Document the object-model root (Application is)"
+   }
+  },
+  {
+   "name": "IVGDocumentEvents",
+   "id": "class:IVGDocumentEvents",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDocumentEvents",
+   "status": "hidden",
+   "summary": "The (hidden) event interface a CorelDRAW document fires: query-before close / save / print / export with a Cancel flag, before / after save, print and export, document open / close, and layer, page, shape and selection changes.",
+   "use_for": [
+    "pre-flight checks that block a save or export (missing metadata, RGB in a print job)",
+    "auto-versioning or logging files on save and export",
+    "keeping linked data or labels in sync when shapes change"
+   ],
+   "avoid": [
+    "heavy work in ShapeChange or SelectionChange handlers: they fire constantly and lag the UI; run an explicit macro instead"
+   ],
+   "confidence": "medium",
+   "how": "Not something a script calls. The Document coclass's event source is the twin dispinterface DIVGDocumentEvents (same 27 members); this dual IVGDocumentEvents is presumably what an external sink implements (unverified). In VBA, declare a WithEvents variable of type Document and write handlers named after these members; from external COM, connect a sink with ActiveDocument.AdviseEvents(sink) and disconnect it with UnadviseEvents(cookie).",
+   "key_members": [
+    {
+     "name": "QueryClose",
+     "use": "before close; set Cancel to keep the document open"
+    },
+    {
+     "name": "QuerySave",
+     "use": "before save; set Cancel to stop it"
+    },
+    {
+     "name": "QueryPrint",
+     "use": "before print; set Cancel to stop it"
+    },
+    {
+     "name": "QueryExport",
+     "use": "before export; set Cancel to stop it"
+    },
+    {
+     "name": "BeforeSave",
+     "use": "about to save (SaveAs flag, FileName)"
+    },
+    {
+     "name": "AfterSave",
+     "use": "saved (SaveAs flag, FileName)"
+    },
+    {
+     "name": "BeforeExport",
+     "use": "about to export (FileName, Filter, SaveBitmap)"
+    },
+    {
+     "name": "AfterExport",
+     "use": "exported (FileName, Filter, SaveBitmap)"
+    },
+    {
+     "name": "Open",
+     "use": "document opened"
+    },
+    {
+     "name": "Close",
+     "use": "document closed"
+    },
+    {
+     "name": "ShapeCreate",
+     "use": "a shape was created"
+    },
+    {
+     "name": "ShapeDelete",
+     "use": "shapes were deleted (Count only)"
+    },
+    {
+     "name": "ShapeChange",
+     "use": "a shape changed; Scope flags fill, outline, transparency, content, text ..."
+    },
+    {
+     "name": "ShapeTransform",
+     "use": "a shape was transformed"
+    },
+    {
+     "name": "SelectionChange",
+     "use": "the selection changed"
+    },
+    {
+     "name": "PageCreate",
+     "use": "a page was added"
+    },
+    {
+     "name": "LayerCreate",
+     "use": "a layer was added"
+    }
+   ],
+   "gotchas": [
+    "Hidden interface (typelib flag hidden): object browsers do not list it by default; handler names and parameter lists must match these members exactly",
+    "Delete events (ShapeDelete, PageDelete, LayerDelete) pass only a Count, not the deleted objects",
+    "ShapeChange's Scope is a bit set of cdrShapeChangeScope values; test with And, not =",
+    "Cancel in the Query... events is meant to be set True to block the action (by-reference argument) (unverified)",
+    "Keep the cookie from AdviseEvents and call UnadviseEvents, or the sink stays connected to the document (unverified)",
+    "No event fires while Application.EventsEnabled is False; a macro that turned it off for speed must turn it back on"
+   ],
+   "example": "Private WithEvents doc As Document\nSub Hook()\n  Set doc = ActiveDocument\nEnd Sub\nPrivate Sub doc_BeforeExport(ByVal FileName As String, ByVal Filter As cdrFilter, ByVal SaveBitmap As Boolean)\n  If Len(doc.Keywords) = 0 Then MsgBox \"Add keywords before exporting\"\nEnd Sub",
+   "equivalents": {
+    "PS": "class:Notifier"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the typelib's Document coclass sources DIVGDocumentEvents, not this dual interface; said so. Added the Application.EventsEnabled gotcha"
+   }
+  },
+  {
+   "name": "IVGDocumentMarkup",
+   "id": "class:IVGDocumentMarkup",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDocumentMarkup",
+   "status": "current",
+   "summary": "The review markup of a whole document: find a comment, thread or page by GUID or by online ID, and read or replace all comments as JSON.",
+   "use_for": [
+    "archiving client review comments with the job",
+    "carrying comments from one version of a file to the next",
+    "jumping from a GUID in a review report to its thread or page"
+   ],
+   "avoid": [
+    "listing the threads on one page: use Page.Markup.Threads"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.Markup. Per-page threads live under Page.Markup.Threads; this object is for document-wide GUID / online-ID lookups and JSON round-trips.",
+   "key_members": [
+    {
+     "name": "FindComment",
+     "use": "FindComment(Guid) -> IVGComment"
+    },
+    {
+     "name": "FindThread",
+     "use": "FindThread(Guid) -> IVGCommentThread"
+    },
+    {
+     "name": "FindPage",
+     "use": "FindPage(Guid) -> IVGPage"
+    },
+    {
+     "name": "FindCommentByOnlineID",
+     "use": "look up a comment by its cloud online ID"
+    },
+    {
+     "name": "FindThreadByOnlineID",
+     "use": "look up a thread by its cloud online ID"
+    },
+    {
+     "name": "FindPageByOnlineID",
+     "use": "look up a page by its cloud online ID"
+    },
+    {
+     "name": "GetCommentsAsJson",
+     "use": "every comment in the document as one JSON string"
+    },
+    {
+     "name": "ReplaceCommentsFromJson",
+     "use": "replace the document's comments with a JSON string"
+    }
+   ],
+   "gotchas": [
+    "ReplaceCommentsFromJson replaces rather than merges (per its name); start from GetCommentsAsJson output and edit that (unverified)",
+    "The JSON schema is not documented in the typelib; treat it as opaque between the two calls (unverified)",
+    "Local GUIDs and cloud online IDs are different strings; use the matching Find... method",
+    "Find... with an unknown GUID returns Nothing or raises; guard the call (unverified)"
+   ],
+   "example": "Dim js As String\njs = ActiveDocument.Markup.GetCommentsAsJson\nOpen \"C:\\out\\review.json\" For Output As #1\nPrint #1, js\nClose #1",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDocuments",
+   "id": "class:IVGDocuments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDocuments",
+   "status": "current",
+   "summary": "The collection of drawings open in CorelDRAW (Application.Documents): count, index and enumerate them.",
+   "use_for": [
+    "saving or exporting every open file in a batch",
+    "finding an already-open file before opening it again"
+   ],
+   "avoid": [
+    "opening or creating documents here: use Application.OpenDocument / CreateDocument"
+   ],
+   "confidence": "high",
+   "how": "Application.Documents (or the global Documents in VBA). Item takes a 1-based number; loop and compare FullFileName or Title to find a file.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "Item(Index): one IVGDocument, base 1 (default member)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over open documents"
+    },
+    {
+     "name": "Count",
+     "use": "number of open documents"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    },
+    {
+     "name": "Parent",
+     "use": "the application (same as Application)"
+    }
+   ],
+   "gotchas": [
+    "Item accepts only a numeric index (Index:long), not a file name",
+    "Closing documents inside a For Each loop shifts the collection; loop backwards by index",
+    "No Add / Open here: Application.CreateDocument and Application.OpenDocument do that"
+   ],
+   "example": "Dim i As Long\nFor i = Documents.Count To 1 Step -1\n  With Documents(i)\n    If .Dirty And .FullFileName <> \"\" Then .Save\n  End With\nNext i",
+   "equivalents": {
+    "PS": "class:Documents",
+    "AI": "class:Documents"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGDuotone",
+   "id": "class:IVGDuotone",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGDuotone",
+   "status": "current",
+   "summary": "Duotone settings of a bitmap: monotone / duotone / tritone / quadtone type, the tone inks with their tone curves, and optional overprint colour overrides; loadable from and savable to a .cpd file.",
+   "use_for": [
+    "two-colour (spot + black) print jobs from photos",
+    "one consistent brand duotone across a batch of images",
+    "saving and reusing duotone presets as .cpd files"
+   ],
+   "avoid": [
+    "an RGB / screen-only colour tint: a duotone is a print separation mode; use a colour adjustment or lens instead",
+    "full-colour images that must keep their colours"
+   ],
+   "confidence": "medium",
+   "how": "Bitmap.Duotone (Shape.Bitmap.Duotone) reads the settings of a duotone bitmap; Application.CreateDuotone gives a fresh one. Set Type and the inks (or Load a .cpd), then pass it to Bitmap.ConvertToDuotone(Duotone).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrDuotoneType: Monotone 0, Duotone 1, Tritone 2, Quadtone 3"
+    },
+    {
+     "name": "InkCount",
+     "use": "read-only number of tone inks"
+    },
+    {
+     "name": "Inks",
+     "use": "Inks(Index): IVGDuotoneInk (colour and tone curve)"
+    },
+    {
+     "name": "UseOverprints",
+     "use": "turn the overprint colour overrides on"
+    },
+    {
+     "name": "OverprintCount",
+     "use": "read-only number of ink overprint combinations"
+    },
+    {
+     "name": "Overprints",
+     "use": "Overprints(Index): colour shown where inks overprint"
+    },
+    {
+     "name": "ResetOverprints",
+     "use": "back to the computed overprint colours"
+    },
+    {
+     "name": "Load",
+     "use": "Load(FileName) from a .cpd preset, returns True on success"
+    },
+    {
+     "name": "Save",
+     "use": "Save(FileName) to a .cpd preset"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy of the settings"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy another duotone's settings into this one"
+    }
+   ],
+   "gotchas": [
+    "Load and Save return a Boolean; check it instead of waiting for an error",
+    "Editing the object from Bitmap.Duotone may not re-render the bitmap until it goes through ConvertToDuotone (unverified)",
+    "Ink colours should be spot (named) colours if the job is separated; process inks defeat the purpose"
+   ],
+   "example": "Dim d As Object\nSet d = Application.CreateDuotone\nIf d.Load(\"C:\\presets\\warm.cpd\") Then\n  ActiveShape.Bitmap.ConvertToDuotone d\nEnd If",
+   "equivalents": {
+    "PS": "Image/Mode/Duotone"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

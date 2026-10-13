@@ -1,0 +1,1468 @@
+{
+ "cards": [
+  {
+   "name": "IVGArrowHeadOptions",
+   "id": "class:IVGArrowHeadOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGArrowHeadOptions",
+   "status": "current",
+   "summary": "Size, offset, rotation and mirroring settings for the arrowhead at one end of an outline (the Arrowhead Attributes values): Length and Width scale the head, OffsetX / OffsetY nudge it in percent of its own size, RotationAngle turns it, FlipHorizontal / FlipVertical mirror it. It does not choose which arrowhead is drawn; that is Outline.StartArrow / EndArrow.",
+   "use_for": [
+    "longer or slimmer arrowheads on callout and leader lines",
+    "matching arrowhead size across every connector in an infographic or flow chart",
+    "mirroring or rotating a custom arrowhead without redrawing it",
+    "copying one line's arrowhead settings to other lines"
+   ],
+   "avoid": [
+    "choosing the arrowhead shape: set Outline.StartArrow / EndArrow to an ArrowHead from Application.ArrowHeads instead",
+    "lines with no arrowhead assigned: the options have nothing visible to change"
+   ],
+   "confidence": "medium",
+   "how": "Per-end arrowhead settings of an outline. Read from Shape.Outline.StartArrowOptions / EndArrowOptions (read/write, propput in the typelib), or build a free-standing one with ActiveDocument.CreateArrowHeadOptions(Length, Width, OffsetX, OffsetY, RotationAngle, FlipHorizontal, FlipVertical) and assign it to an outline. GetCopy / CopyAssign move settings between lines.",
+   "key_members": [
+    {
+     "name": "Length",
+     "use": "horizontal size of the arrowhead (along the line)"
+    },
+    {
+     "name": "Width",
+     "use": "vertical size of the arrowhead (across the line)"
+    },
+    {
+     "name": "OffsetX",
+     "use": "shift along the line, in percent of the arrowhead length"
+    },
+    {
+     "name": "OffsetY",
+     "use": "shift across the line, in percent of the arrowhead width"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "rotation of the head around its origin point"
+    },
+    {
+     "name": "FlipHorizontal",
+     "use": "mirror the head horizontally"
+    },
+    {
+     "name": "FlipVertical",
+     "use": "mirror the head vertically"
+    },
+    {
+     "name": "Flip",
+     "use": "mirror by a cdrFlipAxes value (cdrFlipHorizontal / cdrFlipVertical / cdrFlipBoth)"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached copy to edit and assign elsewhere"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "take all settings from another ArrowHeadOptions"
+    }
+   ],
+   "gotchas": [
+    "FlipVerical (misspelled, hidden) is a legacy alias of FlipVertical; use FlipVertical",
+    "OffsetX / OffsetY are percentages of the arrowhead's length / width, not document units",
+    "whether editing the object returned by Outline.StartArrowOptions changes the line in place is not confirmed; the safe pattern is GetCopy, edit, assign back (unverified)",
+    "Outline.StartArrowOptions / EndArrowOptions are propput in the typelib: in VBA assign without Set",
+    "Length / Width are in document units (ActiveDocument.Unit) like other CorelDRAW sizes (unverified)"
+   ],
+   "example": "Dim s As Shape, o As ArrowHeadOptions\nSet s = ActiveShape  ' a line that already has an end arrowhead\nSet o = s.Outline.EndArrowOptions.GetCopy\no.Length = 0.4: o.Width = 0.2\no.RotationAngle = 15\ns.Outline.EndArrowOptions = o",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGArrowHeads",
+   "id": "class:IVGArrowHeads",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGArrowHeads",
+   "status": "current",
+   "summary": "The application-wide list of arrowhead shapes (the choices in the Outline Pen arrowhead pickers), 1-based. Scripts take an ArrowHead from it to put on a line's start or end, and can add, replace or remove custom arrowheads in that global list.",
+   "use_for": [
+    "putting a chosen arrowhead on leader lines, callouts and flow-chart connectors",
+    "registering a custom arrowhead drawn as a curve so every document can use it",
+    "listing the available arrowheads to pick one by name"
+   ],
+   "avoid": [
+    "sizing or rotating the head on one line: that is Outline.StartArrowOptions / EndArrowOptions (ArrowHeadOptions)",
+    "Remove / Replace on a shared workstation: they change the user's global arrowhead list, not just the document"
+   ],
+   "confidence": "medium",
+   "how": "Collection returned by Application.ArrowHeads. Item(Index) (default member, base 1) gives an ArrowHead to assign to Shape.Outline.StartArrow / EndArrow; Add(ArrowHead) takes one built with ActiveDocument.CreateArrowHead(curve) or CreateArrowHead2(curve, name) and returns the copy stored in the global list.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "arrowhead by 1-based position (default member)"
+    },
+    {
+     "name": "Count",
+     "use": "number of arrowheads in the list"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets VBA For Each walk the list"
+    },
+    {
+     "name": "Add",
+     "use": "add a custom ArrowHead to the global list; returns the stored arrowhead"
+    },
+    {
+     "name": "Replace",
+     "use": "swap the arrowhead at an index for another"
+    },
+    {
+     "name": "Remove",
+     "use": "delete the arrowhead at an index from the global list"
+    },
+    {
+     "name": "Parent",
+     "use": "the Application (not a document)"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Item takes a position, and Remove probably shifts every later position (unverified); find an arrowhead by ArrowHead.Name / DisplayName rather than hard-coding a number",
+    "Add / Remove / Replace edit the global list shared by all documents, which is kept between sessions (unverified)",
+    "Outline.StartArrow / EndArrow are propput in the typelib: in VBA assign without Set",
+    "a custom arrowhead made with CreateArrowHead is usable on a line without Add; Add only makes it appear in the pickers (unverified)"
+   ],
+   "example": "Dim ah As ArrowHead\nFor Each ah In Application.ArrowHeads\n  Debug.Print ah.Index, ah.DisplayName\nNext ah\nActiveShape.Outline.EndArrow = Application.ArrowHeads(3)",
+   "review": {
+    "by": "adversarial",
+    "changes": "marked the claim that Remove shifts later positions as unverified"
+   }
+  },
+  {
+   "name": "IVGBBoxSnapPoint",
+   "id": "class:IVGBBoxSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGBBoxSnapPoint",
+   "status": "current",
+   "summary": "The bounding-box part of a snap point: when a SnapPoint is one of a shape's bounding-box handles, BBox.Type tells which one (a corner, an edge midpoint or the centre, as a cdrReferencePoint).",
+   "use_for": [
+    "anchoring connector or dimension lines to a chosen corner or edge midpoint of a box in a diagram",
+    "telling which bounding-box handle a found snap point belongs to",
+    "attaching callout leaders to the top-middle or bottom-middle of labels"
+   ],
+   "avoid": [
+    "reading the point's coordinates: PositionX / PositionY are on the parent SnapPoint",
+    "node, edge or user snap points: BBox only applies when SnapPoint.Type is cdrSnapPointBBox"
+   ],
+   "confidence": "high",
+   "how": "Reached as SnapPoint.BBox on a snap point whose Type = cdrSnapPointBBox. Get such snap points from Shape.SnapPoints.BBox(cdrTopLeft ...) or Shape.SnapPointsOfType(cdrSnapPointBBox); the SnapPoint itself (not this object) is what Layer.CreateConnector / CreateLinearDimension take.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "which handle: cdrTopRight, cdrTopMiddle, cdrTopLeft, cdrMiddleLeft, cdrBottomLeft, cdrBottomMiddle, cdrBottomRight, cdrMiddleRight or cdrCenter"
+    }
+   ],
+   "gotchas": [
+    "only one member: position, shape and selection live on the parent SnapPoint",
+    "cdrReferencePoint numbering starts at cdrTopRight = 1 and runs counter-clockwise to cdrMiddleRight = 8, with cdrCenter = 9; TopLeft is 3, not 1",
+    "SnapPoint.BBox on a snap point that is not a bounding-box point returns Nothing or raises (unverified)"
+   ],
+   "example": "Dim sp As SnapPoint\nFor Each sp In ActiveShape.SnapPointsOfType(cdrSnapPointBBox)\n  Debug.Print sp.BBox.Type, sp.PositionX, sp.PositionY\nNext sp",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGBitmap",
+   "id": "class:IVGBitmap",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGBitmap",
+   "status": "current",
+   "summary": "The pixel side of a bitmap object on the page: pixel size, resolution, colour mode, link status and crop path, plus the operations a script runs on it (resample, change colour mode, apply a bitmap effect, crop, trace to vectors, save out, read or replace the pixel data).",
+   "use_for": [
+    "checking placed photos for effective resolution before print",
+    "converting RGB images to CMYK or grayscale for a print job",
+    "downsampling oversized images to shrink the file",
+    "embedding linked images before packaging a file",
+    "auto-tracing a logo or line-art scan to vectors",
+    "applying a bitmap effect to a photo from a script"
+   ],
+   "avoid": [
+    "vector shapes: rasterise first with Shape.ConvertToBitmapEx, then use Shape.Bitmap",
+    "size or position on the page: those are Shape properties (SizeWidth here is pixels, not page units)",
+    "heavy photo retouching: do it in Photoshop or Corel PHOTO-PAINT and relink"
+   ],
+   "confidence": "high",
+   "how": "Reached as Shape.Bitmap on a shape whose Type = cdrBitmapShape (also EPS.PreviewBitmap). Read-only facts (SizeWidth / SizeHeight in pixels, ResolutionX / Y, Mode, ExternallyLinked) plus methods that change the image in place: Resample, ConvertTo, ConvertToBW / ConvertToPaletted / ConvertToDuotone, ApplyBitmapEffect, Crop, Trace, SetImageData.",
+   "key_members": [
+    {
+     "name": "SizeWidth",
+     "use": "width in pixels"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "height in pixels"
+    },
+    {
+     "name": "ResolutionX",
+     "use": "horizontal resolution (dpi)"
+    },
+    {
+     "name": "ResolutionY",
+     "use": "vertical resolution (dpi)"
+    },
+    {
+     "name": "Mode",
+     "use": "colour mode as cdrImageType (cdrRGBColorImage, cdrCMYKColorImage ...)"
+    },
+    {
+     "name": "ConvertTo",
+     "use": "change colour mode, e.g. to cdrCMYKColorImage or cdrGrayscaleImage"
+    },
+    {
+     "name": "Resample",
+     "use": "change pixel size and / or resolution, optional anti-aliasing"
+    },
+    {
+     "name": "ApplyBitmapEffect",
+     "use": "run a bitmap effect from its command string, with an undo label"
+    },
+    {
+     "name": "ExternallyLinked",
+     "use": "True when the pixels live in an external file"
+    },
+    {
+     "name": "LinkFileName",
+     "use": "path of the linked file"
+    },
+    {
+     "name": "ResolveLink",
+     "use": "embed a linked bitmap"
+    },
+    {
+     "name": "UpdateLink",
+     "use": "reload a linked bitmap from its file"
+    },
+    {
+     "name": "Crop",
+     "use": "crop the pixels to the edited crop path"
+    },
+    {
+     "name": "CropEnvelope",
+     "use": "the clipping path curve"
+    },
+    {
+     "name": "Trace",
+     "use": "start PowerTRACE; returns TraceSettings (call Finish to create the vectors)"
+    },
+    {
+     "name": "SaveAs",
+     "use": "write the bitmap to a file through an export filter"
+    },
+    {
+     "name": "Image",
+     "use": "pixel data as an Image object"
+    },
+    {
+     "name": "ImageAlpha",
+     "use": "transparency mask as an Image object (Nothing when opaque)"
+    },
+    {
+     "name": "SetImageData",
+     "use": "replace pixels and optional alpha mask"
+    },
+    {
+     "name": "Transparent",
+     "use": "True when the bitmap has transparency"
+    }
+   ],
+   "gotchas": [
+    "SizeWidth / SizeHeight are pixel dimensions; the size on the page is Shape.SizeWidth / SizeHeight in document units",
+    "Trace returns a TraceSettings object; nothing is created until its Finish is called, which returns the new ShapeRange",
+    "ApplyBitmapEffect takes an internal effect command string, not the menu name; record the effect with the macro recorder to get the exact string (unverified)",
+    "SaveAs returns an export filter object; the file is written when Finish is called on it (unverified)",
+    "Resample, ConvertTo and ConvertToBW change the embedded pixels destructively; duplicate the shape first if the original may be needed",
+    "Shape.Bitmap on a non-bitmap shape fails; check Shape.Type = cdrBitmapShape first (unverified)",
+    "Crop only does something after the crop envelope was edited (see Cropped / CropEnvelopeModified) (unverified)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n  If s.Type = cdrBitmapShape Then\n    If s.Bitmap.ExternallyLinked Then s.Bitmap.ResolveLink\n    If s.Bitmap.Mode = cdrRGBColorImage Then s.Bitmap.ConvertTo cdrCMYKColorImage\n    Debug.Print s.Name, s.Bitmap.ResolutionX & \" dpi\"\n  End If\nNext s",
+   "equivalents": {
+    "AI": "RasterItem"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGBSpline",
+   "id": "class:IVGBSpline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGBSpline",
+   "status": "current",
+   "summary": "A B-spline curve definition: a list of control points that the smooth curve is pulled toward (it passes through a point only when that point is clamped) plus an open / closed flag. It is the scripting form of curves drawn with the B-Spline tool.",
+   "use_for": [
+    "generating smooth organic outlines (waves, blobs, flowing ribbons) from a few computed points",
+    "procedural wavy dividers and swooshes for layouts",
+    "reading the control polygon of a B-Spline-tool curve"
+   ],
+   "avoid": [
+    "paths that must hit exact corners and points: build a Bezier curve (Layer.CreateCurve) instead",
+    "editing an existing shape's spline in place: Shape.BSpline is read-only, draw a new shape from an edited copy"
+   ],
+   "confidence": "medium",
+   "how": "Built free-standing with ActiveDocument.CreateBSpline(NumControlPoints, Closed), edited through ControlPoints, then drawn with ActiveLayer.CreateBSpline(bspline), which returns the new Shape. Shape.BSpline returns a read-only BSpline of an existing B-spline curve.",
+   "key_members": [
+    {
+     "name": "ControlPoints",
+     "use": "the BSplineControlPoints list"
+    },
+    {
+     "name": "Closed",
+     "use": "True for a closed loop, False for an open curve"
+    },
+    {
+     "name": "InsertControlPoint",
+     "use": "insert one point (x, y, clamped) before an index"
+    },
+    {
+     "name": "InsertControlPoints",
+     "use": "insert several identical points before an index"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached, editable copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "take all points and the closed flag from another BSpline"
+    }
+   ],
+   "gotchas": [
+    "Shape.BSpline is documented as read-only: edit a GetCopy and draw it with Layer.CreateBSpline; how to write it back onto the same shape is not confirmed (unverified)",
+    "ControlPoints.Resize adds points at (0, 0); new points from CreateBSpline probably also start there, so set every position before drawing (unverified for CreateBSpline)",
+    "unclamped end points of an open spline sit off the curve; clamp them if the curve must start and end exactly on them (unverified)",
+    "whether control-point indices are 0- or 1-based is not confirmed; use For Each or First / Last (unverified)"
+   ],
+   "example": "Dim bs As BSpline, cp As BSplineControlPoint, i As Long\nSet bs = ActiveDocument.CreateBSpline(6, False)\nFor Each cp In bs.ControlPoints\n  cp.SetPosition i, (i Mod 2) * 1.5: i = i + 1\nNext cp\nActiveLayer.CreateBSpline bs",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGBSplineControlPoint",
+   "id": "class:IVGBSplineControlPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGBSplineControlPoint",
+   "status": "current",
+   "summary": "One control point of a B-spline: its x / y position and whether it is clamped (a clamped point forces the curve through it with a cusp; an unclamped one only pulls the curve toward it).",
+   "use_for": [
+    "placing computed points for smooth procedural curves (sine waves, blobs)",
+    "pinning a B-spline to exact spots by clamping points",
+    "nudging part of a smooth wave without redrawing it"
+   ],
+   "avoid": [
+    "Bezier nodes with handles: those are the Curve's nodes and segments, not B-spline control points"
+   ],
+   "confidence": "medium",
+   "how": "Item of BSpline.ControlPoints (Item(Index), First, Last or For Each). SetPosition / SetProperties place it absolutely, Move shifts it by a distance, Delete removes it, Index reports its position in the list.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "horizontal position"
+    },
+    {
+     "name": "y",
+     "use": "vertical position"
+    },
+    {
+     "name": "Clamped",
+     "use": "True: the curve passes through this point with a cusp"
+    },
+    {
+     "name": "SetPosition",
+     "use": "set x and y in one call (absolute)"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set x, y and Clamped in one call"
+    },
+    {
+     "name": "GetPosition",
+     "use": "read x and y through ByRef arguments"
+    },
+    {
+     "name": "Move",
+     "use": "shift by a distance (relative)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the point from the spline"
+    },
+    {
+     "name": "Index",
+     "use": "position of the point in the list"
+    }
+   ],
+   "gotchas": [
+    "Move(x, y) is relative (moves by a distance); SetPosition(x, y) is absolute",
+    "GetPosition x / y are out (ByRef) parameters in the typelib: in VBA pass Double variables; in Python win32com they should come back as a returned tuple (unverified)",
+    "edits only matter on a BSpline that is then drawn with Layer.CreateBSpline; a BSpline from Shape.BSpline is read-only",
+    "coordinates are in document units (ActiveDocument.Unit) (unverified)"
+   ],
+   "example": "Dim bs As BSpline, cp As BSplineControlPoint\nSet bs = ActiveDocument.CreateBSpline(3, False)\nbs.ControlPoints.First.SetProperties 0, 0, True\nbs.ControlPoints.Last.SetProperties 4, 0, True\nFor Each cp In bs.ControlPoints\n  If Not cp.Clamped Then cp.SetPosition 2, 3\nNext cp\nActiveLayer.CreateBSpline bs",
+   "review": {
+    "by": "adversarial",
+    "changes": "GetPosition gotcha now states the out-parameter flags read from the typelib; the Python tuple return stays unverified"
+   }
+  },
+  {
+   "name": "IVGBSplineControlPoints",
+   "id": "class:IVGBSplineControlPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGBSplineControlPoints",
+   "status": "current",
+   "summary": "The ordered list of control points of one B-spline, with First / Last shortcuts, Count, indexed access and Resize to grow or shrink the list.",
+   "use_for": [
+    "looping over a spline's points to lay out a computed wave or blob",
+    "setting how many points a generated spline has before positioning them",
+    "reading a B-Spline-tool curve's control polygon"
+   ],
+   "avoid": [
+    "adding one point at a given place and position: use BSpline.InsertControlPoint; Resize only adds points at (0, 0)"
+   ],
+   "confidence": "medium",
+   "how": "BSpline.ControlPoints. Item(Index) is the default member; For Each works through _NewEnum; Resize(HowMany) sets the number of points.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of control points"
+    },
+    {
+     "name": "Item",
+     "use": "a control point by index (default member)"
+    },
+    {
+     "name": "First",
+     "use": "the first control point"
+    },
+    {
+     "name": "Last",
+     "use": "the last control point"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets VBA For Each walk the points"
+    },
+    {
+     "name": "Resize",
+     "use": "set the number of points; added points sit at (0, 0)"
+    }
+   ],
+   "gotchas": [
+    "Resize adds new control points at (0, 0) (per the typelib); position them before drawing",
+    "Resize to fewer points presumably drops points from the end (unverified)",
+    "index base of Item is not confirmed (most CorelDRAW collections are 1-based); First / Last and For Each avoid the question (unverified)"
+   ],
+   "example": "Dim bs As BSpline, cp As BSplineControlPoint, i As Long\nSet bs = ActiveDocument.CreateBSpline(2, True)\nbs.ControlPoints.Resize 8\nFor Each cp In bs.ControlPoints\n  cp.SetPosition 2 * Cos(i * 0.785), 2 * Sin(i * 0.785): i = i + 1\nNext cp\nActiveLayer.CreateBSpline bs",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGClipboard",
+   "id": "class:IVGClipboard",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGClipboard",
+   "status": "current",
+   "summary": "A view of the Windows clipboard as CorelDRAW sees it: whether it holds content CorelDRAW can paste, whether a named data format is present, and Clear to empty it. Copying and pasting themselves are Shape.Copy and Layer.Paste.",
+   "use_for": [
+    "checking that a copy step worked before pasting artwork into another document",
+    "guarding a paste of content copied from another app (only paste when a usable format is present)",
+    "clearing large copied artwork from the clipboard after a batch job"
+   ],
+   "avoid": [
+    "moving shapes between layers or documents inside one script: Shape.CopyToLayer / Duplicate avoid the shared system clipboard",
+    "unattended jobs running beside other clipboard users: the clipboard is global and can be overwritten mid-run"
+   ],
+   "confidence": "medium",
+   "how": "Application.Clipboard. Valid and Empty are flags, DataPresent(FormatName) tests one clipboard format, Clear empties it. Content goes there with Shape.Copy / ShapeRange.Copy and comes back with Layer.Paste, PasteEx or PasteSpecial.",
+   "key_members": [
+    {
+     "name": "Valid",
+     "use": "True when the clipboard holds content CorelDRAW can use"
+    },
+    {
+     "name": "Empty",
+     "use": "content flag (see gotchas for its sense)"
+    },
+    {
+     "name": "DataPresent",
+     "use": "True when the named clipboard format is present"
+    },
+    {
+     "name": "Clear",
+     "use": "empty the clipboard"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning object (the Application)"
+    }
+   ],
+   "gotchas": [
+    "Clear empties the shared Windows clipboard, so other applications lose its content too (unverified)",
+    "the typelib describes Empty as checking whether the clipboard has content, which reads like the opposite of its name; test its sense against Valid before relying on it (unverified)",
+    "DataPresent needs the exact registered clipboard format name; which names this version (25.1) registers is not in the harvest (unverified)",
+    "there is no member to put data on the clipboard; use Shape.Copy / ShapeRange.Copy"
+   ],
+   "example": "ActiveShape.Copy\nIf Application.Clipboard.Valid Then\n  ActiveLayer.Paste\nEnd If\nApplication.Clipboard.Clear",
+   "review": {
+    "by": "adversarial",
+    "changes": "replaced \"CorelDRAW 2024\" (not in the batch) with version 25.1; marked the Clear-affects-all-apps gotcha unverified"
+   }
+  },
+  {
+   "name": "IVGCloneLink",
+   "id": "class:IVGCloneLink",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCloneLink",
+   "status": "current",
+   "summary": "The link settings of a clone: which master it follows (CloneParent) and which attributes are still linked to it (fill, outline, shape geometry, transform, bitmap colour mask), each a read/write flag; RestoreAllLinks reconnects all of them.",
+   "use_for": [
+    "repeated badges or icons that update when the master changes while one copy keeps its own colour",
+    "finding clones in a layout that have drifted from their master before a final revision",
+    "re-syncing overridden clones back to the master in one step"
+   ],
+   "avoid": [
+    "reusable artwork across documents, or many instances with no per-copy overrides: use Symbols instead",
+    "shapes that are not clones: Shape.CloneLink has nothing to report"
+   ],
+   "confidence": "medium",
+   "how": "Shape.CloneLink on a clone (made with Shape.Clone / CloneAsRange or Edit > Clone). The master is CloneLink.CloneParent; the master lists its clones in Shape.Clones. The *Linked flags are read/write.",
+   "key_members": [
+    {
+     "name": "CloneParent",
+     "use": "the master shape this clone follows"
+    },
+    {
+     "name": "FillLinked",
+     "use": "True while the fill follows the master"
+    },
+    {
+     "name": "OutlineLinked",
+     "use": "True while the outline follows the master"
+    },
+    {
+     "name": "ShapeLinked",
+     "use": "True while the geometry follows the master"
+    },
+    {
+     "name": "TransformLinked",
+     "use": "True while size / rotation / skew follow the master"
+    },
+    {
+     "name": "BitmapColorMaskLinked",
+     "use": "True while a bitmap colour mask follows the master"
+    },
+    {
+     "name": "RestoreAllLinks",
+     "use": "reconnect every attribute to the master"
+    },
+    {
+     "name": "Parent",
+     "use": "the clone shape itself"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Parent is the clone itself; the master is CloneParent",
+    "setting a fill or outline directly on the clone breaks that link (FillLinked / OutlineLinked turn False) (unverified)",
+    "setting a *Linked flag back to True should re-take the master's attribute, as RestoreAllLinks does for all (unverified)",
+    "Shape.CloneLink on a shape that is not a clone returns Nothing or raises (unverified)"
+   ],
+   "example": "Dim m As Shape, c As Shape\nSet m = ActiveShape\nSet c = m.Clone(2, 0)\nc.Fill.ApplyUniformFill CreateRGBColor(230, 57, 70)\nDebug.Print c.CloneLink.FillLinked, c.CloneLink.CloneParent.Name\nc.CloneLink.RestoreAllLinks",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer states as fact that editing the clone breaks a link (the gotcha keeps that as unverified)"
+   }
+  },
+  {
+   "name": "IVGColor",
+   "id": "class:IVGColor",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColor",
+   "status": "current",
+   "summary": "A colour value in any CorelDRAW colour model (RGB, CMYK, CMY, HSB, HLS, Lab, YIQ, gray, black-and-white, registration, spot or palette colour, colour style), with its colour context; it is what fills, outlines, fountain-fill nodes, palettes and effects take and return.",
+   "use_for": [
+    "setting brand colours from exact CMYK, RGB or HEX values",
+    "assigning Pantone or other spot colours by palette and name for print",
+    "converting artwork colours to CMYK for press or to RGB for screen",
+    "preflight checks: out of print gamut, spot or not, colour style or not",
+    "mixing tints and blends between two colours"
+   ],
+   "avoid": [
+    "comparing colours with = or Is: use IsSame, or GetColorDistanceFrom for near matches",
+    "UserAssign / UserAssignEx in unattended scripts: they open the modal colour dialog and block"
+   ],
+   "confidence": "high",
+   "how": "Created with Application.CreateRGBColor / CreateCMYKColor / CreateColor(colour string) / CreateSpotColorByName and the other Create*Color calls, or read from Fill.UniformColor, Outline.Color, fountain-fill colours, Palette.Color(i) and Document.SampleColorAtPoint. The *Assign methods set model and values, ConvertTo* switch model, and channel properties (RGBRed, CMYKCyan ...) read or set one channel.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "current colour model as cdrColorType"
+    },
+    {
+     "name": "RGBAssign",
+     "use": "set RGB values"
+    },
+    {
+     "name": "CMYKAssign",
+     "use": "set CMYK values"
+    },
+    {
+     "name": "HexValue",
+     "use": "web RGB value as a hex string, read or write"
+    },
+    {
+     "name": "ConvertToCMYK",
+     "use": "switch the colour to CMYK"
+    },
+    {
+     "name": "ConvertToRGB",
+     "use": "switch the colour to RGB"
+    },
+    {
+     "name": "ConvertTo",
+     "use": "switch to any cdrColorType, optionally through source / destination ColorContexts"
+    },
+    {
+     "name": "SpotAssignByName",
+     "use": "assign a spot colour by palette identifier and colour name, optional tint"
+    },
+    {
+     "name": "PaletteAssign",
+     "use": "assign a colour from a palette by index"
+    },
+    {
+     "name": "Name",
+     "use": "colour name (optionally with component values)"
+    },
+    {
+     "name": "IsSpot",
+     "use": "True for a spot colour"
+    },
+    {
+     "name": "IsSame",
+     "use": "same model and same values as another colour"
+    },
+    {
+     "name": "IsInGamut",
+     "use": "True when printable on the current printer gamut"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy model and values from another colour"
+    },
+    {
+     "name": "BlendWith",
+     "use": "mix with another colour by a ratio"
+    },
+    {
+     "name": "ToString",
+     "use": "encode the colour as a string"
+    },
+    {
+     "name": "StringAssign",
+     "use": "decode a colour string made by ToString"
+    },
+    {
+     "name": "Tint",
+     "use": "tint of a spot / palette colour"
+    },
+    {
+     "name": "ColorContext",
+     "use": "read-only colour context of this colour"
+    }
+   ],
+   "gotchas": [
+    "channel properties only mean something for the current model: RGBRed on a CMYK colour does not convert it; call ConvertToRGB on a GetCopy first",
+    "ConvertTo* and *Assign change the colour object in place; on a colour read from Fill.UniformColor or Outline.Color this changes the object's fill or outline (unverified that it always writes through), so read from a GetCopy",
+    "valid channel ranges per model are not in the typelib (every channel is a Long); check them against the colour dialog before writing computed values",
+    "FixedAssign, ConvertToFixed, PaletteID and PaletteIndex are hidden legacy members; use SpotAssign / SpotAssignByName / PaletteAssign with a palette identifier",
+    "Fill.UniformColor and Outline.Color are propput in the typelib: in VBA assign a Color without Set",
+    "Tint only applies when IsTintable is True (spot and palette colours)"
+   ],
+   "example": "Dim c As Color, s As Shape\nSet c = CreateCMYKColor(0, 85, 70, 0)\nFor Each s In ActiveSelectionRange\n  s.Fill.ApplyUniformFill c\nNext s\nDebug.Print c.Name(True), c.HexValue, c.IsInGamut",
+   "equivalents": {
+    "PS": "SolidColor",
+    "AI": "Color"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed channel ranges (0-255 / 0-100) that are not in the batch"
+   }
+  },
+  {
+   "name": "IVGColorContext",
+   "id": "class:IVGColorContext",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColorContext",
+   "status": "current",
+   "summary": "A colour context: the set of ICC profiles (RGB, CMYK, grayscale) plus rendering intent and blending colour model that give a document's or a colour's numbers their meaning. Documents carry one, colours report theirs, and conversions can name a source and a destination context.",
+   "use_for": [
+    "setting up a print document for a specific press CMYK profile",
+    "converting a whole document to a client's profile set before handoff",
+    "converting a single colour between profiles for a spec sheet",
+    "checking which profiles a supplied file uses during preflight"
+   ],
+   "avoid": [
+    "assigning to Document.ColorContext: the property is read-only; build a copy and apply it with Document.AssignColorContext or ConvertToColorContext",
+    "application defaults for new documents: use ColorManager.DefaultColorContext"
+   ],
+   "confidence": "medium",
+   "how": "Read from Document.ColorContext, Color.ColorContext or Application / ColorManager.DefaultColorContext; create with Application.CreateColorContext(RGBProfile, CMYKProfile, GrayscaleProfile, RenderingIntent, BlendingColorModel), CreateColorContext2(comma-separated profile names) or ColorProfile.CreateColorContext. Apply to a document with Document.AssignColorContext (keeps numbers) or ConvertToColorContext (keeps appearance).",
+   "key_members": [
+    {
+     "name": "RGBColorProfile",
+     "use": "RGB profile of the context"
+    },
+    {
+     "name": "CMYKColorProfile",
+     "use": "CMYK profile of the context"
+    },
+    {
+     "name": "GrayscaleColorProfile",
+     "use": "grayscale profile of the context"
+    },
+    {
+     "name": "ColorProfile",
+     "use": "profile for a given clrColorModel"
+    },
+    {
+     "name": "RenderingIntent",
+     "use": "clrRenderingIntent: perceptual, relative, saturation, absolute, automatic"
+    },
+    {
+     "name": "BlendingColorModel",
+     "use": "colour model transparencies and blends are computed in"
+    },
+    {
+     "name": "ColorProfileNameList",
+     "use": "comma-separated names of all profiles in the context"
+    },
+    {
+     "name": "ColorProfiles",
+     "use": "all profiles of the context as a ColorProfiles collection"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "True when this context cannot be modified"
+    },
+    {
+     "name": "GetCopy",
+     "use": "editable copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy everything from another context"
+    },
+    {
+     "name": "Merge",
+     "use": "take the non-empty profiles of another context"
+    },
+    {
+     "name": "IsSame",
+     "use": "True when two contexts have the same settings"
+    }
+   ],
+   "gotchas": [
+    "Color.ColorContext and Application.DefaultColorContext return read-only contexts (per the typelib); Document.ColorContext probably does too (unverified): check ReadOnly and edit a GetCopy",
+    "AssignColorContext keeps colour numbers and changes how they look; ConvertToColorContext keeps the look and rewrites the numbers: the wrong one silently shifts every colour",
+    "the profile properties are propput in the typelib: in VBA assign a ColorProfile without Set",
+    "BlendingColorModel sets the colour space transparency and blends are flattened in; a mismatch with the output is a likely cause of colour shifts in transparent areas (unverified)",
+    "Merge only copies profiles that are non-empty in the source; it never clears one"
+   ],
+   "example": "Dim cc As ColorContext, pressName As String\npressName = \"Press CMYK\"  ' full Name of an installed CMYK profile\nSet cc = ActiveDocument.ColorContext.GetCopy\ncc.CMYKColorProfile = Application.ColorManager.ColorProfiles(pressName)\ncc.RenderingIntent = clrRenderRelative\nActiveDocument.ConvertToColorContext cc\nDebug.Print ActiveDocument.ColorContext.ColorProfileNameList",
+   "review": {
+    "by": "adversarial",
+    "changes": "read-only gotcha now matches the typelib (Color / Application contexts are read-only, Document.ColorContext only non-assignable); example uses a placeholder profile name instead of a specific FOGRA39 name that is not in the harvest"
+   }
+  },
+  {
+   "name": "IVGColorManagementPolicy",
+   "id": "class:IVGColorManagementPolicy",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColorManagementPolicy",
+   "status": "current",
+   "summary": "One colour-management policy: what CorelDRAW does with RGB, CMYK and grayscale content whose embedded profile differs from the document's (assign or convert, to the document's baseline profile or the embedded one) and whether to warn about mismatched or missing profiles. The application keeps one policy for opening files and one for import / paste.",
+   "use_for": [
+    "making batch open / import jobs convert supplied artwork to the house profiles automatically",
+    "turning off mismatch and missing-profile prompts so unattended jobs do not stall",
+    "keeping supplied CMYK numbers untouched for print (assign instead of convert)"
+   ],
+   "avoid": [
+    "setting one document's profiles: use a ColorContext with Document.AssignColorContext / ConvertToColorContext"
+   ],
+   "confidence": "medium",
+   "how": "Application.ColorManager.PolicyForOpen and PolicyForImport (application defaults), or StructColorConversionOptions.ColorPolicy for one operation. Each Action* property takes a clrColorPolicyAction: clrAssignBaselineProfile, clrConvertToBaselineProfile, clrConvertToEmbeddedProfile or clrAssignEmbeddedProfile.",
+   "key_members": [
+    {
+     "name": "ActionForRGB",
+     "use": "what to do with RGB content (clrColorPolicyAction)"
+    },
+    {
+     "name": "ActionForCMYK",
+     "use": "what to do with CMYK content (clrColorPolicyAction)"
+    },
+    {
+     "name": "ActionForGrayscale",
+     "use": "what to do with grayscale content (clrColorPolicyAction)"
+    },
+    {
+     "name": "WarnOnMismatchedProfiles",
+     "use": "show a warning when profiles differ"
+    },
+    {
+     "name": "WarnOnMissingProfiles",
+     "use": "show a warning when a file has no profile"
+    }
+   ],
+   "gotchas": [
+    "with WarnOnMismatchedProfiles / WarnOnMissingProfiles True, opening or importing can raise a modal dialog that hangs a scripted run; switch them off for batch work and restore them after (unverified that every case prompts)",
+    "PolicyForOpen / PolicyForImport are application-wide defaults that persist into later sessions (unverified); save the old values and put them back",
+    "'baseline' in the enum names means the document's own colour context profile (unverified)",
+    "convert actions rewrite the CMYK numbers of supplied print files; assign actions keep them"
+   ],
+   "example": "Dim p As ColorManagementPolicy, oldWarn As Boolean, oldCMYK As clrColorPolicyAction\nSet p = Application.ColorManager.PolicyForImport\noldWarn = p.WarnOnMismatchedProfiles: oldCMYK = p.ActionForCMYK\np.WarnOnMismatchedProfiles = False\np.ActionForCMYK = clrAssignBaselineProfile\n' ... import the supplied files ...\np.WarnOnMismatchedProfiles = oldWarn: p.ActionForCMYK = oldCMYK",
+   "review": {
+    "by": "adversarial",
+    "changes": "example now saves and restores the application-wide policy, as the card's own gotcha requires"
+   }
+  },
+  {
+   "name": "IVGColorManager",
+   "id": "class:IVGColorManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColorManager",
+   "status": "current",
+   "summary": "Application-wide colour management: the installed ICC profile lists, the default colour context for new documents, saved colour-management styles (presets), the colour engine, pure-black and gray-to-K options, spot colour definition and the open / import policies.",
+   "use_for": [
+    "switching CorelDRAW to a saved colour-settings preset before a print batch",
+    "finding installed CMYK profiles by colour model or device to build a document colour context",
+    "setting PreservePureBlack / MapGrayToCMYKBlack so black text stays 100 K on press",
+    "checking which colour engine is active when troubleshooting colour shifts"
+   ],
+   "avoid": [
+    "one document's profiles: use Document.ColorContext with AssignColorContext / ConvertToColorContext",
+    "the hidden legacy members (MonitorCalibration, ShowOutOfGamut, CurrentProfile, InstalledProfiles ...): use the visible members instead"
+   ],
+   "confidence": "medium",
+   "how": "Application.ColorManager (one per application). ColorProfiles, GetProfilesByColorModel, GetProfilesForDevice and MonitorColorProfiles return ColorProfiles collections; DefaultColorContext is the context new documents get; LoadStyle / SaveStyle / DeleteStyle manage presets listed by StyleCount and StyleByIndex; PolicyForOpen / PolicyForImport hold the policies.",
+   "key_members": [
+    {
+     "name": "ColorProfiles",
+     "use": "every ICC profile installed on the system"
+    },
+    {
+     "name": "GetProfilesByColorModel",
+     "use": "profiles of one clrColorModel (RGB, CMYK, grayscale ...)"
+    },
+    {
+     "name": "GetProfilesForDevice",
+     "use": "profiles for a clrDeviceType, optionally one device"
+    },
+    {
+     "name": "MonitorColorProfiles",
+     "use": "one profile per installed monitor"
+    },
+    {
+     "name": "DefaultColorContext",
+     "use": "context new documents get; editable"
+    },
+    {
+     "name": "StyleCount",
+     "use": "number of colour-management styles"
+    },
+    {
+     "name": "StyleByIndex",
+     "use": "style name by index"
+    },
+    {
+     "name": "LoadStyle",
+     "use": "apply a style by name; returns success"
+    },
+    {
+     "name": "SaveStyle",
+     "use": "save current settings as a style"
+    },
+    {
+     "name": "DeleteStyle",
+     "use": "delete a style"
+    },
+    {
+     "name": "CanDeleteStyle",
+     "use": "False for built-in styles"
+    },
+    {
+     "name": "ColorEngine",
+     "use": "colour engine in use (clrColorEngine)"
+    },
+    {
+     "name": "ColorEnginePresent",
+     "use": "True when an engine is installed"
+    },
+    {
+     "name": "PreservePureBlack",
+     "use": "keep 100 K black as pure black in conversions"
+    },
+    {
+     "name": "MapGrayToCMYKBlack",
+     "use": "map grayscale to the CMYK black channel"
+    },
+    {
+     "name": "SpotColorDefinition",
+     "use": "which values define spot colours (clrColorModel)"
+    },
+    {
+     "name": "PolicyForOpen",
+     "use": "policy applied when opening files"
+    },
+    {
+     "name": "PolicyForImport",
+     "use": "policy applied when importing or pasting"
+    }
+   ],
+   "gotchas": [
+    "every setting here is application-wide and outlives the script (unverified that all persist to the next session); record and restore what you change",
+    "23 of the 41 members are hidden (calibration, out-of-gamut warning, import / export profiles and colour correction); they may do nothing in version 25 (unverified)",
+    "LoadStyle / SaveStyle / DeleteStyle return a Boolean; check it rather than assuming the style exists (unverified whether a bad name raises instead)",
+    "the index base of StyleByIndex is not confirmed and style names may be localised; do not hard-code them (unverified)",
+    "only set ColorEngine to an engine for which ColorEnginePresent is True"
+   ],
+   "example": "Dim cm As ColorManager, oldBlack As Boolean\nSet cm = Application.ColorManager\nDebug.Print cm.StyleCount, cm.ColorEngine, cm.GetProfilesByColorModel(clrColorModelCMYK).Count\noldBlack = cm.PreservePureBlack\ncm.PreservePureBlack = True\n' ... run the print batch ...\ncm.PreservePureBlack = oldBlack",
+   "review": {
+    "by": "adversarial",
+    "changes": "hidden-member count corrected from \"about 25\" to 23 of 41; removed \"pre-X4\" and \"2024\" (not in the batch); example no longer saves a permanent style and now restores the setting it changes"
+   }
+  },
+  {
+   "name": "IVGColorProfile",
+   "id": "class:IVGColorProfile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColorProfile",
+   "status": "current",
+   "summary": "One ICC colour profile as CorelDRAW sees it: full name, file, maker, device model and type, colour model (RGB, CMYK, grayscale, Lab), a unique ID, and whether it is installed on the system or only embedded in a document. All facts are read-only.",
+   "use_for": [
+    "picking the press CMYK profile for a print document's colour context",
+    "listing which profiles a supplied file uses during preflight",
+    "building a colour context from one profile for a conversion"
+   ],
+   "avoid": [
+    "changing a profile: everything is read-only, pick a different profile instead",
+    "Select / Selected / Generic: hidden legacy device-profile members; set profiles through ColorContext and ColorManager.DefaultColorContext"
+   ],
+   "confidence": "high",
+   "how": "Returned by ColorContext.RGBColorProfile / CMYKColorProfile / GrayscaleColorProfile / ColorProfile(model) and by ColorProfiles.Item(index or full name) from ColorManager.ColorProfiles, GetProfilesByColorModel or GetProfilesForDevice. CreateColorContext(intent) wraps it in a ColorContext.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "full profile name"
+    },
+    {
+     "name": "FileName",
+     "use": "profile file name"
+    },
+    {
+     "name": "ID",
+     "use": "unique identifier string"
+    },
+    {
+     "name": "ColorModel",
+     "use": "clrColorModel of the profile"
+    },
+    {
+     "name": "DeviceType",
+     "use": "clrDeviceType (display, output, input, colour space)"
+    },
+    {
+     "name": "Manufacturer",
+     "use": "device maker"
+    },
+    {
+     "name": "DeviceModel",
+     "use": "device model"
+    },
+    {
+     "name": "Installed",
+     "use": "False when the profile exists only embedded in a document"
+    },
+    {
+     "name": "CreateColorContext",
+     "use": "new ColorContext using this profile"
+    },
+    {
+     "name": "IsSame",
+     "use": "True when two profiles are the same"
+    }
+   ],
+   "gotchas": [
+    "Installed = False means the profile only lives embedded in a document; it will not be in ColorManager.ColorProfiles",
+    "compare profiles with IsSame or ID rather than Name (unverified that names can collide)",
+    "ColorProfiles.Item by name needs the full Name exactly as listed",
+    "CreateColorContext from one profile fills only that model's slot; Merge it into a full context before converting a document (unverified)"
+   ],
+   "example": "Dim p As ColorProfile\nFor Each p In Application.ColorManager.GetProfilesByColorModel(clrColorModelCMYK)\n  Debug.Print p.Name, p.FileName, p.Installed\nNext p",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGColorProfiles",
+   "id": "class:IVGColorProfiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColorProfiles",
+   "status": "current",
+   "summary": "A collection of ICC colour profiles (all installed ones, those for one device or colour model, the monitors' profiles, or those in a colour context), indexable by position or full profile name, with Install to add a profile file.",
+   "use_for": [
+    "finding a press profile by name to set up a print document",
+    "listing available CMYK or RGB profiles in a macro's profile picker",
+    "installing a client-supplied ICC profile before converting their job"
+   ],
+   "avoid": [
+    "SelectByName / GenericProfile: hidden legacy device-profile members; set profiles through ColorContext instead"
+   ],
+   "confidence": "medium",
+   "how": "Returned by ColorManager.ColorProfiles, GetProfilesByColorModel(model), GetProfilesForDevice(device), MonitorColorProfiles and ColorContext.ColorProfiles. Item(IndexOrName) is the default member; For Each works via _NewEnum; Install(FileName) adds an .icc / .icm file.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "profile by index or full name (default member)"
+    },
+    {
+     "name": "Count",
+     "use": "number of profiles"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets VBA For Each walk the profiles"
+    },
+    {
+     "name": "DeviceType",
+     "use": "device type the list was made for"
+    },
+    {
+     "name": "Install",
+     "use": "install a profile file; returns success"
+    }
+   ],
+   "gotchas": [
+    "Item by name needs the profile's full Name; a wrong name probably raises rather than returning Nothing (unverified)",
+    "Install copies the profile into the Windows colour folder and may need administrator rights (unverified)",
+    "a returned collection may be a snapshot: re-read ColorManager.ColorProfiles after Install (unverified)",
+    "index base of Item is not confirmed; For Each avoids it (unverified)"
+   ],
+   "example": "Dim cps As ColorProfiles\nSet cps = Application.ColorManager.ColorProfiles\nDebug.Print cps.Count\nIf cps.Install(\"C:\\Profiles\\ClientPress.icc\") Then Debug.Print \"installed\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGColors",
+   "id": "class:IVGColors",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGColors",
+   "status": "current",
+   "summary": "A read-only, 1-based list of Color objects: the colours of one palette (Palette.Colors) or all colour styles of a document (StyleSheet.AllColorStyles).",
+   "use_for": [
+    "exporting a brand palette's colour values to a spec sheet",
+    "checking a palette for non-CMYK or out-of-gamut colours before print",
+    "looping over a document's colour styles to audit or recolour a layout"
+   ],
+   "avoid": [
+    "adding or removing colours: the collection has no Add / Remove; use Palette.AddColor / InsertColor"
+   ],
+   "confidence": "high",
+   "how": "Palette.Colors() (from Application.ActivePalette, Application.Palettes or Document.Palette) or Document.StyleSheet.AllColorStyles. Item(Index) is the default member (base 1); For Each works via _NewEnum.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "colour by 1-based index (default member)"
+    },
+    {
+     "name": "Count",
+     "use": "number of colours"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets VBA For Each walk the colours"
+    },
+    {
+     "name": "Parent",
+     "use": "the Palette, or Nothing for colours not from a palette"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Parent is the Palette, or Nothing for colours that are not from a palette (probably the colour-style list, unverified)",
+    "Item is 1-based (per the typelib description)",
+    "the Color objects may be live references into the palette or colour style: converting them can change the entry; use GetCopy for analysis (unverified)"
+   ],
+   "example": "Dim c As Color\nFor Each c In Application.ActivePalette.Colors\n  If Not c.IsCMYK And Not c.IsSpot Then Debug.Print c.Name, c.Type\nNext c",
+   "equivalents": {
+    "AI": "Swatches"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "marked the colour-style Parent = Nothing inference as unverified"
+   }
+  },
+  {
+   "name": "IVGComment",
+   "id": "class:IVGComment",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGComment",
+   "status": "current",
+   "summary": "One entry in a review comment thread (the Comments docker): its text, author, creation and modification times, GUID and type (cdrCommonComment, cdrResolvedComment or cdrReopenedComment).",
+   "use_for": [
+    "exporting client review comments to a checklist or spreadsheet",
+    "finding unanswered feedback before sending a final proof",
+    "posting automatic preflight notes as comments on a page"
+   ],
+   "avoid": [
+    "notes that must print or export with the artwork: comments are review markup; use a text object on a non-printing layer instead (unverified that comments never export)"
+   ],
+   "confidence": "medium",
+   "how": "Items of CommentThread.Comments (threads from Page.Markup.Threads); also returned by PageMarkup.CreateHotspot / CreateRectangle / CreateEllipse / CreateArrow / CreateFreehand / CreateHighlight / CreateCollaborativeText, by CommentThread.Reply and by Document.Markup.FindComment(guid). VGCore has no Comment coclass, so declare variables As Object (or IVGComment).",
+   "key_members": [
+    {
+     "name": "Text",
+     "use": "comment text, read / write"
+    },
+    {
+     "name": "Author",
+     "use": "CommentAuthor who wrote it"
+    },
+    {
+     "name": "CreationTime",
+     "use": "when it was created"
+    },
+    {
+     "name": "ModificationTime",
+     "use": "when it was last edited"
+    },
+    {
+     "name": "Guid",
+     "use": "unique id, usable with Markup.FindComment and Comments.Item"
+    },
+    {
+     "name": "Thread",
+     "use": "the CommentThread it belongs to"
+    },
+    {
+     "name": "Type",
+     "use": "cdrCommentType: cdrCommonComment, cdrResolvedComment, cdrReopenedComment"
+    },
+    {
+     "name": "Delete",
+     "use": "delete it (the whole thread if it is the first comment)"
+    }
+   ],
+   "gotchas": [
+    "Delete on the first comment of a thread deletes the whole thread",
+    "Author is putref in the typelib: in VBA write Set c.Author = ... with an object from Application.CreateMarkupAuthor",
+    "resolve / reopen events appear to be stored as comments of Type cdrResolvedComment / cdrReopenedComment (unverified); filter on cdrCommonComment when exporting feedback text",
+    "ReadBy, ReadByCount, UserAssigned, UserAssignedCount, AddReadBy, AddUserAssigned and OnlineID are hidden cloud-collaboration members (unverified in local files)"
+   ],
+   "example": "Dim t As Object, c As Object\nFor Each t In ActivePage.Markup.Threads\n  For Each c In t.Comments\n    If c.Type = cdrCommonComment Then Debug.Print c.Author.Name, c.CreationTime, c.Text\n  Next c\nNext t",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer asserts that resolved / reopened types are status entries (gotcha marked unverified); hidden-member list completed (ReadByCount, UserAssignedCount); added PageMarkup.CreateCollaborativeText to the access paths"
+   }
+  },
+  {
+   "name": "IVGCommentAnnotation",
+   "id": "class:IVGCommentAnnotation",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCommentAnnotation",
+   "status": "current",
+   "summary": "The on-canvas mark of a comment thread: a hotspot pin, rectangle, ellipse, arrow, freehand line, highlight or co-editing mark, with its outline width and colours, arrowhead visibility, path, and position / size on the page.",
+   "use_for": [
+    "drawing review marks (circle, arrow, highlight) on a proof from a script",
+    "moving review pins after the artwork was laid out again",
+    "listing where on the page each piece of feedback points"
+   ],
+   "avoid": [
+    "callouts that must print: annotations are review markup; draw ordinary shapes for printed callouts (unverified that they never print)"
+   ],
+   "confidence": "medium",
+   "how": "CommentThread.Annotation. Its kind is fixed by the PageMarkup.Create* call that made the thread (Type returns a cdrCommentAnnotationType). Position and size members mirror Shape's (LeftX ... CenterY, SetPosition, SetSize, Move, GetBoundingBox / SetBoundingBox).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrCommentAnnotationType: freehand, hotspot, arrow, highlight, rectangle, ellipse, co-editing"
+    },
+    {
+     "name": "Curve",
+     "use": "the mark's path, when it has one"
+    },
+    {
+     "name": "OutlineWidth",
+     "use": "stroke width (Long)"
+    },
+    {
+     "name": "OutlineColor",
+     "use": "stroke colour"
+    },
+    {
+     "name": "FillColor",
+     "use": "fill colour"
+    },
+    {
+     "name": "StartArrowVisible",
+     "use": "arrowhead at the start of an arrow mark"
+    },
+    {
+     "name": "EndArrowVisible",
+     "use": "arrowhead at the end of an arrow mark"
+    },
+    {
+     "name": "Move",
+     "use": "shift by DeltaX / DeltaY"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move a reference point to x, y"
+    },
+    {
+     "name": "GetPosition",
+     "use": "read a reference point's x, y (ByRef)"
+    },
+    {
+     "name": "SetSize",
+     "use": "stretch to a width and height from a reference point"
+    },
+    {
+     "name": "GetBoundingBox",
+     "use": "read x, y, width, height (ByRef)"
+    },
+    {
+     "name": "SetBoundingBox",
+     "use": "move and resize into a box"
+    },
+    {
+     "name": "LeftX",
+     "use": "left edge"
+    },
+    {
+     "name": "TopY",
+     "use": "top edge"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal centre"
+    },
+    {
+     "name": "CenterY",
+     "use": "vertical centre"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "width"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "height"
+    }
+   ],
+   "gotchas": [
+    "OutlineWidth is a Long (whole numbers) unlike a shape's Outline.Width; its unit is not documented (unverified)",
+    "Type is read-only: to turn a rectangle mark into an arrow, delete the thread and create a new one with PageMarkup.CreateArrow",
+    "GetPosition / GetSize / GetBoundingBox return values through out (ByRef) parameters per the typelib (GetPosition's ReferencePoint is an input); in Python win32com they should come back as a tuple (unverified)",
+    "FillColor / OutlineColor / Curve are propput in the typelib: in VBA assign without Set",
+    "size members probably mean nothing for a hotspot pin (unverified)"
+   ],
+   "example": "Dim t As Object\nFor Each t In ActivePage.Markup.Threads\n  With t.Annotation\n    Debug.Print .Type, .CenterX, .CenterY\n    If .Type = cdrCommentAnnotationArrow Then .EndArrowVisible = True\n  End With\nNext t",
+   "review": {
+    "by": "adversarial",
+    "changes": "ByRef gotcha now states the typelib out-parameter flags, including that GetPosition's ReferencePoint is an input"
+   }
+  },
+  {
+   "name": "IVGCommentAuthor",
+   "id": "class:IVGCommentAuthor",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCommentAuthor",
+   "status": "current",
+   "summary": "The identity attached to review comments: display name, email, avatar and how the author signed in (unauthenticated guest, Google, Microsoft or CDA, per cdrAuthorAuthentication). All fields are read-only.",
+   "use_for": [
+    "stamping script-generated review comments with a bot or reviewer name",
+    "grouping exported feedback by reviewer",
+    "setting the identity used for new comments with Application.MarkupLogin"
+   ],
+   "avoid": [
+    "renaming an existing author: the fields are read-only; create a new identity with Application.CreateMarkupAuthor"
+   ],
+   "confidence": "medium",
+   "how": "Comment.Author on existing comments; new identities come from Application.CreateMarkupAuthor(Name, Avatar, Email, Authentication). Passed as the optional Author argument of PageMarkup.Create*, CommentThread.Reply / Resolve / Reopen, or made the current user with Application.MarkupLogin. No coclass: declare As Object.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "display name"
+    },
+    {
+     "name": "Email",
+     "use": "email address"
+    },
+    {
+     "name": "Avatar",
+     "use": "avatar string (image reference)"
+    },
+    {
+     "name": "Authentication",
+     "use": "cdrAuthorAuthentication: guest, GSuite, O365, CDA or undefined"
+    }
+   ],
+   "gotchas": [
+    "Name, Email, Avatar and Authentication are read-only",
+    "use cdrAuthorAuthenticationGuest for local scripts; the GSuite / O365 / CDA values describe signed-in cloud identities and are not checked by CreateMarkupAuthor (unverified)",
+    "what Avatar accepts (file path or URL) is not documented (unverified)",
+    "Comment.Author is putref in the typelib: use Set in VBA"
+   ],
+   "example": "Dim a As Object\nSet a = Application.CreateMarkupAuthor(\"Preflight Bot\", \"\", \"preflight@example.com\", cdrAuthorAuthenticationGuest)\nActivePage.Markup.CreateHotspot \"Image below 300 dpi\", 2, 8, a",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer expands CDA to \"Corel account\" (the harvest only says \"Authenticated via CDA\")"
+   }
+  },
+  {
+   "name": "IVGComments",
+   "id": "class:IVGComments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGComments",
+   "status": "current",
+   "summary": "The comments inside one review thread, in order: the opening comment, its replies, and resolve / reopen entries. Look one up by index or by its GUID; First and Last give the opening comment and the latest entry.",
+   "use_for": [
+    "reading the full discussion on one piece of feedback",
+    "getting the latest reply of each thread for a status report",
+    "jumping to a comment by GUID from an exported review list"
+   ],
+   "avoid": [
+    "adding a reply: there is no Add, use CommentThread.Reply",
+    "listing all threads on a page: that is PageMarkup.Threads"
+   ],
+   "confidence": "medium",
+   "how": "CommentThread.Comments (thread from Page.Markup.Threads or Document.Markup.FindThread). Item(IndexOrGuid) is the default member; For Each works via _NewEnum.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "comment by index or Guid string (default member)"
+    },
+    {
+     "name": "Count",
+     "use": "number of comments in the thread"
+    },
+    {
+     "name": "First",
+     "use": "the comment that opened the thread"
+    },
+    {
+     "name": "Last",
+     "use": "the newest entry"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets VBA For Each walk the comments"
+    }
+   ],
+   "gotchas": [
+    "Item accepts either an index or the comment's Guid string",
+    "First is the comment that opened the thread; deleting it deletes the whole thread",
+    "resolve / reopen events are comments too and count in Count, so Last may be a status entry, not a reply (unverified)",
+    "the typelib describes IVGComments as \"a set of comments associated with a document\", but the only member that returns it is CommentThread.Comments; for a document-wide lookup by GUID use Document.Markup.FindComment"
+   ],
+   "example": "Dim t As Object\nFor Each t In ActivePage.Markup.Threads\n  Debug.Print t.Comments.Count, t.Comments.First.Text, t.Comments.Last.Author.Name\nNext t",
+   "review": {
+    "by": "adversarial",
+    "changes": "added a gotcha reconciling the typelib description (\"associated with a document\") with the only access path, CommentThread.Comments"
+   }
+  },
+  {
+   "name": "IVGCommentTarget",
+   "id": "class:IVGCommentTarget",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGCommentTarget",
+   "status": "current",
+   "summary": "What a review comment thread is attached to: the shape the thread points at, and that shape's GUID.",
+   "use_for": [
+    "selecting the objects reviewers commented on so a script or designer can fix them",
+    "listing which objects in a layout carry feedback",
+    "re-pointing a thread to a replacement object after artwork is swapped"
+   ],
+   "avoid": [
+    "the on-canvas pin or mark position: that is CommentThread.Annotation"
+   ],
+   "confidence": "medium",
+   "how": "CommentThread.Target. Shape is the attached Shape; Guid is that shape's GUID string. Both are writable.",
+   "key_members": [
+    {
+     "name": "Shape",
+     "use": "the shape the thread is attached to (putref)"
+    },
+    {
+     "name": "Guid",
+     "use": "GUID of that shape"
+    }
+   ],
+   "gotchas": [
+    "Shape is putref in the typelib: in VBA re-target with Set t.Target.Shape = s",
+    "Shape is probably Nothing when the comment was placed on empty canvas; test before use (unverified)",
+    "Guid and Shape are both writable; set Shape and let Guid follow rather than writing Guid by hand (unverified)"
+   ],
+   "example": "Dim t As Object\nFor Each t In ActivePage.Markup.Threads\n  If Not t.Target.Shape Is Nothing Then t.Target.Shape.AddToSelection\nNext t",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,197 @@
+{
+ "cards": [
+  {
+   "name": "InsertionPoint",
+   "id": "class:InsertionPoint",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/InsertionPoint",
+   "status": "current",
+   "summary": "A zero-width position between two characters of a text story; a script uses it as the spot where new text goes, by adding characters at that point. It holds no text and no formatting of its own, only read-only links to the story and the text around it.",
+   "use_for": [
+    "insert a word or symbol at a fixed position in an existing headline without retyping the frame",
+    "prepend or append copy (price, unit, trademark sign) to text frames in a template batch",
+    "add text at the start or end of one paragraph or word through that range's own insertionPoints"
+   ],
+   "avoid": [
+    "styling text: an insertion point has no character or paragraph attributes; style the TextRange returned by characters.add, or use TextRange.paragraphAttributes",
+    "replacing whole contents: set TextFrameItem.contents or TextRange.contents instead of inserting piece by piece"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Represents one caret position in Illustrator text. Reached through the insertionPoints collection of a TextFrameItem, TextRange or Story (e.g. app.activeDocument.textFrames[0].insertionPoints[0]); the collection is an InsertionPoints object (length, getByName). All harvested members are read-only: parent and typename, story (the whole threaded story) and the characters / words / lines / paragraphs / textRanges collections at that position. New text is inserted with insertionPoint.characters.add(\"...\"), which returns a TextRange you can then format.",
+   "key_members": [
+    {
+     "name": "characters",
+     "use": "the Characters collection at this point; characters.add(contents) inserts text here and returns the new TextRange"
+    },
+    {
+     "name": "story",
+     "use": "the Story the point lives in (spans all threaded frames); use it to reach story.insertionPoints for whole-story positions"
+    },
+    {
+     "name": "paragraphs",
+     "use": "paragraph collection at this position, e.g. to read the paragraph the caret sits in"
+    },
+    {
+     "name": "words",
+     "use": "word collection at this position"
+    },
+    {
+     "name": "lines",
+     "use": "line collection at this position (depends on current composition / frame width)"
+    },
+    {
+     "name": "textRanges",
+     "use": "all text ranges at this position"
+    },
+    {
+     "name": "parent",
+     "use": "the object's container; the harvest types it only as Object, so which object comes back (frame, range or story) is not recorded"
+    },
+    {
+     "name": "typename",
+     "use": "returns \"InsertionPoint\"; check it before treating an object as a text range"
+    }
+   ],
+   "gotchas": [
+    "Every harvested member is read-only and there is no contents, length or characterAttributes on this class: you cannot write text into an insertion point directly, only through characters.add.",
+    "typename exists only in ExtendScript; the COM interface instead has Application (harvest diff omv_only / com_only).",
+    "Indexes shift after each insert: when inserting at several positions, work from the highest index down (unverified that Illustrator re-indexes live collections immediately).",
+    "A text of n characters has n + 1 insertion points (indexes 0 to n): the last one, after the final character, is insertionPoints[insertionPoints.length - 1], i.e. index = the text's character count (unverified).",
+    "insertionPoints taken from a TextFrameItem in a threaded story may cover only that frame; use story.insertionPoints to address the full story (unverified).",
+    "words / lines at a zero-width position may be empty or return the adjacent word / line; do not rely on them without testing (unverified)."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar ip = tf.insertionPoints[0];\nvar added = ip.characters.add(\"NEW \");\nadded.characterAttributes.size = 24;\nvar s = ip.story;",
+   "source": "ai_api_06 agent (harvest omv + COM typelib, members checked against batch)",
+   "review": {
+    "by": "adversarial",
+    "changes": "parent key_member no longer claims a specific container type (harvest only says Object); n+1 gotcha rewritten so the last index is insertionPoints.length - 1 (old wording 'last valid index is length' read as an out-of-range index); replaced the weak 'find which story a cursor belongs to' use_for with a range-level insert job"
+   }
+  },
+  {
+   "name": "ParagraphAttributes",
+   "id": "class:ParagraphAttributes",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/ParagraphAttributes",
+   "status": "current",
+   "summary": "The paragraph-formatting bundle of Illustrator text: alignment, indents, space before / after, hyphenation, justification spacing limits, auto-leading, tab stops, bullets / numbering list style, composer choice and the CJK and right-to-left options. It is what the Paragraph panel, its Justification and Hyphenation dialogs and the separate Tabs panel set, exposed to scripts.",
+   "use_for": [
+    "centre or justify body copy in templated posters and flyers from a script",
+    "set first-line indent and space-after for multi-paragraph area text in brochures",
+    "turn hyphenation on or off and tune spacing for tight newspaper-style columns",
+    "switch composerEngine for Hindi / Devanagari or Arabic paragraphs so shaping and line breaks come out right (which enum value is the World-Ready composer is unverified, see gotchas)",
+    "apply a consistent paragraph look inside a paragraph style definition"
+   ],
+   "avoid": [
+    "setting line spacing in points: leading and autoLeading live on CharacterAttributes, not here (only autoLeadingAmount and leadingType are paragraph-level)",
+    "styling many frames the same way by hand: put the values in a ParagraphStyle (paragraphStyle.paragraphAttributes) and applyTo the text instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:TextItem",
+    "CDR": "class:TextRange"
+   },
+   "how": "Not created directly: read it from a text object's paragraphAttributes property, e.g. app.activeDocument.textFrames[0].textRange.paragraphAttributes (all paragraphs of the frame), textFrame.paragraphs[i].paragraphAttributes (one paragraph) or paragraphStyle.paragraphAttributes (a style definition). Setting a property on a range writes a local override on every paragraph in that range. Lengths (indents, spaceBefore / spaceAfter) are in points; spacing and glyph-scaling values are percentages; hyphenationPreference runs 0 (better spacing) to 1 (fewer hyphens). COM exposes the same properties with initial capitals and Ai-prefixed enum types (AiJustification ...).",
+   "key_members": [
+    {
+     "name": "justification",
+     "use": "alignment: Justification.LEFT / CENTER / RIGHT / FULLJUSTIFYLASTLINELEFT ... FULLJUSTIFY"
+    },
+    {
+     "name": "firstLineIndent",
+     "use": "first-line indent in points (negative for a hanging indent)"
+    },
+    {
+     "name": "leftIndent",
+     "use": "left indent in points"
+    },
+    {
+     "name": "rightIndent",
+     "use": "right indent in points"
+    },
+    {
+     "name": "spaceBefore",
+     "use": "space above the paragraph in points"
+    },
+    {
+     "name": "spaceAfter",
+     "use": "space below the paragraph in points"
+    },
+    {
+     "name": "hyphenation",
+     "use": "turn hyphenation on / off for the paragraph"
+    },
+    {
+     "name": "hyphenationPreference",
+     "use": "0 = better spacing, 1 = fewer hyphens (harvested range 0 to 1)"
+    },
+    {
+     "name": "hyphenateCapitalizedWords",
+     "use": "allow hyphenating capitalised words (usually off for headlines and names)"
+    },
+    {
+     "name": "desiredWordSpacing",
+     "use": "target word spacing in percent"
+    },
+    {
+     "name": "minimumWordSpacing",
+     "use": "lower word-spacing limit for justified lines, percent"
+    },
+    {
+     "name": "maximumWordSpacing",
+     "use": "upper word-spacing limit for justified lines, percent"
+    },
+    {
+     "name": "desiredLetterSpacing",
+     "use": "target letter spacing in percent"
+    },
+    {
+     "name": "desiredGlyphScaling",
+     "use": "target glyph scaling in percent"
+    },
+    {
+     "name": "autoLeadingAmount",
+     "use": "auto-leading as a percentage of the font size"
+    },
+    {
+     "name": "leadingType",
+     "use": "AutoLeadingType.BOTTOMTOBOTTOM (Roman) or TOPTOTOP (Japanese)"
+    },
+    {
+     "name": "tabStops",
+     "use": "array of TabStopInfo (alignment, position, leader, decimalCharacter)"
+    },
+    {
+     "name": "everyLineComposer",
+     "use": "true = Every-line Composer, false = Single-line Composer"
+    },
+    {
+     "name": "composerEngine",
+     "use": "ComposerEngineType.latinCJKComposer / optycaComposer / adornment"
+    },
+    {
+     "name": "listStyle",
+     "use": "bullets / numbering ListStyle for the paragraph; listStyleTier sets its level"
+    }
+   ],
+   "gotchas": [
+    "Absolute leading is not here: use characterAttributes.leading / autoLeading; this class only holds autoLeadingAmount and leadingType.",
+    "Indents and paragraph spacing are always points, whatever the document ruler units are.",
+    "minimumWordSpacing / maximumWordSpacing (and the letter and glyph min / max pairs) only act on justified lines and must bracket the desired value; out-of-order values may be rejected or clamped (unverified).",
+    "Setting textRange.paragraphAttributes writes local overrides; paragraphStyle.applyTo(text, true) is the way to clear them back to the style.",
+    "Reading a property over a range whose paragraphs differ may give the first paragraph's value or undefined rather than a 'mixed' marker (unverified).",
+    "tabStops is an array of TabStopInfo: build the whole array and assign it; editing an element of the returned array in place may not stick (unverified).",
+    "Full-justify options matter only for area text or text on a path; point text has no frame width to justify to (unverified).",
+    "optycaComposer is believed to be the World-Ready composer needed for correct Devanagari / Arabic shaping (unverified mapping); bunriKinshi, burasagariType, kinsoku, kinsokuOrder, kurikaeshiMojiShori and mojikumi only affect Japanese composition, paragraphDirection and kashidaWidth only right-to-left text."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar pa = tf.textRange.paragraphAttributes;\npa.justification = Justification.FULLJUSTIFYLASTLINELEFT;\npa.firstLineIndent = 12;\npa.spaceAfter = 6;\npa.hyphenation = true;\npa.hyphenationPreference = 0.5;",
+   "source": "ai_api_06 agent (harvest omv + COM typelib, members checked against batch)",
+   "review": {
+    "by": "adversarial",
+    "changes": "CDR equivalent class:StyleParagraph -> class:TextRange: the harvested IVGStyleParagraph has a single member (Style), so no paragraph setting is reachable on it, while IVGTextRange carries Alignment, FirstLineIndent, LeftIndent, RightIndent, ParaSpacingBefore/After, Min/MaxWordSpacing, AutoHyphenate, HyphenHotZone, Tabs; summary no longer calls Tabs a Paragraph-panel flyout dialog (it is its own panel); composer use_for now flags the unverified enum mapping"
+   }
+  }
+ ]
+}

@@ -1,0 +1,2672 @@
+{
+ "cards": [
+  {
+   "name": "ExportOptionsAVIF",
+   "id": "class:ExportOptionsAVIF",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsAVIF",
+   "status": "current",
+   "summary": "Option set for Document.exportFile with ExportType.AVIF: writes the artwork as an AVIF raster, lossless by default or lossy with imageQuality 0-63, with optional alpha channel, ICC profile, XMP metadata, an anti-aliasing mode and a PPI that sets the pixel size.",
+   "use_for": [
+    "small, high-quality web hero images rendered from vector art",
+    "transparent AVIF stickers and icons for modern websites",
+    "batch export of artwork to AVIF in a site build script"
+   ],
+   "avoid": [
+    "destinations that cannot decode AVIF (older email clients, some CMS and social uploaders): use ExportOptionsPNG24 or ExportOptionsJPEG",
+    "exporting many artboards at several sizes in one call: use Document.exportForScreens with ExportForScreensOptionsAVIF"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Create with new ExportOptionsAVIF(), set its properties, and pass it as the third argument of app.activeDocument.exportFile(file, ExportType.AVIF, options). It is a plain option object, not attached to the document.",
+   "key_members": [
+    {
+     "name": "losslessCompression",
+     "use": "true (default) = lossless; set false to make imageQuality take effect"
+    },
+    {
+     "name": "imageQuality",
+     "use": "lossy quality on a 0-63 scale, default 63 (top of the scale); ignored while losslessCompression is true"
+    },
+    {
+     "name": "isTransparent",
+     "use": "keep the alpha channel (default true)"
+    },
+    {
+     "name": "PPI",
+     "use": "output resolution in pixels per inch, default 72; this sets the pixel size"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED or TYPEOPTIMIZED (default)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor painted behind the art when isTransparent is false"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the document ICC profile (default false)"
+    },
+    {
+     "name": "includeMetadata",
+     "use": "write XMP metadata (default false)"
+    }
+   ],
+   "gotchas": [
+    "imageQuality runs 0-63, not 0-100 like ExportOptionsWebP; the harvested default 63 is the top of the scale.",
+    "imageQuality does nothing until losslessCompression is set to false.",
+    "There is no horizontalScale/verticalScale here (unlike the legacy JPEG/PNG classes): pixel size comes from PPI, so set 144 or 300 for crisp output.",
+    "matteColor must be an RGBColor object and is only used when isTransparent is false.",
+    "(unverified) Whether the export is cropped to the active artboard or to the artwork bounds: test on a document with art outside the artboard.",
+    "(unverified) Which end of the 0-63 imageQuality scale is best quality; compare file sizes at 20 and 60 before batch use."
+   ],
+   "example": "var o = new ExportOptionsAVIF();\no.losslessCompression = false;\no.imageQuality = 50;\no.PPI = 144;\no.isTransparent = true;\napp.activeDocument.exportFile(new File(\"~/Desktop/hero.avif\"), ExportType.AVIF, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "imageQuality key member no longer asserts that 63 is the best quality (the harvest gives only the 0-63 range and the default); added an unverified gotcha about the scale direction"
+   }
+  },
+  {
+   "name": "ExportOptionsGIF",
+   "id": "class:ExportOptionsGIF",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsGIF",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.GIF, the legacy Save-for-Web style GIF writer: a 2-256 colour palette, colour-reduction and dither methods, web-snap, lossy compression, 1-bit transparency, interlacing, matte colour and scale percentages that set the pixel size.",
+   "use_for": [
+    "flat-colour web badges and buttons with few colours",
+    "legacy email banners that must be GIF",
+    "small transparent icons where PNG is not accepted"
+   ],
+   "avoid": [
+    "photos, gradients and soft shadows: banding and dither noise; use ExportOptionsJPEG or ExportOptionsPNG24",
+    "anti-aliased edges over unknown backgrounds: GIF transparency is on/off, so edges fringe against matteColor; use ExportOptionsPNG24"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "ExportOptionsSaveForWeb",
+    "CDR": "GIFExport"
+   },
+   "how": "new ExportOptionsGIF(), set properties, then app.activeDocument.exportFile(file, ExportType.GIF, options). Resolution is set through horizontalScale/verticalScale as a percentage of 72 ppi.",
+   "key_members": [
+    {
+     "name": "colorCount",
+     "use": "palette size 2-256, default 128; the main file-size lever"
+    },
+    {
+     "name": "colorReduction",
+     "use": "ColorReductionMethod: SELECTIVE (default), ADAPTIVE, PERCEPTUAL, WEB"
+    },
+    {
+     "name": "colorDither",
+     "use": "ColorDitherMethod: NOREDUCTION, DIFFUSION (default), PATTERNDITHER, NOISE"
+    },
+    {
+     "name": "ditherPercent",
+     "use": "dither amount 0-100, default 88"
+    },
+    {
+     "name": "infoLossPercent",
+     "use": "lossy GIF compression 0-100, default 0"
+    },
+    {
+     "name": "webSnap",
+     "use": "0-100: how far palette colours are snapped to the web palette"
+    },
+    {
+     "name": "transparency",
+     "use": "keep transparent areas transparent (default true)"
+    },
+    {
+     "name": "matte",
+     "use": "blend edges / fill background with matteColor (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor used for matting, white by default"
+    },
+    {
+     "name": "interlaced",
+     "use": "progressive (interlaced) GIF"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "percent of 72 ppi; 200 doubles the pixel width"
+    },
+    {
+     "name": "verticalScale",
+     "use": "percent of 72 ppi for the height"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges (bool, default true)"
+    },
+    {
+     "name": "artBoardClipping",
+     "use": "clip to the artboard instead of the art bounds (default false)"
+    },
+    {
+     "name": "saveAsHTML",
+     "use": "also write an HTML file (keep false)"
+    }
+   ],
+   "gotchas": [
+    "Pixel size = artwork size in points x horizontalScale/100 (72 ppi base); set both scales for 2x assets.",
+    "artBoardClipping defaults to false, so the image is cropped to the art's bounding box; set it true and pick the artboard with doc.artboards.setActiveArtboardIndex(i) first.",
+    "Transparency is 1-bit: anti-aliased edge pixels are blended into matteColor (white by default); match it to the page the GIF will sit on.",
+    "saveAsHTML writes an extra HTML file next to the image; keep it false in pipelines."
+   ],
+   "example": "var o = new ExportOptionsGIF();\no.colorCount = 32;\no.colorDither = ColorDitherMethod.NOREDUCTION;\no.transparency = true;\no.artBoardClipping = true;\napp.activeDocument.exportFile(new File(\"~/Desktop/badge.gif\"), ExportType.GIF, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsJPEG",
+   "id": "class:ExportOptionsJPEG",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsJPEG",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.JPEG, the legacy Save-for-Web style JPEG writer: quality 0-100, optimized encoding, blur 0-2, matte colour behind transparent areas, scale percentages that set the pixel size, anti-aliasing and artboard clipping. The class has no colour-space or ppi setting.",
+   "use_for": [
+    "web and social JPEG previews of vector layouts",
+    "client proof images of an artboard",
+    "thumbnails for a catalogue or contact sheet"
+   ],
+   "avoid": [
+    "art that needs transparency: JPEG has none and transparent areas take matteColor; use ExportOptionsPNG24",
+    "print rasters: no CMYK or ppi setting here; use ExportOptionsTIFF or PDFSaveOptions",
+    "logos and flat colour with hard edges where JPEG artifacts show; use ExportOptionsPNG24 or ExportOptionsPNG8"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "ExportOptionsSaveForWeb",
+    "CDR": "JPGExport"
+   },
+   "how": "new ExportOptionsJPEG(), set properties, then app.activeDocument.exportFile(file, ExportType.JPEG, options).",
+   "key_members": [
+    {
+     "name": "qualitySetting",
+     "use": "JPEG quality 0-100; harvested default is only 30"
+    },
+    {
+     "name": "optimization",
+     "use": "optimized (smaller) encoding, default true"
+    },
+    {
+     "name": "blurAmount",
+     "use": "0-2 blur applied before compression; keep 0 for crisp art"
+    },
+    {
+     "name": "matte",
+     "use": "fill transparent areas with matteColor (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor behind transparent areas, white by default"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "percent of 72 ppi, 0-776.19; 416.67 = 300 ppi"
+    },
+    {
+     "name": "verticalScale",
+     "use": "percent of 72 ppi for the height, same range"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges (bool, default true)"
+    },
+    {
+     "name": "artBoardClipping",
+     "use": "clip to the artboard instead of the art bounds (default false)"
+    },
+    {
+     "name": "saveAsHTML",
+     "use": "also write an HTML file (keep false)"
+    }
+   ],
+   "gotchas": [
+    "qualitySetting defaults to 30 (low quality); always set it, 80-100 for deliverables.",
+    "Pixel size comes from the scale percentages (72 ppi base); the harvested maximum 776.19% (about 559 ppi) caps large exports, so use ExportOptionsTIFF (up to 2400 ppi) for big rasters.",
+    "artBoardClipping defaults to false: output is cropped to the art bounds, not the artboard.",
+    "(unverified) A CMYK document is converted to RGB on export using the document colour settings; check colours on vivid CMYK art."
+   ],
+   "example": "var o = new ExportOptionsJPEG();\no.qualitySetting = 90;\no.horizontalScale = o.verticalScale = 300;\no.antiAliasing = true;\no.artBoardClipping = true;\napp.activeDocument.exportFile(new File(\"~/Desktop/proof.jpg\"), ExportType.JPEG, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer asserts \"always RGB\" (the card's own gotcha marks the CMYK-to-RGB conversion unverified); it now states only that the class has no colour-space or ppi member"
+   }
+  },
+  {
+   "name": "ExportOptionsPhotoshop",
+   "id": "class:ExportOptionsPhotoshop",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsPhotoshop",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.PHOTOSHOP: rasterizes the document to a PSD at 72-2400 ppi in RGB, CMYK or greyscale, optionally keeping layers as Photoshop layers and text as editable type layers, one PSD per artboard if asked.",
+   "use_for": [
+    "hand a layout to a Photoshop retoucher with layers intact",
+    "build a layered PSD base for a mockup or composite",
+    "rasterize vector art at print resolution in CMYK"
+   ],
+   "avoid": [
+    "keeping vectors editable: shapes become pixels; send the .ai or a PDF instead",
+    "web images: PSD is heavy; use ExportOptionsPNG24 or ExportOptionsJPEG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "PhotoshopSaveOptions",
+    "CDR": "StructExportOptions"
+   },
+   "how": "new ExportOptionsPhotoshop(), set properties, then app.activeDocument.exportFile(file, ExportType.PHOTOSHOP, options).",
+   "key_members": [
+    {
+     "name": "imageColorSpace",
+     "use": "ImageColorSpace of the PSD: RGB (default), CMYK, GrayScale ..."
+    },
+    {
+     "name": "resolution",
+     "use": "ppi 72-2400, default 150"
+    },
+    {
+     "name": "writeLayers",
+     "use": "keep layers as PSD layers (default true); false flattens"
+    },
+    {
+     "name": "editableText",
+     "use": "export text as editable type layers (default true)"
+    },
+    {
+     "name": "maximumEditability",
+     "use": "keep as much layer/group structure as possible (default true)"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges (bool, default true)"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the ICC profile (default false)"
+    },
+    {
+     "name": "warnings",
+     "use": "show a dialog on setting conflicts (default true)"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "write one PSD per artboard (default false)"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to export when saveMultipleArtboards is true; '' = all"
+    }
+   ],
+   "gotchas": [
+    "warnings defaults to true, and a conflict dialog stalls an unattended run; set it false and set app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS.",
+    "resolution defaults to 150 ppi, not 300.",
+    "(unverified) Art whose appearance cannot be kept as separate PSD layers is merged into one raster layer; check the layer structure of the result.",
+    "(unverified) Only RGB, CMYK and GrayScale of the ImageColorSpace enum are meaningful for a PSD export.",
+    "(unverified) With saveMultipleArtboards the artboard name is appended to each file name."
+   ],
+   "example": "var o = new ExportOptionsPhotoshop();\no.imageColorSpace = ImageColorSpace.CMYK;\no.resolution = 300;\no.writeLayers = true;\no.editableText = true;\no.warnings = false;\napp.activeDocument.exportFile(new File(\"~/Desktop/layout.psd\"), ExportType.PHOTOSHOP, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "layer-merging behaviour gotcha is not in the harvest, so it is now marked unverified"
+   }
+  },
+  {
+   "name": "ExportOptionsPNG24",
+   "id": "class:ExportOptionsPNG24",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsPNG24",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.PNG24, the legacy Save-for-Web style 24-bit PNG writer with full alpha transparency, matte colour, scale percentages that set the pixel size, anti-aliasing and artboard clipping.",
+   "use_for": [
+    "transparent logos and icons for web and apps",
+    "UI assets and stickers with soft anti-aliased edges",
+    "lossless previews of flat vector art at 1x/2x/3x"
+   ],
+   "avoid": [
+    "photos and big backgrounds where file size matters: use ExportOptionsJPEG or ExportOptionsWebP",
+    "print rasters: use ExportOptionsTIFF or PDFSaveOptions",
+    "many artboards at several sizes: Document.exportForScreens with ExportForScreensOptionsPNG24 is simpler"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "ExportOptionsSaveForWeb",
+    "CDR": "PNGExport"
+   },
+   "how": "new ExportOptionsPNG24(), set properties, then app.activeDocument.exportFile(file, ExportType.PNG24, options).",
+   "key_members": [
+    {
+     "name": "transparency",
+     "use": "keep alpha transparency (default true)"
+    },
+    {
+     "name": "matte",
+     "use": "matte the artboard with matteColor (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor background used when transparency is off, white by default"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "percent of 72 ppi; 200 = 2x pixels"
+    },
+    {
+     "name": "verticalScale",
+     "use": "percent of 72 ppi for the height"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges (bool, default true)"
+    },
+    {
+     "name": "artBoardClipping",
+     "use": "clip to the artboard instead of the art bounds (default false)"
+    },
+    {
+     "name": "dimensions",
+     "use": "Dimensions box (width/height) to contain the raster"
+    },
+    {
+     "name": "saveAsHTML",
+     "use": "also write an HTML file (keep false)"
+    }
+   ],
+   "gotchas": [
+    "Pixel size = points x horizontalScale/100 (72 ppi base); for @2x assets set both scales to 200.",
+    "artBoardClipping defaults to false (crop to the art bounds); set true to keep the full artboard including empty margins.",
+    "With transparency false, transparent areas are filled with matteColor (white unless you change it).",
+    "(unverified) How dimensions interacts with the scale percentages; test before relying on it."
+   ],
+   "example": "var o = new ExportOptionsPNG24();\no.transparency = true;\no.antiAliasing = true;\no.artBoardClipping = true;\no.horizontalScale = o.verticalScale = 200;\napp.activeDocument.exportFile(new File(\"~/Desktop/logo@2x.png\"), ExportType.PNG24, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsPNG8",
+   "id": "class:ExportOptionsPNG8",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsPNG8",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.PNG8: an indexed-colour PNG with a 2-256 colour palette, reduction, dither and web-snap controls, on/off transparency, interlacing, matte and scale percentages; the smallest PNGs for flat art.",
+   "use_for": [
+    "flat icons and diagrams for the web at tiny file size",
+    "limited-palette retro or pixel-style graphics",
+    "email graphics with a handful of colours"
+   ],
+   "avoid": [
+    "gradients, shadows and photos: banding; use ExportOptionsPNG24",
+    "soft transparent edges over varying backgrounds: fringing against matteColor; use ExportOptionsPNG24"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "ExportOptionsSaveForWeb",
+    "CDR": "PNGExport"
+   },
+   "how": "new ExportOptionsPNG8(), set properties, then app.activeDocument.exportFile(file, ExportType.PNG8, options).",
+   "key_members": [
+    {
+     "name": "colorCount",
+     "use": "palette size 2-256, default 128"
+    },
+    {
+     "name": "colorReduction",
+     "use": "ColorReductionMethod: SELECTIVE (default), ADAPTIVE, PERCEPTUAL, WEB"
+    },
+    {
+     "name": "colorDither",
+     "use": "ColorDitherMethod; NOREDUCTION gives clean flat fills"
+    },
+    {
+     "name": "ditherPercent",
+     "use": "dither amount 0-100, default 88"
+    },
+    {
+     "name": "webSnap",
+     "use": "0-100 snap of palette colours to the web palette"
+    },
+    {
+     "name": "transparency",
+     "use": "on/off transparency (default true)"
+    },
+    {
+     "name": "interlaced",
+     "use": "interlaced PNG"
+    },
+    {
+     "name": "matte",
+     "use": "blend edge pixels with matteColor (default true)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor for matting, white by default"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "percent of 72 ppi"
+    },
+    {
+     "name": "verticalScale",
+     "use": "percent of 72 ppi for the height"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges (bool)"
+    },
+    {
+     "name": "artBoardClipping",
+     "use": "clip to the artboard (default false)"
+    }
+   ],
+   "gotchas": [
+    "Transparency is binary: anti-aliased edges are blended with matteColor, so set it to the destination background colour.",
+    "Unlike ExportOptionsGIF there is no lossy (infoLossPercent) setting.",
+    "artBoardClipping defaults to false and the pixel size comes from the scale percentages (72 ppi base).",
+    "The default colorDither DIFFUSION adds noise to flat fills; use NOREDUCTION for icons."
+   ],
+   "example": "var o = new ExportOptionsPNG8();\no.colorCount = 16;\no.colorDither = ColorDitherMethod.NOREDUCTION;\no.transparency = true;\no.artBoardClipping = true;\napp.activeDocument.exportFile(new File(\"~/Desktop/icon.png\"), ExportType.PNG8, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsSVG",
+   "id": "class:ExportOptionsSVG",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsSVG",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.SVG, the classic Save-As-SVG writer: DTD/profile, font handling (SVG fonts or outlines) and glyph subsetting, linked or embedded images, coordinate precision, text encoding, CSS placement, optional SVGZ compression and Illustrator round-trip data.",
+   "use_for": [
+    "SVG for vector interchange where Illustrator editability must survive",
+    "SVG Tiny or Basic profiles for devices that require them",
+    "one SVG per artboard from a multi-artboard file"
+   ],
+   "avoid": [
+    "lean web and UI icons: output is verbose; use ExportOptionsWebOptimizedSVG (ExportType.WOSVG)",
+    "text that must look identical in every browser: SVG fonts are not rendered by most browsers; set fontType to OUTLINEFONT"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "SVGExport"
+   },
+   "how": "new ExportOptionsSVG(), set properties, then app.activeDocument.exportFile(file, ExportType.SVG, options).",
+   "key_members": [
+    {
+     "name": "DTD",
+     "use": "SVGDTDVersion: SVG1_0, SVG1_1 (default), SVGTINY1_1 ... SVGTINY1_2"
+    },
+    {
+     "name": "fontType",
+     "use": "SVGFontType: SVGFONT (default) or OUTLINEFONT"
+    },
+    {
+     "name": "fontSubsetting",
+     "use": "which glyphs to embed: None ... ALLGLYPHS (default)"
+    },
+    {
+     "name": "embedRasterImages",
+     "use": "embed placed images (default false = link to files)"
+    },
+    {
+     "name": "coordinatePrecision",
+     "use": "decimal places 1-7, default 3"
+    },
+    {
+     "name": "documentEncoding",
+     "use": "SVGDocumentEncoding: ASCII (default), UTF8, UTF16"
+    },
+    {
+     "name": "cssProperties",
+     "use": "SVGCSSPropertyLocation: STYLEATTRIBUTES (default), PRESENTATIONATTRIBUTES, STYLEELEMENTS, ENTITIES"
+    },
+    {
+     "name": "compressed",
+     "use": "write gzip-compressed SVGZ"
+    },
+    {
+     "name": "preserveEditability",
+     "use": "add Illustrator private data for round-trips (default false)"
+    },
+    {
+     "name": "includeFileInfo",
+     "use": "write file info metadata"
+    },
+    {
+     "name": "includeUnusedStyles",
+     "use": "keep unused graphic styles"
+    },
+    {
+     "name": "includeVariablesAndDatasets",
+     "use": "write variables and data sets"
+    },
+    {
+     "name": "slices",
+     "use": "keep slice data"
+    },
+    {
+     "name": "sVGAutoKerning",
+     "use": "allow SVG auto kerning"
+    },
+    {
+     "name": "sVGTextOnPath",
+     "use": "allow the SVG text-on-path construct"
+    },
+    {
+     "name": "optimizeForSVGViewer",
+     "use": "optimize for the Adobe SVG Viewer"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "one SVG per artboard"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to write when saveMultipleArtboards is true; '' = all"
+    }
+   ],
+   "gotchas": [
+    "fontType defaults to SVGFONT, which browsers do not render; use OUTLINEFONT for faithful text (it then stops being selectable text).",
+    "embedRasterImages defaults to false, so placed images are linked rather than embedded and the SVG is not self-contained; set it true for a single-file delivery.",
+    "preserveEditability adds Illustrator private data and can multiply the file size; leave it false for delivery.",
+    "documentEncoding defaults to ASCII; use UTF8 for non-Latin text such as Devanagari.",
+    "compressed true writes gzip data; name the file .svgz.",
+    "Member names keep the dictionary's casing: sVGAutoKerning, sVGTextOnPath, DTD."
+   ],
+   "example": "var o = new ExportOptionsSVG();\no.fontType = SVGFontType.OUTLINEFONT;\no.embedRasterImages = true;\no.documentEncoding = SVGDocumentEncoding.UTF8;\no.coordinatePrecision = 2;\napp.activeDocument.exportFile(new File(\"~/Desktop/art.svg\"), ExportType.SVG, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "embedRasterImages gotcha no longer claims images are written as separate files next to the SVG (not in the harvest); it now says they are linked, not embedded"
+   }
+  },
+  {
+   "name": "ExportOptionsTIFF",
+   "id": "class:ExportOptionsTIFF",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsTIFF",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.TIFF: rasterizes the artwork to a TIFF at 72-2400 ppi in RGB, CMYK or greyscale with art- or type-optimized anti-aliasing, optional LZW compression, PC/Mac byte order and ICC profile, optionally one file per artboard.",
+   "use_for": [
+    "print-ready rasters of vector art at 300 ppi CMYK",
+    "high-resolution rasters for prepress or older RIPs",
+    "large rasters beyond the scale limits of the JPEG/PNG classes"
+   ],
+   "avoid": [
+    "web delivery: files are large; use ExportOptionsPNG24, ExportOptionsJPEG or ExportOptionsWebP",
+    "keeping vectors: use PDFSaveOptions or EPSSaveOptions"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "TiffSaveOptions",
+    "CDR": "StructExportOptions"
+   },
+   "how": "new ExportOptionsTIFF(), set properties, then app.activeDocument.exportFile(file, ExportType.TIFF, options).",
+   "key_members": [
+    {
+     "name": "imageColorSpace",
+     "use": "ImageColorSpace: RGB (default), CMYK, GrayScale ..."
+    },
+    {
+     "name": "resolution",
+     "use": "ppi 72-2400, default 150"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED (default), TYPEOPTIMIZED"
+    },
+    {
+     "name": "lZWCompression",
+     "use": "lossless LZW compression (default false)"
+    },
+    {
+     "name": "byteOrder",
+     "use": "TIFFByteOrder: IBMPC (default) or MACINTOSH"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the ICC profile (default false)"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "export the artboards given by artboardRange, one TIFF each (default false)"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to export when saveMultipleArtboards is true; '' = all"
+    }
+   ],
+   "gotchas": [
+    "The member is spelled lZWCompression (lower-case l, then ZW); a differently cased name is a different property and changes nothing.",
+    "antiAliasing here is an AntiAliasingMethod enum, not a bool as in the JPEG/PNG classes.",
+    "resolution defaults to 150 ppi; set 300 for print.",
+    "(unverified) With saveMultipleArtboards false the image covers the artwork bounds rather than the artboard; set it true with artboardRange '1' to get exact artboard size.",
+    "(unverified) There is no transparency option; empty areas come out white."
+   ],
+   "example": "var o = new ExportOptionsTIFF();\no.imageColorSpace = ImageColorSpace.CMYK;\no.resolution = 300;\no.lZWCompression = true;\no.saveMultipleArtboards = true;\no.artboardRange = \"1\";\napp.activeDocument.exportFile(new File(\"~/Desktop/print.tif\"), ExportType.TIFF, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "saveMultipleArtboards key member no longer asserts the art-bounds behaviour that the card's own gotcha marks unverified; added its harvested default false"
+   }
+  },
+  {
+   "name": "ExportOptionsWebOptimizedSVG",
+   "id": "class:ExportOptionsWebOptimizedSVG",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsWebOptimizedSVG",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.WOSVG, the modern Export-As-SVG writer: lean markup with optional minify, responsive sizing, ID naming style, CSS placement, font handling, coordinate precision and embed/link choice for images, optionally one file per artboard.",
+   "use_for": [
+    "web and app icons and illustrations",
+    "inline SVG for websites",
+    "icon sets exported one artboard per file"
+   ],
+   "avoid": [
+    "round-tripping back into Illustrator with every feature: use ExportOptionsSVG with preserveEditability",
+    "deliveries that need a specific DTD such as SVG Tiny: use ExportOptionsSVG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "SVGExport"
+   },
+   "how": "new ExportOptionsWebOptimizedSVG(), set properties, then app.activeDocument.exportFile(file, ExportType.WOSVG, options).",
+   "key_members": [
+    {
+     "name": "fontType",
+     "use": "SVGFontType: SVGFONT (default) or OUTLINEFONT"
+    },
+    {
+     "name": "coordinatePrecision",
+     "use": "decimal places 1-7, default 3"
+    },
+    {
+     "name": "cssProperties",
+     "use": "SVGCSSPropertyLocation: where styles go (default STYLEATTRIBUTES)"
+    },
+    {
+     "name": "svgId",
+     "use": "SVGIdType: SVGIDREGULAR (default, layer names), SVGIDUNIQUE, SVGIDMINIMAL"
+    },
+    {
+     "name": "svgMinify",
+     "use": "strip whitespace and shorten markup (default false)"
+    },
+    {
+     "name": "svgResponsive",
+     "use": "drop fixed width/height so the SVG scales to its container (default true)"
+    },
+    {
+     "name": "rasterImageLocation",
+     "use": "RasterImageLocation: EMBED, LINK or PRESERVE (default)"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "one SVG per artboard"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to write; '' = all"
+    }
+   ],
+   "gotchas": [
+    "svgResponsive defaults to true, so width/height attributes are dropped and the SVG stretches to its container; set false for fixed-size icons.",
+    "svgId SVGIDREGULAR uses layer/object names as ids; when several SVGs are inlined on one page use SVGIDUNIQUE to avoid id clashes.",
+    "rasterImageLocation PRESERVE keeps the document's link/embed state; set EMBED for a self-contained file.",
+    "fontType SVGFONT is not rendered by most browsers; OUTLINEFONT converts text to paths."
+   ],
+   "example": "var o = new ExportOptionsWebOptimizedSVG();\no.fontType = SVGFontType.OUTLINEFONT;\no.svgMinify = true;\no.svgResponsive = false;\no.svgId = SVGIdType.SVGIDUNIQUE;\no.coordinatePrecision = 2;\napp.activeDocument.exportFile(new File(\"~/Desktop/icon.svg\"), ExportType.WOSVG, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsWebP",
+   "id": "class:ExportOptionsWebP",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ExportOptionsWebP",
+   "status": "current",
+   "summary": "Option set for exportFile with ExportType.WEBP: writes a WebP raster, lossless by default or lossy with imageQuality 0-100, with optional alpha, ICC profile, XMP metadata, an anti-aliasing mode and a PPI that sets the pixel size.",
+   "use_for": [
+    "lightweight web images and banners rendered from vector art",
+    "transparent WebP stickers and UI assets",
+    "page-speed friendly replacements for PNG24 exports"
+   ],
+   "avoid": [
+    "destinations that refuse WebP (some print vendors, older email clients): use ExportOptionsPNG24 or ExportOptionsJPEG",
+    "exporting many artboards at several sizes: Document.exportForScreens with ExportForScreensOptionsWebP"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "WEBPExport"
+   },
+   "how": "new ExportOptionsWebP(), set properties, then app.activeDocument.exportFile(file, ExportType.WEBP, options).",
+   "key_members": [
+    {
+     "name": "losslessCompression",
+     "use": "true (default) = lossless; set false so imageQuality applies"
+    },
+    {
+     "name": "imageQuality",
+     "use": "lossy quality 0-100, default 100"
+    },
+    {
+     "name": "isTransparent",
+     "use": "keep the alpha channel (default true)"
+    },
+    {
+     "name": "PPI",
+     "use": "output resolution, default 72; sets the pixel size"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "AntiAliasingMethod: None, ARTOPTIMIZED, TYPEOPTIMIZED (default)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor background used when isTransparent is false"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the ICC profile (default false)"
+    },
+    {
+     "name": "includeMetadata",
+     "use": "write XMP metadata (default false)"
+    }
+   ],
+   "gotchas": [
+    "imageQuality is ignored while losslessCompression is true (the default).",
+    "Pixel size comes from PPI (default 72); there are no scale percentages as in the legacy PNG/JPEG classes.",
+    "Do not confuse it with ExportForScreensOptionsWebP, the option class for Document.exportForScreens, which also has scaleType/scaleTypeValue.",
+    "(unverified) Whether the export is cropped to the active artboard or to the artwork bounds."
+   ],
+   "example": "var o = new ExportOptionsWebP();\no.losslessCompression = false;\no.imageQuality = 80;\no.PPI = 144;\no.isTransparent = true;\napp.activeDocument.exportFile(new File(\"~/Desktop/banner.webp\"), ExportType.WEBP, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ImageCaptureOptions",
+   "id": "class:ImageCaptureOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File export options classes for Adobe Illustrator/ImageCaptureOptions",
+   "status": "current",
+   "summary": "Options for Document.imageCapture(file, clipBounds, options), which renders the artwork inside a rectangle to a 24-bit PNG at 72-2400 ppi, with optional transparency, matte and anti-aliasing.",
+   "use_for": [
+    "quick PNG crops of a region for thumbnails, contact sheets or QC frames",
+    "a PNG of one object by passing its visibleBounds as the clip rectangle",
+    "automated preview images for a review step"
+   ],
+   "avoid": [
+    "deliverable exports with full options: use exportFile with ExportOptionsPNG24, or exportForScreens",
+    "other formats: imageCapture only writes PNG"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "StructExportOptions"
+   },
+   "how": "new ImageCaptureOptions(), set properties, then app.activeDocument.imageCapture(file, clipBounds, options). clipBounds is an optional [left, top, right, bottom] rectangle; the dictionary says that when it is omitted the whole artwork bounds are captured.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "ppi 72-2400, default 150"
+    },
+    {
+     "name": "antiAliasing",
+     "use": "smooth edges; default false"
+    },
+    {
+     "name": "transparency",
+     "use": "transparent background; default false"
+    },
+    {
+     "name": "matte",
+     "use": "matte with matteColor (default false)"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGBColor for the matte, white by default"
+    }
+   ],
+   "gotchas": [
+    "antiAliasing and transparency both default to false: without setting antiAliasing the PNG has jagged edges.",
+    "clipBounds is a 4-number array with top greater than bottom (Illustrator's y axis points up); an item's visibleBounds or an artboard's artboardRect can be passed as is.",
+    "Default resolution is 150 ppi.",
+    "(unverified) The capture renders all visible art inside the rectangle, including other objects that overlap it."
+   ],
+   "example": "var doc = app.activeDocument;\nvar o = new ImageCaptureOptions();\no.resolution = 300;\no.antiAliasing = true;\no.transparency = true;\ndoc.imageCapture(new File(\"~/Desktop/item.png\"), doc.pageItems[0].visibleBounds, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: clipBounds is optional per the harvested imageCapture signature (omitted = whole artwork bounds); dropped the unverified \"in document coordinates\" claim"
+   }
+  },
+  {
+   "name": "OpenOptions",
+   "id": "class:OpenOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File opening options classes for Adobe Illustrator/OpenOptions",
+   "status": "current",
+   "summary": "Options for app.open(file, documentColorSpace, options) on Illustrator documents: whether legacy text is updated, whether spot colours in legacy gradient meshes are kept, how pre-CS4 artboards, crop areas and print tiles become artboards, whether the file opens as a library (swatches, brushes, graphic styles, symbols), and whether it is added to Recent Files.",
+   "use_for": [
+    "batch-opening old .ai/.eps archives without legacy-text prompts",
+    "loading a swatch, brush or symbol library from an .ai file by script",
+    "headless batch runs that should not fill the Recent Files list"
+   ],
+   "avoid": [
+    "PDF, PSD or DWG import settings: those live in app.preferences.PDFFileOptions, photoshopFileOptions and AutoCADFileOptions (OpenOptionsPDF, OpenOptionsPhotoshop, OpenOptionsAutoCAD)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "StructOpenOptions"
+   },
+   "how": "new OpenOptions(), set properties, pass as the third argument of app.open(file, documentColorSpace, options).",
+   "key_members": [
+    {
+     "name": "updateLegacyText",
+     "use": "convert pre-Illustrator-11 text to editable text (default false)"
+    },
+    {
+     "name": "updateLegacyGradientMesh",
+     "use": "keep spot colours in pre-CS3 gradient meshes (default true)"
+    },
+    {
+     "name": "openAs",
+     "use": "LibraryType: ILLUSTRATORARTWORK (default), SWATCHES, BRUSHES, GRAPHICSTYLES, SYMBOLS"
+    },
+    {
+     "name": "preserveLegacyArtboard",
+     "use": "keep the pre-CS4 artboard (default true)"
+    },
+    {
+     "name": "convertCropAreaToArtboard",
+     "use": "turn pre-CS4 crop areas into artboards (default true)"
+    },
+    {
+     "name": "createArtboardWithArtworkBoundingBox",
+     "use": "make the artboard fit the art (default false)"
+    },
+    {
+     "name": "convertTilesToArtboard",
+     "use": "turn print tiles into artboards (default false)"
+    },
+    {
+     "name": "addToRecentFiles",
+     "use": "list the file in Recent Files (default true)"
+    }
+   ],
+   "gotchas": [
+    "updateLegacyText defaults to false, so old text stays as non-editable legacy text; setting it true converts the text and can reflow lines, so check layouts.",
+    "Opening old or foreign files can still raise dialogs (missing fonts, colour profile mismatch); set app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS for unattended runs.",
+    "addToRecentFiles defaults to true; set false in batch jobs.",
+    "documentColorSpace (the second app.open argument) only applies to documents saved with multiple colour models (pre-Illustrator 9), per the dictionary; pass it only for such files."
+   ],
+   "example": "var o = new OpenOptions();\no.updateLegacyText = true;\no.addToRecentFiles = false;\napp.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS;\nvar doc = app.open(new File(\"~/Desktop/old.ai\"), DocumentColorSpace.CMYK, o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: updateLegacyGradientMesh keeps spot colours in legacy meshes (per its harvested description), it does not \"update\" meshes; removed PS equivalent OpenOptions (an abstract base class with no members in the PS harvest, so it cannot do this job); documentColorSpace gotcha now uses the harvested parameter description instead of an unverified guess"
+   }
+  },
+  {
+   "name": "OpenOptionsAutoCAD",
+   "id": "class:OpenOptionsAutoCAD",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File opening options classes for Adobe Illustrator/OpenOptionsAutoCAD",
+   "status": "current",
+   "summary": "The AutoCAD (DWG/DXF) import settings Illustrator uses when opening or placing a CAD drawing: which layout, scale mode (original size, fit artboard or by value), percent scale, unit mapping and ratio, centring, layer merging and lineweight scaling.",
+   "use_for": [
+    "importing architectural or engineering plans at a known scale",
+    "turning DWG/DXF line work into editable vector art for signage or diagrams",
+    "batch conversion of CAD drawings with consistent units"
+   ],
+   "avoid": [
+    "exporting to CAD: that is ExportType.AUTOCAD with its own export option class",
+    "raster plans (scans): place them as images instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "DXFImport"
+   },
+   "how": "Not constructed with new: it is the live preferences object app.preferences.AutoCADFileOptions (its members are instance-scope, with parent/typename). Set its properties, then app.open(file) or place the drawing.",
+   "key_members": [
+    {
+     "name": "globalScaleOption",
+     "use": "AutoCADGlobalScaleOption: OriginalSize, FitArtboard (default), ScaleByValue"
+    },
+    {
+     "name": "globalScalePercent",
+     "use": "percent scale used with ScaleByValue (default 1.0)"
+    },
+    {
+     "name": "unit",
+     "use": "AutoCADUnit the drawing units map to (default Millimeters)"
+    },
+    {
+     "name": "unitScaleRatio",
+     "use": "ratio applied when mapping units (default 1.0)"
+    },
+    {
+     "name": "selectedLayoutName",
+     "use": "name of the drawing layout to import"
+    },
+    {
+     "name": "centerArtwork",
+     "use": "centre the art on the artboard (default true)"
+    },
+    {
+     "name": "mergeLayers",
+     "use": "merge CAD layers into one (default false)"
+    },
+    {
+     "name": "scaleLineweights",
+     "use": "scale line weights with the drawing (default false)"
+    },
+    {
+     "name": "parent",
+     "use": "the Preferences object it belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "These are application-wide preferences: values persist for later opens and places in the session; restore them after the job.",
+    "The default FitArtboard scaling loses real-world scale; use OriginalSize or ScaleByValue with unit and unitScaleRatio for measured drawings.",
+    "scaleLineweights defaults to false, so lines keep their absolute weight when a big drawing is scaled down and plans look heavy.",
+    "(unverified) What happens when selectedLayoutName does not match a layout in the drawing."
+   ],
+   "example": "var cad = app.preferences.AutoCADFileOptions;\ncad.globalScaleOption = AutoCADGlobalScaleOption.ScaleByValue;\ncad.unit = AutoCADUnit.Millimeters;\ncad.unitScaleRatio = 1.0;\ncad.scaleLineweights = true;\nvar doc = app.open(new File(\"~/Desktop/plan.dwg\"));",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "OpenOptionsPDF",
+   "id": "class:OpenOptionsPDF",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File opening options classes for Adobe Illustrator/OpenOptionsPDF",
+   "status": "current",
+   "summary": "The PDF import settings Illustrator applies when opening or placing a PDF: which page or page range, which PDF box defines the crop, and whether placed pages come in as links.",
+   "use_for": [
+    "opening page N of a supplier PDF as editable artwork",
+    "placing a PDF trimmed to its trim or art box (no bleed/slug)",
+    "batch-converting PDF pages to Illustrator files"
+   ],
+   "avoid": [
+    "keeping a PDF pixel-identical: opening converts it to editable art with font substitution; place it linked instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "GenericPDFOpenOptions"
+   },
+   "how": "Reached as app.preferences.PDFFileOptions, a live preferences object (instance-scope members with parent/typename), not created with new. Set it before app.open(pdfFile) or before placing a PDF.",
+   "key_members": [
+    {
+     "name": "pageToOpen",
+     "use": "page used when opening a multipage PDF (default 1)"
+    },
+    {
+     "name": "pageRangeToOpen",
+     "use": "'all' or a range such as '1,2,3-5,8'"
+    },
+    {
+     "name": "pDFCropToBox",
+     "use": "PDFBoxType for placing: PDFMEDIABOX (default), PDFTRIMBOX, PDFARTBOX, PDFCROPBOX, PDFBLEEDBOX, PDFBOUNDINGBOX"
+    },
+    {
+     "name": "placeAsLinks",
+     "use": "import pages as links (default true when the range is 'all')"
+    },
+    {
+     "name": "parent",
+     "use": "the Preferences object it belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "The property name is pDFCropToBox with the dictionary's odd casing.",
+    "These are global preferences: a page number set by one script stays in effect for later opens and places; reset pageToOpen to 1 afterwards.",
+    "Opening (not placing) converts the page to editable Illustrator art: missing fonts are substituted and text can split into many small objects.",
+    "(unverified) pDFCropToBox affects placing only; opening uses the page's own boxes."
+   ],
+   "example": "var pdf = app.preferences.PDFFileOptions;\npdf.pageToOpen = 3;\npdf.pDFCropToBox = PDFBoxType.PDFTRIMBOX;\nvar doc = app.open(new File(\"~/Desktop/brochure.pdf\"));\npdf.pageToOpen = 1;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "OpenOptionsPhotoshop",
+   "id": "class:OpenOptionsPhotoshop",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File opening options classes for Adobe Illustrator/OpenOptionsPhotoshop",
+   "status": "current",
+   "summary": "The PSD import settings Illustrator applies when opening or placing a Photoshop file: convert layers to objects or flatten, keep image maps, slices and hidden layers, and choose a layer comp.",
+   "use_for": [
+    "bringing a layered PSD into Illustrator with layers as separate objects",
+    "importing a specific layer comp of a mockup PSD",
+    "batch-converting PSD comps into Illustrator layouts"
+   ],
+   "avoid": [
+    "keeping the PSD live-editable in Photoshop: place it linked instead of opening/embedding"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "StructImportOptions"
+   },
+   "how": "Reached as app.preferences.photoshopFileOptions (lower-case p), a live preferences object, not created with new. Set it before app.open(psdFile) or before placing/embedding a PSD.",
+   "key_members": [
+    {
+     "name": "preserveLayers",
+     "use": "convert layers to objects (default true); false flattens to one image"
+    },
+    {
+     "name": "preserveHiddenLayers",
+     "use": "keep hidden layers (default false)"
+    },
+    {
+     "name": "layerComp",
+     "use": "name of the layer comp to use"
+    },
+    {
+     "name": "preserveSlices",
+     "use": "keep slices (default true)"
+    },
+    {
+     "name": "preserveImageMaps",
+     "use": "keep image maps (default true)"
+    },
+    {
+     "name": "parent",
+     "use": "the Preferences object it belongs to"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "Note the casing: app.preferences.photoshopFileOptions, while PDFFileOptions and AutoCADFileOptions start upper-case.",
+    "These are global preferences that persist for later opens and places in the session; reset them after the job.",
+    "preserveHiddenLayers defaults to false, so hidden layers are dropped.",
+    "(unverified) A PSD placed as a link always shows as one flattened image; the layer options apply when opening or embedding."
+   ],
+   "example": "var ps = app.preferences.photoshopFileOptions;\nps.preserveLayers = true;\nps.preserveHiddenLayers = false;\nps.layerComp = \"Version B\";\nvar doc = app.open(new File(\"~/Desktop/mockup.psd\"));",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "EPSSaveOptions",
+   "id": "class:EPSSaveOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File save options classes for Adobe Illustrator/EPSSaveOptions",
+   "status": "current",
+   "summary": "Options for Document.saveAs(file, options) as Illustrator EPS: version compatibility, preview type, font embedding, inclusion of linked images, CMYK PostScript, PostScript level 2/3, transparency flattening for old versions, overprint handling and one file per artboard.",
+   "use_for": [
+    "print and sign vendors that still require EPS",
+    "stock vector submissions that ask for EPS10 (Compatibility.ILLUSTRATOR10)",
+    "logo packages with an EPS version"
+   ],
+   "avoid": [
+    "modern print workflows: EPS cannot keep live transparency or layers; use PDFSaveOptions (PDF/X-4)",
+    "web output: use ExportOptionsWebOptimizedSVG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "EPSSaveOptions",
+    "CDR": "CEPSExport"
+   },
+   "how": "new EPSSaveOptions(), set properties, then app.activeDocument.saveAs(file, options).",
+   "key_members": [
+    {
+     "name": "compatibility",
+     "use": "Compatibility version, default ILLUSTRATOR24; ILLUSTRATOR10 = EPS10"
+    },
+    {
+     "name": "preview",
+     "use": "EPSPreview: None, BWTIFF, COLORTIFF, TRANSPARENTCOLORTIFF ..."
+    },
+    {
+     "name": "embedAllFonts",
+     "use": "embed fonts (default false)"
+    },
+    {
+     "name": "embedLinkedFiles",
+     "use": "include linked images (default false)"
+    },
+    {
+     "name": "includeDocumentThumbnails",
+     "use": "store a thumbnail (default true)"
+    },
+    {
+     "name": "cmykPostScript",
+     "use": "write CMYK PostScript (default true)"
+    },
+    {
+     "name": "postScript",
+     "use": "EPSPostScriptLevelEnum LEVEL2 (default) or LEVEL3"
+    },
+    {
+     "name": "flattenOutput",
+     "use": "OutputFlattening for pre-version-9 targets: PRESERVEAPPEARANCE or PRESERVEPATHS"
+    },
+    {
+     "name": "compatibleGradientPrinting",
+     "use": "rasterize gradients/meshes for level-2 printers"
+    },
+    {
+     "name": "overprint",
+     "use": "PDFOverprint handling of overprints"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "one EPS per artboard"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to save when saveMultipleArtboards is true; '' = all"
+    }
+   ],
+   "gotchas": [
+    "saveAs re-targets the open document to the new file: a later doc.save() writes this format, not the .ai. Save the master first, or close with SaveOptions.DONOTSAVECHANGES and reopen it.",
+    "embedAllFonts defaults to false; set it true before sending to a printer or stock site.",
+    "embedLinkedFiles defaults to false, so placed images stay as external links the recipient may not have.",
+    "flattenOutput only applies to pre-version-9 compatibility; the EPS PostScript itself always carries a flattened version of transparency.",
+    "(unverified) With saveMultipleArtboards the artboard name is appended to each file name."
+   ],
+   "example": "var o = new EPSSaveOptions();\no.compatibility = Compatibility.ILLUSTRATOR10;\no.embedAllFonts = true;\no.embedLinkedFiles = true;\no.cmykPostScript = true;\napp.activeDocument.saveAs(new File(\"~/Desktop/logo.eps\"), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FXGSaveOptions",
+   "id": "class:FXGSaveOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File save options classes for Adobe Illustrator/FXGSaveOptions",
+   "status": "current",
+   "summary": "Options for Document.saveAs(file, options) as FXG (Flash XML Graphics 1.0/2.0, the Flex and Flash Catalyst vector format): artboard range, whether filters, text, gradients and blends stay editable or are converted, unused symbols, linked-image downsampling and XMP. FXG is a legacy format; this card was not tested on 2026.",
+   "use_for": [
+    "legacy Flex or Flash Catalyst pipelines that still consume FXG",
+    "editable XML vector output for old Adobe toolchains"
+   ],
+   "avoid": [
+    "any current web or app delivery: use ExportOptionsWebOptimizedSVG",
+    "print: use PDFSaveOptions"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "new FXGSaveOptions(), set properties, then app.activeDocument.saveAs(file, options) with a .fxg file.",
+   "key_members": [
+    {
+     "name": "version",
+     "use": "FXGVersion: VERSION1PT0 or VERSION2PT0 (default)"
+    },
+    {
+     "name": "preserveEditingCapabilities",
+     "use": "keep Illustrator editing data (default true)"
+    },
+    {
+     "name": "filtersPolicy",
+     "use": "FiltersPreservePolicy for effects (default KEEPFILTERSEDITABLE)"
+    },
+    {
+     "name": "textPolicy",
+     "use": "TextPreservePolicy (default AUTOMATICALLYCONVERTTEXT)"
+    },
+    {
+     "name": "gradientsPolicy",
+     "use": "GradientsPreservePolicy (default AUTOMATICALLYCONVERTGRADIENTS)"
+    },
+    {
+     "name": "blendsPolicy",
+     "use": "BlendsExpandPolicy (default AUTOMATICALLYCONVERTBLENDS)"
+    },
+    {
+     "name": "includeUnusedSymbols",
+     "use": "write symbols not used on the artboard (default false)"
+    },
+    {
+     "name": "downsampleLinkedImages",
+     "use": "downsample linked images to 72 ppi (default false)"
+    },
+    {
+     "name": "includeMetadata",
+     "use": "write XMP (default false)"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "one FXG per artboard"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to save; '' = all"
+    }
+   ],
+   "gotchas": [
+    "(unverified) FXG belongs to the Flash/Flex era; recent Illustrator versions may no longer offer it in Save As, so run a test saveAs with this class before building on it.",
+    "saveAs re-targets the open document to the new file: a later doc.save() writes this format, not the .ai. Save the master first, or close with SaveOptions.DONOTSAVECHANGES and reopen it.",
+    "downsampleLinkedImages reduces linked images to 72 ppi, which is fine for screen and wrong for print."
+   ],
+   "example": "var o = new FXGSaveOptions();\no.version = FXGVersion.VERSION2PT0;\no.preserveEditingCapabilities = false;\no.includeUnusedSymbols = false;\napp.activeDocument.saveAs(new File(\"~/Desktop/ui.fxg\"), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IllustratorSaveOptions",
+   "id": "class:IllustratorSaveOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File save options classes for Adobe Illustrator/IllustratorSaveOptions",
+   "status": "current",
+   "summary": "Options for Document.saveAs(file, options) in native .ai format: version compatibility (Illustrator 3 up to the current ILLUSTRATOR24 format), PDF-compatible content, compression, font subsetting and used-glyph embedding, ICC profile, embedding of linked images and per-artboard saving.",
+   "use_for": [
+    "saving working master files from a script",
+    "down-saving to an older Illustrator version for a vendor",
+    "packaging an .ai with embedded images for handoff"
+   ],
+   "avoid": [
+    "sending to non-Adobe apps: use PDFSaveOptions or EPSSaveOptions",
+    "web delivery: use the SVG export classes"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "AIExport"
+   },
+   "how": "new IllustratorSaveOptions(), set properties, then app.activeDocument.saveAs(file, options) with a .ai file.",
+   "key_members": [
+    {
+     "name": "compatibility",
+     "use": "Compatibility: ILLUSTRATOR24 (default, current format), ILLUSTRATOR17 (CC), ILLUSTRATOR16 (CS6) ..."
+    },
+    {
+     "name": "pdfCompatible",
+     "use": "store a PDF copy inside the .ai (default true)"
+    },
+    {
+     "name": "compressed",
+     "use": "compress the file (default true)"
+    },
+    {
+     "name": "embedLinkedFiles",
+     "use": "embed placed images (default false)"
+    },
+    {
+     "name": "embedICCProfile",
+     "use": "embed the document ICC profile (default false)"
+    },
+    {
+     "name": "fontSubsetThreshold",
+     "use": "embed a font subset when less than this % of glyphs are used (default 100)"
+    },
+    {
+     "name": "embedUsedGlyphs",
+     "use": "save used font glyphs (version 24 or later)"
+    },
+    {
+     "name": "flattenOutput",
+     "use": "transparency flattening for pre-version-9 targets"
+    },
+    {
+     "name": "saveMultipleArtboards",
+     "use": "save artboards as separate files"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to save when saveMultipleArtboards is true"
+    }
+   ],
+   "gotchas": [
+    "pdfCompatible defaults to true and is what lets InDesign and other apps place the .ai; false gives smaller files that other apps cannot read.",
+    "Saving to an older compatibility can expand or drop newer features (variable-width strokes, newer effects); keep ILLUSTRATOR24 for masters.",
+    "saveAs to a new path re-targets the open document to that file.",
+    "embedLinkedFiles true makes the file self-contained but much larger."
+   ],
+   "example": "var o = new IllustratorSaveOptions();\no.compatibility = Compatibility.ILLUSTRATOR17;\no.pdfCompatible = true;\no.embedLinkedFiles = true;\no.compressed = true;\napp.activeDocument.saveAs(new File(\"~/Desktop/handoff_cc.ai\"), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PDFSaveOptions",
+   "id": "class:PDFSaveOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "File save options classes for Adobe Illustrator/PDFSaveOptions",
+   "status": "current",
+   "summary": "Options for Document.saveAs(file, options) as Adobe PDF: a named preset and/or compatibility, PDF/X standard, image compression and downsampling for colour, grey and mono images, printer's marks and bleed, colour conversion and output intent, transparency flattening, Acrobat layers, security passwords and permissions, and the artboard range (one artboard = one page).",
+   "use_for": [
+    "print-ready PDF/X files with bleed and crop marks",
+    "lightweight review PDFs with downsampled images and no editing data",
+    "multi-page brochure PDFs from several artboards",
+    "password-protected client proofs"
+   ],
+   "avoid": [
+    "raster deliverables: use ExportOptionsPNG24, ExportOptionsJPEG or ExportOptionsTIFF",
+    "keeping the open .ai as the working file: saveAs switches the document to the PDF (see gotchas)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "PDFSaveOptions",
+    "CDR": "PDFVBASettings"
+   },
+   "how": "new PDFSaveOptions(), optionally set pDFPreset to a name from app.PDFPresetsList, override single properties, then app.activeDocument.saveAs(file, options).",
+   "key_members": [
+    {
+     "name": "pDFPreset",
+     "use": "preset name from app.PDFPresetsList, e.g. '[High Quality Print]'"
+    },
+    {
+     "name": "compatibility",
+     "use": "PDFCompatibility ACROBAT4-8 (default ACROBAT5); ACROBAT4 flattens transparency"
+    },
+    {
+     "name": "pDFXStandard",
+     "use": "PDFXStandard: PDFXNONE (default), PDFX1A2001 ... PDFX42007"
+    },
+    {
+     "name": "preserveEditability",
+     "use": "embed the full .ai for re-editing (default true)"
+    },
+    {
+     "name": "artboardRange",
+     "use": "artboards to write as pages; '' = all"
+    },
+    {
+     "name": "colorCompression",
+     "use": "CompressionQuality for colour images (default None)"
+    },
+    {
+     "name": "colorDownsamplingMethod",
+     "use": "DownsampleMethod; NODOWNSAMPLE (default) turns downsampling off"
+    },
+    {
+     "name": "colorDownsampling",
+     "use": "target ppi for colour images (default 150)"
+    },
+    {
+     "name": "colorDownsamplingImageThreshold",
+     "use": "only images above this ppi are downsampled (default 225)"
+    },
+    {
+     "name": "trimMarks",
+     "use": "draw trim (crop) marks"
+    },
+    {
+     "name": "registrationMarks",
+     "use": "draw registration marks"
+    },
+    {
+     "name": "pageInformation",
+     "use": "print file name/date on the page"
+    },
+    {
+     "name": "bleedOffsetRect",
+     "use": "bleed on the four sides, in points"
+    },
+    {
+     "name": "colorConversionID",
+     "use": "ColorConversion policy: none, repurpose or convert to destination"
+    },
+    {
+     "name": "colorDestinationID",
+     "use": "ColorDestination profile for the conversion"
+    },
+    {
+     "name": "outputIntentProfile",
+     "use": "output intent profile name for PDF/X"
+    },
+    {
+     "name": "flattenerPreset",
+     "use": "named transparency flattener preset"
+    },
+    {
+     "name": "acrobatLayers",
+     "use": "top-level layers become Acrobat layers (Acrobat 6+)"
+    },
+    {
+     "name": "requireDocumentPassword",
+     "use": "require a password to open"
+    },
+    {
+     "name": "documentPassword",
+     "use": "the open password"
+    }
+   ],
+   "gotchas": [
+    "saveAs re-targets the open document to the new file: a later doc.save() writes this format, not the .ai. Save the master first, or close with SaveOptions.DONOTSAVECHANGES and reopen it.",
+    "pDFPreset must be an exact name from app.PDFPresetsList, brackets included; (unverified) assign it first, because applying the preset can overwrite properties set before it.",
+    "preserveEditability defaults to true and embeds the whole .ai: big files that anyone can reopen and edit; set false for client and print delivery.",
+    "Downsampling does nothing while colorDownsamplingMethod is NODOWNSAMPLE (the default); colorDownsampling is the target ppi and colorDownsamplingImageThreshold the trigger.",
+    "(unverified) The order of the four bleedOffsetRect values is not clearly documented; set all four equal (8.504 pt = 3 mm).",
+    "documentPassword only takes effect when requireDocumentPassword is true (same for permissionPassword and requirePermissionPassword).",
+    "Member names keep the dictionary's casing: pDFPreset, pDFXStandard, pDFAllowPrinting."
+   ],
+   "example": "var o = new PDFSaveOptions();\no.pDFPreset = \"[High Quality Print]\";\no.preserveEditability = false;\no.trimMarks = true;\no.bleedOffsetRect = [8.504, 8.504, 8.504, 8.504];\no.artboardRange = \"1-2\";\napp.activeDocument.saveAs(new File(\"~/Desktop/print.pdf\"), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Point",
+   "id": "class:Point",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Other Classes/Point",
+   "status": "current",
+   "summary": "A two-number coordinate (x/left, y/top) listed under Other Classes in the Illustrator 2026 dictionary (Photoshop lists the same class). In Illustrator it is the type of PageItem.position, of Document.windowCapture's windowSize and of Document.convertCoordinate's argument and result; in practice a plain [x, y] array is used wherever a point is expected.",
+   "use_for": [
+    "reading and setting object positions ([x, y] in points)",
+    "converting between document and artboard coordinates",
+    "window capture sizes"
+   ],
+   "avoid": [
+    "rectangles and bounds: use 4-number arrays (see Rectangle)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Point",
+    "CDR": "Point"
+   },
+   "how": "Behaves as a 2-element collection: p[0] is x, p[1] is y. Illustrator properties typed as Point (for example pageItem.position) take and return [x, y] arrays.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "horizontal coordinate in points"
+    },
+    {
+     "name": "y",
+     "use": "vertical coordinate in points (Illustrator: up is positive)"
+    },
+    {
+     "name": "left",
+     "use": "alias of x"
+    },
+    {
+     "name": "top",
+     "use": "alias of y"
+    },
+    {
+     "name": "length",
+     "use": "always 2: the class is a two-element collection"
+    }
+   ],
+   "gotchas": [
+    "Illustrator's scripting y axis points up: with the default artboard coordinate system (origin at the artboard's top-left), objects below the top edge have negative y, so subtract to move down.",
+    "app.coordinateSystem decides whether positions are artboard- or document-relative; Document.convertCoordinate translates a point between the two.",
+    "(unverified) Whether new Point(x, y) is available as a global constructor in Illustrator's engine; plain arrays always work."
+   ],
+   "example": "var doc = app.activeDocument;\nvar it = doc.pageItems[0];\nvar p = it.position;          // [x, y]\nit.position = [p[0] + 36, p[1] - 36]; // right and down 0.5 in\nvar q = doc.convertCoordinate(p, CoordinateSystem.ARTBOARDCOORDINATESYSTEM, CoordinateSystem.DOCUMENTCOORDINATESYSTEM);",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/how: dropped the \"shared ExtendScript dictionary\" and ScriptUI-location claims (the evidence is Illustrator omv.xml, Other Classes); named the harvested Point-typed members instead"
+   }
+  },
+  {
+   "name": "Rectangle",
+   "id": "class:Rectangle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Other Classes/Rectangle",
+   "status": "current",
+   "summary": "A four-number rectangle (left/x, top/y, right, bottom, plus width and height) listed under Other Classes in the Illustrator 2026 dictionary (Photoshop lists the same class). Illustrator's bounds (geometricBounds, visibleBounds, artboardRect, imageCapture and rasterize clipBounds) are typed Rect and use plain 4-number arrays [left, top, right, bottom].",
+   "use_for": [
+    "reading artboard and object bounds to compute sizes and margins",
+    "building clip rectangles for imageCapture or rasterize",
+    "checking whether an object fits inside the artboard before export"
+   ],
+   "avoid": [
+    "drawing a rectangle shape: that is pathItems.rectangle(top, left, width, height), a different thing"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Rectangle",
+    "CDR": "Rect"
+   },
+   "how": "A 4-element collection: r[0] left, r[1] top, r[2] right, r[3] bottom. Illustrator DOM properties of type Rect take and return such arrays.",
+   "key_members": [
+    {
+     "name": "left",
+     "use": "left edge"
+    },
+    {
+     "name": "top",
+     "use": "top edge"
+    },
+    {
+     "name": "right",
+     "use": "right edge"
+    },
+    {
+     "name": "bottom",
+     "use": "bottom edge"
+    },
+    {
+     "name": "width",
+     "use": "right - left"
+    },
+    {
+     "name": "height",
+     "use": "height of the rectangle"
+    },
+    {
+     "name": "x",
+     "use": "alias of left"
+    },
+    {
+     "name": "y",
+     "use": "alias of top"
+    },
+    {
+     "name": "length",
+     "use": "always 4: the class is a four-element collection"
+    }
+   ],
+   "gotchas": [
+    "In Illustrator arrays top is greater than bottom (y up), so height = top - bottom; (unverified) ScriptUI bounds are y-down (bottom > top).",
+    "Do not confuse with the rectangle shape method pathItems.rectangle(top, left, width, height), whose argument order starts with top.",
+    "(unverified) Whether new Rectangle() is available as a constructor in Illustrator's engine; arrays always work."
+   ],
+   "example": "var r = app.activeDocument.artboards[0].artboardRect; // [l, t, r, b]\nvar w = r[2] - r[0];\nvar h = r[1] - r[3];\n$.writeln(w + \" x \" + h + \" pt (\" + r.length + \" values)\");",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer lists bleed rectangles as [l, t, r, b] (bleedOffsetRect order is unverified on the PDF and print-marks cards); dropped the unverified \"ScriptUI bounds type\" claim from summary, how and use_for; ScriptUI y-down note marked unverified"
+   }
+  },
+  {
+   "name": "Ink",
+   "id": "class:Ink",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/Ink",
+   "status": "current",
+   "summary": "One printing ink (a process ink or a spot colour) of a document, with its separation settings in inkInfo. Read the document's inks from doc.inkList; PrintColorSeparationOptions.inkList uses them to decide which plates print.",
+   "use_for": [
+    "preflight: list the spot colours a print file will separate into",
+    "disable or convert an unwanted spot plate when printing separations",
+    "count inks against a job's colour budget"
+   ],
+   "avoid": [
+    "changing artwork colours: that is swatches and spot colours, not inks",
+    "PDF output: inks only steer Document.print separations"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "SeparationPlate"
+   },
+   "how": "Read-only source: app.activeDocument.inkList (an array of Ink). For printing, assign an (edited) ink array to PrintColorSeparationOptions.inkList. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "ink name (process ink or spot colour name)"
+    },
+    {
+     "name": "inkInfo",
+     "use": "InkInfo: print status, type, trapping, screen frequency and angle"
+    }
+   ],
+   "gotchas": [
+    "doc.inkList is built from the colours used in the artwork, so an unused spot swatch may not appear (unverified).",
+    "(unverified) Ink arrays come back as copies: edit the Ink objects, then assign the whole array to colorSeparationOptions.inkList.",
+    "Ink settings only matter for separated output (HOSTBASEDSEPARATION or INRIPSEPARATION), not composite prints."
+   ],
+   "example": "var inks = app.activeDocument.inkList;\nfor (var i = 0; i < inks.length; i++) {\n  var k = inks[i].inkInfo;\n  $.writeln(inks[i].name + \" \" + k.kind + \" \" + k.frequency + \" lpi @ \" + k.angle);\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "InkInfo",
+   "id": "class:InkInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/InkInfo",
+   "status": "current",
+   "summary": "The separation settings of one Ink: whether it prints, is disabled or is converted to process (printingStatus), its type (cyan, magenta, yellow, black or custom), trapping type and order, neutral density, screen frequency and angle, dot shape and the custom ink's colour.",
+   "use_for": [
+    "convert a stray spot colour to process at print time",
+    "set screen angle and frequency for a spot plate",
+    "set trapping order for press separations"
+   ],
+   "avoid": [
+    "changing the colour of the artwork: edit the spot swatch instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "SeparationPlate"
+   },
+   "how": "Reached as ink.inkInfo on an Ink from doc.inkList or PrintColorSeparationOptions.inkList. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "printingStatus",
+     "use": "InkPrintStatus: ENABLEINK, DISABLEINK, CONVERTINK (to process)"
+    },
+    {
+     "name": "kind",
+     "use": "InkType: CYANINK, MAGENTAINK, YELLOWINK, BLACKINK, CUSTOMINK"
+    },
+    {
+     "name": "trapping",
+     "use": "TrappingType: NORMALTRAPPING, TRANSPARENT, OPAQUE, IGNOREOPAQUE"
+    },
+    {
+     "name": "trappingOrder",
+     "use": "order in which the ink traps, starting at 1"
+    },
+    {
+     "name": "density",
+     "use": "neutral density used for trapping decisions"
+    },
+    {
+     "name": "frequency",
+     "use": "screen frequency (lpi)"
+    },
+    {
+     "name": "angle",
+     "use": "screen angle in degrees"
+    },
+    {
+     "name": "dotShape",
+     "use": "halftone dot shape name"
+    },
+    {
+     "name": "customColor",
+     "use": "the colour of a custom (spot) ink"
+    }
+   ],
+   "gotchas": [
+    "printingStatus CONVERTINK separates a spot ink into CMYK, the usual fix for an unwanted extra plate.",
+    "(unverified) frequency, angle and dotShape only affect host-based separations to a PostScript device.",
+    "customColor is only meaningful when kind is CUSTOMINK."
+   ],
+   "example": "var inks = app.activeDocument.inkList;\nfor (var i = 0; i < inks.length; i++)\n  if (inks[i].inkInfo.kind == InkType.CUSTOMINK) inks[i].inkInfo.printingStatus = InkPrintStatus.CONVERTINK;\nvar sep = new PrintColorSeparationOptions();\nsep.inkList = inks;",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Paper",
+   "id": "class:Paper",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/Paper",
+   "status": "current",
+   "summary": "A paper size an installed printer supports: its name plus a PaperInfo with width, height and imageable area. A printer's sizes are listed in PrinterInfo.paperSizes.",
+   "use_for": [
+    "picking a valid paper name for an automated print job",
+    "checking that the sheet is big enough for artboard plus bleed and marks"
+   ],
+   "avoid": [
+    "setting the paper for a job: that is PrintPaperOptions.name (or its custom width/height)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrnPaperSize"
+   },
+   "how": "Read from app.printerList[i].printerInfo.paperSizes. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "paper size name as the driver reports it"
+    },
+    {
+     "name": "paperInfo",
+     "use": "PaperInfo: width, height, imageable area, custom flag"
+    }
+   ],
+   "gotchas": [
+    "Paper names are driver-specific; copy them from paperSizes instead of typing 'A4' or 'Letter'.",
+    "Sizes are in points (72 per inch, about 2.835 per mm)."
+   ],
+   "example": "var sizes = app.printerList[0].printerInfo.paperSizes;\nfor (var i = 0; i < sizes.length; i++)\n  $.writeln(sizes[i].name + \": \" + sizes[i].paperInfo.width + \" x \" + sizes[i].paperInfo.height + \" pt\");",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PaperInfo",
+   "id": "class:PaperInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PaperInfo",
+   "status": "current",
+   "summary": "Size data for one Paper: width and height in points, the printer's imageable area, and whether it is a custom size.",
+   "use_for": [
+    "checking that a sheet fits the artboard plus bleed and printer's marks",
+    "finding the printable (imageable) area of a paper size"
+   ],
+   "avoid": [
+    "defining a custom sheet for a job: set PrintPaperOptions width/height instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Reached as paper.paperInfo on a Paper from PrinterInfo.paperSizes. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "width",
+     "use": "paper width in points"
+    },
+    {
+     "name": "height",
+     "use": "paper height in points"
+    },
+    {
+     "name": "imageableArea",
+     "use": "Rect of the printable area"
+    },
+    {
+     "name": "customPaper",
+     "use": "true for a custom paper size"
+    }
+   ],
+   "gotchas": [
+    "Units are points (72 per inch).",
+    "(unverified) The order of the four imageableArea values; read all four and compare with width/height."
+   ],
+   "example": "var p = app.printerList[0].printerInfo.paperSizes[0];\nvar pi = p.paperInfo;\n$.writeln(p.name + \" \" + pi.width + \"x\" + pi.height + \" custom=\" + pi.customPaper);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PPDFile",
+   "id": "class:PPDFile",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PPDFile",
+   "status": "current",
+   "summary": "A PostScript Printer Description (PPD) file Illustrator knows about: its model name plus PPDInfo with the file path, PostScript level and available halftone screens. app.PPDFileList returns these.",
+   "use_for": [
+    "choosing a PPD for PostScript printing or print-to-file",
+    "listing available device descriptions on a print workstation"
+   ],
+   "avoid": [
+    "non-PostScript printers: PPDs do not apply"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "List with app.PPDFileList; set PrintOptions.PPDName to a name from it. For full details call app.getPPDFileInfo(name).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "PPD model name"
+    },
+    {
+     "name": "PPDInfo",
+     "use": "PPDFileInfo: file path, language level, screens"
+    }
+   ],
+   "gotchas": [
+    "For speed, entries in app.PPDFileList only carry the model name and file path; call app.getPPDFileInfo(name) to get screens and language level.",
+    "PPDs only matter for PostScript output."
+   ],
+   "example": "var list = app.PPDFileList;\nfor (var i = 0; i < list.length; i++) $.writeln(list[i].name);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PPDFileInfo",
+   "id": "class:PPDFileInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PPDFileInfo",
+   "status": "current",
+   "summary": "Details of one PPD: PostScript language level, the .ppd file path, and the lists of halftone screens and screen spot functions the device offers.",
+   "use_for": [
+    "picking a halftone screen for separations",
+    "checking a device's PostScript level before choosing print options"
+   ],
+   "avoid": [
+    "non-PostScript printers"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Get it with app.getPPDFileInfo(name), using a name from app.PPDFileList. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "languageLevel",
+     "use": "PostScript language level (string)"
+    },
+    {
+     "name": "PPDFilePath",
+     "use": "File object of the .ppd"
+    },
+    {
+     "name": "screenList",
+     "use": "list of Screen objects"
+    },
+    {
+     "name": "screenSpotFunctionList",
+     "use": "list of ScreenSpotFunction objects"
+    }
+   ],
+   "gotchas": [
+    "The PPDInfo of an entry in app.PPDFileList is not filled in; use app.getPPDFileInfo(name).",
+    "languageLevel is a string, not a number."
+   ],
+   "example": "var info = app.getPPDFileInfo(app.PPDFileList[0].name);\n$.writeln(\"PS level \" + info.languageLevel + \": \" + info.PPDFilePath.fsName);\nfor (var i = 0; i < info.screenList.length; i++) $.writeln(info.screenList[i].name);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintColorManagementOptions",
+   "id": "class:PrintColorManagementOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintColorManagementOptions",
+   "status": "current",
+   "summary": "Colour-management settings for Document.print: the profile mode (source, printer, custom or old style), the rendering intent and the profile name.",
+   "use_for": [
+    "proof prints with a specific printer ICC profile",
+    "consistent rendering intent across batch-printed proofs"
+   ],
+   "avoid": [
+    "colour conversion in PDF files: use PDFSaveOptions colorConversionID/colorDestinationID"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "DocumentPrintSettings"
+   },
+   "how": "new PrintColorManagementOptions(), set it, assign to PrintOptions.colorManagementOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "colorProfileMode",
+     "use": "PrintColorProfile: OLDSTYLEPROFILE, SOURCEPROFILE (default), PRINTERPROFILE, CUSTOMPROFILE"
+    },
+    {
+     "name": "intent",
+     "use": "PrintColorIntent: PERCEPTUALINTENT, SATURATIONINTENT, RELATIVECOLORIMETRIC (default), ABSOLUTECOLORIMETRIC"
+    },
+    {
+     "name": "name",
+     "use": "colour profile name"
+    }
+   ],
+   "gotchas": [
+    "(unverified) name is used with CUSTOMPROFILE and must match an installed ICC profile's description.",
+    "(unverified) If both Illustrator and the printer driver manage colour the output is converted twice; turn colour management off in one of them."
+   ],
+   "example": "var cm = new PrintColorManagementOptions();\ncm.intent = PrintColorIntent.RELATIVECOLORIMETRIC;\nvar po = new PrintOptions();\npo.colorManagementOptions = cm;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintColorSeparationOptions",
+   "id": "class:PrintColorSeparationOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintColorSeparationOptions",
+   "status": "current",
+   "summary": "Separation settings for Document.print: composite, host-based or in-RIP separations, converting all spot colours to process, overprinting black, and the per-ink list that decides which plates print.",
+   "use_for": [
+    "printing separation proofs per plate",
+    "converting all spot colours to CMYK at print time",
+    "overprinting black text on press proofs"
+   ],
+   "avoid": [
+    "PDF separations previews: use Acrobat Output Preview on a PDF instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrintSeparations"
+   },
+   "how": "new PrintColorSeparationOptions(), set it, assign to PrintOptions.colorSeparationOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "colorSeparationMode",
+     "use": "PrintColorSeparationMode: COMPOSITE (default), HOSTBASEDSEPARATION, INRIPSEPARATION"
+    },
+    {
+     "name": "convertSpotColors",
+     "use": "convert every spot colour to process (default false)"
+    },
+    {
+     "name": "overPrintBlack",
+     "use": "overprint black (default false)"
+    },
+    {
+     "name": "inkList",
+     "use": "array of Ink with per-plate settings"
+    }
+   ],
+   "gotchas": [
+    "Separations need a PostScript device; INRIPSEPARATION also needs in-RIP support (check PrinterInfo.inRIPSeparationSupport).",
+    "The default COMPOSITE prints all colours on one sheet and ignores the ink list.",
+    "(unverified) inkList returns copies; edit the inks and assign the whole array back."
+   ],
+   "example": "var sep = new PrintColorSeparationOptions();\nsep.colorSeparationMode = PrintColorSeparationMode.HOSTBASEDSEPARATION;\nsep.convertSpotColors = true;\nvar po = new PrintOptions();\npo.colorSeparationOptions = sep;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintCoordinateOptions",
+   "id": "class:PrintCoordinateOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintCoordinateOptions",
+   "status": "current",
+   "summary": "Placement settings for Document.print: orientation, emulsion flip, position on the sheet (nine anchors), fit to page, horizontal and vertical scale (1-10000%) and tiling of oversize art across sheets.",
+   "use_for": [
+    "fit-to-page proofs of large posters",
+    "tiled prints of banners on office printers",
+    "mirrored output for film or transfers"
+   ],
+   "avoid": [
+    "resizing the artwork itself: scale the art or artboard instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "DocumentPrintSettings",
+    "CDR": "PrintLayout"
+   },
+   "how": "new PrintCoordinateOptions(), set it, assign to PrintOptions.coordinateOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "orientation",
+     "use": "PrintOrientation: PORTRAIT (default), LANDSCAPE, REVERSE..., AUTOROTATE"
+    },
+    {
+     "name": "emulsion",
+     "use": "flip the artwork horizontally (default false)"
+    },
+    {
+     "name": "position",
+     "use": "PrintPosition anchor, default TRANSLATECENTER"
+    },
+    {
+     "name": "fitToPage",
+     "use": "scale proportionally to fit the page (default false)"
+    },
+    {
+     "name": "horizontalScale",
+     "use": "horizontal scale percent 1-10000"
+    },
+    {
+     "name": "verticalScale",
+     "use": "vertical scale percent 1-10000"
+    },
+    {
+     "name": "tiling",
+     "use": "PrintTiling: TILESINGLEFULLPAGE (default), TILEFULLPAGES, TILEIMAGEABLEAREAS"
+    }
+   ],
+   "gotchas": [
+    "(unverified) fitToPage overrides horizontalScale/verticalScale.",
+    "emulsion true mirrors the print; it is for film output, never for normal proofs.",
+    "Tiling only kicks in when the art is larger than the sheet."
+   ],
+   "example": "var co = new PrintCoordinateOptions();\nco.fitToPage = true;\nco.orientation = PrintOrientation.AUTOROTATE;\nvar po = new PrintOptions();\npo.coordinateOptions = co;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Printer",
+   "id": "class:Printer",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/Printer",
+   "status": "current",
+   "summary": "An installed system printer as Illustrator sees it: its name plus a PrinterInfo with type, PostScript level, colour support, resolutions and paper sizes. app.printerList returns them.",
+   "use_for": [
+    "choosing the target printer in an automated print job",
+    "checking a printer's capabilities before setting separation or PostScript options"
+   ],
+   "avoid": [
+    "setting the printer: that is PrintOptions.printerName"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Printer"
+   },
+   "how": "List with app.printerList; copy a name into PrintOptions.printerName. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "printer name, as PrintOptions.printerName expects it"
+    },
+    {
+     "name": "printerInfo",
+     "use": "PrinterInfo with the printer's capabilities"
+    }
+   ],
+   "gotchas": [
+    "PrintOptions.printerName must match Printer.name exactly; take it from app.printerList instead of typing it.",
+    "Virtual printers such as PDF writers are listed too.",
+    "(unverified) Offline printers still appear in the list."
+   ],
+   "example": "var list = app.printerList;\nfor (var i = 0; i < list.length; i++)\n  $.writeln(list[i].name + \" PS=\" + list[i].printerInfo.postScriptLevel);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrinterInfo",
+   "id": "class:PrinterInfo",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrinterInfo",
+   "status": "current",
+   "summary": "Capabilities of one printer: PostScript or not and its level, colour, greyscale or black-and-white, default and maximum resolution, in-RIP separation and binary printing support, supported paper sizes and custom paper limits.",
+   "use_for": [
+    "deciding whether separations or PostScript options can be used",
+    "checking custom paper limits for banners",
+    "listing paper sizes for a printer"
+   ],
+   "avoid": [
+    "changing printer behaviour: these are capabilities; settings go on PrintOptions and its sub-options"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Printer"
+   },
+   "how": "Reached as printer.printerInfo on an entry of app.printerList. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "printerType",
+     "use": "PrinterTypeEnum: POSTSCRIPTPRINTER, NONPOSTSCRIPTPRINTER, Unknown"
+    },
+    {
+     "name": "postScriptLevel",
+     "use": "PrinterPostScriptLevelEnum PSLEVEL1-3"
+    },
+    {
+     "name": "colorSupport",
+     "use": "PrinterColorMode: colour, greyscale or black-and-white"
+    },
+    {
+     "name": "deviceResolution",
+     "use": "default resolution"
+    },
+    {
+     "name": "maxDeviceResolution",
+     "use": "maximum resolution"
+    },
+    {
+     "name": "inRIPSeparationSupport",
+     "use": "supports in-RIP separations"
+    },
+    {
+     "name": "binaryPrintingSupport",
+     "use": "supports binary PostScript data"
+    },
+    {
+     "name": "paperSizes",
+     "use": "list of Paper"
+    },
+    {
+     "name": "customPaperSupport",
+     "use": "accepts custom paper sizes"
+    },
+    {
+     "name": "customPaperTransverseSupport",
+     "use": "accepts transverse custom paper"
+    },
+    {
+     "name": "minPaperWidth",
+     "use": "custom paper minimum width"
+    },
+    {
+     "name": "maxPaperWidth",
+     "use": "custom paper maximum width"
+    },
+    {
+     "name": "minPaperHeight",
+     "use": "custom paper minimum height"
+    },
+    {
+     "name": "maxPaperHeight",
+     "use": "custom paper maximum height"
+    }
+   ],
+   "gotchas": [
+    "Separation and PostScript options only work when printerType is POSTSCRIPTPRINTER.",
+    "(unverified) The dictionary marks the members writable but they describe the device; treat them as read-only.",
+    "(unverified) Custom paper limits are in points, like PrintPaperOptions width/height; the dictionary gives no unit."
+   ],
+   "example": "var info = app.printerList[0].printerInfo;\nif (info.printerType == PrinterTypeEnum.POSTSCRIPTPRINTER)\n  $.writeln(\"PS, in-RIP seps: \" + info.inRIPSeparationSupport);",
+   "review": {
+    "by": "adversarial",
+    "changes": "unit of the custom paper limits is not in the harvest: gotcha marked unverified"
+   }
+  },
+  {
+   "name": "PrintFlattenerOptions",
+   "id": "class:PrintFlattenerOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintFlattenerOptions",
+   "status": "current",
+   "summary": "Transparency flattening settings used when printing (PrintOptions.flattenerOptions) and for flattened PDFs (PDFSaveOptions.flattenerOptions): raster/vector balance 0-100, rasterization and gradient/mesh resolution, text and strokes to outlines, clipping complex regions and overprint handling.",
+   "use_for": [
+    "PostScript printing of artwork with transparency, shadows and blend modes",
+    "PDF/X-1a or Acrobat 4 PDFs where transparency must be flattened",
+    "fixing stitching or thin-text problems at the flattening stage"
+   ],
+   "avoid": [
+    "modern PDF output (Acrobat 5+ without PDF/X-1a): transparency stays live and these settings do nothing"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "new PrintFlattenerOptions(), set it, assign to PrintOptions.flattenerOptions or PDFSaveOptions.flattenerOptions.",
+   "key_members": [
+    {
+     "name": "flatteningBalance",
+     "use": "0 = rasterize all transparency, 100 (default) = keep max vectors"
+    },
+    {
+     "name": "rasterizationResolution",
+     "use": "ppi for rasterized areas, 1-9600, default 300"
+    },
+    {
+     "name": "gradientResolution",
+     "use": "ppi for gradients and meshes, 1-9600, default 300"
+    },
+    {
+     "name": "convertTextToOutlines",
+     "use": "outline all text (default false)"
+    },
+    {
+     "name": "convertStrokesToOutlines",
+     "use": "outline all strokes (default false)"
+    },
+    {
+     "name": "clipComplexRegions",
+     "use": "clip boundaries between raster and vector areas to paths (default false)"
+    },
+    {
+     "name": "overprint",
+     "use": "PDFOverprint: PRESERVEPDFOVERPRINT (default) or DISCARDPDFOVERPRINT"
+    }
+   ],
+   "gotchas": [
+    "Flattening only happens when transparency cannot travel: PostScript printing, ACROBAT4 compatibility or PDF/X-1a/X-3.",
+    "A named preset (flattenerPreset on PrintOptions or PDFSaveOptions, names from app.flattenerPresetsList) is simpler; (unverified) which wins when both are set.",
+    "convertTextToOutlines keeps text widths consistent where only part of the text is flattened, but removes live fonts.",
+    "clipComplexRegions reduces visible stitching where raster and vector areas meet."
+   ],
+   "example": "var fl = new PrintFlattenerOptions();\nfl.flatteningBalance = 75;\nfl.rasterizationResolution = 300;\nfl.clipComplexRegions = true;\nvar po = new PrintOptions();\npo.flattenerOptions = fl;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "overprint key member said \"preserve or simulate\"; the harvested PDFOverprint enum is PRESERVEPDFOVERPRINT / DISCARDPDFOVERPRINT (no simulate), default PRESERVEPDFOVERPRINT"
+   }
+  },
+  {
+   "name": "PrintFontOptions",
+   "id": "class:PrintFontOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintFontOptions",
+   "status": "current",
+   "summary": "Font handling for PostScript printing: download no fonts, subsets or complete fonts to the device, and the substitution policy for missing fonts (oblique, tint or device fonts).",
+   "use_for": [
+    "reliable text on PostScript printers and print-to-file",
+    "reducing PostScript size by downloading font subsets"
+   ],
+   "avoid": [
+    "non-PostScript printers: the driver handles fonts",
+    "PDF output: font embedding is set on PDFSaveOptions (fontSubsetThreshold)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrintPostScript"
+   },
+   "how": "new PrintFontOptions(), set it, assign to PrintOptions.fontOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "downloadFonts",
+     "use": "PrintFontDownloadMode: DOWNLOADNONE, DOWNLOADSUBSET (default), DOWNLOADCOMPLETE"
+    },
+    {
+     "name": "fontSubstitution",
+     "use": "FontSubstitutionPolicy: SUBSTITUTEOBLIQUE (default), SUBSTITUTETINT, SUBSTITUTEDEVICE"
+    }
+   ],
+   "gotchas": [
+    "Only PostScript output uses these settings.",
+    "(unverified) DOWNLOADNONE relies on fonts resident in the printer; missing ones are substituted (often Courier)."
+   ],
+   "example": "var fo = new PrintFontOptions();\nfo.downloadFonts = PrintFontDownloadMode.DOWNLOADCOMPLETE;\nvar po = new PrintOptions();\npo.fontOptions = fo;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintJobOptions",
+   "id": "class:PrintJobOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintJobOptions",
+   "status": "current",
+   "summary": "Job-level print settings: which layers print, the print bounds (artboard, artwork or crop), copies, collate, reverse order, print to a file, print as bitmap at a resolution, job name, and all artboards or a range.",
+   "use_for": [
+    "printing a range of artboards in a batch",
+    "printing to a PostScript file for a RIP",
+    "proof prints of all layers including non-printing ones"
+   ],
+   "avoid": [
+    "saving a PDF: use PDFSaveOptions with saveAs"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrintSettings"
+   },
+   "how": "new PrintJobOptions(), set it, assign to PrintOptions.jobOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "designation",
+     "use": "PrintArtworkDesignation: VISIBLEPRINTABLELAYERS (default), VISIBLELAYERS, ALLLAYERS"
+    },
+    {
+     "name": "printArea",
+     "use": "PrintingBounds: ARTBOARDBOUNDS (default), ARTWORKBOUNDS, CROPBOUNDS"
+    },
+    {
+     "name": "copies",
+     "use": "number of copies (min 1)"
+    },
+    {
+     "name": "collate",
+     "use": "collate copies"
+    },
+    {
+     "name": "reversePages",
+     "use": "print in reverse order"
+    },
+    {
+     "name": "file",
+     "use": "File to print to instead of the device"
+    },
+    {
+     "name": "printAsBitmap",
+     "use": "rasterize the page for printing"
+    },
+    {
+     "name": "bitmapResolution",
+     "use": "resolution when printing as bitmap"
+    },
+    {
+     "name": "name",
+     "use": "print job name"
+    },
+    {
+     "name": "printAllArtboards",
+     "use": "print every artboard (default true)"
+    },
+    {
+     "name": "artboardRange",
+     "use": "range such as '1-3' when printAllArtboards is false"
+    }
+   ],
+   "gotchas": [
+    "artboardRange is ignored unless printAllArtboards is set to false.",
+    "The default designation VISIBLEPRINTABLELAYERS skips layers marked non-printing, such as template layers.",
+    "(unverified) Printing to a file writes PostScript and needs a PostScript printer or PPD selected.",
+    "printAsBitmap is a last-resort workaround for PostScript errors; it rasterizes the whole page."
+   ],
+   "example": "var job = new PrintJobOptions();\njob.copies = 2;\njob.printAllArtboards = false;\njob.artboardRange = \"1-3\";\nvar po = new PrintOptions();\npo.jobOptions = job;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintOptions",
+   "id": "class:PrintOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintOptions",
+   "status": "current",
+   "summary": "The container passed to Document.print(options): printer, PPD, print preset and flattener preset names, plus the sub-option objects for paper, job, separations, placement, marks, fonts, PostScript, colour management and flattening.",
+   "use_for": [
+    "unattended printing of proofs from a script",
+    "applying a saved print preset to many documents",
+    "printing separations or PostScript files for a RIP"
+   ],
+   "avoid": [
+    "PDF output: use PDFSaveOptions with saveAs"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "DocumentPrintSettings",
+    "CDR": "PrintSettings"
+   },
+   "how": "var po = new PrintOptions(); set the name properties, create and attach sub-option objects (new PrintJobOptions() etc.), then app.activeDocument.print(po).",
+   "key_members": [
+    {
+     "name": "printerName",
+     "use": "exact name from app.printerList"
+    },
+    {
+     "name": "PPDName",
+     "use": "PPD name from app.PPDFileList"
+    },
+    {
+     "name": "printPreset",
+     "use": "print preset name from app.printPresetsList"
+    },
+    {
+     "name": "flattenerPreset",
+     "use": "flattener preset name from app.flattenerPresetsList"
+    },
+    {
+     "name": "paperOptions",
+     "use": "PrintPaperOptions"
+    },
+    {
+     "name": "jobOptions",
+     "use": "PrintJobOptions"
+    },
+    {
+     "name": "colorSeparationOptions",
+     "use": "PrintColorSeparationOptions"
+    },
+    {
+     "name": "coordinateOptions",
+     "use": "PrintCoordinateOptions"
+    },
+    {
+     "name": "pageMarksOptions",
+     "use": "PrintPageMarksOptions"
+    },
+    {
+     "name": "fontOptions",
+     "use": "PrintFontOptions"
+    },
+    {
+     "name": "postScriptOptions",
+     "use": "PrintPostScriptOptions"
+    },
+    {
+     "name": "colorManagementOptions",
+     "use": "PrintColorManagementOptions"
+    },
+    {
+     "name": "flattenerOptions",
+     "use": "PrintFlattenerOptions"
+    }
+   ],
+   "gotchas": [
+    "Sub-options are separate objects: create each with new, set it, then assign it to the PrintOptions property.",
+    "printerName must match a name in app.printerList exactly, and printPreset a name in app.printPresetsList.",
+    "(unverified) Which wins when printPreset and explicit sub-options disagree; set one or the other.",
+    "Printing blocks Illustrator until the job is spooled; set app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS so no dialog waits for a click."
+   ],
+   "example": "var po = new PrintOptions();\npo.printerName = app.printerList[0].name;\nvar job = new PrintJobOptions();\njob.copies = 1;\npo.jobOptions = job;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintPageMarksOptions",
+   "id": "class:PrintPageMarksOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintPageMarksOptions",
+   "status": "current",
+   "summary": "Printer's marks for Document.print: trim marks and their weight, registration marks, colour bars, page information, Roman or Japanese mark style, and the bleed and marks offset rectangles.",
+   "use_for": [
+    "press proofs with crop marks and colour bars",
+    "printing with bleed on oversize sheets for hand trimming"
+   ],
+   "avoid": [
+    "marks in a PDF file: use PDFSaveOptions trimMarks/registrationMarks/colorBars"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "DocumentPrintSettings",
+    "CDR": "PrintPrepress"
+   },
+   "how": "new PrintPageMarksOptions(), set it, assign to PrintOptions.pageMarksOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "trimMarks",
+     "use": "print trim marks"
+    },
+    {
+     "name": "trimMarksWeight",
+     "use": "trim mark stroke weight in points (default 0.125)"
+    },
+    {
+     "name": "registrationMarks",
+     "use": "print registration marks"
+    },
+    {
+     "name": "colorBars",
+     "use": "print colour bars"
+    },
+    {
+     "name": "pageInfoMarks",
+     "use": "print file and page information"
+    },
+    {
+     "name": "pageMarksType",
+     "use": "PageMarksTypes: Roman (default) or Japanese"
+    },
+    {
+     "name": "bleedOffsetRect",
+     "use": "bleed on each side, in points"
+    },
+    {
+     "name": "marksOffsetRect",
+     "use": "distance of the marks from the trim, in points"
+    }
+   ],
+   "gotchas": [
+    "Marks and bleed need a sheet larger than the artboard; on a same-size sheet they fall off the page.",
+    "(unverified) The order of the four values in bleedOffsetRect and marksOffsetRect; set all four equal.",
+    "Japanese style draws double (tombo) crop marks."
+   ],
+   "example": "var pm = new PrintPageMarksOptions();\npm.trimMarks = true;\npm.registrationMarks = true;\npm.bleedOffsetRect = [8.504, 8.504, 8.504, 8.504];\nvar po = new PrintOptions();\npo.pageMarksOptions = pm;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PrintPaperOptions",
+   "id": "class:PrintPaperOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintPaperOptions",
+   "status": "current",
+   "summary": "Paper choice for Document.print: a named paper size of the selected printer, or a custom width, height and offset in points, with optional transverse (rotated 90 degrees) feed.",
+   "use_for": [
+    "choosing A3/tabloid sheets for proofs with marks",
+    "custom roll or banner sizes on large-format printers"
+   ],
+   "avoid": [
+    "changing the artboard size: edit the artboard instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrintSettings"
+   },
+   "how": "new PrintPaperOptions(), set it, assign to PrintOptions.paperOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "paper name from the printer's PrinterInfo.paperSizes"
+    },
+    {
+     "name": "width",
+     "use": "custom width in points (default 0)"
+    },
+    {
+     "name": "height",
+     "use": "custom height in points"
+    },
+    {
+     "name": "offset",
+     "use": "custom paper offset in points"
+    },
+    {
+     "name": "transverse",
+     "use": "rotate the art 90 degrees on custom paper"
+    }
+   ],
+   "gotchas": [
+    "name must match a Paper.name of the selected printer exactly.",
+    "Custom width/height only work when PrinterInfo.customPaperSupport is true and within its min/max limits.",
+    "Units are points."
+   ],
+   "example": "var pp = new PrintPaperOptions();\npp.name = app.printerList[0].printerInfo.paperSizes[0].name;\nvar po = new PrintOptions();\npo.paperOptions = pp;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "width key member no longer invents \"0 = use the named size\"; states the harvested default 0"
+   }
+  },
+  {
+   "name": "PrintPostScriptOptions",
+   "id": "class:PrintPostScriptOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/PrintPostScriptOptions",
+   "status": "current",
+   "summary": "PostScript output settings for Document.print: language level 1-3, binary or ASCII data, negative printing, image compression (none, RLE or JPEG), forced continuous tone, level-1 compatible gradient and mesh printing, and shading resolution.",
+   "use_for": [
+    "printing to PostScript RIPs and imagesetters",
+    "writing PostScript files for older devices",
+    "fixing gradient banding or errors on old printers"
+   ],
+   "avoid": [
+    "non-PostScript printers: these settings are ignored"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "PrintPostScript"
+   },
+   "how": "new PrintPostScriptOptions(), set it, assign to PrintOptions.postScriptOptions. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "postScriptLevel",
+     "use": "PrinterPostScriptLevelEnum PSLEVEL1-3, default PSLEVEL2"
+    },
+    {
+     "name": "binaryPrinting",
+     "use": "send binary instead of ASCII data"
+    },
+    {
+     "name": "negativePrinting",
+     "use": "invert the output"
+    },
+    {
+     "name": "imageCompression",
+     "use": "PostScriptImageCompressionType: IMAGECOMPRESSIONNONE (default), RLE, JPEG"
+    },
+    {
+     "name": "forceContinuousTone",
+     "use": "force continuous-tone output"
+    },
+    {
+     "name": "compatibleShading",
+     "use": "level-1 compatible gradient and mesh printing"
+    },
+    {
+     "name": "shadingResolution",
+     "use": "shading resolution 1-9600, default 300"
+    }
+   ],
+   "gotchas": [
+    "negativePrinting inverts the image (for film); never use it for paper proofs.",
+    "binaryPrinting is faster but some spoolers cannot pass binary data; check PrinterInfo.binaryPrintingSupport.",
+    "JPEG imageCompression is lossy."
+   ],
+   "example": "var ps = new PrintPostScriptOptions();\nps.postScriptLevel = PrinterPostScriptLevelEnum.PSLEVEL3;\nps.binaryPrinting = true;\nvar po = new PrintOptions();\npo.postScriptOptions = ps;\napp.activeDocument.print(po);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Screen",
+   "id": "class:Screen",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Printing classes for Adobe Illustrator/Screen",
+   "status": "current",
+   "summary": "One halftone screen a PPD offers (a named frequency/resolution combination): its name plus ScreenInfo with frequency, angle and whether it is the default.",
+   "use_for": [
+    "choosing screening for host-based separations on a PostScript device"
+   ],
+   "avoid": [
+    "composite or non-PostScript printing: screens are not used"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Read from app.getPPDFileInfo(name).screenList. Part of the print API: build a PrintOptions, attach the sub-option objects, and call app.activeDocument.print(options).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "screen name, e.g. a lpi / dpi combination"
+    },
+    {
+     "name": "screenInfo",
+     "use": "ScreenInfo: frequency, angle, default flag"
+    }
+   ],
+   "gotchas": [
+    "The list is only filled in through app.getPPDFileInfo(name), not on entries of app.PPDFileList.",
+    "Screens only matter for separations on PostScript devices."
+   ],
+   "example": "var info = app.getPPDFileInfo(app.PPDFileList[0].name);\nvar s = info.screenList;\nfor (var i = 0; i < s.length; i++) $.writeln(s[i].name + \" \" + s[i].screenInfo.frequency + \" lpi\");",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

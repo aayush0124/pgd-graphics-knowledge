@@ -1,0 +1,553 @@
+{
+ "cards": [
+  {
+   "name": "3D Rotate",
+   "id": "11f14b2e-099d-4871-aced-bc9be70b9581",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/3D Rotate",
+   "status": "needs_input",
+   "summary": "Turns an image in 3D as if it were a flat card swung on its vertical and horizontal axes, so it renders in perspective: one edge recedes and shrinks, the opposite edge comes forward. Best fit scales the turned image back inside the original frame. It tilts a flat plane only, with no depth or sides.",
+   "use_for": [
+    "tilting a screenshot or photo panel for a device or web mock-up",
+    "angled photo cards in a collage, brochure or event poster",
+    "a quick perspective lean on a picture without building a 3D scene"
+   ],
+   "avoid": [
+    "vector artwork that must stay crisp and editable: use Object/Perspective/Add Perspective on the vectors instead",
+    "angles near the -75 / 75 limit squash the image to a sliver and soften it through resampling; stay within about 45",
+    "a solid 3D object with visible sides: this only tilts a plane, use Effects/Extrude on vector shapes",
+    "the scripted path works on bitmaps only (Shape.Bitmap): run Object/Convert to Bitmap on vector art first",
+    "scripts: this effect's command string has not been apply-tested (format proven on other effects); check the result",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ThreeDRotateEffect [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Live Adobe Geometry3D Rotate",
+    "PS": "Edit/Transform/Perspective"
+   },
+   "look": [
+    "3D tilt",
+    "perspective card",
+    "angled panel",
+    "keystone",
+    "rotated plane",
+    "mock-up lean"
+   ],
+   "params": [
+    {
+     "name": "VertAngle",
+     "does": "Vertical rotation angle in degrees (-75 to 75, default 0, step 1): turns the image about one axis so one pair of opposite edges recedes in perspective. Which axis, and which sign sends which edge back, is not in the harvest: check the preview",
+     "typical": "10 to 30"
+    },
+    {
+     "name": "HorizAngle",
+     "does": "Horizontal rotation angle in degrees (-75 to 75, default 0, step 1): turns the image about the other axis. Which axis, and which sign sends which edge back, is not in the harvest: check the preview",
+     "typical": "20 to 45"
+    },
+    {
+     "name": "BestFit",
+     "does": "On: scales the turned image to fit inside the original object's bounds. Off: keeps the original scale",
+     "typical": "on (the default)"
+    }
+   ],
+   "demo_settings": {
+    "VertAngle": 20,
+    "HorizAngle": 40,
+    "BestFit": true
+   },
+   "pairs_with": [
+    "Drop Shadow (grounds the tilted panel on the page)",
+    "Object/Convert to Bitmap (gives vector art a bitmap for the scripted path)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD 3D Rotate\", \"ThreeDRotateEffect VertAngle=20,HorizAngle=40,BestFit=1\")  // shape must be a bitmap; command format proven on 6 other effects but this string not apply-tested, and the bool spelling (1 / true) is unproven. Menu route: FrameWork InvokeItem 11f14b2e-099d-4871-aced-bc9be70b9581 (opens the dialog)",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack (editable, removable). The harvest does not say whether the scripted Bitmap.ApplyBitmapEffect result stays editable.",
+   "cost": "light: one perspective resample of the bitmap",
+   "review": {
+    "by": "adversarial",
+    "changes": "VertAngle / HorizAngle descriptions no longer assert which axis each angle turns around (not in the harvest); range, default and step stated from the batch"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'ThreeDRotateEffect VertAngle=20,HorizAngle=40,BestFit=1'\"; VertAngle 20 / HorizAngle 40 are far from the 0 no-op, so the demo is not the cause; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Every listed form (and the object-model twin where one exists) changed nothing, and the demo values are far from a no-op, so needs_input is the honest status, matching Selective Color / Tone Curve."
+    }
+   }
+  },
+  {
+   "name": "Cylinder",
+   "id": "bf319b1a-09c2-403b-9531-ba1cf09c1059",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Cylinder",
+   "status": "current",
+   "summary": "Remaps the image as if it were wrapped round a cylinder, along one direction only: positive Percentage stretches the middle and crowds the ends, negative does the reverse. With Mode sent as list index 0 (Horizontal in the harvested list order; the caption form changed no pixel) the remap runs down the height: on the 2026-10 gallery render (Percentage 100) the middle rows were stretched taller and the top and bottom rows crowded (the colour strip was squeezed from 45 to 27 px against the bottom edge) while every column kept its width, so Horizontal is a cylinder lying on its side; Vertical presumably works across the width, the upright can (not rendered). It only moves pixels: no shading, no perspective.",
+   "use_for": [
+    "previewing a label wrapped round a cylinder lying on its side (Horizontal) or an upright can, bottle or tube (Vertical, inferred from the Horizontal render)",
+    "stretching the middle band of a photo strip or banner while crowding its ends, along one axis only",
+    "one-axis bulge on a picture where a full sphere distortion would be too much"
+   ],
+   "avoid": [
+    "a round bulge in both directions: use Effects/3D Effects/Sphere",
+    "a realistic product render with shading: this only remaps pixels, add a highlight / shadow gradient on top",
+    "vector art to keep editable: envelope the vectors with Effects/Envelope instead",
+    "the scripted path works on bitmaps only: run Object/Convert to Bitmap first; this effect's command string has not been apply-tested"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "spherize"
+   },
+   "look": [
+    "cylinder wrap",
+    "can label",
+    "one-axis stretch",
+    "stretched centre",
+    "crowded edges",
+    "wrap-around"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "Strength and sign of the wrap (-100 to 100): positive stretches the middle outward, negative pinches it in",
+     "typical": "40 to 100, default 25"
+    },
+    {
+     "name": "Mode",
+     "does": "Axis of the remap: on the render Horizontal (sent as list index 0; the caption 'Horizontal' changed no pixel) remapped the rows and left the column widths alone, a cylinder lying on its side; Vertical presumably remaps the columns (an upright can)",
+     "typical": "Vertical for an upright can label read left to right (inferred), Horizontal for a lying cylinder"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Mode": "Horizontal"
+   },
+   "pairs_with": [
+    "Effects/3D Effects/Sphere (round bulge instead of one-axis)",
+    "Transparency gradient over the bitmap to fake cylindrical shading"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Cylinder\", \"CylinderEffect Percentage=100,Mode=Horizontal\")  // shape must be a bitmap; ImageNode (unlabelled list in the template) left out; command format proven on 6 other effects but this string not apply-tested. Menu route: FrameWork InvokeItem bf319b1a-09c2-403b-9531-ba1cf09c1059",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light: a single geometric resample",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary, look and use_for no longer claim straight lines bow / barrel distortion (a one-axis remap changes spacing, it does not curve lines); Mode description made consistent (it was both 'direction of the distortion' and 'the cylinder's orientation', which are opposite axes)"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/cdr_effect/e96ab3ee5921.png",
+    "note": "A one-axis wrap did happen, but along the height: with Mode Horizontal (sent as list index 0) the middle rows are stretched taller and the top and bottom rows crowded (the colour strip squeezed from 45 to 27 px against the bottom edge) while every column keeps its width, so Horizontal is a cylinder lying on its side, not the upright can the card described; summary, use_for and the Mode note rewritten.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Re-measured: the colour strip's red swatch runs y 483-509 (ref 440-484) while the blue swatch keeps x 600-719, so rows were remapped and columns kept. Harness check: Mode went as list index 0 because the caption 'Horizontal' changed no pixel, and index 0 = Horizontal is the harvested list order, not proven; the rewrite therefore states the axis for the value sent and hedges Vertical as inferred."
+    }
+   }
+  },
+  {
+   "name": "Emboss",
+   "id": "09ea28c1-bf15-49c5-85d6-7a5037ee5cd1",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Emboss",
+   "status": "current",
+   "summary": "Turns the image into a raised relief: flat areas become a single tone and every edge is drawn as a light ridge on one side and a dark ridge on the other, as if stamped into metal or paper and lit from the Direction angle. Color mode sets the base tone: the original colours, gray, black, or a chosen colour.",
+   "use_for": [
+    "stamped metal, embossed paper or coin-like texture from a photo or logo bitmap",
+    "a subtle relief background texture behind type (lower the opacity)",
+    "turning a busy photo into a monochrome relief for a poster backdrop"
+   ],
+   "avoid": [
+    "soft or low-contrast images give a weak, mushy relief: raise Depth and Level, or sharpen first",
+    "a bevel on vector type or shapes: use Effects/Bevel, which keeps the vectors",
+    "keeping the photo readable: Gray / Black flatten all colour; use Original color mode or a transparency over the source"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "emboss",
+    "AI": "Live PSAdapter_plugin_BsRl"
+   },
+   "look": [
+    "emboss",
+    "relief",
+    "stamped metal",
+    "embossed paper",
+    "bas-relief",
+    "gray relief",
+    "carved"
+   ],
+   "params": [
+    {
+     "name": "Depth",
+     "does": "Height of the relief, i.e. how wide and strong the edge ridges are (1 to 20)",
+     "typical": "2 to 8"
+    },
+    {
+     "name": "Level",
+     "does": "Contrast / intensity of the highlight and shadow ridges (1 to 500, log slider)",
+     "typical": "100 to 300"
+    },
+    {
+     "name": "Direction",
+     "does": "Light direction in degrees (0 to 360): which side of each edge gets the highlight",
+     "typical": "45 or 135"
+    },
+    {
+     "name": "ColorMode",
+     "does": "Base tone of the flat areas: Original color, Gray, Black, or Other (uses ColorItem)",
+     "typical": "Gray"
+    },
+    {
+     "name": "ColorItem",
+     "does": "The custom base colour used when ColorMode is Other",
+     "typical": "a brand tint"
+    }
+   ],
+   "demo_settings": {
+    "Depth": 8,
+    "Level": 250,
+    "Direction": 135,
+    "ColorMode": "Gray"
+   },
+   "pairs_with": [
+    "Transparency over the embossed copy to blend relief with the original photo",
+    "Effects/Bevel (vector bevel for type set over the relief)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Emboss\", \"EmbossEffect Depth=8,Level=250,Direction=135,ColorMode=Gray\")  // apply-tested (harvest: 'EmbossEffect Depth=2,Level=100,Direction=45,ColorMode=Gray' changed pixels); shape must be a bitmap; ColorItem is not in the command template, so ColorMode=Other from a script uses whatever colour the effect already holds. Menu route: FrameWork InvokeItem 09ea28c1-bf15-49c5-85d6-7a5037ee5cd1",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light: a single convolution pass",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting note: ColorMode=Other cannot get its colour from a script (ColorItem not in the template); everything else checked against the batch and the apply test"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/296d7a2b3259.png",
+    "note": "The plate became a flat mid-grey relief: every edge (radial lines, mid-tone detail, stripes, panel rims, type) is drawn as a light ridge on one side and a dark ridge on the other, lit from the upper left; the swatch borders keep thin coloured lines, everything else is grey (ColorMode Gray, sent as index 1).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Page Curl",
+   "id": "0902e8d0-83bf-4cd7-8191-9fc0cca2a9d0",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Page Curl",
+   "status": "current",
+   "summary": "Peels one corner of the image back like a turning page: the chosen corner rolls over, the back of the curl is drawn in the Curl colour (or lets the image show through when Paper is Transparent), and the uncovered area takes the Background colour. Width and Height set how far the curl reaches; the harvest could not read their defaults.",
+   "use_for": [
+    "a 'turn the page' corner on a brochure, flyer or e-book cover mock-up",
+    "a retro sticker / peel-off corner on a photo",
+    "hinting there is more content behind a picture in a promo layout"
+   ],
+   "avoid": [
+    "modern flat layouts: the effect reads as dated clip-art; a soft drop shadow under a folded vector corner looks cleaner",
+    "scripts that need the Curl / Background colours: PaintColorItem and BackColorItem are not in the command template, so a script cannot set them and gets the effect's current colours (not read)",
+    "the scripted path works on bitmaps only, and this effect's command string has not been apply-tested; its live defaults and bound ranges were not read"
+   ],
+   "confidence": "medium",
+   "look": [
+    "page curl",
+    "peel corner",
+    "turning page",
+    "sticker peel",
+    "dog-ear",
+    "paper fold"
+   ],
+   "params": [
+    {
+     "name": "CornerType",
+     "does": "Which corner peels: CornerNW (top-left), CornerNE (top-right), CornerSW (bottom-left), CornerSE (bottom-right)",
+     "typical": "CornerSE"
+    },
+    {
+     "name": "DirectionType",
+     "does": "Whether the curl rolls along the vertical or the horizontal direction",
+     "typical": "Vertical"
+    },
+    {
+     "name": "PaperType",
+     "does": "Opaque draws the back of the curl in the Curl colour; Transparent lets the image show through it",
+     "typical": "Opaque"
+    },
+    {
+     "name": "Curl",
+     "does": "Colour of the curled-over back of the page",
+     "typical": "light gray / white"
+    },
+    {
+     "name": "Background",
+     "does": "Colour of the area uncovered behind the curl",
+     "typical": "white or the page colour"
+    },
+    {
+     "name": "Width",
+     "does": "Size of the curl along the image width (1 to 100; the harvest gives no unit and no default; exact meaning not render-checked)",
+     "typical": "30 to 60"
+    },
+    {
+     "name": "Height",
+     "does": "Size of the curl along the image height (1 to 100; the harvest gives no unit and no default; exact meaning not render-checked)",
+     "typical": "30 to 60"
+    }
+   ],
+   "demo_settings": {
+    "CornerType": "CornerSE",
+    "DirectionType": "Vertical",
+    "PaperType": "Opaque",
+    "Width": 55,
+    "Height": 65
+   },
+   "enum_labels": {
+    "CornerType": {
+     "CornerNW": "top-left",
+     "CornerNE": "top-right",
+     "CornerSW": "bottom-left",
+     "CornerSE": "bottom-right"
+    }
+   },
+   "pairs_with": [
+    "Drop Shadow (under the bitmap so the peeled page lifts off the layout)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Page Curl\", \"PageCurlEffect CornerType=CornerSE,DirectionType=Vertical,PaperType=Opaque,Width=55,Height=65\")  // shape must be a bitmap; colours (PaintColorItem, BackColorItem) not settable through the template; command format proven on 6 other effects but this string not apply-tested. Menu route: FrameWork InvokeItem 0902e8d0-83bf-4cd7-8191-9fc0cca2a9d0",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "Width / Height descriptions mark unit, default and exact meaning as unharvested; colour avoid line no longer claims what the data source holds (it was never read)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/3c8f62dd86b7.png",
+    "note": "The bottom-right corner (CornerSE) is peeled up and back in a vertical curl: the back of the curl is a silver-grey gradient and the uncovered corner is plain white, the turning-page look described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Pinch/Punch",
+   "id": "214c1838-0b59-4f33-88f7-062d438bd558",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Pinch/Punch",
+   "status": "current",
+   "summary": "Distorts the image around its centre: pinch draws the middle in so it looks sucked away from the viewer, punch pushes it out so it bulges toward the viewer, with straight lines bending into curves around the centre. One slider from -100 to 100 sets direction and strength; check which sign gives which on the preview.",
+   "use_for": [
+    "a funhouse / caricature bulge or pinch on a face or product shot",
+    "a pull toward the centre (no twist) for a dramatic poster backdrop",
+    "making a product or icon in the middle of a bitmap swell slightly toward the viewer"
+   ],
+   "avoid": [
+    "text and logos in the middle of the image get badly warped; keep them on a separate object",
+    "a clean spherical lens bulge: Effects/3D Effects/Sphere gives a rounder, lens-like result",
+    "the scripted path works on bitmaps only, and this effect's command string has not been apply-tested",
+    "a spiral / twisting pull: this only pushes or pulls radially, use Effects/Distort/Swirl or Whirlpool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "pinch"
+   },
+   "look": [
+    "pinch",
+    "punch",
+    "bulge",
+    "funhouse mirror",
+    "suck in",
+    "centre distortion",
+    "centre pull"
+   ],
+   "params": [
+    {
+     "name": "PinchPunch",
+     "does": "Direction and strength of the distortion (-100 to 100); one sign pinches the centre in, the other punches it out, 0 is no change",
+     "typical": "+/-40 to 100, default 100"
+    }
+   ],
+   "demo_settings": {
+    "PinchPunch": -100
+   },
+   "pairs_with": [
+    "Effects/3D Effects/Sphere (stacked for a stronger lens bulge)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Pinch/Punch\", \"PinchPunchEffect PinchPunch=-100\")  // shape must be a bitmap; ImageNode (unlabelled list) left out; command format proven on 6 other effects but this string not apply-tested. Menu route: FrameWork InvokeItem 214c1838-0b59-4f33-88f7-062d438bd558",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light: a single geometric resample",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings and scripting 100 -> -100 (100 is the harvested default, so a demo at it cannot prove the command string was read; -100 is the other full-strength side); removed 'vortex' (pinch has no twist; Swirl / Whirlpool added to avoid) and the self-contradictory 'punch to reduce barrel-like pinching' use"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/644e248d416e.png",
+    "note": "Strong centre distortion: at -100 the middle of the plate swells toward the viewer (the wall at the centre becomes a huge arch, the large shapes either side are pushed outward and lean, the colour strip bows downward in the middle), so on this render the negative sign gave the bulge.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Sphere",
+   "id": "ac5f378b-8229-4b10-a137-7e33e0eb722e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Sphere",
+   "status": "current",
+   "summary": "Wraps the image onto a sphere: the centre swells outward (positive Percentage) or caves in (negative) in both directions at once, like looking through a fisheye lens or a glass ball, with lines bowing around the middle. Optimize trades render speed for smoother quality.",
+   "use_for": [
+    "fisheye / glass-ball look on a photo for a poster or social graphic",
+    "a bubble or globe feel on a circular badge image",
+    "a convex 'magnified' centre to draw attention to the middle of a picture"
+   ],
+   "avoid": [
+    "a bulge along one axis only: use Effects/3D Effects/Cylinder",
+    "faces near the centre get swollen at high values; keep it under about 50 for people",
+    "the scripted path works on bitmaps only, and this effect's command string has not been apply-tested"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "spherize"
+   },
+   "look": [
+    "sphere",
+    "fisheye",
+    "glass ball",
+    "bulge",
+    "convex lens",
+    "globe wrap"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "Strength and sign of the sphere (-100 to 100): positive bulges the centre out, negative caves it in",
+     "typical": "40 to 100, default 25"
+    },
+    {
+     "name": "Optimize",
+     "does": "Speed renders faster; Quality gives smoother interpolation",
+     "typical": "Quality for the final output"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Optimize": "Quality"
+   },
+   "pairs_with": [
+    "Effects/3D Effects/Pinch/Punch (stack for a stronger bulge)",
+    "an elliptical PowerClip or crop to a circle for a globe badge"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Sphere\", \"SphereEffect Percentage=100,Optimize=Quality\")  // shape must be a bitmap; ImageNode (unlabelled list) left out; command format proven on 6 other effects but this string not apply-tested. Menu route: FrameWork InvokeItem ac5f378b-8229-4b10-a137-7e33e0eb722e",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light; Quality is slower than Speed on large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/2abb3fde8a25.png",
+    "note": "A big elliptical glass-ball bulge fills the frame: inside the ellipse the centre is hugely magnified (the dark areas and stripes become round blobs and rings bending round the middle), while the plate outside the ellipse is unchanged.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Zig Zag",
+   "id": "e2ced9ec-39c8-4edc-9618-8377356d52ed",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/3D Effects/Zig Zag",
+   "status": "current",
+   "summary": "Bends the image with waves radiating from its centre: Pond Ripples gives concentric rings like a stone dropped in water, Out from center pushes the waves outward along radial lines, Around center twists them in rotating swirls. Waves sets how many rings, Strength how far pixels move, Damping how quickly the waves die away.",
+   "use_for": [
+    "water-ripple or reflection look on a photo or poster backdrop",
+    "a hypnotic / psychedelic swirl background for party or music flyers",
+    "a 'shockwave' distortion behind a headline"
+   ],
+   "avoid": [
+    "straight parallel waves across the image: use Effects/Distort/Ripple",
+    "readable text or faces near the centre: they break up even at moderate Strength",
+    "the scripted path works on bitmaps only, and this effect's command string has not been apply-tested"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "zigZag"
+   },
+   "look": [
+    "pond ripples",
+    "water ripple",
+    "concentric waves",
+    "swirl",
+    "shockwave",
+    "zigzag distortion"
+   ],
+   "params": [
+    {
+     "name": "WaveType",
+     "does": "Wave pattern: id_ripples (Pond Ripples), id_out (Out from center), id_around (Around center)",
+     "typical": "id_ripples"
+    },
+    {
+     "name": "Waves",
+     "does": "Number of waves (1 to 100): rings for Pond Ripples / Out from center, swirl bands for Around center",
+     "typical": "8 to 25, default 20"
+    },
+    {
+     "name": "Strength",
+     "does": "How far pixels are displaced (-100 to 100); the sign flips the wave phase",
+     "typical": "20 to 60, default 20"
+    },
+    {
+     "name": "Damping",
+     "does": "How quickly the waves fade away across the image (1 to 100)",
+     "typical": "30 to 80, default 80"
+    },
+    {
+     "name": "WaveOptimization",
+     "does": "id_speed renders faster; id_quality interpolates more smoothly",
+     "typical": "id_quality for final output"
+    }
+   ],
+   "demo_settings": {
+    "WaveType": "id_ripples",
+    "Waves": 15,
+    "Strength": 60,
+    "Damping": 50,
+    "WaveOptimization": "id_quality"
+   },
+   "enum_labels": {
+    "WaveType": {
+     "id_ripples": "Pond Ripples",
+     "id_out": "Out from center",
+     "id_around": "Around center"
+    },
+    "WaveOptimization": {
+     "id_speed": "Speed",
+     "id_quality": "Quality"
+    }
+   },
+   "pairs_with": [
+    "Effects/Distort/Ripple (linear waves instead of radial)",
+    "a blue / teal colour adjustment for a water look"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"PGD Zig Zag\", \"ZigzagEffect WaveType=id_ripples,WaveOptimization=id_quality,Waves=15,Strength=60,Damping=50\")  // shape must be a bitmap; ImageNode (unlabelled list) left out; command format proven on 6 other effects but this string not apply-tested. Menu route: FrameWork InvokeItem e2ced9ec-39c8-4edc-9618-8377356d52ed",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps it in the object's effect stack. The harvest does not say whether the scripted result stays editable.",
+   "cost": "light to moderate; id_quality is slower on large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "Waves description no longer says rings for every wave type"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d994d16b1487.png",
+    "note": "Concentric pond ripples spread from the centre: the mid-tones, stripes and dark-red blocks are bent into rings with zig-zag edges and the colour strip is torn into jagged waves, the Pond Ripples type with 15 waves; Damping was ignored by the script (dropped).",
+    "rerender": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,330 @@
+{
+ "cards": [
+  {
+   "name": "Sharpen",
+   "id": "sharpen",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sharpen/Sharpen",
+   "status": "current",
+   "summary": "One fixed-strength sharpening pass with no settings: it raises the contrast between neighbouring pixels across the whole layer (or selection) so focus looks slightly crisper. A single pass is subtle, especially on a large image; repeating it quickly adds grain and jagged, gritty edges.",
+   "use_for": [
+    "a quick touch of crispness on a small web graphic, thumbnail or screenshot after downsizing",
+    "a no-dialog sharpen step inside a recorded Action or batch script",
+    "re-crisping a UI capture shrunk to fit a slide"
+   ],
+   "avoid": [
+    "soft or upscaled photos like the test plate's video frame: one pass barely shows at 100 % on a 1920 px image, and stacking passes sharpens noise as much as detail; use Filter/Sharpen/Smart Sharpen (Radius 3-4 px) or Unsharp Mask instead",
+    "JPEG or video stills with compression blocks: it sharpens the block edges and noise along with real edges; use Unsharp Mask with Threshold 3-10 or Smart Sharpen",
+    "print or final-output sharpening where the strength must be set: use Unsharp Mask or Smart Sharpen, which have Amount and Radius"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Sharpen"
+   },
+   "look": [
+    "sharpen",
+    "crisper",
+    "slight clarity",
+    "edge contrast",
+    "more focus"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Edit > Fade right after applying, to lower the strength or switch it to Luminosity",
+    "Filter/Convert for Smart Filters first so the sharpen stays removable and maskable",
+    "apply after Image > Image Size downsizing, not before"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"sharpen\"), new ActionDescriptor(), DialogModes.NO);  // no settings (harvest read back an empty descriptor); acts on the active pixel layer, or the selection inside it",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back as a Smart Filter entry with no settings to reopen (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "light: 92 ms on the 480x270 harvest test layer (exec_ms); a full HD frame has 16x the pixels and was not timed, so expect it to take proportionally longer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the harvest did probe it as a Smart Filter (probe_smart.json), was wrongly marked not probed; cost: dropped the unsupported 'well under a second on full HD' (linear scaling from 92 ms on 1/16 the pixels gives ~1.5 s)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/7829636f9f3f.png",
+    "crop": "gallery/ps_filter/7829636f9f3f_1to1.png",
+    "note": "1:1 crop: hairlines gain darker rims (16 to 0) and the bar border a 97 / 250 overshoot while the photo barely changes, the subtle single pass the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Sharpen Edges",
+   "id": "sharpenEdges",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sharpen/Sharpen Edges",
+   "status": "current",
+   "summary": "Sharpens only where it finds significant changes of colour or tone (the edges) and leaves smooth areas such as skin, sky and plain walls alone, so outlines get crisper without roughening even areas. Fixed strength, no settings; the change from one pass is subtle.",
+   "use_for": [
+    "crisping product or logo outlines in a photo without adding grain to a flat backdrop",
+    "portraits where eyes, lashes and hair edges should gain bite while skin stays smooth",
+    "a quick clean-up sharpen on a scanned illustration or line art"
+   ],
+   "avoid": [
+    "very soft frames like the test plate: their edges are gradual, so little is detected and the result is hard to see; use Smart Sharpen at Radius 3-4 px or Unsharp Mask with a Threshold for a controllable version of the same edge-only idea",
+    "noisy or JPEG-compressed images: block boundaries and noise speckle can count as edges and get sharpened too",
+    "when you need to set how strong or how selective it is: Unsharp Mask's Amount and Threshold do the same job with control"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Directional Sharpen"
+   },
+   "look": [
+    "edge sharpening",
+    "crisp outlines",
+    "clean sharpen",
+    "smooth areas kept",
+    "subtle clarity"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Edit > Fade right after applying, in Luminosity mode to avoid colour fringes",
+    "Filter/Convert for Smart Filters first so it stays editable and maskable",
+    "Filter/Noise/Reduce Noise before it on noisy photos"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"sharpenEdges\"), new ActionDescriptor(), DialogModes.NO);  // no settings (harvest read back an empty descriptor); acts on the active pixel layer, or the selection inside it",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back as a Smart Filter entry with no settings to reopen (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "light: 92 ms on the 480x270 harvest test layer (exec_ms); a full HD frame has 16x the pixels and was not timed, so expect it to take proportionally longer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the harvest did probe it as a Smart Filter (probe_smart.json), was wrongly marked not probed; cost: dropped the unsupported 'well under a second on full HD'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/5a0f15fe9d59.png",
+    "crop": "gallery/ps_filter/5a0f15fe9d59_1to1.png",
+    "note": "1:1 crop: the same edge rims as Sharpen on the hairlines and bar borders while the smooth photo area is untouched (mean change 0.01), exactly the edges-only behaviour claimed.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Sharpen More",
+   "id": "sharpenMore",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sharpen/Sharpen More",
+   "status": "current",
+   "summary": "A stronger fixed sharpening pass than Filter/Sharpen/Sharpen, with no settings: edges and texture get noticeably crisper and hard edges pick up bright and dark fringes, while noise and grain are boosted along with them, giving a slightly crunchy look.",
+   "use_for": [
+    "one-click punch for small social graphics or thumbnails after heavy downsizing",
+    "a gritty, over-sharpened texture for a poster photo, combined with grain or a halftone",
+    "a no-dialog sharpen step in an Action when Sharpen alone is too weak"
+   ],
+   "avoid": [
+    "faces and skin: pores, noise and blemishes are exaggerated; use Smart Sharpen (Remove: Lens Blur) or Sharpen Edges",
+    "compressed video stills like the test plate: compression blocks and noise turn into visible grit long before the detail looks sharp",
+    "print or final output where the amount must be calibrated: use Unsharp Mask or Smart Sharpen"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Sharpen"
+   },
+   "look": [
+    "strong sharpen",
+    "crunchy",
+    "gritty",
+    "high clarity",
+    "edge halos",
+    "oversharpened"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Edit > Fade right after applying to dial it back or set it to Luminosity",
+    "Filter/Convert for Smart Filters first so it can be masked off faces",
+    "Filter/Noise/Add Noise or a halftone for a deliberate gritty print look"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"sharpenMore\"), new ActionDescriptor(), DialogModes.NO);  // no settings (harvest read back an empty descriptor); acts on the active pixel layer, or the selection inside it",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back as a Smart Filter entry with no settings to reopen (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "light: 106 ms on the 480x270 harvest test layer (exec_ms); a full HD frame has 16x the pixels and was not timed, so expect it to take proportionally longer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the harvest did probe it as a Smart Filter (probe_smart.json), was wrongly marked not probed; cost: dropped the unsupported 'well under a second on full HD'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/6ff356814a22.png",
+    "crop": "gallery/ps_filter/6ff356814a22_1to1.png",
+    "note": "1:1 crop: stronger overshoot at the bar border (46 / 255) and the photo texture is boosted, crisper and crunchier than Sharpen.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Smart Sharpen",
+   "id": "smartSharpen",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sharpen/Smart Sharpen",
+   "status": "current",
+   "summary": "Photoshop's most controllable sharpener: Amount sets how strongly edge contrast is boosted, Radius how wide the edge halos reach, and Remove picks the blur it tries to undo (Gaussian Blur behaves like Unsharp Mask, Lens Blur targets finer detail with fewer halos, Motion Blur undoes blur in one direction). Pushed hard it gives crisp, high-clarity edges with visible light and dark halos.",
+   "use_for": [
+    "final sharpening of a photo for a poster, banner or social post after resizing",
+    "getting some crispness back into a soft video still or upscaled image",
+    "reducing slight camera-shake blur with Remove: Motion Blur"
+   ],
+   "avoid": [
+    "expecting lost detail back: on the test plate's soft, compressed frame it adds crisp edges and halos but fine detail stays smeary; use an AI upscaler for real detail",
+    "high Amount with Radius above about 5 px on faces: glowing halos and a crunchy HDR look",
+    "Remove: Motion Blur without its angle: the key 'angle' is declared (integer) but was not read back or range-probed, so pass it explicitly in a script or set it in the dialog",
+    "scripts that omit useLegacy: the harvest read the last-used state back as Use Legacy = true (the older algorithm, which has More Accurate but no Reduce Noise), so set it explicitly; the declared keys noiseReduction, angle, shadowMode and highlightMode were not read back and fall back to their last-used values"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Unsharp Mask"
+   },
+   "look": [
+    "smart sharpen",
+    "crisp detail",
+    "clarity",
+    "deblur",
+    "high definition",
+    "edge halos"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "strength of the edge contrast boost",
+     "typical": "1-500 %; 80-150 for a natural result, 250-400 for an obviously crisp look"
+    },
+    {
+     "name": "Radius",
+     "does": "how wide around each edge the sharpening reaches (the width of the halos)",
+     "typical": "0-64 px; 0.5-2 on a sharp photo, 3-5 on a soft video frame"
+    },
+    {
+     "name": "Remove",
+     "does": "the blur model it tries to undo: Gaussian Blur (like Unsharp Mask), Lens Blur (finer detail, fewer halos), Motion Blur (one direction, needs an angle)",
+     "typical": "Lens Blur for photos"
+    },
+    {
+     "name": "Use Legacy",
+     "does": "true = the older Smart Sharpen algorithm (with More Accurate); false = the current algorithm",
+     "typical": "false"
+    },
+    {
+     "name": "More Accurate",
+     "does": "legacy mode: processes the image more slowly for a more accurate blur removal",
+     "typical": "true when Use Legacy is on"
+    }
+   ],
+   "demo_settings": {
+    "Use Legacy": false,
+    "Amount": 300,
+    "Radius": 4,
+    "Remove": "lensBlur"
+   },
+   "enum_labels": {
+    "blur": {
+     "gaussianBlur": "Gaussian Blur",
+     "lensBlur": "Lens Blur",
+     "motionBlur": "Motion Blur"
+    },
+    "presetKind": {
+     "presetKindDefault": "Default",
+     "presetKindFactory": "Factory Preset",
+     "presetKindUserDefined": "User Preset",
+     "presetKindCustom": "Custom"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters first so Amount and Radius stay editable and can be masked",
+    "Filter/Noise/Reduce Noise before it on noisy or compressed images",
+    "Edit > Fade Smart Sharpen in Luminosity mode to avoid colour fringes"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putEnumerated(s(\"presetKind\"), s(\"presetKindType\"), s(\"presetKindCustom\")); d.putBoolean(s(\"useLegacy\"), false); d.putUnitDouble(s(\"amount\"), s(\"percentUnit\"), 300); d.putUnitDouble(s(\"radius\"), s(\"pixelsUnit\"), 4); d.putEnumerated(s(\"blur\"), s(\"blurType\"), s(\"lensBlur\")); executeAction(s(\"smartSharpen\"), d, DialogModes.NO);  // amount clamps to 1-500 %, radius to 0-64 px (harvest probes); keys left out (moreAccurate, noiseReduction, angle, shadowMode, highlightMode) fall back to the last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes an editable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back as a Smart Filter entry with its settings stored and reopenable (hasoptions true) plus blending options",
+   "cost": "light: 121 ms on the 480x270 harvest test layer (exec_ms); a full HD frame has 16x the pixels and was not timed, so expect it to take proportionally longer; 0 cr, local; Remove: Lens Blur and a large Radius are slower (not timed)",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: confirmed by probe_smart.json instead of 'not probed'; cost: dropped the unsupported 'a second or so on full HD'; avoid: Motion Blur angle can be passed by script (declared integer), not dialog-only"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/1399c77ae696.png",
+    "crop": "gallery/ps_filter/1399c77ae696_1to1.png",
+    "note": "1:1 crop: wide light and dark halos along the colour-block and bar edges and crisper panel detail, the hard-pushed halo look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Unsharp Mask",
+   "id": "unsharpMask",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sharpen/Unsharp Mask",
+   "status": "current",
+   "summary": "Classic sharpening: compares each pixel with a blurred copy and boosts the difference across edges, adding a thin light rim on the bright side and a dark rim on the dark side so the image reads crisper. Amount sets the strength, Radius the width of the rims, and Threshold how different neighbouring pixels must be before they are touched (0 sharpens everything; higher values spare smooth areas and noise).",
+   "use_for": [
+    "output sharpening of a photo for print or web after resizing",
+    "a local-contrast 'clarity' boost: large Radius (40-60 px) with a low Amount (15-25 %)",
+    "crisping text, packaging and product edges in a mockup photo"
+   ],
+   "avoid": [
+    "scripted values far outside normal use: the harvest's +-1e6 range probes read the result descriptor, which for this filter reports the dialog's last-used values (Amount 50, Radius 1), not the applied ones, so no min/max was established; it is not clamped like Smart Sharpen's, so keep values modest and check the result",
+    "colour fringes at high Amount: Edit > Fade in Luminosity mode, or sharpen only the Lightness channel in Lab",
+    "noisy or JPEG-compressed images like the test plate's video frame: at Threshold 0 it sharpens noise and compression blocks too; raise Threshold to 3-8 or use Smart Sharpen"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Unsharp Mask"
+   },
+   "look": [
+    "unsharp mask",
+    "crisp",
+    "edge halo",
+    "local contrast",
+    "clarity",
+    "oversharpened"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "strength of the contrast boost at edges",
+     "typical": "no range harvested (probe inconclusive; default 50); 50-150 natural, 200-300 obvious"
+    },
+    {
+     "name": "Radius",
+     "does": "width in pixels of the light and dark edge rims",
+     "typical": "no range harvested (probe inconclusive; default 1); 0.5-2 on a sharp photo, 3-5 on a soft frame, 40-60 with a low Amount for local contrast"
+    },
+    {
+     "name": "Threshold",
+     "does": "minimum tonal difference (levels) before a pixel is sharpened; protects smooth areas, skin and noise",
+     "typical": "integer, no range harvested (probe inconclusive; default 0); 0 for everything, 3-10 for portraits and noisy images"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 250,
+    "Radius": 4,
+    "Threshold": 0
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters first for an editable, maskable sharpen",
+    "Edit > Fade Unsharp Mask in Luminosity mode to avoid colour fringes",
+    "Filter/Other/High Pass on an Overlay copy as an alternative sharpen"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putUnitDouble(s(\"amount\"), s(\"percentUnit\"), 250); d.putUnitDouble(s(\"radius\"), s(\"pixelsUnit\"), 4); d.putInteger(s(\"threshold\"), 0); executeAction(s(\"unsharpMask\"), d, DialogModes.NO);  //  types and units from the harvest read-back (amount %, radius px, threshold integer); the range probe was inconclusive (out-of-range values read back the unchanged defaults, not a clamp), so keep values modest",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes an editable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back as a Smart Filter entry with its settings stored and reopenable (hasoptions true) plus blending options",
+   "cost": "light: 70 ms on the 480x270 harvest test layer (exec_ms); a full HD frame has 16x the pixels and was not timed, so expect it to take proportionally longer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented dialog ranges (1-500 %, 0.1-1000 px, 0-255; not in the batch) from params, avoid and scripting; the inconclusive probe no longer stated as 'refused, runs with previous settings'; non_destructive confirmed by probe_smart.json; cost: dropped 'well under a second on full HD'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/1c5a19828bf4.png",
+    "crop": "gallery/ps_filter/1c5a19828bf4_1to1.png",
+    "note": "Strong dark and light rims around every bar, block and hairline, visible even in the 960 frame; the stale read-back (50 / 1) is not what was applied, the frame matches 250 / 4.",
+    "rerender": false,
+    "text_fixed": "avoid: stale descriptor"
+   }
+  }
+ ]
+}

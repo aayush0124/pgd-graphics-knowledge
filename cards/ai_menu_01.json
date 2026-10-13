@@ -1,0 +1,885 @@
+{"cards": [
+{
+ "name": "Adobe PDF Presets...",
+ "id": "PDF Presets",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Adobe PDF Presets...",
+ "status": "current",
+ "summary": "Opens the Adobe PDF Presets dialog, where the named PDF export settings (.joboptions files shared by the Creative Cloud apps, e.g. [High Quality Print], [Press Quality], [PDF/X-4:2008], [Smallest File Size]) are created, edited, deleted, imported and exported. It manages presets only; it does not save a PDF. Enabled with no document open.",
+ "how": "Pick a preset to read its summary, then New or Edit to set compatibility, PDF/X standard, compression, marks and bleeds and output colour; Import / Export move .joboptions files between machines or from a print shop. The built-in presets (in square brackets) cannot be edited, only copied with New.",
+ "use_for": [
+  "setting up a print shop's PDF/X preset once so every brochure, poster and packaging file exports the same way",
+  "making a small-file web/email PDF preset for client proofs",
+  "importing the .joboptions a printer sent so Illustrator, Photoshop and InDesign all export to their spec"
+ ],
+ "avoid": [
+  "exporting the document itself: use File > Save As (Adobe PDF) and pick the preset there",
+  "editing a built-in preset expecting it to change: duplicate it with New and edit the copy"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Adobe PDF Presets"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"PDF Presets\") opens the dialog (id pairing inferred, not confirmed by execution). Without the dialog (members checked in the AI API harvest; not run): read app.PDFPresetsList (read-only list of preset names) and pass one as PDFSaveOptions.pDFPreset to document.saveAs(file, opts).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: app.PDFPresetsList / PDFSaveOptions.pDFPreset are in the AI API harvest, so '(unverified)' replaced; preset names in the summary checked against harvest/ai/ai_preset.json"
+ }
+},
+{
+ "name": "Assign Profile...",
+ "id": "assignprofile",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Assign Profile...",
+ "status": "current",
+ "summary": "Opens the Assign Profile dialog for the active document: choose Don't Color Manage This Document, the current working space, or any installed ICC profile. Assigning changes how the document's colour numbers are interpreted on screen and in output; the numbers themselves are not converted. Needs an open document.",
+ "how": "Choose one of three options: Don't Color Manage This Document, Working RGB/CMYK (the space from Color Settings), or Profile (pick from the list). The profile is embedded when the file is saved with Embed ICC Profiles on.",
+ "use_for": [
+  "tagging a client's untagged CMYK logo file with the press profile it was built for",
+  "checking how the same CMYK numbers look under a different press profile (coated vs uncoated)",
+  "fixing a file opened with the wrong profile so colours preview correctly"
+ ],
+ "avoid": [
+  "converting colours to a new press condition: assigning keeps the numbers and only changes the look; convert on export (PDF Output: Convert to Destination) instead",
+  "changing the document's colour mode (RGB vs CMYK): use File > Document Color Mode"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Assign Profile"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"assignprofile\") opens the dialog (id pairing inferred, not confirmed by execution). No DOM call assigns a profile: document.colorProfileName is read-only in the AI API harvest, so a script can only read the current profile name.",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api said to SET document.colorProfileName; the AI API harvest marks it read-only, so it now says read only and that no DOM call assigns a profile"
+ }
+},
+{
+ "name": "Clear",
+ "id": "clear",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Clear",
+ "status": "current",
+ "summary": "Deletes the selected objects from the artwork without putting them on the clipboard (the same as pressing Delete); Undo brings them back. Needs a document with a selection.",
+ "use_for": [
+  "removing construction or guide shapes after a Pathfinder operation",
+  "clearing stray points and empty objects before export",
+  "removing a placeholder element from a template layout"
+ ],
+ "avoid": [
+  "moving objects elsewhere: Cut puts them on the clipboard for pasting",
+  "objects you may need again: hide or lock them, or move them to a hidden layer"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Layer/Delete/Layer",
+  "CDR": "Edit/Delete"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"clear\") (confirmed: same change as the menu item). DOM: for (var i = sel.length - 1; i >= 0; i--) sel[i].remove() on app.activeDocument.selection.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Color Settings...",
+ "id": "color",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Color Settings...",
+ "status": "current",
+ "summary": "Opens the Color Settings dialog for Illustrator's colour management: a settings preset (e.g. North America General Purpose 2, Europe Prepress 3), the RGB and CMYK working spaces, the policies for files with missing or mismatched profiles, and (in Advanced) the conversion engine and rendering intent. Applies to the application, not one document, and works with no document open.",
+ "how": "Pick a Settings preset or set Working Spaces RGB / CMYK to the press or web profile, set Color Management Policies (Preserve Embedded Profiles, Convert to Working Space, Off) and the mismatch warnings, then OK. Saving the settings as .csf lets other machines and Adobe apps load the same setup.",
+ "use_for": [
+  "setting the press CMYK profile before building print brochures, packaging or posters",
+  "matching colour settings across Illustrator, Photoshop and InDesign for one print job",
+  "getting a warning when a client file arrives with a different embedded profile"
+ ],
+ "avoid": [
+  "fixing one document's profile: use Edit > Assign Profile",
+  "changing settings in the middle of a job without telling the team: every document opened afterwards follows the new policies"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Color Settings",
+  "CDR": "Tools/Color Management"
+ },
+ "shortcut": "Shift+Ctrl+K",
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"color\") opens the dialog (id pairing inferred from the shortcut, not confirmed by execution). No scripting DOM call for the application colour settings is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Copy",
+ "id": "copy",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Copy",
+ "status": "current",
+ "summary": "Copies the selected objects (or selected text inside a text object) to the clipboard and leaves the originals in place, ready for Paste, Paste in Front / Back, Paste in Place or pasting into another application. Needs a selection.",
+ "use_for": [
+  "moving artwork between artboards or documents with Paste in Place",
+  "bringing vector shapes into Photoshop as a smart object, path or shape layer",
+  "copying a styled headline to reuse its text and formatting elsewhere"
+ ],
+ "avoid": [
+  "just making another copy on the same artboard: Alt-drag, or Object > Transform > Move... and its Copy button, skips the clipboard",
+  "handing vectors to another app where fidelity matters: export SVG, PDF or AI rather than relying on the clipboard format"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Copy",
+  "CDR": "Edit/Copy"
+ },
+ "shortcut": "Ctrl+C",
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"copy\") (id pairing inferred from the shortcut, not confirmed by execution). DOM: app.copy() copies the current selection.",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid named a non-existent 'Move with Copy' command; now Object > Transform > Move... with its Copy button"
+ }
+},
+{
+ "name": "Cut",
+ "id": "cut",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Cut",
+ "status": "current",
+ "summary": "Removes the selected objects (or selected text) from the document and puts them on the clipboard, so they can be pasted elsewhere in the file or in another application. Needs a selection.",
+ "use_for": [
+  "moving an element to another layer or artboard with Paste in Place",
+  "pulling a shape out of a group or layout to paste it in front of or behind other art",
+  "moving text from one text frame to another"
+ ],
+ "avoid": [
+  "simply removing objects: Clear (Delete) leaves the clipboard untouched",
+  "moving objects between layers in the same document: drag the selection square in the Layers panel instead"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Cut",
+  "CDR": "Edit/Cut"
+ },
+ "shortcut": "Ctrl+X",
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"cut\") (id pairing inferred from the shortcut, not confirmed by execution). DOM: app.cut() cuts the current selection.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Adjust Color Balance...",
+ "id": "Adjust3",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Adjust Color Balance...",
+ "status": "current",
+ "summary": "Opens the Adjust Colors dialog (confirmed by the harvest) for the selected objects: sliders shift each colour channel of their fill and/or stroke colours by a percentage, in CMYK, RGB, Grayscale or Global (tints of global and spot colours), with an option to convert the colours to the chosen mode. The result is a uniform colour shift across the selection, e.g. everything warmer or with less cyan.",
+ "how": "Select the art, choose the Color Mode, tick Fill and/or Stroke under Adjust Options, move the channel sliders (negative removes, positive adds) with Preview on, and tick Convert to change the colours to that mode as well.",
+ "use_for": [
+  "warming or cooling a whole vector illustration in one move",
+  "pulling a colour cast out of a set of icons so they match a brand palette",
+  "lightening every tint in a pattern or background graphic for a watermark-style layer"
+ ],
+ "avoid": [
+  "changing one particular colour: use Recolor Artwork, which remaps individual colours",
+  "a reversible look: the change is written into the colour values; duplicate the art first, or keep the colours as global swatches so the originals can be restored"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Adjustments/Color Balance",
+  "CDR": "Effects/Adjust/Color Balance"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Adjust3\") opens the Adjust Colors dialog (confirmed). No DOM equivalent; a script would have to rewrite each item's fillColor / strokeColor values itself (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid suggested 'an appearance or a Photoshop adjustment layer on placed art', which does not apply to vector art; replaced"
+ }
+},
+{
+ "name": "Blend Front to Back",
+ "id": "Colors3",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Blend Front to Back",
+ "status": "needs_input",
+ "summary": "Takes three or more selected filled objects and repaints the fills of the ones in between so they step evenly from the frontmost object's fill colour to the backmost object's, following the stacking order. Strokes and unpainted objects are not changed. In the harvest test it only raised a generic alert: that test selected just two filled objects, fewer than the three it needs.",
+ "use_for": [
+  "a stepped colour ramp across stacked circles, stripes or bars in an infographic",
+  "graduated tints across layered landscape or wave shapes",
+  "even colour steps across a stack of cards or chart bars"
+ ],
+ "avoid": [
+  "fewer than three filled objects: it needs at least three, and strokes and unpainted objects are left as they are",
+  "a smooth gradient or in-between shapes: use the Blend tool (Object > Blend) or a gradient fill"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors3\") (id pairing inferred, not confirmed: the harvest test only got a generic alert).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary now says why the test failed (the confirm_menu.py test selection had only two objects); removed the unsupported claim that gradient / pattern fills are refused"
+ }
+},
+{
+ "name": "Blend Horizontally",
+ "id": "Colors4",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Blend Horizontally",
+ "status": "needs_input",
+ "summary": "Takes three or more selected filled objects and repaints the fills of the ones in between so they step evenly from the leftmost object's fill colour to the rightmost object's, by horizontal position. Strokes and unpainted objects are not changed. In the harvest test it only raised a generic alert: that test selected just two filled objects, fewer than the three it needs.",
+ "use_for": [
+  "a left-to-right colour ramp across a row of swatches, columns or bar-chart bars",
+  "a horizontal tint progression across a row of icons or tiles in a banner"
+ ],
+ "avoid": [
+  "fewer than three filled objects: it needs at least three, and strokes and unpainted objects are left as they are",
+  "steps that follow stacking order rather than position: use Blend Front to Back"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors4\") (id pairing inferred, not confirmed: the harvest test only got a generic alert).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary now says why the test failed (the confirm_menu.py test selection had only two objects); removed the unsupported claim that gradient / pattern fills are refused"
+ }
+},
+{
+ "name": "Blend Vertically",
+ "id": "Colors5",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Blend Vertically",
+ "status": "needs_input",
+ "summary": "Takes three or more selected filled objects and repaints the fills of the ones in between so they step evenly from the topmost object's fill colour to the bottommost object's, by vertical position. Strokes and unpainted objects are not changed. In the harvest test it only raised a generic alert: that test selected just two filled objects, fewer than the three it needs.",
+ "use_for": [
+  "a top-to-bottom colour fade across stacked horizontal stripes for a poster background",
+  "a sky-to-ground tint progression across layered landscape bands",
+  "graduated rows in a table or list graphic"
+ ],
+ "avoid": [
+  "fewer than three filled objects: it needs at least three, and strokes and unpainted objects are left as they are",
+  "a continuous gradient: use a linear gradient fill instead of separate stepped shapes"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors5\") (id pairing inferred, not confirmed: the harvest test only got a generic alert).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary now says why the test failed (the confirm_menu.py test selection had only two objects); removed the unsupported claim that gradient / pattern fills are refused"
+ }
+},
+{
+ "name": "Convert to CMYK",
+ "id": "Colors8",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Convert to CMYK",
+ "status": "current",
+ "summary": "Converts the colours of the selected objects to CMYK process values (confirmed: it changed the harvest's test document). That test ran in an RGB document (confirm_menu.py): there the fills stayed RGB values but were pulled into the CMYK gamut (the saturated blue fill came back duller, the red barely moved), so in RGB art it acts as a quick print-gamut clamp.",
+ "use_for": [
+  "turning leftover RGB or Lab colours in pasted or imported art into CMYK before sending a print file",
+  "normalising a client logo's mixed colour definitions to CMYK for a brochure"
+ ],
+ "avoid": [
+  "spot or global swatch colours you must keep: the harvest only tested plain RGB fills, so check the swatches afterwards (Swatch Options > Color Type turns a spot into process on purpose)",
+  "switching the whole document to CMYK: use File > Document Color Mode > CMYK Color"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Mode/CMYK Color",
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors8\") (confirmed: same change as the menu item). Per-colour DOM alternative (members checked in the AI API harvest; not run): app.convertSampleColor(ImageColorSpace.RGB, values, ImageColorSpace.CMYK, ColorConvertPurpose.defaultpurpose) and assign a new CMYKColor.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary claimed it is the variant that works in a CMYK document; the harvest test document is RGB (confirm_menu.py) and it changed it, so the summary now describes the RGB-document result; the spot-colour claim was untested, reworded; script_api mark updated"
+ }
+},
+{
+ "name": "Convert to Grayscale",
+ "id": "Colors7",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Convert to Grayscale",
+ "status": "current",
+ "summary": "Converts the fill and stroke colours of the selected objects to grayscale tints, so the art turns black-and-white (shades of grey) while staying vector (confirmed: it changed the harvest's test document).",
+ "use_for": [
+  "a one-colour black version of a logo for newspaper ads, fax forms or stamps",
+  "checking a design's value contrast without colour",
+  "greyed-out disabled states of icons in a UI or presentation"
+ ],
+ "avoid": [
+  "a tinted monochrome (one brand colour instead of black): use Recolor with Preset > Single Color",
+  "keeping the colour version: duplicate the art first, the change is written into the colours"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Image/Mode/Grayscale",
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors7\") (confirmed: same change as the menu item).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: the confirm record shows strokes converted too, so 'fill and stroke' added"
+ }
+},
+{
+ "name": "Convert to RGB",
+ "id": "Colors9",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Convert to RGB",
+ "status": "current",
+ "summary": "Converts the colours of the selected objects to RGB values. In the harvest test it neither changed the document nor opened a dialog, but that test was an RGB document whose selected fills were already RGB (confirm_menu.py), so there was nothing to convert; what it does to CMYK or grayscale colours was not tested.",
+ "use_for": [
+  "normalising CMYK or grayscale colours in pasted art to RGB for screen, web or video graphics",
+  "cleaning up mixed colour definitions in an RGB social-media or UI file"
+ ],
+ "avoid": [
+  "print jobs: RGB values do not separate predictably; keep print art CMYK, and change a whole file's mode with File > Document Color Mode rather than this command",
+  "spot or global swatch colours you must keep: untested in the harvest; check the swatches after converting"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Mode/RGB Color",
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors9\") (id pairing inferred, not confirmed: the test document did not change).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary read the no-change test as 'acts only in an RGB document', but the test document WAS RGB with RGB fills (confirm_menu.py); rewritten; avoid items no longer assume that rule or the untested spot behaviour"
+ }
+},
+{
+ "name": "Generative Recolor",
+ "id": "path:Edit/Edit Colors/Generative Recolor",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Generative Recolor",
+ "status": "current",
+ "summary": "Opens Generative Recolor (Adobe Firefly; also under Object > Generative) for the selected vector artwork: you type a text prompt such as \"sunset in the desert\" or pick a sample prompt, optionally name colours to include, and it returns several recoloured variations of the same art to click and apply. The shapes stay as they are; only the colours change. Needs sign-in, an internet connection and generative credits.",
+ "how": "Select the vector art, open the command, enter a prompt (or choose a sample), optionally add colours to include, click Generate, then click a variation to apply it; generate again for more options.",
+ "use_for": [
+  "exploring palette options for a logo, illustration or pattern from a mood description",
+  "quick seasonal or themed colourways of the same poster art",
+  "client presentations showing several colour directions"
+ ],
+ "avoid": [
+  "exact brand colours: remap them yourself in Recolor Artwork with the brand swatch group",
+  "offline or unattended pipelines: it needs network, sign-in and credits, and has no menu id to call from a script",
+  "raster images: it recolours vector artwork only"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484060.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Invert Colors",
+ "id": "Colors6",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Invert Colors",
+ "status": "current",
+ "summary": "Replaces each fill and stroke colour in the selected objects with its inverse, like a photographic negative: white becomes black, blue becomes yellow (confirmed: it changed the harvest's test document). No settings.",
+ "use_for": [
+  "flipping a dark logo or line art into a light version for a dark background",
+  "a negative or X-ray style poster graphic",
+  "a quick opposite-colour variant to test contrast"
+ ],
+ "avoid": [
+  "making a white-on-dark logo from a brand logo: inverted brand colours are not the brand colours; recolour to the approved reverse colours instead",
+  "a reversible look: the colour values are rewritten; duplicate first, or use a Difference blend over a white shape"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Image/Adjustments/Invert",
+  "CDR": "Effects/Transform/Invert Colors"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Colors6\") (confirmed: same change as the menu item).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: the confirm record shows strokes inverted too (black became white), so 'fill and stroke' added"
+ }
+},
+{
+ "name": "Overprint Black...",
+ "id": "Overprint2",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Overprint Black...",
+ "status": "current",
+ "summary": "Opens the Overprint Black dialog (confirmed by the harvest), which turns overprint on (Add Black) or off (Remove Black) for black in the selected objects at or above a chosen black percentage, for fills and/or strokes, so black prints on top of the colours under it instead of knocking them out. Nothing changes on screen unless Overprint Preview is on.",
+ "how": "Choose Add Black or Remove Black, set the Percentage (black at or above it is affected), tick Fill and/or Stroke, and optionally Include Blacks with CMY (rich black) and Include Spot Blacks.",
+ "use_for": [
+  "making black body text and thin rules overprint on coloured backgrounds in offset print",
+  "avoiding white gaps around black outlines from plate misregistration",
+  "removing accidental overprint from black objects before sending a file to press"
+ ],
+ "avoid": [
+  "white or light objects: overprinting them makes them disappear in print; check with View > Overprint Preview",
+  "screen or web output: overprint only matters for separations"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Object/Overprint Fill"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Overprint2\") opens the dialog (confirmed). Without the dialog (members checked in the AI API harvest; not run): set fillOverprint / strokeOverprint = true on each black PathItem; for text, textRange.characterAttributes.overprintFill / overprintStroke.",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: PathItem.fillOverprint / strokeOverprint are harvested writable members ('unverified' replaced); added the CharacterAttributes route because use_for names black text"
+ }
+},
+{
+ "name": "Recolor Artwork...",
+ "id": "Recolor Art Dialog",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor Artwork...",
+ "status": "current",
+ "summary": "Opens Recolor Artwork for the selected art: a colour wheel showing the art's colours and their harmony, which you rotate or drag to recolour everything at once, plus the prominent-colour bar, colour libraries and the number of colours; Advanced Options opens the classic Edit / Assign dialog for remapping each original colour to a new one. Works on vector fills and strokes, including those inside groups.",
+ "how": "Select the art, open Recolor Artwork, then drag the wheel handles (linked to move the whole harmony together, unlinked to move one colour), or choose a Color Library / swatch group and the number of colours; use Advanced Options > Assign to map specific old colours to specific new ones and to reduce colours.",
+ "use_for": [
+  "making colourways of a pattern, illustration or poster from one master",
+  "mapping a stock illustration onto a brand palette",
+  "reducing art to a limited number of colours for screen printing or a spot-colour job"
+ ],
+ "avoid": [
+  "raster images inside the art: they are not recoloured; adjust them in Photoshop",
+  "unattended scripted runs: it is an interactive dialog with no DOM equivalent"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Image/Adjustments/Replace Color",
+  "CDR": "Window/Dockers/Color Styles"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Recolor Art Dialog\") opens it (id pairing inferred, not confirmed by execution). No DOM call does the recolouring; a script would have to rewrite fillColor / strokeColor itself.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary claimed symbols are recoloured; not in the harvest, removed"
+ }
+},
+{
+ "name": "Color Harmony",
+ "id": "path:Edit/Edit Colors/Recolor with Preset/Color Harmony",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor with Preset/Color Harmony",
+ "status": "current",
+ "summary": "A Recolor with Preset entry: starts recolouring the selected art from a colour harmony (a set of colours related by a harmony rule) rather than from its own colours, then hands over to the recolour controls to fine-tune. What it asks for first in this version (a harmony or library picker) is not recorded in the harvest.",
+ "how": "Select the art, choose the preset, pick the options it offers, then adjust the result in the Recolor Artwork controls.",
+ "use_for": [
+  "quickly trying harmonious colourways (complementary, triad and similar) on an illustration or pattern",
+  "a starting palette for a poster or social graphic set"
+ ],
+ "avoid": [
+  "exact brand colours: use Recolor Artwork with the brand swatch group",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "low",
+ "equivalents": {
+  "CDR": "Window/Dockers/Color Styles"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484066.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Color library...",
+ "id": "path:Edit/Edit Colors/Recolor with Preset/Color library...",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor with Preset/Color library...",
+ "status": "current",
+ "summary": "A Recolor with Preset entry that limits the selected art's colours to a chosen colour library (for example a Pantone book or another swatch library) and then opens the recolour controls, so the art is remapped onto colours from that library. The ellipsis means it asks for options first.",
+ "how": "Select the art, choose the command, pick the library in the options dialog, OK, then check and adjust the mapping in Recolor Artwork.",
+ "use_for": [
+  "converting an illustration to Pantone spot colours for screen printing or packaging",
+  "remapping art onto a client's brand swatch library"
+ ],
+ "avoid": [
+  "process (CMYK) jobs where spot colours are not wanted: recolour with a process swatch group instead",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484062.",
+ "review": {
+  "by": "adversarial",
+  "changes": "equivalents: added CDR Edit/Find and Replace, whose Replace Objects swaps colours / colour models onto a palette"
+ }
+},
+{
+ "name": "Single Color",
+ "id": "path:Edit/Edit Colors/Recolor with Preset/Single Color",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor with Preset/Single Color",
+ "status": "current",
+ "summary": "A Recolor with Preset entry for a one-colour job: remaps all colours in the selected art to tints of a single colour, so the art can print in one ink while keeping its light and dark structure, then opens the recolour controls for adjustment. Which picker it shows first in this version is not recorded in the harvest.",
+ "how": "Select the art, choose the preset, then set the one ink and check the mapping and tints in the Recolor Artwork controls (what it asks for first in this version is not recorded).",
+ "use_for": [
+  "a one-ink version of a logo or illustration for a stamp, T-shirt or letterhead",
+  "a monotone brand-colour treatment of an icon set"
+ ],
+ "avoid": [
+  "plain black-and-white: Convert to Grayscale is quicker",
+  "art whose colours have similar lightness: they collapse into the same tint; adjust the tints in Recolor Artwork",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Mode/Duotone"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484063.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how asserted a library / spot-colour picker first, which the summary itself says is not recorded (no ellipsis in the label); made neutral"
+ }
+},
+{
+ "name": "Three Color",
+ "id": "path:Edit/Edit Colors/Recolor with Preset/Three Color",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor with Preset/Three Color",
+ "status": "current",
+ "summary": "A Recolor with Preset entry for a three-colour job: reduces the selected art to three colours (and their tints), for printing in three inks, then opens the recolour controls to choose which original colours map to which ink. Which picker it shows first in this version is not recorded in the harvest.",
+ "how": "Select the art, choose the preset, then set the three inks and check the mapping and tints in the Recolor Artwork controls (what it asks for first in this version is not recorded).",
+ "use_for": [
+  "a three-spot-colour screen print of a poster or T-shirt design",
+  "limited-palette illustration styles for packaging"
+ ],
+ "avoid": [
+  "photographic or gradient-heavy art: three inks band it; keep it CMYK",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Mode/Duotone"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484065.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how asserted a library / spot-colour picker first, which the summary itself says is not recorded (no ellipsis in the label); made neutral"
+ }
+},
+{
+ "name": "Two Color",
+ "id": "path:Edit/Edit Colors/Recolor with Preset/Two Color",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Recolor with Preset/Two Color",
+ "status": "current",
+ "summary": "A Recolor with Preset entry for a two-colour job: reduces the selected art to two colours (and their tints), for printing in two inks, then opens the recolour controls to choose which original colours map to which ink. Which picker it shows first in this version is not recorded in the harvest.",
+ "how": "Select the art, choose the preset, then set the two inks and check the mapping and tints in the Recolor Artwork controls (what it asks for first in this version is not recorded).",
+ "use_for": [
+  "a two-ink flyer, business card or letterhead",
+  "a two-colour screen print of a logo or badge"
+ ],
+ "avoid": [
+  "art that needs more than two clearly different hues: they merge into tints of the two inks",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Mode/Duotone"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 2147484064.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how asserted a library / spot-colour picker first, which the summary itself says is not recorded (no ellipsis in the label); made neutral"
+ }
+},
+{
+ "name": "Saturate...",
+ "id": "Saturate3",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Colors/Saturate...",
+ "status": "current",
+ "summary": "Opens the Saturate dialog (confirmed by the harvest), whose Intensity slider makes the colours of the selected objects more or less intense by shifting their tint percentages: positive deepens them, negative washes them out towards white.",
+ "how": "Select the art, open Saturate, turn on Preview and drag Intensity; negative values give pastel, faded versions, positive values richer ones.",
+ "use_for": [
+  "a faded, pastel version of an illustration for a background or watermark",
+  "punching up muted icon or chart colours for a social graphic",
+  "toning a whole pattern down so foreground type stands out"
+ ],
+ "avoid": [
+  "hue changes: Saturate only changes intensity; use Recolor Artwork",
+  "exact brand colours: the shift rewrites the colour values; keep the originals as global swatches"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "PS": "Image/Adjustments/Hue/Saturation",
+  "CDR": "Effects/Adjust/Hue/Saturation/Lightness"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Saturate3\") opens the dialog (confirmed). No DOM equivalent is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "removed the Intensity range -100% to 100%: not in the batch"
+ }
+},
+{
+ "name": "Edit Custom Dictionary...",
+ "id": "Edit Custom Dictionary...",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Custom Dictionary...",
+ "status": "current",
+ "summary": "Opens the Edit Custom Dictionary dialog (confirmed by the harvest), the list of words Illustrator's spell checker treats as correct beyond its built-in dictionary: add, change or remove entries such as brand names and jargon. Disabled with no document open.",
+ "how": "Type a word and click Add, or select an entry to Change or Delete it; words added from Check Spelling's Add button appear here too.",
+ "use_for": [
+  "adding brand, product and people's names so Check Spelling stops flagging them in packaging or brochure copy",
+  "removing a misspelling that was added to the dictionary by mistake"
+ ],
+ "avoid": [
+  "checking the text itself: use Edit > Spelling > Check Spelling",
+  "words that should be accepted in one file only: use Ignore in Check Spelling instead of adding them for every document"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Edit Custom Dictionary...\") opens the dialog (confirmed). No DOM equivalent is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Edit Original",
+ "id": "EditOriginal Menu Item",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Edit Original",
+ "status": "needs_input",
+ "summary": "Opens the selected linked file (a placed image or artwork that is linked, not embedded) in the application that created it, for example a PSD in Photoshop; after you edit and save it there, Illustrator updates the link. Needs a document with linked art selected (disabled with no document).",
+ "use_for": [
+  "retouching a placed product photo in Photoshop without leaving the layout",
+  "updating a linked logo or illustration file that is used in several layouts",
+  "fixing a linked image's crop or colour before sending the file to print"
+ ],
+ "avoid": [
+  "embedded images: there is no original to open; unembed first or edit with Photoshop Effects",
+  "automated pipelines: it hands control to another application and waits for a person"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Layer/Smart Objects/Edit Contents",
+  "CDR": "Bitmaps/Edit Bitmap"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"EditOriginal Menu Item\") (id pairing inferred, not confirmed by execution).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Find and Replace...",
+ "id": "Find and Replace",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Find and Replace...",
+ "status": "current",
+ "summary": "Opens the Find and Replace dialog to search the text in the document for a string and replace one or all occurrences, with options such as Match Case, Find Whole Word, Search Backward and including hidden or locked layers. Disabled with no document open.",
+ "how": "Type the Find and Replace With strings (special characters can be picked from the menus next to the fields), set the options, then Find, Replace, Replace & Find or Replace All.",
+ "use_for": [
+  "changing a price, date or product name across a menu, flyer or catalogue spread",
+  "fixing a repeated typo across many text frames",
+  "updating a client's name throughout a template"
+ ],
+ "avoid": [
+  "changing colours, fonts or styles: use Recolor Artwork, Type > Find/Replace Font or character styles",
+  "scripted bulk text edits: loop over document.textFrames instead of driving the dialog"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Find and Replace Text",
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"Find and Replace\") opens the dialog (id pairing inferred, not confirmed by execution). Without the dialog (members checked in the AI API harvest; not run): loop app.activeDocument.textFrames and replace in each frame's contents (or textRange.contents) with a JavaScript RegExp.",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid named 'Find Font'; the AI 30.2 menu is Type > Find/Replace Font...; script_api mark updated (textFrames, contents, textRange are harvested)"
+ }
+},
+{
+ "name": "Find Next",
+ "id": "Find Next",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Find Next",
+ "status": "needs_input",
+ "summary": "Repeats the last Find and Replace search and selects the next occurrence of the search text, without opening the dialog. It needs a search set up earlier in Find and Replace; in the harvest test it only raised a generic alert, which fits having nothing to search for.",
+ "use_for": [
+  "stepping through every occurrence of a word or price to check each one by eye before changing it"
+ ],
+ "avoid": [
+  "first searches: set the text in Edit > Find and Replace first",
+  "changing every occurrence: Replace All in Find and Replace is faster"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.executeMenuCommand(\"Find Next\") (id pairing inferred, not confirmed: the harvest test only got a generic alert).",
+ "review": {
+  "by": "adversarial",
+  "changes": "equivalents: added CDR Edit/Find and Replace (its docker's Find Next button does this job)"
+ }
+},
+{
+ "name": "Keyboard Shortcuts...",
+ "id": "KBSC Menu Item",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/Keyboard Shortcuts...",
+ "status": "current",
+ "summary": "Opens the Keyboard Shortcuts dialog, where shortcuts for tools and menu commands are viewed, assigned, cleared and saved as named sets (.kys), and a set can be exported as a text list. Works with no document open.",
+ "how": "Choose Tools or Menu Commands, find the entry, click in its Shortcut column and press the new keys (a conflict warning shows if the keys are taken), then Save the set under a new name; Export Text writes the full list.",
+ "use_for": [
+  "giving frequently used commands such as Outline Stroke or Expand Appearance their own keys for faster production work",
+  "matching shortcuts to another app's habits",
+  "exporting the shortcut list as a cheat sheet for a team"
+ ],
+ "avoid": [
+  "moving all personal settings to another machine at once: use Edit > My Settings > Export Settings",
+  "editing the default set in place: save a new named set so the defaults stay available"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "Edit/Keyboard Shortcuts",
+  "CDR": "Tools/Options/Customization"
+ },
+ "shortcut": "Alt+Shift+Ctrl+K",
+ "scriptable": "partial",
+ "script_api": "app.executeMenuCommand(\"KBSC Menu Item\") opens the dialog (id pairing inferred from the shortcut, not confirmed by execution). No DOM equivalent is known.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Export Settings...",
+ "id": "path:Edit/My Settings/Export Settings...",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/My Settings/Export Settings...",
+ "status": "current",
+ "summary": "Saves your personal Illustrator settings (such as preferences, workspaces and keyboard shortcuts) to a file so they can be moved to another computer or restored after a reinstall; Import Settings reads the file back. The exact list of settings it offers and the file format are not recorded in the harvest. Works with no document open.",
+ "how": "Choose the command, pick which settings to include if the dialog offers a choice, and save the file somewhere you can reach from the other machine.",
+ "use_for": [
+  "moving a designer's set-up to a new workstation",
+  "backing up a tuned workspace and shortcut set before an update or reinstall",
+  "sharing one standard set-up across a design team"
+ ],
+ "avoid": [
+  "sharing only the shortcut set: Save a set in Edit > Keyboard Shortcuts",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Window/Workspace/Export"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 339.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Import Settings...",
+ "id": "path:Edit/My Settings/Import Settings...",
+ "app": "AI",
+ "kind": "ai_menu",
+ "path": "Edit/My Settings/Import Settings...",
+ "status": "current",
+ "summary": "Loads a settings file made with Export Settings, bringing back personal Illustrator settings such as preferences, workspaces and keyboard shortcuts on this machine. Which settings are restored and whether a restart is needed are not recorded in the harvest. Works with no document open.",
+ "how": "Choose the command, pick the exported settings file and confirm; check the workspace and shortcuts afterwards.",
+ "use_for": [
+  "setting up a new workstation with a designer's usual workspace and shortcuts",
+  "restoring a tuned set-up after a reinstall or preference reset",
+  "rolling out a team's standard set-up"
+ ],
+ "avoid": [
+  "files from an unknown source: they overwrite your current settings; export your own first as a backup",
+  "scripted runs: it has no menu id"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Window/Workspace/Import"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "None: no executeMenuCommand id could be paired. The harvest's only route is the menu path / Win32 command 340.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+}
+]}

@@ -1,0 +1,219 @@
+{
+ "cards": [
+  {
+   "name": "Star Tool",
+   "id": "StarTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "current",
+   "summary": "Shape tool that drags out a star as a live vector shape layer: number of points (sides), indent depth (starRatio), outer corner radius and inner (indent) corner radius are all live shape properties. Read-back options here: 5 points, starRatio 100 % (at 100 % the indents vanish and it draws a pentagon, so lower it for a real star), corner radius (polygonCornerRadius) 20, inner corner radius 0, linkCornerRadius on. It is accepted by app.currentTool but is not in the default keyboard shortcut file and the harvest records no toolbar group.",
+   "use_for": [
+    "starburst price / offer badges ('SALE', '-50%') on posters and product ads",
+    "rating stars and award / rosette icons",
+    "rounded 'sticker' stars for kids' and festive designs (outer + inner corner radius)",
+    "seal and badge backgrounds behind a short headline"
+   ],
+   "avoid": [
+    "starRatio left at 100 %: the result is a polygon, not a star; lower it until the points are as deep as you want",
+    "a star that is part of a print logo or must match other vector artwork exactly: build it in Illustrator (Star Tool) or CorelDRAW (Star) and place it as a vector smart object",
+    "a very low starRatio together with a large inner corner radius: the thin points get rounded away; keep the inner radius small on deep stars",
+    "relying on a keyboard shortcut or a toolbar slot: none is harvested, select it by script or from the shape tool flyout if your workspace shows it"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Star Tool",
+    "CDR": "Star"
+   },
+   "how": "Select the tool, check the options bar is in Shape mode (geometryToolMode = shape, makeShapeLayers on) and set fill / stroke (shapeStyle). Set the number of points (sides), Star Ratio (indent depth), corner radius and inner corner radius, or unlink them (linkCornerRadius). Drag on the canvas: Shift keeps width and height equal, Alt / Option draws from the centre; clicking once instead of dragging opens a size dialog on Photoshop's other shape tools (not checked for this one). Turn on Align Edges (useAlignedRendering) for crisp pixel-snapped edges. Edit the live values afterwards in the Properties panel.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"StarTool\" only selects the tool (its options, e.g. sides, starRatio, polygonCornerRadius, can be read back as currentToolOptions); the drag that creates the shape is a hand gesture. Scripted substitute: compute 2 x sides vertices alternating between an outer radius R and an inner radius r (r = R x cos(180 degrees / sides) puts the inner points on the polygon's edges, i.e. the plain polygon that starRatio 100 % draws; a smaller r gives deeper points; Photoshop's exact starRatio-to-r mapping is not harvested) and add them as a path with app.activeDocument.pathItems.add(name, [SubPathInfo]), then fill it (PathItem.fillPath) or turn the work path into a solid-colour fill layer with a vector mask; that gives sharp corners only, not the live corner radii.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the read-back inner corner radius is 0 (the card implied a linked non-zero inner radius); avoid: removed the invented 40-60 % starRatio and 0 % figures, rewrote the logo item; how: click-for-dialog marked as unchecked for this tool; script_api: fixed the vertex formula (inner radius R x starRatio gives a 10-gon at 100 %, contradicting the card's own 100 % = pentagon)"
+   }
+  },
+  {
+   "name": "Targeted Adjustment Tool",
+   "id": "kys/Targeted Adjustment Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "unusable",
+   "summary": "The on-image adjustment control (hand with arrows) of the Curves, Hue/Saturation and Black & White adjustments: you click a pixel in the image and drag to change the part of the adjustment that pixel belongs to (its tone on the curve, its hue range, its gray mix). It is listed as a tool in the default keyboard shortcut file, but app.currentTool accepts no id for it, so an automated system cannot pick or use it.",
+   "use_for": [
+    "manual retouch only: lift or drop a tone you can see (a face's midtones, a sky) by dragging on it in Curves",
+    "manual retouch only: shift the saturation or hue of one colour you point at (a jacket, a logo) in Hue/Saturation",
+    "manual retouch only: lighten or darken how one colour converts to gray in Black & White"
+   ],
+   "avoid": [
+    "any scripted pipeline: the tool cannot be selected; set the adjustment numerically instead (Curves points, Hue/Saturation ranges, Black & White sliders) through the ps_adjustment cards curves / hueSaturation / blackAndWhite",
+    "local edits: it changes the whole adjustment, not just the clicked area; mask the adjustment layer to limit it",
+    "Camera Raw work: Camera Raw has its own targeted adjustment control inside its dialog, separate from this one"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Add a Curves, Hue/Saturation or Black & White adjustment layer, then in the Properties panel click the on-image adjustment icon (hand with arrows). Curves: drag up or down on the image to raise or lower the curve point for that tone. Hue/Saturation: drag left / right to change the saturation of the clicked colour range, Ctrl / Cmd-drag to change its hue. Black & White: drag left / right to darken or lighten that colour's gray value.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None: the harvest found no id app.currentTool accepts (error recorded). Do the same edit numerically by applying or making the adjustment through its harvested ids: curves / adjustmentLayer:curves, hueSaturation / adjustmentLayer:hueSaturation, blackAndWhite / adjustmentLayer:blackAndWhite (see the ps_adjustment cards for their params).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Triangle Tool",
+   "id": "triangleTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "current",
+   "summary": "Shape tool that drags out a triangle as a live vector shape layer (sides read back as 3) with an optional corner radius that rounds all three corners (read-back: 0, sharp). The triangle stays editable: corner radius and size can be changed later in the Properties panel or with the on-canvas corner widgets.",
+   "use_for": [
+    "play-button and arrow / pointer icons on thumbnails and web banners",
+    "geometric backgrounds, pennant and bunting shapes",
+    "warning-sign and 'new' corner flags",
+    "rounded-triangle logo marks and UI elements"
+   ],
+   "avoid": [
+    "right-angled or custom-angle triangles: drag it out, then move single anchors with the Direct Selection Tool (Photoshop then turns the live shape into a regular path and the corner radius is no longer editable), or draw it with the Pen Tool",
+    "a triangle that must match a print vector logo exactly: draw it in Illustrator or CorelDRAW (Polygon with 3 sides) and place it as a vector smart object",
+    "rasterising before the design is final: the live shape properties (corner radius) are lost"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Shape Construction Regular Polygon Tool",
+    "CDR": "Polygon"
+   },
+   "how": "Select the tool, keep the options bar in Shape mode (geometryToolMode = shape, makeShapeLayers on), set fill / stroke (shapeStyle) and the corner radius, then drag on the canvas. Shift-drag constrains it to an equilateral triangle; Alt / Option draws from the centre. Turn on Align Edges (useAlignedRendering) for crisp pixel edges. Change corner radius later in the Properties panel or by dragging the corner widget on canvas.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"triangleTool\" only selects the tool; the drag that draws it is a hand gesture. Scripted substitute: add the three vertices as a path with app.activeDocument.pathItems.add(name, [SubPathInfo]), then fill it (PathItem.fillPath) or turn the work path into a solid-colour fill layer with a vector mask; corners come out sharp, without the live corner radius.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'sides fixed at 3' -> 'sides read back as 3' (the harvest only shows the read-back value); avoid: noted that moving a single anchor turns the live triangle into a regular path"
+   }
+  },
+  {
+   "name": "Type Recognition Tool",
+   "id": "tooltip/TypeRecogTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "unusable",
+   "summary": "Known only from a toolbar tooltip string (TypeRecogTool) inside Photoshop.exe: no tool id was accepted by app.currentTool and the harvest has no shortcut-file entry or group for it, so nothing about it could be checked. The name suggests a tool that recognises type in an image, possibly tied to font detection (Type > Match Font), but what it does in 27.4, and whether it is reachable at all, is unverified.",
+   "use_for": [
+    "nothing in automation: it cannot be selected; to identify a font in a flattened image try Type > Match Font (id 9123) by hand"
+   ],
+   "avoid": [
+    "planning any step around it: no id, no options and no visible toolbar slot were harvested",
+    "treating it as the same feature as Match Font: that link is a guess from the name"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Unknown: the harvest found only a tooltip string and no way to select the tool; it may be an internal, retired or preview-only tool.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None: the harvest records no id that app.currentTool accepts (error: named by a toolbar tooltip but no id was accepted).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'not in the default shortcut file' is not stated by the batch; rephrased to what the harvest records"
+   }
+  },
+  {
+   "name": "Vertical Type Mask Tool",
+   "id": "typeVerticalCreateMaskTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Horizontal Type Tool group",
+   "status": "current",
+   "summary": "Types vertical text (characters stacked top to bottom, columns running right to left) but produces a selection in the shape of the letters instead of a text layer. While you type, the image shows a red quick-mask overlay; on commit the letter shapes become a marching-ants selection on the active layer and no new layer is made, so the text is no longer editable.",
+   "use_for": [
+    "cutting vertical lettering out of a photo or texture (copy to a new layer, or add a layer mask)",
+    "filling vertical CJK or stacked-letter headlines with an image, gradient or pattern",
+    "knock-out vertical text on banners, book spines and signage mockups"
+   ],
+   "avoid": [
+    "text that may still change: use the Vertical Type Tool and clip the image to the text layer (clipping mask) so the words stay editable",
+    "Latin headlines you only want turned 90 degrees: use the Horizontal Type Mask Tool and rotate, stacked Latin letters look odd unless that is the intent",
+    "small text for print: the selection is pixel-based and edges soften; keep a live text layer instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Choose it from the type tool group (T, Shift+T cycles Horizontal Type, Vertical Type, Horizontal Type Mask, Vertical Type Mask). Set font, size and alignment on the options bar or Character panel, click on the canvas (or drag for a text box) and type; the image turns red except the letters. Hold Ctrl / Cmd to move the text while typing. Commit with the check mark or Ctrl / Cmd+Enter to get the selection, then add a layer mask, fill, or copy to a new layer.",
+   "shortcut": "T",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"typeVerticalCreateMaskTool\" only selects the tool; typing on canvas is a hand gesture. Scripted substitute for the result: add a text layer (artLayers.add(), kind = LayerKind.TEXT, textItem.direction = Direction.VERTICAL, textItem.contents / font / size / position), load that layer's transparency as a selection through Action Manager, then delete the temporary text layer.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Vertical Type Tool",
+   "id": "typeVerticalCreateOrEditTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Horizontal Type Tool group",
+   "status": "current",
+   "summary": "Creates and edits vertical text layers: characters stack top to bottom and new lines become columns that run right to left. Click for point type or drag a box for paragraph type; the result is a live, editable text layer, and Type > Orientation can switch it to horizontal later.",
+   "use_for": [
+    "Chinese, Japanese and Korean headlines and body text set vertically",
+    "vertical signage, banner side-rails and stacked-letter poster titles",
+    "book-spine and packaging side-panel text mockups"
+   ],
+   "avoid": [
+    "Latin text you simply want rotated 90 degrees: use horizontal type and rotate the layer, or the letters stack one under another",
+    "long body copy for print layouts: set it in InDesign or Illustrator (Vertical Area Type Tool) where text flows between frames",
+    "rasterising or flattening too early: the text stops being editable"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Vertical Type Tool",
+    "CDR": "Text"
+   },
+   "how": "Pick it from the type tool group (T, Shift+T cycles Horizontal Type, Vertical Type, Horizontal Type Mask, Vertical Type Mask). Set font, size, colour and alignment on the options bar (textToolOptions) or the Character / Paragraph panels, click to start point type or drag a box for paragraph type, then type. Commit with the check mark, Ctrl / Cmd+Enter or Esc. In the Character panel menu, Standard Vertical Roman Alignment controls whether Latin characters in vertical text are rotated.",
+   "shortcut": "T",
+   "scriptable": "yes",
+   "script_api": "app.currentTool = \"typeVerticalCreateOrEditTool\" only selects the tool, but the result is fully scriptable through the DOM: var l = app.activeDocument.artLayers.add(); l.kind = LayerKind.TEXT; l.textItem.direction = Direction.VERTICAL; then set textItem.contents, font, size, color, position (and kind / width / height for paragraph text).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Zoom Tool",
+   "id": "zoomTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Zoom Tool group",
+   "status": "current",
+   "summary": "View-only tool that magnifies or reduces the on-screen view of the document; it never changes pixels or document size. Read-back options: zoom-in mode (zoomIn true) and Scrubby Zoom on (drag left / right to zoom continuously). Three more options come back only as raw keys ('ZTIP', 'Zgng', 'ZmRs', all false) with no labels in the harvest.",
+   "use_for": [
+    "inspecting cut-out edges, hair masks and retouch seams at 100 % or higher",
+    "checking text sharpness and small print details before export",
+    "framing a region of a large poster to work on it"
+   ],
+   "avoid": [
+    "changing the actual size of the image or canvas: zooming is view only, use Image Size or Canvas Size",
+    "judging sharpness at zoom levels other than 100 %: screen resampling hides or fakes detail, check at 100 % (View > 100%)",
+    "switching tools just to zoom briefly: View > Zoom In / Zoom Out / Fit on Screen do it without leaving the current tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Zoom Tool",
+    "CDR": "Toolbox/Zoom Tools/Zoom"
+   },
+   "how": "Press Z. Click to zoom in, Alt / Option-click to zoom out, or drag left / right with Scrubby Zoom on; turn Scrubby Zoom off to drag a marquee around the area to fill the window. Options bar: Zoom In / Zoom Out mode, Resize Windows to Fit, Zoom All Windows, Scrubby Zoom, 100%, Fit Screen, Fill Screen. Double-clicking the tool icon jumps to 100 %. The raw keys 'Zgng' and 'ZmRs' most likely store the Zoom All Windows and Resize Windows to Fit checkboxes, and 'ZTIP' is unidentified; none of the three is verified.",
+   "shortcut": "Z",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"zoomTool\" only selects the tool. To change the view from a script use the View menu commands from the ps_menu harvest: zoomIn (Zoom In, id 1004), zoomOut (Zoom Out, id 1005), fitOnScreen (Fit on Screen, id 1192), actualPixels (100%, id 1190), e.g. app.runMenuItem(stringIDToTypeID(\"zoomIn\")). Zoom never affects output, so render and export scripts can skip it.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the invented 33 % / 66.7 % zoom figures; the cited View menu ids 1004 / 1005 / 1192 / 1190 were checked against harvest/ps/ps_menu.json"
+   }
+  }
+ ]
+}

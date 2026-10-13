@@ -1,0 +1,300 @@
+{
+ "cards": [
+  {
+   "name": "Slice Selection Tool",
+   "id": "Adobe Slice Select Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Slice Tool",
+   "status": "current",
+   "summary": "Selects existing web slices so they can be moved, resized or given options (name, URL, alt text, image or HTML content) before File > Export > Save for Web (Legacy). It draws nothing: it only edits slices made with the Slice Tool or the Object > Slice commands.",
+   "how": "Turn slices on with View > Show Slices. Pick the tool from the Slice Tool flyout, click a slice to select it, Shift-click to add more, drag inside a slice to move it and drag its edge or corner handles to resize it. With slices selected, Object > Slice offers Slice Options..., Duplicate Slice, Combine Slices and Divide Slices.... Slices made with Object > Slice > Make follow their artwork, so you change those by editing the art rather than the slice outline. View > Lock Slices stops accidental edits.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Slice Select Tool\"), but the harvest has no invoke for this id (the live selectTool probe never reached it). Clicking and dragging slices cannot be scripted, and slices drawn with the Slice Tool are not confirmed to be reachable from the DOM. Object-based slices are ordinary page items with PageItem.sliced = true, so a script selects one with pageItem.selected = true and moves or resizes the slice by moving the item (position, translate(), resize()). With slices selected, the Object > Slice commands have harvested ai_menu ids, not confirmed by execution: app.executeMenuCommand(\"AISlice Duplicate\"), (\"AISlice Combine\"), (\"AISlice Divide\") and (\"AISlice Slice Options\"); the last two open dialogs. PageItem.URL sets the item's Adobe URL tag (the Attributes panel URL); whether Save for Web (Legacy) uses it as the slice link is unverified.",
+   "use_for": [
+    "nudging slice edges so web banner or HTML email tiles meet without gaps",
+    "picking slices to name, link and set alt text before a Save for Web export",
+    "selecting several slices to combine into one image or divide into an equal grid"
+   ],
+   "avoid": [
+    "exporting icons, artboards or assets: File > Export > Export for Screens or the Asset Export panel needs no slices",
+    "editing slices that follow artwork (Object > Slice > Make): move or resize the art itself",
+    "responsive web layouts: slices export fixed-size images for table-based pages"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "sliceSelectTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial and script_api rewritten: the card's own route (object slices are page items with PageItem.sliced, moved and resized through the item) plus the harvested AISlice Duplicate / Combine / Divide / Slice Options menu ids make part of the job scriptable, matching how sibling selection tools are rated; PageItem.URL was stated as setting the slice link, but the harvest only calls it the item's Adobe URL tag, so that link is now marked unverified; second pass: script_api opened with 'Activation only' although the card is rated partial and goes on to list scripted routes; now 'Activation, unverified' like the Slice Tool card"
+   }
+  },
+  {
+   "name": "Slice Tool",
+   "id": "Adobe Slice Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Slice Tool",
+   "status": "current",
+   "summary": "Drag a rectangle to draw a user slice that cuts the artboard into separate web images; Illustrator fills the rest with auto slices, and File > Export > Save for Web (Legacy) writes each slice as its own GIF / JPEG / PNG file, optionally with an HTML table.",
+   "how": "Press Shift+K or pick it from the Slice Tool flyout and drag over the area to cut out; Shift-drag draws a square, Alt-drag draws from the centre. Slices snap to guides and art when snapping is on. Alternatives on Object > Slice: Make (a slice that follows the selected art and updates when the art changes), Create from Selection (fixed slices from the selection bounds) and Create from Guides. Set each slice's name, URL and type with Object > Slice > Slice Options..., then export with Save for Web (Legacy) and choose All Slices, All User Slices or Selected Slices.",
+   "shortcut": "Shift+K",
+   "scriptable": "partial",
+   "script_api": "Activation, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Slice Tool\"), but the harvest has no invoke for this id (the live selectTool probe never reached it). Dragging a slice cannot be scripted. Instead, with art selected: app.executeMenuCommand(\"AISlice Make Slice\") (object-based slice) or app.executeMenuCommand(\"AISlice Create from Selection\") (harvested ai_menu ids, not confirmed by execution), or set PageItem.sliced = true on the item (harvested DOM member, assumed to match Object > Slice > Make). ExportOptionsSVG.slices keeps slice data in an SVG export.",
+   "use_for": [
+    "cutting a web banner or HTML email mock-up into linked image tiles",
+    "exporting several buttons or icons from one layout in a single Save for Web pass",
+    "splitting a long infographic into fixed-height pieces for upload"
+   ],
+   "avoid": [
+    "exporting artboards, icons or assets at several sizes: File > Export > Export for Screens or the Asset Export panel is simpler",
+    "print work: slices only matter to Save for Web (Legacy) and some SVG / web exports",
+    "slices that must track changing artwork: use Object > Slice > Make instead of a drawn slice"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "sliceTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the Save for Web (Legacy) slice choice now lists the default All Slices alongside All User Slices and Selected Slices; everything else checked against the batch and harvest (Shift+K, AISlice menu ids, PageItem.sliced, ExportOptionsSVG.slices, PS sliceTool) and left as is"
+   }
+  },
+  {
+   "name": "Symbol Screener Tool",
+   "id": "Adobe Symbol Screener Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Brushes transparency onto the instances of a selected symbol set: the longer you hold or the more you scrub, the more see-through the instances under the brush become, which fades parts of a scatter out. Alt-brushing makes them opaque again.",
+   "how": "Select the symbol set made with the Symbol Sprayer Tool and, if the set mixes symbols, select in the Symbols panel the symbol whose instances should change. Click or drag over the instances to raise their transparency; hold Alt to lower it. Double-click the tool for Symbolism Tools Options: Diameter sets the brush size, Intensity the rate of change, Method (Average, User Defined, Random) how the change is distributed.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Screener Tool\"), but the harvest has no invoke for this id. Brushing transparency into a set cannot be scripted, and the DOM does not expose single instances inside a sprayed set (Document.getSelSymbolSetProps() only reads properties of the selected set). Scripted route: place separate instances with doc.symbolItems.add(symbol) and set each item's PageItem.opacity.",
+   "use_for": [
+    "fading a scatter of leaves, stars or confetti toward one edge of a poster",
+    "pushing background instances of a crowd or forest back with lower opacity for depth",
+    "softening a symbol pattern behind headline text"
+   ],
+   "avoid": [
+    "an even fade across a whole set: lower the set's opacity in the Transparency panel instead",
+    "artwork headed for automated pipelines: the brushed result cannot be reproduced by script",
+    "plain groups or separate symbol instances: the tool only works on symbol sets"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol Scruncher Tool",
+   "id": "Adobe Symbol Scruncher Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Changes the spacing inside a selected symbol set: clicking or dragging pulls the instances under the brush together toward the cursor so they bunch up, and Alt pushes them apart so the cluster thins out.",
+   "how": "Select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel). Click and hold or drag over the area to gather instances into a denser clump; hold Alt to spread them apart. Diameter, Intensity and Method are set by double-clicking the tool (Symbolism Tools Options).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Scruncher Tool\"), but the harvest has no invoke for this id. Gathering or spreading instances by brush cannot be scripted. Scripted route: place separate instances with doc.symbolItems.add(symbol) and compute their position values so they cluster or spread as needed.",
+   "use_for": [
+    "making a scatter of flowers or bubbles denser around a focal point",
+    "opening a gap in a confetti or star field so a headline reads",
+    "varying the density of trees or crowd figures in an illustrated map"
+   ],
+   "avoid": [
+    "moving instances in one direction: use the Symbol Shifter Tool",
+    "precise, even spacing: place separate symbol instances in a grid with Object > Repeat > Grid instead",
+    "plain groups: the tool only works on symbol sets"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: dropped Transform Each as a way to space instances evenly (it transforms each object by the same amounts, it does not lay out a grid); points to Object > Repeat > Grid only"
+   }
+  },
+  {
+   "name": "Symbol Shifter Tool",
+   "id": "Adobe Symbol Shifter Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Pushes the instances of a selected symbol set in the direction you drag, like sweeping them across the page, and changes their stacking order: Shift-click brings an instance forward, Alt+Shift-click sends it back.",
+   "how": "Select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel). Drag in the direction the instances should move; the brush diameter sets how many are caught. Shift-click an instance to bring it in front of its neighbours, Alt+Shift-click to send it behind. Diameter, Intensity and Method are in Symbolism Tools Options (double-click the tool).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Shifter Tool\"), but the harvest has no invoke for this id. Sweeping instances inside a sprayed set cannot be scripted. Scripted route: place separate instances with doc.symbolItems.add(symbol), then move them with PageItem.position / translate() and restack them with zOrder().",
+   "use_for": [
+    "sweeping scattered leaves or stars away from a face or headline area",
+    "nudging part of a crowd or forest scatter to follow a composition line",
+    "fixing overlaps by bringing chosen instances forward or sending them back"
+   ],
+   "avoid": [
+    "moving the whole set: drag it with the Selection Tool",
+    "exact placement of one instance: expand the set (Object > Expand) or use separate symbol instances",
+    "plain groups: the tool only works on symbol sets"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol Sizer Tool",
+   "id": "Adobe Symbol Sizer Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Enlarges the instances of a selected symbol set under the brush as you click or drag; with Alt it shrinks them. Used to vary scale through a scatter so it looks natural rather than stamped.",
+   "how": "Select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel). Click or drag over instances to grow them, hold Alt to shrink them, hold Shift to keep the density as you resize. In Symbolism Tools Options (double-click the tool) Proportional Resizing keeps each instance's proportions and Resizing Affects Density lets instances move apart as they grow; Diameter, Intensity and Method apply as for the other symbolism tools.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Sizer Tool\"), but the harvest has no invoke for this id. Brush-sizing inside a sprayed set cannot be scripted. Scripted route: place separate instances with doc.symbolItems.add(symbol) and scale each one with PageItem.resize(scaleX, scaleY).",
+   "use_for": [
+    "making foreground snowflakes or bokeh dots larger than background ones",
+    "adding natural size variation to a scatter of flowers, stars or confetti",
+    "building a size gradient across a pattern band on packaging"
+   ],
+   "avoid": [
+    "scaling the whole set evenly: use the Scale Tool or the bounding box",
+    "exact sizes for single elements: use separate symbol instances or the Transform panel",
+    "plain groups: the tool only works on symbol sets"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol Spinner Tool",
+   "id": "Adobe Symbol Spinner Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Rotates the instances of a selected symbol set under the brush so they turn to face the direction you drag; arrows appear over the instances while dragging to show their new orientation. Gives a scatter a flow, such as leaves blown one way.",
+   "how": "Select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel). Drag in the direction the instances should point; the longer you drag over them, the further they turn. Diameter, Intensity and Method are in Symbolism Tools Options (double-click the tool).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Spinner Tool\"), but the harvest has no invoke for this id. Brush rotation inside a sprayed set cannot be scripted. Scripted route: place separate instances with doc.symbolItems.add(symbol) and turn each with PageItem.rotate(angle).",
+   "use_for": [
+    "making scattered leaves, petals or birds follow a wind or flight direction",
+    "breaking the stamped look of a confetti or sparkle scatter with varied angles",
+    "aligning arrows or fish in a scatter along a curving path"
+   ],
+   "avoid": [
+    "rotating the whole set: use the Rotate Tool",
+    "exact angles: use separate symbol instances or Object > Transform > Transform Each",
+    "plain groups: the tool only works on symbol sets"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol Sprayer Tool",
+   "id": "Adobe Symbol Sprayer Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Sprays instances of the symbol chosen in the Symbols panel onto the artboard as you click or drag, building one symbol set: a single object holding many linked copies at a set density. Alt-spraying removes instances. The other symbolism tools then shift, size, spin, tint, fade or style the set.",
+   "how": "Pick a symbol in the Symbols panel (Window > Symbols), press Shift+S and click or drag where the copies should go; holding longer in one spot lays down more. Hold Alt and spray to delete instances. To add to an existing set, select it first and spray again; choosing another symbol in the panel adds that symbol to the same set. Double-click the tool for Symbolism Tools Options: Diameter, Intensity, Symbol Set Density, and for the Sprayer how new instances get their scrunch, size, spin, screen, stain and style (Average of nearby instances or User Defined).",
+   "shortcut": "Shift+S",
+   "scriptable": "partial",
+   "script_api": "Activation, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Sprayer Tool\"), but the harvest has no invoke for this id. Spraying cannot be scripted. doc.selectSymbol(index) picks the active symbol in the Symbols panel and doc.getSelSymbolSetProps() reads properties of a selected set (harvested members). Scripted route to the same look: loop doc.symbolItems.add(symbol) and give each instance a random position, rotate() and resize() value; the result is separate instances, not one symbol set.",
+   "use_for": [
+    "scattering leaves, flowers or snowflakes across a poster or card background",
+    "filling an illustrated map or scene with trees, houses or crowd figures",
+    "confetti, stars and sparkles around a sale headline or celebration graphic"
+   ],
+   "avoid": [
+    "evenly spaced repeats or seamless patterns: use Object > Repeat or a pattern swatch",
+    "scatters along a stroke: a Scatter Brush follows the path better",
+    "art that must be edited piece by piece later: expand the set (Object > Expand) or place separate symbol instances"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Property Bar/Artistic Media/Sprayer"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'Doc.selectSymbol' corrected to 'doc.selectSymbol' (Document instance method); Shift+S, scriptable partial and the CDR Sprayer equivalent checked and kept"
+   }
+  },
+  {
+   "name": "Symbol Stainer Tool",
+   "id": "Adobe Symbol Stainer Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Tints the instances of a selected symbol set toward the current fill colour as you brush over them, keeping their light and dark values, so part of a scatter shifts colour gradually; Alt reduces the tint again. Very dark or very light instances barely change, and black or white ones do not change at all.",
+   "how": "Choose the stain colour as the fill colour in the Color or Swatches panel, select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel), then click or drag over instances; repeated passes deepen the tint. Hold Alt to lessen the stain, hold Shift to keep the amount constant while shifting already stained instances to the new colour. Diameter, Intensity and Method are in Symbolism Tools Options (double-click the tool).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Stainer Tool\"), but the harvest has no invoke for this id. Staining cannot be scripted and a symbol instance has no colour of its own in the DOM. Nearest scripted route: SymbolItem.breakLink() turns an instance into ordinary art whose fills can be recoloured, at the cost of the symbol link.",
+   "use_for": [
+    "autumn colour drift through a scatter of leaves",
+    "warming the instances near a light source in an illustrated scene",
+    "colour-varying a confetti or bubble scatter without making new symbols"
+   ],
+   "avoid": [
+    "large sets in files that must stay light: staining adds file size and slows redraw",
+    "black or white symbols (no change at all) and very light or very dark ones (barely change): recolour the master symbol instead",
+    "exact brand colours on chosen elements: expand the set (Object > Expand), break the symbol links and recolour the art, for example with Recolor Artwork"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed 'near-neutral' symbols as hardly taking the tint; the stain keeps each instance's luminosity and shifts its hue, so a mid grey does take the colour; only black or white (no change) and very light or very dark instances (little change) resist it, which the summary now also says; second pass: avoid: 'or use Recolor Artwork' read as an alternative that works on the set itself; Recolor Artwork is now placed after expanding the set and breaking the links, where it applies to ordinary art"
+   }
+  },
+  {
+   "name": "Symbol Styler Tool",
+   "id": "Adobe Symbol Styler Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Symbol Sprayer Tool",
+   "status": "current",
+   "summary": "Brushes the graphic style selected in the Graphic Styles panel onto the instances of a selected symbol set, building the style up gradually where you scrub (for example a drop shadow or glow on some instances only); Alt reduces the style again.",
+   "how": "Select the symbol set (and, in a mixed set, the symbol to affect in the Symbols panel), pick the tool, then choose a style in the Graphic Styles panel (Window > Graphic Styles). Click or drag over instances to apply it; the amount grows with repeated passes. Hold Alt to lessen it, hold Shift to keep the amount while switching instances to a newly chosen style. Diameter, Intensity and Method are in Symbolism Tools Options (double-click the tool).",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Activation only, unverified: by the pattern of the other harvested tool ids it is app.selectTool(\"Adobe Symbol Styler Tool\"), but the harvest has no invoke for this id. Brushing a style into a set cannot be scripted. Scripted route: place separate instances with doc.symbolItems.add(symbol) and apply a style from doc.graphicStyles with ArtStyle.applyTo(item) or mergeTo(item); the partial, built-up amount the tool gives has no DOM equivalent.",
+   "use_for": [
+    "adding a glow or shadow only to the foreground instances of a scatter",
+    "giving part of a sparkle or bubble scatter a different finish for depth",
+    "testing graphic styles on a pattern area without rebuilding the symbols"
+   ],
+   "avoid": [
+    "the same style on the whole set: select the set and click the style in the Graphic Styles panel",
+    "heavy styles on dense sets: many styled instances slow redraw and export",
+    "plain groups: the tool only works on symbol sets"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

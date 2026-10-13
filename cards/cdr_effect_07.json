@@ -1,0 +1,859 @@
+{
+ "cards": [
+  {
+   "name": "Tune Blur",
+   "id": "c77b769b-9a62-4dad-ab21-0b92f02aa313",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Tune Blur",
+   "status": "needs_input",
+   "summary": "Interactive blur picker: the dialog shows four preview thumbnails (Gaussian, Smooth, Directional Smooth, Soften) and each click on one adds that kind of blur by the Step amount, so you build up a soft, slightly out-of-focus look while comparing the four kinds side by side.",
+   "use_for": [
+    "softening a background photo behind a headline when you are not sure which blur reads best",
+    "taking the hard digital edge off an upscaled or over-sharpened bitmap",
+    "building a gentle soft-focus in small, previewed steps"
+   ],
+   "avoid": [
+    "scripting: the harvested command sets only Step; the four thumbnails (ImageNode_* keys) carry no harvested values and are what actually add blur in the dialog, so a scripted Step on its own may change nothing; use Effects > Blur > Gaussian Blur when a script needs a known radius",
+    "a strong, exact blur: one click adds only one Step, and the amount is easier to control with Gaussian Blur's radius",
+    "the already-soft PGD photo plate: small steps barely show; the crisp colour strip and hairlines at the bottom show it first",
+    "scripts: no scripted form applies it (2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route): TuneBlurEffect raised RPC_E_SERVERFAULT on every form); open the dialog (menu route) and pick the thumbnails by hand"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "gaussianBlur",
+    "AI": "Live Adobe PSL Gaussian Blur"
+   },
+   "look": [
+    "blur",
+    "soft focus",
+    "smooth",
+    "soften",
+    "out of focus",
+    "gaussian"
+   ],
+   "params": [
+    {
+     "name": "Step",
+     "does": "how much blur each click on a thumbnail adds",
+     "typical": "10 (default) for fine control, 30-100 for big jumps"
+    },
+    {
+     "name": "ImageNode_Gaussian",
+     "does": "the Gaussian thumbnail: click to add an even, round blur",
+     "typical": "click 1-5 times"
+    },
+    {
+     "name": "ImageNode_Smooth",
+     "does": "the Smooth thumbnail: click to add a mild averaging blur that keeps more detail",
+     "typical": "click 1-3 times"
+    },
+    {
+     "name": "ImageNode_DirectionalSmooth",
+     "does": "the Directional Smooth thumbnail: smooths flat areas while trying to keep edges",
+     "typical": "click 1-3 times"
+    },
+    {
+     "name": "ImageNode_Soften",
+     "does": "the Soften thumbnail: click to soften harsh edges with a subtle blur",
+     "typical": "click 1-3 times"
+    }
+   ],
+   "demo_settings": {
+    "Step": 100
+   },
+   "pairs_with": [
+    "Effects > Blur > Gaussian Blur (exact radius once you know the look)",
+    "Effects > Correction > Tune Sharpen (same click-to-add dialog for sharpening)",
+    "Transparency tool (fade the blurred copy into a sharp original)"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Tune Blur\", \"TuneBlurEffect Step=100\"). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"c77b769b-9a62-4dad-ab21-0b92f02aa313\").",
+   "scriptable": "partial",
+   "cost": "light; each click recomputes one blur pass on the bitmap",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "ImageNode_Soften no longer ranked 'the gentlest of the four' (untested); scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "Untested: no frame (failed.json); the 2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route) found no scripted form: TuneBlurEffect raised RPC_E_SERVERFAULT on every form, so the look the card describes is not shown by any render; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": "harness, not the effect: the dialog (menu GUID) is the only route, so nothing a script sends can show the effect; untested, not wrong, and no re-render can fix it.",
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'TuneBlurEffect Step=100 (server fault)'\"; harness, not the effect: no working scripted route was found, so the effect itself is untested; renderer: CrlFX.dll lists indexed keys (ListSize, Effect_%d, Step_%d) for the tune dialogs, not probed yet (live chain not_done); Step=100 alone raised RPC_E_SERVERFAULT.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. The indexed keys (Step_%d, Effect_%d) named in the live chain's not_done list are an untried route, so rerender stays true and status stays current."
+     }
+    }
+   }
+  },
+  {
+   "name": "Zoom",
+   "id": "e8ab115d-e7b9-4dc4-b2ab-2d82c1eca533",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blur/Zoom",
+   "status": "current",
+   "summary": "Zoom blur: streaks pixels outward from a centre point as if the lens zoomed during the exposure, leaving the centre fairly sharp and the edges smeared into radial speed lines.",
+   "use_for": [
+    "speed / impact backgrounds behind a product or headline",
+    "pulling the eye to the centre of a poster photo",
+    "action and sports graphics with a burst-of-motion feel"
+   ],
+   "avoid": [
+    "text or faces near the frame edge: they streak first and become unreadable",
+    "an off-centre subject: the centre point is picked in the dialog and is not a harvested key, so a script zooms from the default centre (not verified which)",
+    "a circular spin instead of an outward burst: use Effects > Blur > Radial Blur"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "radialBlur",
+    "AI": "Live PSAdapter_plugin_RdlB"
+   },
+   "look": [
+    "zoom blur",
+    "radial streaks",
+    "speed burst",
+    "motion",
+    "warp speed",
+    "explosion lines"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "length of the radial streaks",
+     "typical": "5 (default) subtle; 30-60 strong burst"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 50
+   },
+   "pairs_with": [
+    "Effects > Blur > Radial Blur (spin instead of zoom)",
+    "Effects > Camera > Lens Flare (light burst at the zoom centre)",
+    "PowerClip a sharp copy of the subject over the zoomed background"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Zoom\", \"ZoomEffect Amount=50\"). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"e8ab115d-e7b9-4dc4-b2ab-2d82c1eca533\").",
+   "scriptable": "yes",
+   "cost": "moderate; long streaks on a full-HD bitmap take a moment to render",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d4f3467b45ba.png",
+    "crop": "gallery/cdr_effect/d4f3467b45ba_1to1.png",
+    "note": "1:1 crop of the corner: radial streaks run outward toward the corner and smear the dark-red panel, colour bars, ramp and hairlines into rays, the zoom burst described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/d4f3467b45ba.png",
+     "note": "Radial speed streaks fly outward from the frame centre: the centre stays fairly sharp while the mid-tones, stripes, dark-red blocks and colour strip toward the edges are smeared into rays.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Colorize",
+   "id": "894b8706-776f-43b7-beae-6c164cc07a9e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Colorize",
+   "status": "current",
+   "summary": "Replaces every colour in the bitmap with one hue at one saturation while keeping each pixel's lightness, so the image becomes a single-colour (duotone-like) tint, e.g. all blue or all sepia-brown.",
+   "use_for": [
+    "brand-colour photo treatments behind type",
+    "making mismatched stock photos read as one set",
+    "monochrome hero images for posters and social cards"
+   ],
+   "avoid": [
+    "keeping any original colour: everything, including skin tones and strong reds, becomes the one hue",
+    "Saturation 0 (the default): the result is plain greyscale; raise Saturation to see the tint",
+    "a two-colour duotone with separate shadow and highlight colours: use a duotone or tone curve instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "hueSaturation"
+   },
+   "look": [
+    "monochrome",
+    "tint",
+    "duotone",
+    "single colour",
+    "colour wash",
+    "toned photo"
+   ],
+   "params": [
+    {
+     "name": "Hue",
+     "does": "the one hue every pixel takes (0 red, 120 green, 240 blue)",
+     "typical": "30 for warm brown, 200-220 for blue"
+    },
+    {
+     "name": "Saturation",
+     "does": "how strong the tint is; 0 gives greyscale",
+     "typical": "40-80"
+    }
+   ],
+   "demo_settings": {
+    "Hue": 200,
+    "Saturation": 70
+   },
+   "pairs_with": [
+    "Effects > Adjust > Tone Curve (add contrast after tinting)",
+    "Effects > Camera > Sepia Toning (preset brown version)",
+    "Transparency tool (blend the tint back over the original colour)"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Colorize\", \"ColorizeEffect Hue=200,Saturation=70\"). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"894b8706-776f-43b7-beae-6c164cc07a9e\").",
+   "scriptable": "yes",
+   "cost": "light; a per-pixel colour remap",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/83c7824a4b40.png",
+    "note": "Every colour became one blue hue with the lightness kept: the red, yellow, green and magenta swatches turn into lighter and darker blues, mid-tones and walls are blue-toned, a single-colour tint as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Diffuse",
+   "id": "a986e861-e820-4df3-893f-9970b598a30e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Diffuse",
+   "status": "current",
+   "summary": "Camera-style diffusion: spreads neighbouring pixels into each other so detail and noise soften, like a soft-focus or diffusion lens; higher Level spreads further. A 1:1 render (Level 100) shows a smooth, even spread, not a speckle: hard edges blur over about 3-5 px while the soft photo moves by about 1 level.",
+   "use_for": [
+    "soft, dreamy portrait or wedding photo backgrounds",
+    "hiding JPEG noise or harsh detail in a background photo",
+    "taking the digital crispness off a bitmap before placing type over it"
+   ],
+   "avoid": [
+    "the already-soft PGD photo plate: the change mostly shows on the crisp colour strip, type and hairlines at the bottom",
+    "a controlled, even blur: use Effects > Blur > Gaussian Blur",
+    "a frosted-glass / pixel-scatter look: the 1:1 render shows a smooth spread with no random scatter, so it does not give that look"
+   ],
+   "confidence": "medium",
+   "look": [
+    "soft focus",
+    "diffusion",
+    "dreamy",
+    "soften",
+    "glow-free blur"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "how far pixels are spread",
+     "typical": "50 (default); 80-100 for an obvious soft look"
+    }
+   ],
+   "demo_settings": {
+    "Level": 100
+   },
+   "pairs_with": [
+    "Effects > Blur > Gaussian Blur",
+    "Effects > Camera > Sepia Toning (old soft-focus photo)",
+    "Transparency tool (mix with a sharp copy)"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Diffuse\", \"DiffuseEffect Level=100\"). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"a986e861-e820-4df3-893f-9970b598a30e\").",
+   "scriptable": "yes",
+   "cost": "light",
+   "equivalents": {},
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/21a03e9416f1.png",
+    "crop": "gallery/cdr_effect/21a03e9416f1_1to1.png",
+    "note": "1:1 crop at Level 100: every hard edge spreads smoothly by 1-2 px each side (each hairline becomes a soft grey band about 5 px wide, the colour-bar edges blur over about 4 px), identical along each row, so no speckle or scatter, while the soft photo moves by about 1 level (no pixel more than 19): the diffusion soften described, visible only at 1:1 on this plate.",
+    "rerender": false,
+    "previous": {
+     "verdict": "weak",
+     "frame": "gallery/cdr_effect/21a03e9416f1.png",
+     "note": "At Level 100 (the maximum) the photo looks unchanged at full size (body diff 0.85); only the PGD type and hairlines soften at 4x zoom; the effect applied (Level 50 gave 1.2, 100 gave 2.0), so the soft plate, not the harness, hides it, and the demo cannot be raised.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-opened at 2x: the photo is unchanged but the PGD type and hairlines are clearly softer than ref_photo, so the effect works and the soft photo hides it. Harness check: the frame is a 960x540 export of the 1920x1080 plate bitmap, so a 1-2 px sharpen / smooth is averaged away by the 2x downsample; the key was read (the probe's lower value gave a smaller change), so this is not a broken effect but an unjudgeable one: rerender as a 1:1 crop of the plate (renderer change, not a demo change)."
+     }
+    }
+   }
+  },
+  {
+   "name": "Lens Flare",
+   "id": "6377aa85-d301-4f96-a19d-a8259601aaa7",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Lens Flare",
+   "status": "current",
+   "summary": "Renders a camera lens flare on the bitmap: a bright flare core with halo, star rays, streaks, an anamorphic light bar and a tail of reflection rings, each with its own controls (size, brightness, falloff, rotation, ray count, colour, depending on the element). A Preset list holds ready-made flares (Default, 105mm Prime, 35mm Prime, and in the preset harvest more such as Nuclear Blast, Star Explosion and coloured Sun Rays).",
+   "use_for": [
+    "sun / spotlight glare on posters, movie-style key art and event banners",
+    "cinematic anamorphic light streaks on dark photos",
+    "adding a light source that ties a composite together"
+   ],
+   "avoid": [
+    "placement: the flare's position has no harvested key, so a script puts it wherever the effect defaults; the colours (FlareColorItem etc.) are not in the command string either",
+    "light, busy photos: the flare washes out; it reads best over darker areas",
+    "a vector flare that stays editable at any size: Illustrator's Flare Tool or a CorelDRAW gradient object"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "lensFlare",
+    "AI": "Adobe Flare Tool"
+   },
+   "look": [
+    "lens flare",
+    "sun flare",
+    "glare",
+    "anamorphic streak",
+    "light rays",
+    "halo",
+    "cinematic"
+   ],
+   "params": [
+    {
+     "name": "FlareSize",
+     "does": "size of the bright flare core (dialog: Flares > General > Size)",
+     "typical": "10 default; 30-50 big"
+    },
+    {
+     "name": "FlareBrightness",
+     "does": "brightness of the core",
+     "typical": "23 default; 60-90 strong"
+    },
+    {
+     "name": "FlareFallof",
+     "does": "how quickly the core fades out (dialog: Falloff)",
+     "typical": "18 default"
+    },
+    {
+     "name": "HaloSize",
+     "does": "size of the ring of light around the core",
+     "typical": "10-50"
+    },
+    {
+     "name": "HaloBrightness",
+     "does": "brightness of the halo",
+     "typical": "30-70"
+    },
+    {
+     "name": "RayBrightness",
+     "does": "brightness of the star rays",
+     "typical": "30-80"
+    },
+    {
+     "name": "RayCount",
+     "does": "number of rays",
+     "typical": "8 default; 4-16"
+    },
+    {
+     "name": "RayRotation",
+     "does": "rotation of the ray star in degrees",
+     "typical": "0-360"
+    },
+    {
+     "name": "StreakBrightness",
+     "does": "strength of the thin streaks (dialog: Streaks)",
+     "typical": "25-70"
+    },
+    {
+     "name": "AnamorphicBrightness",
+     "does": "strength of the anamorphic light bar (its angle is AnamorphicRotation, 0-360, default 0)",
+     "typical": "40-80"
+    },
+    {
+     "name": "ReflectionSize",
+     "does": "size of the reflection rings in the tail",
+     "typical": "10-40"
+    },
+    {
+     "name": "ReflectionBright",
+     "does": "brightness of the reflection rings",
+     "typical": "40-70"
+    },
+    {
+     "name": "Preset",
+     "does": "ready-made flare; the effect's enum read only Default, 105mm Prime and 35mm Prime (by GUID, see enum_labels), the preset harvest lists more",
+     "typical": "Default"
+    }
+   ],
+   "demo_settings": {
+    "FlareSize": 40,
+    "FlareBrightness": 80,
+    "HaloSize": 40,
+    "HaloBrightness": 70,
+    "RayBrightness": 70,
+    "RayCount": 12,
+    "StreakBrightness": 60,
+    "AnamorphicBrightness": 70,
+    "ReflectionSize": 30,
+    "ReflectionBright": 60
+   },
+   "enum_labels": {
+    "FlaresProperties": {
+     "0": "General",
+     "1": "Halo",
+     "2": "Reflection Tail"
+    },
+    "RaysProperties": {
+     "0": "General",
+     "1": "Anamorphic Light"
+    },
+    "Preset": {
+     "319cf649-d98b-47af-9bfa-f822ad1e627f": "Default",
+     "a4dc4995-8786-467e-804a-9ad3be28593d": "105mm Prime",
+     "9ca2f72c-fc69-4780-8069-3515d7660452": "35mm Prime"
+    },
+    "LensFlarePageSelected": {
+     "eb149ed9-3a15-4773-99d4-b4d8ada6a905": "Flares",
+     "ab138298-0779-4843-9cca-a64b1f7cb5de": "Rays"
+    }
+   },
+   "pairs_with": [
+    "Effects > Camera > Lighting Effects (match the scene light to the flare)",
+    "Effects > Blur > Zoom (burst from the flare)",
+    "Effects > Adjust > Tone Curve (darken first so the flare reads)"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Lens Flare\", \"LensFlareEffect FlareSize=40,FlareBrightness=80,HaloSize=40,HaloBrightness=70,RayBrightness=70,RayCount=12,StreakBrightness=60,AnamorphicBrightness=70,ReflectionSize=30,ReflectionBright=60\"); FlaresProperties, RaysProperties and LensFlarePageSelected appear (from their option names) to switch only which dialog panel is shown, so they are left out. The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"6377aa85-d301-4f96-a19d-a8259601aaa7\").",
+   "scriptable": "partial",
+   "cost": "moderate; several rendered light layers composited over a full-HD bitmap",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'each with its own size, brightness, rotation and colour' overclaimed (streaks have only brightness, the halo no rotation); presets no longer limited to the 105mm / 35mm primes (the preset harvest has many more); anamorphic bar no longer asserted horizontal; panel-switch keys marked as inferred; position avoid line no longer claims it is set on the preview; scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/26eba41ed1a5.png",
+    "note": "A lens flare dominates the frame: a huge white flare core blows out the upper left third, with orange, yellow and violet reflection rings across the middle, a rainbow arc lower right and a magenta streak along the top; HaloSize and HaloBrightness were ignored by the script (dropped), so the halo part of the demo is untested.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Lighting Effects",
+   "id": "67e73c4c-de4a-4336-ac29-a1096d7aa93e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Lighting Effects",
+   "status": "current",
+   "summary": "Lights the bitmap with a spotlight or directional light (brightness, cone size, edge, opacity, angle, colour, position), optionally adds a tinted atmosphere with exposure control, and can raise a relief texture from an image channel so the light rakes across it; has a Presets list (contents not harvested).",
+   "use_for": [
+    "dramatic spotlight on a product or speaker photo",
+    "darkening the frame around a subject for a moody poster",
+    "embossed / raked-light texture on a photo using Image Texture"
+   ],
+   "avoid": [
+    "the harvest could not read this dialog's ranges or defaults (data source not instantiated until the dialog opens), so scripted values are unchecked against the real limits; open the dialog once to confirm",
+    "light position and colour: SourceX / SourceY ranges are unknown and LightColorItem / AtmosphereColorItem are not in the command string, so a script lights from the default position and colour",
+    "flat even brightening: use Effects > Adjust > Brightness/Contrast/Intensity",
+    "scripted light settings: the 2026-10 gallery render sent EnableLightSource, LightType, Brightness, ConeSize, Edge and Angle and every one was ignored (varying each changed no pixel); the frame shows the dialog's stored spotlight, so set the light in the dialog"
+   ],
+   "confidence": "medium",
+   "look": [
+    "spotlight",
+    "dramatic lighting",
+    "light beam",
+    "vignette light",
+    "relief",
+    "moody",
+    "atmosphere"
+   ],
+   "params": [
+    {
+     "name": "EnableLightSource",
+     "does": "turns the light on",
+     "typical": "true"
+    },
+    {
+     "name": "LightType",
+     "does": "Spotlight (cone) or Directional (even light from one side)",
+     "typical": "Spotlight"
+    },
+    {
+     "name": "Brightness",
+     "does": "light intensity",
+     "typical": "range not harvested; mid-to-high"
+    },
+    {
+     "name": "ConeSize",
+     "does": "spread of the spotlight cone in degrees",
+     "typical": "range not harvested; 30-60"
+    },
+    {
+     "name": "Edge",
+     "does": "softness of the cone's edge",
+     "typical": "range not harvested"
+    },
+    {
+     "name": "Angle",
+     "does": "direction the light points, in degrees (compass wheel)",
+     "typical": "range not harvested (compass wheel); 45 or 225"
+    },
+    {
+     "name": "LightColorItem",
+     "does": "colour of the light",
+     "typical": "white or warm amber"
+    },
+    {
+     "name": "EnableAtmosphere",
+     "does": "adds a tinted ambient fill",
+     "typical": "false unless tinting"
+    },
+    {
+     "name": "Exposure",
+     "does": "overall exposure of the lit result",
+     "typical": "range not harvested"
+    },
+    {
+     "name": "Relief",
+     "does": "height of the texture raised from Channel (Image Texture page)",
+     "typical": "range not harvested; the lowest value for no texture"
+    }
+   ],
+   "demo_settings": {
+    "EnableLightSource": true,
+    "LightType": "Spotlight",
+    "Brightness": 80,
+    "ConeSize": 45,
+    "Edge": 50,
+    "Angle": 45
+   },
+   "enum_labels": {
+    "LightingPageSelected": {
+     "3cc8a351-9703-40dd-a168-9ea2d8955103": "Light Source",
+     "734744e5-7998-4bac-b2d4-1e9134aafcbd": "Atmosphere",
+     "8790292f-414d-4c1d-8ee6-64b3d3770e01": "Image Texture"
+    }
+   },
+   "pairs_with": [
+    "Effects > Camera > Lens Flare (a visible light source)",
+    "Effects > Creative > Vignette",
+    "Effects > Adjust > Tone Curve"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Lighting Effects\", \"LightingEffect EnableLightSource=true,LightType=Spotlight,Brightness=80,ConeSize=45,Edge=50,Angle=45\") (bool spelling true/false not confirmed). Ranges and defaults were not harvested. The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"67e73c4c-de4a-4336-ac29-a1096d7aa93e\").",
+   "scriptable": "partial",
+   "cost": "moderate to heavy; light plus optional relief texture recomputed over the whole bitmap",
+   "equivalents": {},
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'ships with presets' was unverified (no Lighting presets harvested); Angle and Relief typicals flagged as guesses (Relief '0' was not a harvested value); scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/fa0e8b907575.png",
+    "note": "The frame shows the spotlight look the card describes (the plate darkened, one soft-edged oval pool of light on part of the plate), but every demo key was ignored by the script (applied {}, all six dropped), so this is the dialog's stored light, not the card's Spotlight / ConeSize 45 / Angle 45 settings: the look is confirmed, the parameters are untested by script.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Photo Filter",
+   "id": "885f4d34-8686-4cf9-8966-277539412b32",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Photo Filter",
+   "status": "current",
+   "summary": "Simulates a coloured filter on the camera lens: washes the whole bitmap with the chosen filter colour at the set Density, optionally keeping the original brightness (Preserve Luminosity), giving a warm, cool or coloured cast.",
+   "use_for": [
+    "warming or cooling a stock photo to match a layout's palette",
+    "a quick brand-colour cast on background photos",
+    "matching several photos from different sources"
+   ],
+   "avoid": [
+    "the filter colour (ColorItem) is not in the command string and its default was not read, so the colour a script applies is unknown",
+    "the dialog's Density range and defaults were not read by the harvest",
+    "replacing colours outright: use Effects > Camera > Colorize"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "photoFilter"
+   },
+   "look": [
+    "colour cast",
+    "warming filter",
+    "cooling filter",
+    "tint",
+    "colour grade"
+   ],
+   "params": [
+    {
+     "name": "ColorItem",
+     "does": "the filter colour (dialog: Color)",
+     "typical": "warm orange or cool blue"
+    },
+    {
+     "name": "Density",
+     "does": "strength of the colour cast",
+     "typical": "range not harvested; 25-80"
+    },
+    {
+     "name": "PreserveLuminosity",
+     "does": "keeps the image from darkening as the filter is added",
+     "typical": "true"
+    }
+   ],
+   "demo_settings": {
+    "Density": 80,
+    "PreserveLuminosity": true
+   },
+   "pairs_with": [
+    "Effects > Adjust > White Balance (neutralise first)",
+    "Effects > Camera > Colorize",
+    "Effects > Adjust > Vibrance"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Photo Filter\", \"PhotoFilterEffect Density=80,PreserveLuminosity=true\") (bool spelling not confirmed; colour not settable this way). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"885f4d34-8686-4cf9-8966-277539412b32\").",
+   "scriptable": "partial",
+   "cost": "light",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line 1 no longer claims the script uses the colour the dialog last held (never read); scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/004c41900ac1.png",
+    "note": "A strong red-orange cast washes the whole plate (Density 80): walls go terracotta, the blue and green swatches turn murky, the type turns salmon; the filter colour is the dialog's stored one and PreserveLuminosity was ignored (dropped).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Sepia Toning",
+   "id": "990cb426-d0ed-4b90-9f6c-be03150a871e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Sepia Toning",
+   "status": "current",
+   "summary": "Turns the bitmap into a brown-toned monochrome that imitates an old sepia photograph; Amount to age sets how strong and aged the brown tone looks.",
+   "use_for": [
+    "vintage / heritage looks for posters, invitations and anniversary graphics",
+    "unifying old archive photos in a layout",
+    "history or 'then and now' slides"
+   ],
+   "avoid": [
+    "keeping any original colour: the result is monochrome brown",
+    "a custom tint colour: use Effects > Camera > Colorize with a chosen hue",
+    "a full period look with grain and worn edges: use Effects > Camera > Time Machine"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Required/Default Actions.atn#Sepia Toning (layer)"
+   },
+   "look": [
+    "sepia",
+    "vintage",
+    "old photo",
+    "brown tone",
+    "antique",
+    "monochrome"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "dialog: Amount to age; strength of the sepia ageing",
+     "typical": "50 (default); 80-100 strong"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 100
+   },
+   "pairs_with": [
+    "Effects > Camera > Diffuse (soft old-lens look)",
+    "Effects > Noise > Add Noise (film grain)",
+    "Effects > Creative > Vignette"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Sepia Toning\", \"SepiaEffect Amount=100\"). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"990cb426-d0ed-4b90-9f6c-be03150a871e\").",
+   "scriptable": "yes",
+   "cost": "light",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/b38ce499abc6.png",
+    "note": "The plate became a brown-toned monochrome like an old sepia print: every swatch is a shade of brown and the mid-tones, stripes and walls are toned the same.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Spot Filter",
+   "id": "492b364c-2754-46a5-a13e-cb43b79ec83e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Spot Filter",
+   "status": "current",
+   "summary": "Centre-spot focus filter: the middle of the picture stays sharp while the surround is blurred and darkened more and more toward the edges, with a gradual (feathered) transition, like a photographer's centre-spot lens. On the 2026-10 render (Sharpen radius 30, Feathering 100) the centre was untouched, sharpness fell steadily toward the edges (type and hairlines blurred) and the left and right edges came out about 10 levels darker (corners about 12). What Sharpen radius and Light falloff do on their own was not established: the script ignored Light falloff (two values gave the same pixels).",
+   "use_for": [
+    "drawing the eye to a centred subject in a photo",
+    "soft vignette-style portrait treatments"
+   ],
+   "avoid": [
+    "relying on Sharpen radius or Light falloff from a script: only Feathering was shown to change the result; the other two are inferred from their captions",
+    "the harvest could not read ranges or defaults (data source not instantiated until the dialog opens); the sliders tick in steps of 25 / 5, suggesting 0-100, not confirmed",
+    "a guaranteed sharp-centre blur: Photoshop's Iris Blur does that with known controls"
+   ],
+   "confidence": "medium",
+   "look": [
+    "spot focus",
+    "centre spot",
+    "vignette",
+    "soft surround",
+    "light falloff"
+   ],
+   "params": [
+    {
+     "name": "Sharpenraduis",
+     "does": "dialog: Sharpen radius; probably the size of the sharp centre spot (not isolated on a render)",
+     "typical": "range not harvested"
+    },
+    {
+     "name": "Feathering",
+     "does": "strength and reach of the soft, darkened surround: on the renders Feathering 50 left the edges almost untouched (about 1 level), 100 blurred and darkened them clearly (about 11 levels); the gallery's 'dropped' flag for this key is a false alarm (the probe's 200 matched 100, probably clamped)",
+     "typical": "100 for a clearly visible spot; range not harvested (100 and 200 rendered the same)"
+    },
+    {
+     "name": "Lightfalloff",
+     "does": "dialog: Light falloff; probably how much the surround darkens; ignored by the scripted route (70 and 140 gave the same pixels)",
+     "typical": "range not harvested"
+    },
+    {
+     "name": "Preset",
+     "does": "saved Spot Filter settings (none harvested)",
+     "typical": "none"
+    }
+   ],
+   "demo_settings": {
+    "Sharpenraduis": 30,
+    "Feathering": 100,
+    "Lightfalloff": 70
+   },
+   "pairs_with": [
+    "Effects > Creative > Vignette",
+    "Effects > Camera > Lighting Effects"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Spot Filter\", \"SpotFilterEffect Sharpenraduis=30,Feathering=50,Lightfalloff=70\") (ranges unread). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"492b364c-2754-46a5-a13e-cb43b79ec83e\").",
+   "scriptable": "partial",
+   "cost": "light to moderate (not measured)",
+   "equivalents": {},
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped 'new in CorelDRAW 2022' (unsourced and wrong: the newForVersion=24 flag is on the Properties-docker toggle, shared with Tune Blur, and CorelDRAW 2021's DrawUI.xml already has SpotFilterEffectDS); scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/eba239c9a50c.png",
+    "note": "Feathering 100: the centre of the plate stays sharp while sharpness falls steadily toward the edges (type, hairlines and the outer photo blurred) and the left and right edges are about 10 levels darker (corners about 12), a centre-spot vignette; Feathering 50 had changed the edges by only about 1 level, so the key is read although 'dropped' lists it; summary rewritten from the frame.",
+    "rerender": false,
+    "previous": {
+     "verdict": "weak",
+     "frame": "gallery/cdr_effect/eba239c9a50c.png",
+     "note": "Very subtle: the centre of the plate is untouched (diff 0.1-0.2) while the left and right edges are slightly softened (diff about 1.3) and the type blurred, which supports the card's guess of a sharp centre spot with a soft surround, but no darkening shows (Light falloff was ignored, dropped); demo Feathering raised from 50 to 100, the key that moved the result most in the probe (7.0).",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-opened: centre untouched, the left and right edges and the type slightly softened (region diffs 0.1-0.2 centre vs 1.3 edges), no darkening; harness check: Lightfalloff was dropped (varying it changed nothing), so the missing darkening is the script route, not proof the effect has none; Feathering 100 is the strongest probed lever."
+     }
+    }
+   }
+  },
+  {
+   "name": "Time Machine",
+   "id": "5de003a1-28f9-4dba-bd00-aecc39acb1f6",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Camera/Time Machine",
+   "status": "current",
+   "summary": "Restyles the bitmap as a photo from a historical process: Daguerreotype, Albumen, Cyanotype, Platinum, Early Color, Box Camera or Cross Process, each with its own toning, contrast and ageing; Intensity sets the strength and Photo edges adds a worn photographic border.",
+   "use_for": [
+    "period looks for history posts, heritage campaigns and invitations",
+    "cyanotype-blue or cross-processed fashion looks",
+    "fast vintage treatment for social cards"
+   ],
+   "avoid": [
+    "scripting a style: the seven style thumbnails (ImageNode_* keys) carry no harvested values, so a script cannot pick one and gets whatever style the effect holds (not read); defaults were not read either, only Intensity's 0-100 range",
+    "a plain brown tone without borders or grain: Effects > Camera > Sepia Toning is simpler",
+    "Photo edges on a layout that bleeds: it frames the bitmap and shrinks the usable image"
+   ],
+   "confidence": "medium",
+   "look": [
+    "vintage",
+    "old photo",
+    "daguerreotype",
+    "cyanotype",
+    "cross process",
+    "retro",
+    "aged photo border"
+   ],
+   "params": [
+    {
+     "name": "Intensity",
+     "does": "strength of the chosen period style",
+     "typical": "50-100 (range 0-100)"
+    },
+    {
+     "name": "PhotoEdges",
+     "does": "dialog: Photo edges; adds a worn photo border",
+     "typical": "true for a print look"
+    },
+    {
+     "name": "ImageNode_Cyanotype",
+     "does": "Cyanotype thumbnail: blue print look",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "ImageNode_CrossProcess",
+     "does": "Cross Process thumbnail: shifted, high-contrast colours",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "ImageNode_Dagguereotype",
+     "does": "Daguerreotype thumbnail: silvery early monochrome",
+     "typical": "pick in the dialog"
+    }
+   ],
+   "demo_settings": {
+    "Intensity": 100,
+    "PhotoEdges": true
+   },
+   "pairs_with": [
+    "Effects > Noise > Add Noise (extra grain)",
+    "Effects > Creative > Frame",
+    "Effects > Camera > Diffuse"
+   ],
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Time Machine\", \"TimeMachineEffect Intensity=100,PhotoEdges=true\") (style left as the dialog holds it; bool spelling not confirmed). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"5de003a1-28f9-4dba-bd00-aecc39acb1f6\").",
+   "scriptable": "partial",
+   "cost": "light to moderate",
+   "equivalents": {},
+   "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line 1 said ranges were not read: Intensity's 0-100 range is harvested (only defaults were not); no longer claims a script gets 'the dialog's current style'; scripting: the no-op apply tests are Pixelate and Invert, not only Pixelate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/42f3818dc5e3.png",
+    "note": "The photo is aged: colours muted and faded toward olive and brown, and a cream, deckle-edged photo border frames the picture (Photo edges on), the old-print restyling the card describes in the dialog's stored process.",
+    "rerender": false
+   }
+  }
+ ]
+}

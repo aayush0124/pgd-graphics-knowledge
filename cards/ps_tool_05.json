@@ -1,0 +1,442 @@
+{
+ "cards": [
+  {
+   "name": "Rounded Rectangle Tool",
+   "id": "kys/Rounded Rectangle Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "obsolete",
+   "summary": "Legacy tool that drew vector rounded rectangles. Photoshop 27.4 still lists it in the default keyboard-shortcut set (U), but app.currentTool rejects the id the harvest tried, roundedRectangleTool ('functionality may not be available in this version'): rounded corners now come from the Rectangle Tool's corner-radius setting and live corner handles.",
+   "how": "Not available as its own tool in 27.4. Use the Rectangle Tool instead: drag out a shape (Shift for a square, Alt from the centre), then set the corner radius in the options bar or the Properties panel, or drag the round corner widgets inside the shape; Alt-drag one widget to round only that corner.",
+   "shortcut": "U",
+   "scriptable": "no",
+   "script_api": "None for this tool: the harvest has no invoke, and app.currentTool = \"roundedRectangleTool\" throws 'General Photoshop error'. Select the replacement with app.currentTool = \"rectangleTool\" (its own harvested item) and set the radius by hand; a script can also build a rounded-rectangle outline as a path (pathItems.add with curve points) and fill it, which is untested here.",
+   "use_for": [
+    "pill buttons and rounded cards in a UI or web mock-up",
+    "rounded panels behind text on a poster or social post",
+    "badge and label backgrounds"
+   ],
+   "avoid": [
+    "any 27.4 script or recipe that switches to roundedRectangleTool: it errors; use rectangleTool with a corner radius",
+    "old tutorials that expect a separate Radius box on this tool: the radius now lives on the Rectangle Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Rounded Rectangle Tool",
+    "CDR": "Toolbox/Rectangle Tools/Rectangle"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: roundedRectangleTool is the id the harvest tried, not a confirmed id of the tool"
+   }
+  },
+  {
+   "name": "Ruler Tool",
+   "id": "rulerTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Eyedropper Tool group/Ruler Tool",
+   "status": "current",
+   "summary": "Measures the distance and angle between two points you drag on the canvas and shows start X/Y, width, height, angle and length in the options bar and Info panel; nothing is drawn into the image. The measured line also drives the Straighten Layer button and the angle pre-filled in Image > Image Rotation > Arbitrary.",
+   "how": "Pick it from the Eyedropper group (I, Shift+I cycles to it) and drag from one point to the other; Shift constrains to 45-degree steps, dragging an end point adjusts it. Alt-drag from an end point adds a second arm to measure an angle like a protractor. Options bar: Use Measurement Scale, Straighten Layer (rotates the layer so the line becomes level and crops; Alt-click to keep the full canvas), Clear. Draw along a horizon or wall edge, then click Straighten Layer.",
+   "shortcut": "I",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.currentTool = \"rulerTool\" (harvest invoke). The harvest read no options for it and records no call that reads the drawn line or its readout. A script computes the angle itself from two known points (Math.atan2) and levels the content with ArtLayer.rotate(angle) or Document.rotateCanvas(angle) (both in the harvested DOM), then crops.",
+   "use_for": [
+    "straightening a tilted horizon or building in a photo before layout",
+    "checking that a headline or logo sits at an exact angle",
+    "measuring pixel distances between elements for a spacing spec",
+    "measuring an angle in a product shot or technical diagram"
+   ],
+   "avoid": [
+    "drawing a visible line: it is non-printing; use the Line Tool",
+    "straightening many scans at once: script the rotation or use File > Automate > Crop and Straighten Photos"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Measure Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: dropped CDR Parallel Dimension (it draws a printing dimension object, the counterpart of AI's Dimension Tool, not of a non-printing measure like AI's Measure Tool); script_api: 'not exposed to scripts' narrowed to what the harvest shows"
+   }
+  },
+  {
+   "name": "Sampling Brush Tool",
+   "id": "taskspace/Content-Aware Fill/Sampling Brush Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Content-Aware Fill workspace/Sampling Brush Tool",
+   "status": "needs_input",
+   "summary": "Inside the Content-Aware Fill workspace (Edit > Content-Aware Fill, which needs an active selection) it paints the sampling area, the green overlay showing which pixels Photoshop may copy from to fill the selection. Painting adds to the area and Alt-painting removes from it, so the fill stops borrowing the wrong texture such as a person or a sign.",
+   "how": "Select around the object to remove, choose Edit > Content-Aware Fill, press B. Choose Add or Subtract in the options bar (Alt toggles), set the size with [ and ], and paint over the regions the fill should use or exclude while watching the live preview. Combine with the panel's Sampling Area Options (Auto / Rectangular / Custom) and output to a new layer.",
+   "shortcut": "B",
+   "scriptable": "no",
+   "script_api": "None for the brush: it exists only inside the Content-Aware Fill workspace and app.currentTool accepts no id for it (harvest error); there is no invoke. The workspace's result is scriptable without it: with a selection active, executeAction(stringIDToTypeID(\"cafWorkspace\"), new ActionDescriptor(), DialogModes.NO) (Edit/Content-Aware Fill, ps_menu id 1510, live-verified in the harvest) runs the fill without opening the workspace and wrote it to a new layer, using the stored settings instead of a painted sampling area.",
+   "use_for": [
+    "removing a person or sign from a travel photo when the automatic fill copies parts of other objects",
+    "extending a clean background behind a product cut-out",
+    "cleaning a wall or sky where the fill must not sample a nearby subject"
+   ],
+   "avoid": [
+    "unattended or batch work: painting the sampling area needs a person; script the fill with the cafWorkspace event under DialogModes.NO (no painted area) or use the Remove Tool",
+    "large removals with strong structure (buildings, text): rebuild with the Clone Stamp Tool or a generative fill"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api + avoid: the harvest live-verified Edit/Content-Aware Fill as executeAction('cafWorkspace', ..., DialogModes.NO), which fills without the workspace; the card said 1510 only opens the workspace and that the fill event is not harvested"
+   }
+  },
+  {
+   "name": "Sampling Brush Tool",
+   "id": "taskspace/Neural Filters/Sampling Brush Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Neural Filters workspace/Sampling Brush Tool",
+   "status": "needs_input",
+   "summary": "A brush on the Neural Filters workspace's own toolbar (shortcut S there). The harvest only shows that it is in the default shortcut set; which neural filter uses a painted sampling region and exactly what it changes is not confirmed. By analogy with the Content-Aware Fill workspace it may mark the area a filter may sample from.",
+   "how": "Open Filter > Neural Filters on a pixel layer, turn on a filter that shows the tool, press S and paint on the preview; size with [ and ]. Its options were not harvested, so check in the app which filters offer it.",
+   "shortcut": "S",
+   "scriptable": "no",
+   "script_api": "None: workspace-only tool, app.currentTool accepts no id for it and the harvest has no invoke. Neural Filters itself is the harvested event neuralGalleryFilters, which the harvest did not run (it opens its own workspace and needs downloaded or cloud models).",
+   "use_for": [
+    "steering a neural filter to sample from the right part of the photo (unconfirmed which filters use it)"
+   ],
+   "avoid": [
+    "automated pipelines: workspace-only and not scriptable",
+    "planning a retouch around it before checking in the app which filters offer it"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: neuralGalleryFilters was not executed by the harvest, so 'only opens the workspace' was unverified; summary: the analogy guess softened from 'most likely' to 'may'"
+   }
+  },
+  {
+   "name": "Selection Brush Tool",
+   "id": "selectionBrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "hidden",
+   "summary": "A brush tool Photoshop accepts by id but that is not in the default shortcut set and has no toolbar group in the harvest (not in the .kys, name taken from an internal string). Its read-back options (blend Mode, Opacity, brush tip and dynamics, an Overlay of overlayColorMagenta and a Selection Mode value) suggest it paints a selection shown as a magenta overlay, probably the engine behind a workspace selection brush; what it does on the main canvas was not tested.",
+   "how": "Not reachable from the default toolbar; only a script or action selects it. Once selected you paint with a brush tip ([ and ] for size); options read back include Opacity 100, Overlay overlayColorMagenta and Selection Mode 1. Behaviour on the canvas is unverified.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"selectionBrushTool\" (harvest invoke, read back). Painting with it is not available through PathItem.strokePath (ToolType has no such value); for the result, a selection, use Document.selection.select(region) or PathItem.makeSelection().",
+   "use_for": [
+    "nothing in normal design work; listed because scripts can select it",
+    "possibly painting a rough selection region (unverified)"
+   ],
+   "avoid": [
+    "making selections for a design: use the Quick Selection Tool, Object Selection Tool, or Quick Mask with the Brush Tool",
+    "leaving a script on this tool: a person cannot find it on the toolbar"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'in no toolbar' restated as what the harvest records (not_in_kys, no group)"
+   }
+  },
+  {
+   "name": "Selection Brush Tool",
+   "id": "taskspace/Neural Filters/Selection Brush Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Neural Filters workspace/Selection Brush Tool",
+   "status": "needs_input",
+   "summary": "A brush on the Neural Filters workspace's toolbar (shortcut B there) that paints a selection region on the preview, apparently to limit where a neural filter's result is applied; the Selection Removal Brush Tool (E) takes areas out again. Which filters honour the region is not confirmed by the harvest.",
+   "how": "Open Filter > Neural Filters, press B and paint over the area the filter should affect; size with [ and ]. Switch to the Selection Removal Brush (E) to take parts out. Options were not harvested.",
+   "shortcut": "B",
+   "scriptable": "no",
+   "script_api": "None: workspace-only tool, app.currentTool accepts no id for it and the harvest has no invoke. Neural filters themselves are not run by script (the harvest did not execute neuralGalleryFilters); a script can only limit an already filtered layer afterwards with a layer mask built from a selection (Document.selection.select).",
+   "use_for": [
+    "keeping a neural filter's change to one area, e.g. one face or the background (unconfirmed)"
+   ],
+   "avoid": [
+    "automated pipelines: workspace-only and not scriptable",
+    "precise masks: output the filter to a new layer and refine its layer mask with normal selection tools"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed the implication that a script can run the neural filter itself"
+   }
+  },
+  {
+   "name": "Selection Removal Brush Tool",
+   "id": "taskspace/Neural Filters/Selection Removal Brush Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Neural Filters workspace/Selection Removal Brush Tool",
+   "status": "needs_input",
+   "summary": "The subtracting partner of the Neural Filters workspace's Selection Brush: painting with it (shortcut E there) removes areas from the painted selection region, apparently so a neural filter skips them. Which filters use the region is not confirmed by the harvest.",
+   "how": "In the Neural Filters workspace press E and paint over parts of the region that should be left alone; size with [ and ]; switch back to the Selection Brush (B) to add. Options were not harvested.",
+   "shortcut": "E",
+   "scriptable": "no",
+   "script_api": "None: workspace-only tool, app.currentTool accepts no id for it and the harvest has no invoke. The scriptable route is a layer mask on the filtered layer edited from a selection.",
+   "use_for": [
+    "excluding eyes, text or a second person from a neural filter's effect (unconfirmed)"
+   ],
+   "avoid": [
+    "automated pipelines: workspace-only and not scriptable",
+    "fine exclusions: output to a new layer and paint its layer mask instead"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Sharpen Tool",
+   "id": "sharpenTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Blur Tool group/Sharpen Tool",
+   "status": "current",
+   "summary": "Brushes local sharpening onto pixels: each pass raises contrast along edges under the brush, crisping eyes, jewellery or product detail without sharpening the whole photo. Strokes build up, and overdone, it gives grainy halos and noise.",
+   "how": "Pick it from the Blur Tool group (no default shortcut), use a soft brush and a low Strength (about 10-30%), then paint over the details; repeated strokes add more. Options bar: Mode (Normal, Darken, Lighten, Hue, Saturation, Color, Luminosity), Strength (read back under the key flow, 50), Sample All Layers so you can work on an empty layer above, and Protect Detail to limit artefacts (read back on, most likely the key detailBoost). Shift-click paints a straight stroke between points.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select with app.currentTool = \"sharpenTool\" (harvest invoke). To paint, build a path over the area and call PathItem.strokePath(ToolType.SHARPEN), which strokes with the current Sharpen settings (strokePath and ToolType.SHARPEN are in the harvested DOM). Whole-layer sharpening is simpler with the Unsharp Mask or Smart Sharpen filter.",
+   "use_for": [
+    "crisping eyes and lashes in a portrait for a poster",
+    "bringing out texture on jewellery, watches or food in a product shot",
+    "sharpening only the hero subject after the background was blurred"
+   ],
+   "avoid": [
+    "sharpening a whole image: use Filter/Sharpen/Smart Sharpen or Unsharp Mask on a smart object for a controlled, reversible result",
+    "noisy or heavily compressed JPEG areas: it amplifies grain and blocks",
+    "painting straight on the photo layer: use an empty layer with Sample All Layers so it can be undone"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Sharpen/Sharpen"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: Protect Detail 'on by default' -> read back on (the harvest reads last-used values, not defaults); summary grammar"
+   }
+  },
+  {
+   "name": "Single Column Marquee Tool",
+   "id": "marqueeSingleColumnTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "current",
+   "summary": "One click selects a column exactly 1 pixel wide running the full height of the canvas at the click position. Fill it for a hairline vertical rule, or transform it sideways to stretch that pixel column into streaks (the pixel-stretch look).",
+   "how": "Pick it from the Marquee group (no default shortcut), click where the column should be and drag before releasing to place it. Shift-click adds more columns, Alt-click subtracts; keep Feather at 0. Then fill it (Edit > Fill, Alt+Backspace for the foreground colour) or press Ctrl+T and drag sideways to stretch the column.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select with app.currentTool = \"marqueeSingleColumnTool\" (harvest invoke). The same selection is made exactly by Document.selection.select([[x,0],[x+1,0],[x+1,h],[x,h]]) with h = the document height in pixels, followed by selection.fill(color) or a transform.",
+   "use_for": [
+    "1-pixel vertical dividers in a web or UI mock-up",
+    "pixel-stretch light streaks: stretch one column of a photo across the canvas",
+    "selecting and repairing a single bad column of pixels in a scan"
+   ],
+   "avoid": [
+    "lines that must stay crisp when resized: use the Line Tool or a shape layer",
+    "print work at high resolution, where 1 pixel is barely visible: draw a shape of the needed width",
+    "lines shorter than the canvas: use the Rectangular Marquee with a fixed 1-px width"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Single Row Marquee Tool",
+   "id": "marqueeSingleRowTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": null,
+   "status": "current",
+   "summary": "One click selects a row exactly 1 pixel tall running the full width of the canvas at the click position. Fill it for a hairline horizontal rule, or transform it vertically to stretch that pixel row into streaks.",
+   "how": "Pick it from the Marquee group (no default shortcut), click where the row should be and drag before releasing to place it. Shift-click adds more rows, Alt-click subtracts; keep Feather at 0. Then fill it (Edit > Fill, Alt+Backspace for the foreground colour) or press Ctrl+T and drag up or down to stretch the row.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select with app.currentTool = \"marqueeSingleRowTool\" (harvest invoke). The same selection is made exactly by Document.selection.select([[0,y],[w,y],[w,y+1],[0,y+1]]) with w = the document width in pixels, followed by selection.fill(color) or a transform.",
+   "use_for": [
+    "1-pixel horizontal rules and dividers in a web or UI mock-up",
+    "scan-line or pixel-stretch backgrounds made from one row of a photo",
+    "selecting and repairing a single bad row of pixels in a scan"
+   ],
+   "avoid": [
+    "lines that must stay crisp when resized: use the Line Tool or a shape layer",
+    "print work at high resolution, where 1 pixel is barely visible: draw a shape of the needed height",
+    "lines shorter than the canvas: use the Rectangular Marquee with a fixed 1-px height"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Slice Select Tool",
+   "id": "sliceSelectTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Crop Tool group/Slice Select Tool",
+   "status": "current",
+   "summary": "Selects, moves and resizes the slices drawn with the Slice Tool and opens Slice Options (double-click) to set each slice's name, URL, target and alt text for File > Export > Save for Web. From its options bar auto slices can be promoted to user slices, divided into equal parts or restacked.",
+   "how": "Shift+C cycles to it in the Crop group (Ctrl toggles it while the Slice Tool is active). Click a slice to select it, Shift-click to add more, drag inside to move, drag handles to resize. Options bar: stacking order, Promote, Divide (equal rows or columns), align and distribute, Hide Auto Slices, Slice Options. Double-click a slice for its dialog.",
+   "shortcut": "C",
+   "scriptable": "no",
+   "script_api": "Activation only: app.currentTool = \"sliceSelectTool\" (harvest invoke). The harvested DOM has no slice class and no harvested event selects, moves or names a slice.",
+   "use_for": [
+    "naming and linking the slices of a web banner or HTML email",
+    "dividing one slice into a grid of equal tiles for export",
+    "adjusting slice edges to the exact pixel"
+   ],
+   "avoid": [
+    "exporting artboards or layers as separate files: use File > Export > Export As or Layers to Files",
+    "responsive web work: slices export fixed-size images for table layouts"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Slice Select Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the 27.4 menu is File/Export/Save for Web (harvest title 'Save for Web...'), not '(Legacy)'; script_api: 'cannot' narrowed to what the harvest covers"
+   }
+  },
+  {
+   "name": "Slice Tool",
+   "id": "sliceTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Crop Tool group/Slice Tool",
+   "status": "current",
+   "summary": "Drag to draw rectangular user slices that divide the canvas into separate images for File > Export > Save for Web; Photoshop fills the remaining area with auto slices. Each slice exports as its own image file, optionally with an HTML table.",
+   "how": "Shift+C cycles to it in the Crop group. Drag a rectangle (Shift for a square, Alt from the centre); the options bar Style is Normal, Fixed Aspect Ratio or Fixed Size, and Slices From Guides builds slices along existing guides. Layer > New Layer Based Slice makes a slice that follows a layer's bounds. Export with File > Export > Save for Web, choosing all user slices or the selected ones.",
+   "shortcut": "C",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"sliceTool\" (harvest invoke). Drawn user slices are not in the harvested DOM. Layer/New Layer Based Slice is scriptable: app.runMenuItem(stringIDToTypeID(\"sliceFromLayer\")) (ps_menu id 5217, live-verified in the harvest: it added a 'New Slice From Layer' history state), which slices the active layer's bounds.",
+   "use_for": [
+    "cutting a web banner or HTML email into linked image tiles",
+    "exporting several icons or buttons from one mock-up in one pass",
+    "splitting a long graphic into fixed-size pieces"
+   ],
+   "avoid": [
+    "exporting artboards, layers or assets: Export As, Layers to Files or Generate Image Assets are simpler",
+    "modern responsive pages: build them in HTML/CSS and export the assets instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Slice Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: replaced the untested UXP performMenuCommand(5217) guess with the harvest's live-verified runMenuItem(stringIDToTypeID('sliceFromLayer')); summary/how: Save for Web (Legacy) -> Save for Web, the 27.4 menu title"
+   }
+  },
+  {
+   "name": "Smudge Tool",
+   "id": "smudgeTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Blur Tool group/Smudge Tool",
+   "status": "current",
+   "summary": "Pushes pixels along the brush stroke like a finger dragged through wet paint: colour from where the stroke starts is smeared into the area it passes, blending and softening edges. With Finger Painting on, each stroke starts with the foreground colour instead.",
+   "how": "Pick it from the Blur Tool group (no default shortcut), choose a brush and Strength (about 20-50% to blend, higher for long smears) and drag in the direction the pixels should travel. Options: Mode, Strength, Sample All Layers (smudge on an empty layer above) and Finger Painting. A small textured brush and pen pressure give fine tapering hair or fur strands.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select with app.currentTool = \"smudgeTool\" (harvest invoke). To paint, build a path along the smear direction and call PathItem.strokePath(ToolType.SMUDGE), which strokes with the current Smudge settings (both are in the harvested DOM).",
+   "use_for": [
+    "drawing fine hair or fur strands out from a cut-out edge",
+    "blending colours in a digital painting or painted background",
+    "softening hard paint edges in a matte painting",
+    "small shape fixes such as nudging a stray edge"
+   ],
+   "avoid": [
+    "reshaping larger areas: Filter/Liquify (Forward Warp) is faster and smoother",
+    "photo retouching that must keep texture: smudging smears grain into flat mush; use the Healing Brush or Clone Stamp",
+    "big brushes on large files: it is slow"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Warp Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Smudge"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Sponge Tool",
+   "id": "saturationTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Dodge Tool group/Sponge Tool",
+   "status": "current",
+   "summary": "Brushes saturation up or down locally: in Desaturate mode (the harvest's read-back value) colours under the brush fade toward grey, in Saturate mode they grow more intense. The Vibrance option limits clipping by holding back colours that are already saturated.",
+   "how": "O, with Shift+O cycling Dodge, Burn and Sponge. Set Mode (Saturate or Desaturate), a low Flow (10-30%) to build up gradually, and Vibrance, then paint. It changes the active layer's pixels directly, so work on a duplicate or use a masked Hue/Saturation adjustment layer for a reversible version.",
+   "shortcut": "O",
+   "scriptable": "yes",
+   "script_api": "Select with app.currentTool = \"saturationTool\" (harvest invoke). To paint, build a path over the area and call PathItem.strokePath(ToolType.SPONGE), which strokes with the current Sponge settings (both are in the harvested DOM).",
+   "use_for": [
+    "muting a distracting bright object in a product or event photo",
+    "boosting the colour of a product or sky locally",
+    "desaturating the background so the subject stands out"
+   ],
+   "avoid": [
+    "global saturation changes: use a Hue/Saturation or Vibrance adjustment layer",
+    "skin: saturating pushes it orange and blotchy; use a masked adjustment layer",
+    "work that must stay editable: it is destructive"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Saturate...",
+    "CDR": "Effects/Adjust/Hue/Saturation/Lightness"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: Desaturate is the read-back (last-used) value, not a confirmed default"
+   }
+  },
+  {
+   "name": "Spot Healing Brush Tool",
+   "id": "spotHealingBrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Spot Healing Brush Tool group/Spot Healing Brush Tool",
+   "status": "current",
+   "summary": "Paint over a small blemish, dust spot or stray hair and Photoshop replaces it with texture sampled automatically from around the stroke, blending light and colour into the surroundings, with no source point to set. The Type option chooses Content-Aware, Create Texture or Proximity Match.",
+   "how": "J (Shift+J cycles the healing group). Use a brush a little larger than the flaw and click or short-drag over it. Options: Mode, Type (Content-Aware / Create Texture / Proximity Match), Sample All Layers so you can heal on an empty layer above. The read-back also carries Diffusion (key healSmoothFactor, 5): lower keeps grain and fine detail, higher gives smoother blends.",
+   "shortcut": "J",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"spotHealingBrushTool\" (harvest invoke). The harvested ToolType enum has no spot-healing value, so PathItem.strokePath cannot use it, and strokePath(ToolType.HEALINGBRUSH) needs a source point set by hand. The scriptable route to the same result: select the spot (Document.selection.select) and run executeAction(stringIDToTypeID(\"cafWorkspace\"), new ActionDescriptor(), DialogModes.NO) (Edit/Content-Aware Fill, live-verified in the ps_menu harvest; it wrote the fill to a new layer).",
+   "use_for": [
+    "removing skin blemishes and dust spots from portraits",
+    "cleaning sensor dust and specks from product or sky photos",
+    "erasing thin wires, cracks or stray hairs"
+   ],
+   "avoid": [
+    "spots next to edges or contrasting objects: it can pull in the wrong texture; use the Clone Stamp Tool or Healing Brush Tool with a chosen source",
+    "large objects or people: use the Remove Tool or Edit > Content-Aware Fill",
+    "healing straight on the original layer: use an empty layer with Sample All Layers"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the card called the content-aware fill route 'not in this harvest'; the harvest has Edit/Content-Aware Fill live-verified as the cafWorkspace event under DialogModes.NO, now cited; how: Diffusion stated as a read-back key, not as a confirmed options-bar control"
+   }
+  }
+ ]
+}

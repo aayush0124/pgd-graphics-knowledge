@@ -1,0 +1,251 @@
+{
+ "cards": [
+  {
+   "name": "Reflect Tool",
+   "id": "Adobe Reflect Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rotate Tool",
+   "status": "current",
+   "summary": "Mirrors the selected objects across an axis you set by clicking: the result is a flipped (or flipped copy of the) artwork, left-right, top-bottom or across any angle.",
+   "how": "Select the objects, press O. The axis passes through the selection centre by default; click once to set a point on the axis, then click a second point (or drag) to set the axis direction and flip. Object > Transform > Reflect... or double-clicking the tool opens the Reflect dialog (Axis: Horizontal / Vertical / Angle, Transform Objects / Transform Patterns, Copy, Preview); Copy leaves the original and reflects a duplicate. Modifier keys (standard Illustrator behaviour, not in the harvest): Shift constrains the drag, Alt as you release transforms a copy, Alt-click sets the reference point and opens the dialog. In the Default toolbar it shares a flyout with the Rotate Tool.",
+   "shortcut": "O",
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke: the live check (app.selectTool(\"Adobe Reflect Tool\"), then app.getSelectedToolName()) raised PARM, so activating the tool by script is unconfirmed. The flip itself is plain DOM: item.transform(app.getScaleMatrix(-100, 100), true, true, true, true, 100, Transformation.CENTER) mirrors left-right (getScaleMatrix(100, -100) top-bottom); changeLineWidths is a percentage, so 100 keeps stroke weights. For an angled axis concatenate rotation and scale matrices (app.concatenateRotationMatrix / concatenateScaleMatrix). For a mirrored copy, duplicate first with item.duplicate(item, ElementPlacement.PLACEBEFORE) (the harvested signature lists relativeObject and insertionLocation as required) and transform the duplicate. app.executeMenuCommand(\"transformreflect\") only opens the modal Object/Transform/Reflect... dialog.",
+   "use_for": [
+    "drawing one half of a symmetric logo, icon or emblem and reflecting a copy for the other half",
+    "flipping an arrow, hand or vehicle illustration to face the other way in a layout",
+    "making a mirrored copy for a floor reflection under a product shot (then fade it with an opacity mask)"
+   ],
+   "avoid": [
+    "symmetric drawing you will keep editing: Object > Repeat > Mirror keeps both halves live",
+    "a quick left-right flip of one object: the Flip buttons in the Properties panel are faster",
+    "type meant to be read: reflected text reads backwards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Flip Horizontal",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: script_api called item.duplicate() with no arguments, but the harvested PageItem.duplicate marks relativeObject and insertionLocation as required; now passes both | earlier pass: script_api: transform() passed changeLineWidths = 1, which the harvest defines as a percentage (default 100), so strokes would shrink to 1%; now 100. PARM attributed to the selectTool + getSelectedToolName check as the batch states, not to selectTool alone. how: dropped the 45-degree step (not in the batch), flagged the Shift/Alt keys as not harvested, and named the harvested Object > Transform > Reflect... route to the dialog"
+   }
+  },
+  {
+   "name": "Rotate Tool",
+   "id": "Adobe Rotate Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Rotate Tool",
+   "status": "current",
+   "summary": "Rotates the selected objects around a reference point you can place anywhere (by default the selection centre); used for exact angles and for rotated copies around a shared centre.",
+   "how": "Select the objects, press R. Click to move the reference point (crosshair) if you do not want the centre, then drag in an arc away from it. Object > Transform > Rotate... or double-clicking the tool opens the Rotate dialog (Angle, Transform Objects / Transform Patterns, Copy, Preview). Modifier keys (standard Illustrator behaviour, not in the harvest): Shift constrains the drag, Alt as you release transforms a copy, Alt-click sets the reference point and opens the dialog. Classic radial repeat: rotate a copy around the shared centre by a full turn divided by the number of items, then repeat Object > Transform > Transform Again (Ctrl+D) until the ring is complete.",
+   "shortcut": "R",
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke: the live check (app.selectTool(\"Adobe Rotate Tool\"), then app.getSelectedToolName()) raised PARM, so activating the tool by script is unconfirmed. Rotation is plain DOM: item.rotate(angle, changePositions, changeFillPatterns, changeFillGradients, changeStrokePattern, rotateAbout) with rotateAbout a Transformation value (CENTER, TOPLEFT ... DOCUMENTORIGIN); positive angles turn counter-clockwise. For a pivot at an arbitrary point build a matrix from app.getTranslationMatrix, app.concatenateRotationMatrix and app.concatenateTranslationMatrix and apply it with item.transform(matrix, true, true, true, true, 100, Transformation.DOCUMENTORIGIN); with the default transformAbout (CENTER) the matrix is applied about the object's centre, so the pivot lands in the wrong place (check on a test object). Menu commands transformrotate (modal dialog) and transformagain are in the harvest.",
+   "use_for": [
+    "petals, sun rays, clock ticks or gear teeth repeated around one centre",
+    "tilting a badge, sticker or headline block to an exact angle",
+    "rotating several objects around a shared pivot such as a hinge point"
+   ],
+   "avoid": [
+    "a live, editable ring of copies: Object > Repeat > Radial stays editable",
+    "spinning one object around its own centre by eye: the bounding-box corner handle is quicker",
+    "turning the view to draw comfortably: use the Rotate View Tool, which leaves the artwork alone"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Rotate",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: none | earlier pass: how: dropped the 45-degree step and the 360/n and n-2 figures (not in the batch), flagged the Shift/Alt keys as not harvested, dialog via the harvested Object > Transform > Rotate...; Ctrl+D checked against the harvest (transformagain). script_api: PARM attributed to the selectTool + getSelectedToolName check; the arbitrary-pivot transform now passes changeLineWidths 100 (a percentage) and Transformation.DOCUMENTORIGIN, since the default CENTER re-centres the pivot"
+   }
+  },
+  {
+   "name": "Reshape Tool",
+   "id": "Adobe Reshape Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scale Tool",
+   "status": "current",
+   "summary": "Pulls a selected path smoothly from one or more focal points: dragging a point on the path bends the nearby segments while the rest of the path keeps its detail, e.g. a straight line becomes a gentle arc in one drag. Exact falloff behaviour is from general knowledge, not checked live.",
+   "how": "Select the path (or the anchor points to affect) with a selection tool, then choose the Reshape Tool from the Scale Tool flyout. Click an anchor or a segment to make it the focal point (clicking a segment adds a point, shown with a square); Shift-click more points or segments to add focal points (the Shift key is standard behaviour, not in the harvest). Drag a focal point: the selected part of the path stretches and follows smoothly instead of moving one point alone. No default shortcut.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Reshape Tool\") (harvest invoke, read back live). The proportional drag has no DOM call; a script edits the geometry directly instead: read pathItem.pathPoints and set each PathPoint's anchor, leftDirection and rightDirection, or rebuild the path with pathItem.setEntirePath([[x, y], ...]).",
+   "use_for": [
+    "bending a straight rule, ribbon edge or banner baseline into a soft arc",
+    "gently pulling one region of a detailed hand-lettered or traced outline without moving every point",
+    "adjusting the curve of a wave or swoosh in a logo while keeping its bumps"
+   ],
+   "avoid": [
+    "precise node work: use the Direct Selection Tool or the Anchor Point Tool",
+    "drawing a new smooth curve: the Curvature Tool gives cleaner points",
+    "large organic distortions: Puppet Warp, the Warp Tool or Object > Envelope Distort"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: none | earlier pass: how: flagged the Shift-click key as not in the harvest; invoke, path, flyout and the setEntirePath / PathPoint members checked against the batch and harvest"
+   }
+  },
+  {
+   "name": "Scale Tool",
+   "id": "Adobe Scale Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scale Tool",
+   "status": "current",
+   "summary": "Enlarges or shrinks the selected objects relative to a reference point you place (by default the selection centre), uniformly or with different horizontal and vertical percentages.",
+   "how": "Select the objects, press S. Click to move the reference point (e.g. onto a baseline or a corner that must stay put), then drag away from it to enlarge or toward it to shrink. Object > Transform > Scale... or double-clicking the tool opens the Scale dialog: Uniform %, Non-Uniform Horizontal / Vertical, Scale Corners, Scale Strokes & Effects, Transform Objects / Transform Patterns, Copy. Modifier keys (standard Illustrator behaviour, not in the harvest): Shift keeps proportions on a diagonal drag or limits a straight drag to one direction, Alt as you release transforms a copy, Alt-click sets the reference point and opens the dialog.",
+   "shortcut": "S",
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke: the live check (app.selectTool(\"Adobe Scale Tool\"), then app.getSelectedToolName()) raised PARM, so activating the tool by script is unconfirmed. Scaling is plain DOM: item.resize(scaleX, scaleY, changePositions, changeFillPatterns, changeFillGradients, changeStrokePattern, changeLineWidths, scaleAbout) with percentages, changeLineWidths as a percentage for stroke weight and scaleAbout a Transformation value; or item.transform(app.getScaleMatrix(sx, sy), ...). Menu command transformscale opens the modal dialog.",
+   "use_for": [
+    "concentric rings or target shapes: scale a copy by a fixed % and repeat with Transform Again",
+    "resizing a logo lock-up while its baseline or one corner stays fixed",
+    "scaling pattern fills inside shapes without resizing the shapes (Transform Patterns only)"
+   ],
+   "avoid": [
+    "when strokes and effects must keep their proportions: turn on Scale Strokes & Effects or line weights stay the same",
+    "rounded-corner shapes with Scale Corners off: the corner radius stays fixed and looks wrong",
+    "typing an exact final size: the W / H fields in the Transform or Properties panel are more direct"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Scale",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: none | earlier pass: how: flagged the Shift/Alt keys as not harvested and named the harvested Object > Transform > Scale... route to the dialog; script_api: PARM attributed to the selectTool + getSelectedToolName check as the batch states"
+   }
+  },
+  {
+   "name": "Shear Tool",
+   "id": "Adobe Shear Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scale Tool",
+   "status": "current",
+   "summary": "Slants (skews) the selected objects along a horizontal, vertical or angled axis through a reference point, turning rectangles into parallelograms.",
+   "how": "Select the objects and pick the Shear Tool from the Scale Tool flyout (no default shortcut). Click to move the reference point if needed, then drag sideways or up and down to slant. Object > Transform > Shear... or double-clicking the tool opens the Shear dialog: Shear Angle, Axis Horizontal / Vertical / Angle, Transform Objects / Transform Patterns, Copy, Preview. Modifier keys (standard Illustrator behaviour, not in the harvest): Shift constrains the drag, Alt as you release transforms a copy, Alt-click sets the reference point and opens the dialog.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke: the live check (app.selectTool(\"Adobe Shear Tool\"), then app.getSelectedToolName()) raised PARM, so activating the tool by script is unconfirmed. A script shears with a matrix: m = app.getIdentityMatrix(); set m.mValueC (horizontal shear) or m.mValueB (vertical shear) to Math.tan(angle in radians); item.transform(m, true, true, true, true, 100, Transformation.CENTER) (changeLineWidths is a percentage; 100 keeps stroke weights). Check the sign on a test object, because Illustrator's y axis points up. Menu command transformshear opens the modal dialog.",
+   "use_for": [
+    "isometric illustration: scale vertically, shear and rotate faces of a box or building",
+    "cast shadows: shear a dark copy of a silhouette onto the ground plane",
+    "slanted sale banners, racing stripes and speed-style headline panels"
+   ],
+   "avoid": [
+    "real perspective with converging lines: use the Perspective Grid or Free Distort",
+    "faking italic type: a true italic or oblique font keeps letter shapes right",
+    "line art whose stroke widths must slant with the shape (isometric outlines): the stroke is redrawn at a uniform width along the sheared path instead of shearing with it; run Object > Path > Outline Stroke first if the stroke itself must shear"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Skew",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: avoid said sheared strokes 'look uneven', which is backwards: a stroke stays uniform along the sheared path and does not shear with it; now says so and names the harvested Object > Path > Outline Stroke | earlier pass: script_api: transform() passed changeLineWidths = 1, which the harvest defines as a percentage (default 100), so strokes would shrink to 1%; now 100; PARM attributed to the selectTool + getSelectedToolName check. how: flagged the Shift/Alt keys as not harvested, dialog via the harvested Object > Transform > Shear..."
+   }
+  },
+  {
+   "name": "Hand Tool",
+   "id": "Adobe Scroll Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scroll Tool",
+   "status": "current",
+   "summary": "Pans the document window by dragging; it only moves the view and never changes the artwork.",
+   "how": "Press H, then drag in the window to slide the view. Holding Space in most other tools gives a temporary Hand (standard Adobe behaviour; the harvest records only H). Double-clicking the Hand Tool fits the artboard in the window (standard behaviour, not probed; same result as View > Fit Artboard in Window, Ctrl+0). In the Default toolbar it shares a flyout with the Rotate View Tool and the Print Tiling Tool.",
+   "shortcut": "H",
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke: the live check (app.selectTool(\"Adobe Scroll Tool\"), then app.getSelectedToolName()) raised PARM, so activating the tool by script is unconfirmed. A script pans directly: app.activeDocument.activeView.centerPoint = [x, y] (View class: bounds, centerPoint, zoom); app.executeMenuCommand(\"fitin\") or (\"fitall\") frames the artboard or all artboards (both ids are paired by shortcut in the harvest, not confirmed by execution). View changes never alter the artwork or exports, so a pipeline needs this only before a screen capture.",
+   "use_for": [
+    "moving around a large poster or packaging dieline while zoomed in",
+    "checking details across an artboard during manual retouching of vector work",
+    "framing the view before a screenshot for a review"
+   ],
+   "avoid": [
+    "in an automated build: it changes nothing in the artwork; set the view by script only for screen captures",
+    "while editing text: Space types a space instead of switching to the Hand"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "handTool",
+    "CDR": "Toolbox/Zoom Tools/Pan"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: flagged the double-click fit as not probed, and noted that the harvest marks the fitin / fitall ids as inferred, not confirmed by execution | earlier pass: script_api/avoid: 'never affects saved files' was unsupported (a saved .ai can keep its view); now 'never alters the artwork or exports'; PARM attributed to the selectTool + getSelectedToolName check; how: flagged the Space key as not harvested, added the harvested Ctrl+0 for Fit Artboard in Window"
+   }
+  },
+  {
+   "name": "Print Tiling Tool",
+   "id": "Adobe Page Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scroll Tool",
+   "status": "current",
+   "summary": "Moves the printable-page grid over the artboard so you choose which part of the artwork lands on each printed sheet; it changes only print placement, not the artwork. The harvest paired this name with the id by dialog order only, and the tool was not probed live, so details are from general knowledge.",
+   "how": "Turn on View > Show Print Tiling to see the page and imageable-area outlines. Choose the Print Tiling Tool from the Hand Tool flyout and click or drag in the window to move the page grid to where the printed page should start. Tiling across several sheets is chosen in File > Print (Ctrl+P) with the Tile Full Pages / Tile Imageable Areas options. Double-clicking the tool resets the grid to its default position (general knowledge, not probed). No default shortcut.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "The tool was not probed (the selectTool probe crashed earlier), so there is no harvested invoke. Print placement and tiling are scriptable through print options: var co = new PrintCoordinateOptions(); co.tiling = PrintTiling.TILEFULLPAGES (or TILEIMAGEABLEAREAS, or TILESINGLEFULLPAGE, the default); co.position = PrintPosition.TRANSLATECENTER or another of its nine fixed anchors, so the free drag of the page origin that the tool does has no exact script counterpart; fitToPage, horizontalScale and verticalScale (1-10000 %) sit on the same object; then var opts = new PrintOptions(); opts.coordinateOptions = co; app.activeDocument.print(opts) sends the job. Document.printTiles and Document.tileFullPages are harvested as read-only flags. View/Show Print Tiling has no harvested invoke; an ai_menu command \"pagetiling\" is harvested without a menu path and is unverified.",
+   "use_for": [
+    "proofing an oversized poster or banner on a desktop printer, split across several sheets",
+    "choosing which area of a large artboard prints on a single office page",
+    "checking where page breaks fall before tiling a large print"
+   ],
+   "avoid": [
+    "print-shop output: export a PDF with bleed and marks instead of tiling",
+    "an artboard that already fits the paper: tiling is not needed",
+    "automated pipelines: set PrintCoordinateOptions in a script rather than relying on the tool's on-screen placement"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: script_api now builds a PrintCoordinateOptions object and assigns it to PrintOptions.coordinateOptions instead of implying a ready-made member; added that position is one of the nine harvested PrintPosition anchors, so the tool's free placement has no exact script equivalent, and the harvested 1-10000 % scale range | earlier pass: how: the File > Print dialog has no harvested 'Tiling:' field label, now just names the harvested tile modes and Ctrl+P; double-click reset flagged as not probed. script_api: Document.printTiles / tileFullPages are read-only in the harvest, now said so; PrintTiling values checked (TILESINGLEFULLPAGE / TILEFULLPAGES / TILEIMAGEABLEAREAS)"
+   }
+  },
+  {
+   "name": "Rotate View Tool",
+   "id": "Adobe Rotate Canvas Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Scroll Tool",
+   "status": "current",
+   "summary": "Rotates the on-screen view of the canvas, like turning a sheet of paper on a desk, so you can draw at a comfortable angle; the artwork and its export are not rotated.",
+   "how": "Press Shift+H (or pick it from the Hand Tool flyout) and drag in the window to turn the view around its centre; Shift while dragging snaps the angle to fixed steps (standard behaviour, not in the harvest). View > Rotate View offers preset angles, View > Rotate View To Selection lines the view up with a selected rotated object, and View > Reset Rotate View (Shift+Ctrl+1) returns to 0.",
+   "shortcut": "Shift+H",
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Rotate Canvas Tool\") (harvest invoke, read back live) selects the tool. A script sets the angle directly with app.activeDocument.activeView.rotateAngle (View class), or runs harvested menu commands (ids paired by the menu walk, not confirmed by execution): app.executeMenuCommand(\"RotateView90\"), (\"RotateViewNegative30\") and the other RotateView presets, (\"rotateViewToSelection\"), (\"resetRotationView\"). Exports are unaffected.",
+   "use_for": [
+    "lettering and inking with a pen tablet at a natural hand angle",
+    "editing a rotated element (tilted badge, angled label) as if it were straight, via Rotate View To Selection",
+    "checking a composition from an unusual angle"
+   ],
+   "avoid": [
+    "rotating the artwork itself: use the Rotate Tool or item.rotate()",
+    "screen captures and review screenshots: reset the view first (resetRotationView) or they come out tilted"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "rotateTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "this pass: noted that the harvest marks the RotateView*, rotateViewToSelection and resetRotationView ids as inferred, not confirmed by execution | earlier pass: how: dropped the 15-degree snap step (not in the batch) and flagged the Shift snap as not harvested; added the harvested Shift+Ctrl+1 for Reset Rotate View. rotateAngle, RotateView* and resetRotationView checked against the harvest"
+   }
+  }
+ ]
+}

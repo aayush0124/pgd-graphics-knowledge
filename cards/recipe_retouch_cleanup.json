@@ -1,0 +1,1014 @@
+{
+ "cards": [
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Noise reduction that keeps detail",
+   "id": "recipe:retouch_cleanup:denoise",
+   "app": "multi",
+   "status": "current",
+   "summary": "Cleans luminance grain and coloured blotches from a high-ISO or phone photo while keeping edges, then restores a touch of crispness.",
+   "use_for": [
+    "low-light event and concert photos",
+    "phone photos and video frame grabs",
+    "photos that will be enlarged or printed",
+    "before a heavy grade that would amplify noise"
+   ],
+   "avoid": [
+    "pushing it until skin and walls look waxy: stop when the noise is just less visible",
+    "RAW files: denoise in Camera Raw or with AI Denoise first (both have no script route here), they beat any filter on a rendered photo",
+    "CorelDRAW Remove Noise: weak in the render test (barely visible change); this recipe uses Median and Smart Blur there instead",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "denoise",
+       "settings": {
+        "colorNoise": 45,
+        "sharpen": 10,
+        "removeJPEGArtifact": false
+       },
+       "note": "Filter > Noise > Reduce Noise for the coloured blotches (Reduce Color Noise 45 %). Untested: the noise-free test plate gave it nothing to clean (verdict not_rendered), so this step caps the recipe at medium; Strength / Preserve Details travel in the channelDenoise object, which a plan cannot carry."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "surfaceBlur",
+       "settings": {
+        "Radius": 3,
+        "Threshold": 10
+       },
+       "note": "Filter > Blur > Surface Blur, small: averages only similar neighbours, so grain melts while edges stay (the render at 40 / 40 airbrushed flat areas; 3 / 10 is a light clean-up). Mask it off fine texture you want to keep."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "smartSharpen",
+       "settings": {
+        "Use Legacy": false,
+        "Amount": 60,
+        "Radius": 0.8,
+        "Remove": "lensBlur"
+       },
+       "note": "Filter > Sharpen > Smart Sharpen, gentle (Amount 60, Radius 0.8, Lens Blur) to restore the edge crispness lost to the clean-up."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "5699e589-2506-4e4c-94d6-80e434816678",
+       "settings": {
+        "Radius": 1
+       },
+       "note": "Effects > Noise > Median at its smallest radius: specks vanish, edges stay fairly crisp (large radii turn the image to blobs, as the render showed)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "44e9edef-d6a9-4b93-9838-d41889c4f149",
+       "settings": {
+        "Detail": 35
+       },
+       "note": "Effects > Blur > Smart Blur (dialog label Amount, key Detail): smooths low-contrast grain, keeps strong edges (render at 100 airbrushed the wood)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 60,
+        "Radius": 1,
+        "Threshold": 4
+       },
+       "note": "Effects > Sharpen > Unsharp Mask, gentle, so edges read crisp again."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "For the best result on RAW or heavy noise: Filter > AI Denoise or Filter > Camera Raw Filter > Denoise by hand (no script route harvested)."
+   ],
+   "built_from": [
+    "2980",
+    "denoise",
+    "surfaceBlur",
+    "smartSharpen",
+    "5699e589-2506-4e4c-94d6-80e434816678",
+    "44e9edef-d6a9-4b93-9838-d41889c4f149",
+    "58162f6d-8364-4468-bf10-299bf9aa2981",
+    "Filter/AI Denoise",
+    "Filter/Camera Raw Filter",
+    "d3918d4f-aa47-4722-a07d-362f78301c57"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Output sharpening for print",
+   "id": "recipe:retouch_cleanup:sharpen_print",
+   "app": "multi",
+   "status": "current",
+   "summary": "Final sharpening at the exact print size and resolution, stronger than looks right on screen because ink spread and paper soften the image.",
+   "use_for": [
+    "photos in brochures, posters and magazines",
+    "large-format prints and banners",
+    "photo books and certificates"
+   ],
+   "avoid": [
+    "sharpening before resizing: always size to the final print dimensions first",
+    "halos on high-contrast edges: lower Radius before Amount",
+    "sharpening noise: denoise first",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size: resample to the final print size at 300 ppi (or the printer's figure); verified live with bicubic."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "smartSharpen",
+       "settings": {
+        "Use Legacy": false,
+        "Amount": 180,
+        "Radius": 1.5,
+        "Remove": "lensBlur",
+        "More Accurate": true
+       },
+       "note": "Filter > Sharpen > Smart Sharpen: Amount 180, Radius 1.5 px at 300 ppi (about 1 px per 200 ppi), Remove Lens Blur, More Accurate on. On screen at 100 % it should look slightly crunchy; the render at 300 / 4 showed what over-sharpened halos look like."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 150,
+        "Radius": 2,
+        "Threshold": 3
+       },
+       "note": "Effects > Sharpen > Unsharp Mask on the placed bitmap at its final size: Percentage 150, Radius 2, Threshold 3 spares smooth areas (the render at 300 / 8 / 0 gave wide halos)."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "Check at 100 % (Photoshop View > 100 %) and in a test print if the job matters; output sharpening is judged on paper, not on screen."
+   ],
+   "built_from": [
+    "1030",
+    "2980",
+    "smartSharpen",
+    "58162f6d-8364-4468-bf10-299bf9aa2981"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Output sharpening for screen and social",
+   "id": "recipe:retouch_cleanup:sharpen_web",
+   "app": "multi",
+   "status": "current",
+   "summary": "Downsize to the exact pixel size the platform shows, then sharpen lightly so the photo stays crisp after scaling and compression.",
+   "use_for": [
+    "Instagram, LinkedIn and YouTube images",
+    "website hero images and thumbnails",
+    "email and newsletter photos"
+   ],
+   "avoid": [
+    "sharpening at full camera resolution and letting the platform downscale: the sharpening disappears and artefacts remain",
+    "strong sharpening before heavy JPEG compression: halos turn into ringing",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size: resample to the output pixel size (e.g. 1080 px wide for a feed post)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "smartSharpen",
+       "settings": {
+        "Use Legacy": false,
+        "Amount": 80,
+        "Radius": 0.5,
+        "Remove": "lensBlur"
+       },
+       "note": "Filter > Sharpen > Smart Sharpen at screen size: Amount 80, Radius 0.5 px, Remove Lens Blur."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 70,
+        "Radius": 1,
+        "Threshold": 2
+       },
+       "note": "Effects > Sharpen > Unsharp Mask after the bitmap is at its output size: Percentage 70, Radius 1."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "CorelDRAW: resample the bitmap to the output size first with Bitmaps > Resample (the menu only opens the dialog; ActiveShape.Bitmap.Resample is the unverified object-model route), or export at the target size."
+   ],
+   "built_from": [
+    "1030",
+    "2980",
+    "smartSharpen",
+    "58162f6d-8364-4468-bf10-299bf9aa2981",
+    "f85cb8c1-b2a5-4f20-becd-be4918557275"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "High Pass detail sharpening",
+   "id": "recipe:retouch_cleanup:high_pass_sharpen",
+   "app": "PS",
+   "status": "current",
+   "summary": "A non-destructive sharpening layer: the photo's fine detail isolated with High Pass and blended back in Overlay or Soft Light, adjustable by layer opacity and mask.",
+   "use_for": [
+    "sharpening only the eyes, product edges or type in a photo (mask the rest)",
+    "adding crispness to architecture and products",
+    "an editable sharpening layer that can be toned down later"
+   ],
+   "avoid": [
+    "large radii: they add a halo glow instead of crispness; 1-4 px is sharpening, more is local contrast",
+    "noisy photos: High Pass sharpens the noise as well",
+    "CorelDRAW: its High Pass works (render pass) but PGD has no scripted overlay merge for a bitmap copy; use Unsharp Mask there",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Layer > Duplicate Layer: work on a copy above the original."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "desaturate",
+       "note": "Image > Adjustments > Desaturate on the copy (a pixel layer, so before any smart object conversion): removes the colour fringes High Pass leaves."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "highPass",
+       "settings": {
+        "Radius": 3
+       },
+       "note": "Filter > Other > High Pass, Radius 3: the copy turns flat 50 % grey with only the edges left (as the render showed at 15)."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "overlay",
+       "note": "Set the copy to Overlay (Soft Light for a gentler result): grey disappears, edges get contrast. Opacity 50-100 % sets the strength; a layer mask limits it to where you want it."
+      }
+     ],
+     "app": "PS"
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "1135",
+    "desaturate",
+    "highPass",
+    "overlay",
+    "6816fb8f-d4e6-406f-94e6-e79f20c31bd7",
+    "softLight"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Remove objects and blemishes",
+   "id": "recipe:retouch_cleanup:object_removal",
+   "app": "PS",
+   "status": "current",
+   "summary": "Unwanted objects, signs, wires, spots and blemishes disappear into their background: selected, then filled with texture synthesised from the surroundings.",
+   "use_for": [
+    "removing distractions from product, travel and real-estate photos",
+    "cleaning backgrounds before a cut-out or a text overlay",
+    "removing dust, small blemishes and stray hairs in portraits",
+    "clearing space for type in a hero image"
+   ],
+   "avoid": [
+    "news and documentary photos: removing or adding content misrepresents the event",
+    "objects that overlap complex structure (fingers, faces, text): fills invent wrong detail; use the Clone Stamp by hand",
+    "Generative Fill and Generative Upscale spend credits and have no script route here",
+    "CorelDRAW: it has no healing, clone or content-aware tools (Corel PHOTO-PAINT does); do this in Photoshop.",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1109",
+       "note": "With the object selected (by hand, see manual steps), Select > Modify > Expand by 6-10 px so the fill samples clean background beyond the object's edge."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1510",
+       "note": "Edit > Content-Aware Fill (executeAction 'cafWorkspace'): verified live, with no settings it applied the workspace defaults and put the fill on a new layer, so the original stays untouched. Needs an active selection."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1016",
+       "note": "Select > Deselect."
+      }
+     ],
+     "app": "PS"
+    }
+   },
+   "manual_steps": [
+    "Select the object by hand: Lasso, or the Object Selection Tool (its detection inside a drawn rectangle has no script route); Select > Subject only helps when the object is the main subject.",
+    "Small spots and blemishes: Spot Healing Brush Tool or Remove Tool on a new empty layer with Sample All Layers on (neither brush can be scripted).",
+    "Edges that the fill gets wrong: Clone Stamp Tool by hand on the same cleanup layer.",
+    "Large removals where invented content is acceptable: Edit > Generative Fill with an empty prompt (credits, no script)."
+   ],
+   "built_from": [
+    "1109",
+    "1510",
+    "1016",
+    "spotHealingBrushTool",
+    "removeTool",
+    "cloneStampTool",
+    "magicLassoTool",
+    "1750",
+    "1099"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Scan clean-up: dust, scratches and moire",
+   "id": "recipe:retouch_cleanup:scan_cleanup",
+   "app": "multi",
+   "status": "current",
+   "summary": "Removes dust specks, fine scratches and the wavy moire of scanned printed pictures, then restores a little crispness.",
+   "use_for": [
+    "scanned old photographs and archive prints",
+    "scans of printed brochures or newspaper pictures (halftone moire)",
+    "dusty film scans"
+   ],
+   "avoid": [
+    "global Dust & Scratches at a large radius or zero threshold: the whole image turns blotchy (as both apps' renders showed); keep the radius small and mask it to the damaged areas",
+    "fine detail such as type or hair: it vanishes with the dust; mask it out",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "dustAndScratches",
+       "settings": {
+        "radius": 2,
+        "threshold": 15
+       },
+       "note": "Filter > Noise > Dust & Scratches, Radius 2 / Threshold 15: removes specks that differ from their neighbours; paint the smart-filter mask black where real detail suffers."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "median",
+       "settings": {
+        "radius": 2
+       },
+       "note": "Filter > Noise > Median, Radius 2, only for halftone moire from printed originals (skip it for photo scans): smooths the screen pattern."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "smartSharpen",
+       "settings": {
+        "Use Legacy": false,
+        "Amount": 70,
+        "Radius": 0.8,
+        "Remove": "lensBlur"
+       },
+       "note": "Filter > Sharpen > Smart Sharpen, gentle, to bring back edges after the clean-up."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "b2e22b39-eb2b-4847-a3ed-fd14b8c79741",
+       "settings": {
+        "Radius": 2,
+        "Threshold": 40
+       },
+       "note": "Effects > Correction > Dust and Scratch: Radius 2, Threshold 40 (the render at 10 / 8 smeared everything; a higher threshold spares real detail)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "9431fae7-3451-4f65-9c80-0f2f91770097",
+       "settings": {
+        "Amount": 6,
+        "OptimizeMode": "Quality"
+       },
+       "note": "Effects > Noise > Remove Moire for scans of printed pictures (the plate had no halftone, so only its slight softening was rendered)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 60,
+        "Radius": 1,
+        "Threshold": 4
+       },
+       "note": "Effects > Sharpen > Unsharp Mask, gentle."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "Large scratches and tears: Spot Healing Brush or Clone Stamp by hand in Photoshop."
+   ],
+   "built_from": [
+    "2980",
+    "dustAndScratches",
+    "median",
+    "smartSharpen",
+    "b2e22b39-eb2b-4847-a3ed-fd14b8c79741",
+    "9431fae7-3451-4f65-9c80-0f2f91770097",
+    "58162f6d-8364-4468-bf10-299bf9aa2981",
+    "spotHealingBrushTool",
+    "cloneStampTool"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Dodge and burn on a grey layer",
+   "id": "recipe:retouch_cleanup:dodge_burn",
+   "app": "PS",
+   "status": "current",
+   "summary": "Non-destructive local lightening and darkening on a 50 % grey Soft Light layer, to sculpt light, add depth and guide the eye.",
+   "use_for": [
+    "portrait and product sculpting",
+    "evening out uneven light across a photo",
+    "adding depth and a vignette-like focus by hand",
+    "retouching that must stay editable"
+   ],
+   "avoid": [
+    "dodging and burning on the photo pixels themselves: destructive and hard to undo",
+    "strong strokes: build up with many low-exposure (5-10 %) passes",
+    "CorelDRAW: it has no healing, clone or content-aware tools (Corel PHOTO-PAINT does); do this in Photoshop.",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1099",
+       "note": "Layer > New > Layer above the photo."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1042",
+       "note": "Edit > Fill with Contents 50 % Gray (the fill descriptor's Usng = 50 % grey instead of the foreground colour), 100 % opacity, Normal."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "softLight",
+       "note": "Set the grey layer to Soft Light: 50 % grey is neutral, so nothing changes until you paint (the card lists exactly this use; its frame matched the Soft Light formula)."
+      }
+     ],
+     "app": "PS"
+    }
+   },
+   "manual_steps": [
+    "Paint on the grey layer with the Dodge Tool / Burn Tool (Range Midtones, Exposure 5-10 %) or with a soft Brush in white (lighten) and black (darken) at 5-10 % opacity. Scripts can only replay strokes along a path (PathItem.strokePath), so the painting is by hand."
+   ],
+   "built_from": [
+    "1099",
+    "1042",
+    "softLight",
+    "dodgeTool",
+    "burnInTool",
+    "paintbrushTool"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Skin smoothing that keeps texture",
+   "id": "recipe:retouch_cleanup:skin_smoothing",
+   "app": "multi",
+   "status": "current",
+   "summary": "Evens out skin tone and small irregularities with an edge-preserving blur on a masked copy, then adds back fine grain so pores and texture still read.",
+   "use_for": [
+    "beauty and headshot retouching",
+    "corporate profile photos",
+    "close-up portraits for print and social"
+   ],
+   "avoid": [
+    "smoothing the whole photo: eyes, brows, lips and hair must stay sharp; mask to skin only",
+    "high opacity: plastic, airbrushed skin; 40-70 % is usually enough",
+    "changing someone's appearance beyond clean-up in news or documentary photos",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Layer > Duplicate Layer: work on a copy above the original."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "surfaceBlur",
+       "settings": {
+        "Radius": 20,
+        "Threshold": 12
+       },
+       "note": "Filter > Blur > Surface Blur on the copy: flat areas melt, strong edges stay (the card warns that pushed hard it gives plastic skin)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "addNoise",
+       "settings": {
+        "noise": 1.5,
+        "distort": "gaussianDistribution",
+        "monochromatic": true
+       },
+       "note": "Filter > Noise > Add Noise as a second smart filter: Gaussian, monochromatic, 1-2 %, so the smoothed areas get back a fine texture."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "44e9edef-d6a9-4b93-9838-d41889c4f149",
+       "settings": {
+        "Detail": 60
+       },
+       "note": "On a duplicate of the bitmap: Effects > Blur > Smart Blur, edge-preserving smoothing."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Uniform",
+       "settings": {
+        "Value": 40
+       },
+       "note": "Uniform Transparency 40 on the smoothed copy (about 60 % opacity) so the original texture shows through."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "Photoshop: lower the copy's layer opacity to 40-70 %, add a black layer mask (Alt-click Add Layer Mask) and paint white over the skin areas only.",
+    "CorelDRAW: draw a shape around the skin areas by hand and PowerClip the smoothed copy into it (Object > PowerClip), so eyes and hair come from the sharp original."
+   ],
+   "built_from": [
+    "1135",
+    "2980",
+    "surfaceBlur",
+    "addNoise",
+    "44e9edef-d6a9-4b93-9838-d41889c4f149",
+    "vector:Transparency:Uniform",
+    "paintbrushTool",
+    "25f351b0-a205-4c43-8f1a-f8e982220f61"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Straighten and fix converging verticals",
+   "id": "recipe:retouch_cleanup:straighten_perspective",
+   "app": "multi",
+   "status": "current",
+   "summary": "Levels a tilted horizon and makes leaning building edges vertical again, then crops or fills the empty wedges.",
+   "use_for": [
+    "architecture and real-estate photos",
+    "product shots taken at an angle",
+    "scans that went in crooked",
+    "event photos with a tilted horizon"
+   ],
+   "avoid": [
+    "strong corrections on a tight crop: the stretched edges lose resolution; shoot wider",
+    "perspective fixes on faces near the frame edge: they distort",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "'LnCr'",
+       "settings": {
+        "Auto Geometric Distortion Correction": false,
+        "Rotation Angle": 1.5,
+        "Vertical Perspective": -15,
+        "Horizontal Perspective": 0,
+        "Image Size": 100
+       },
+       "note": "Filter > Lens Correction: Rotation Angle levels the horizon (sign as in the dialog; rotation was not separated in the render), Vertical Perspective pulls converging verticals upright (the render at -20 keystoned the frame clearly); tune both per photo."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "632996de-c938-44ad-8480-79dfbc70d584",
+       "note": "Bitmaps > Straighten Image: InvokeItem only opens the dialog; align the straightening bar, correct perspective and crop to the result there (no object-model equivalent)."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "Photoshop: crop the empty wedges with the Crop Tool (Document.crop(bounds, angle) by script), or select them and run Edit > Content-Aware Fill.",
+    "Several planes (a building corner): Edit > Perspective Warp by hand (interactive only)."
+   ],
+   "built_from": [
+    "2980",
+    "'LnCr'",
+    "632996de-c938-44ad-8480-79dfbc70d584",
+    "cropTool",
+    "1510",
+    "17001"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Upscale for print or large display",
+   "id": "recipe:retouch_cleanup:upscale",
+   "app": "multi",
+   "status": "current",
+   "summary": "Enlarges a small photo to print or banner size with detail-preserving resampling, then cleans and sharpens the result.",
+   "use_for": [
+    "web-resolution images that must go to print",
+    "old small photos for a poster or banner",
+    "crops that need more pixels"
+   ],
+   "avoid": [
+    "expecting real detail from a tiny source: 2x is safe, beyond 3-4x faces and type look invented or mushy",
+    "upscaling a noisy or JPEG-damaged image: clean it first (denoise / JPEG artefact recipes)",
+    "AI and generative upscalers invent detail: not for news or evidence photos",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size: Resample on, enlarge to the target (e.g. 200 %); choose Preserve Details 2.0 in the dialog (the scripted route verified in the harvest used bicubic)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "surfaceBlur",
+       "settings": {
+        "Radius": 2,
+        "Threshold": 8
+       },
+       "note": "Filter > Blur > Surface Blur, very light: evens out the resampling noise."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "smartSharpen",
+       "settings": {
+        "Use Legacy": false,
+        "Amount": 120,
+        "Radius": 1.2,
+        "Remove": "lensBlur"
+       },
+       "note": "Filter > Sharpen > Smart Sharpen at the new size, Amount 120, Radius 1.2."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+       "note": "Bitmaps > Resample: the dialog's machine-learning upsampling modes rebuild detail when enlarging. InvokeItem only opens the dialog; ActiveShape.Bitmap.Resample is the unverified object-model route."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 100,
+        "Radius": 1,
+        "Threshold": 3
+       },
+       "note": "Effects > Sharpen > Unsharp Mask after the enlargement."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [
+    "Bigger jumps: Image > Generative Upscale (credits, no script route) or Camera Raw's Super Resolution (2x, by hand)."
+   ],
+   "built_from": [
+    "1030",
+    "2980",
+    "surfaceBlur",
+    "smartSharpen",
+    "f85cb8c1-b2a5-4f20-becd-be4918557275",
+    "58162f6d-8364-4468-bf10-299bf9aa2981",
+    "1776",
+    "Filter/Camera Raw Filter"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Dehaze a washed-out photo",
+   "id": "recipe:retouch_cleanup:dehaze",
+   "app": "multi",
+   "status": "current",
+   "summary": "Cuts haze, smog or a foggy window look: deeper contrast and colour in the washed-out areas, a little midtone clarity.",
+   "use_for": [
+    "landscape and city photos shot through haze or smog",
+    "photos taken through glass",
+    "flat, low-contrast drone shots",
+    "faded scans"
+   ],
+   "avoid": [
+    "strong Dehaze on skies: banding and dark corners; keep it under 50 and mask the sky if needed",
+    "photos that are meant to look atmospheric",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:clarity",
+       "settings": {
+        "clarity": 10,
+        "dehaze": 35
+       },
+       "note": "Clarity and dehaze adjustment layer: Dehaze 35 cuts the haze, Clarity 10 adds midtone bite (the render at 60 / 50 was strongly darker, crisper and more saturated)."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:brightnessEvent",
+       "settings": {
+        "brightness": 4,
+        "center": 0,
+        "useLegacy": false
+       },
+       "note": "Brightness/Contrast layer: Brightness +4 if Dehaze made the photo too dark."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:vibrance",
+       "settings": {
+        "useLegacy": false,
+        "temperature": 0,
+        "tint": 0,
+        "vibrance": 10,
+        "saturation": 0
+       },
+       "note": "Color and vibrance layer: Vibrance +10 for colour that the haze had washed out."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "f9d61ad8-4f99-4ada-b900-d3c4c9b3ca60",
+       "note": "Effects > Adjust > Auto Adjust: stretches each channel to full range, the main dehaze move on a foggy photo."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "5032fcaf-0b82-4d84-ae8a-c7d554290ab5",
+       "settings": {
+        "Level": 0.9
+       },
+       "note": "Effects > Adjust > Gamma 0.9: slightly deeper midtones."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "88a3c602-700d-4427-9a66-292ce4e6a883",
+       "settings": {
+        "Vibrance": 20,
+        "Saturation": 0
+       },
+       "note": "Effects > Adjust > Vibrance +20 for the washed-out colours."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "adjustmentLayer:clarity",
+    "adjustmentLayer:brightnessEvent",
+    "adjustmentLayer:vibrance",
+    "f9d61ad8-4f99-4ada-b900-d3c4c9b3ca60",
+    "5032fcaf-0b82-4d84-ae8a-c7d554290ab5",
+    "88a3c602-700d-4427-9a66-292ce4e6a883"
+   ],
+   "confidence": "medium",
+   "note": "Photoshop plan is render-verified (Clarity and dehaze pass); the CorelDRAW plan has no dedicated dehaze and approximates it with a channel stretch."
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Fix lens faults: colour fringes, vignetting, distortion",
+   "id": "recipe:retouch_cleanup:lens_faults",
+   "app": "PS",
+   "status": "current",
+   "summary": "Removes the camera lens's colour fringes along high-contrast edges, brightens dark corners and straightens barrel distortion with manual Lens Correction sliders.",
+   "use_for": [
+    "wide-angle architecture and interior photos",
+    "product shots on white with fringed edges",
+    "cheap-lens and phone photos with dark corners"
+   ],
+   "avoid": [
+    "photos with lens metadata: the automatic profile corrections in Camera Raw are better and need no slider guessing",
+    "creative vignettes you want to keep",
+    "CorelDRAW: lens distortion lives in Bitmaps > Straighten Image (dialog only, see the straighten recipe)",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "'LnCr'",
+       "settings": {
+        "Auto Geometric Distortion Correction": false,
+        "Distort Amount": 5,
+        "Aberration Red-Cyan": 10,
+        "Aberration Blue-Yellow": 0,
+        "Vignette Amount": 30,
+        "Vignette Midpoint": 50
+       },
+       "note": "Filter > Lens Correction, Custom sliders: Distort Amount pulls barrel distortion straight, Aberration Red-Cyan / Blue-Yellow shift the colour channels to remove fringes, a positive Vignette Amount brightens dark corners. Only the vignette (negative) and the perspective sliders were separated in the render, so tune these on screen."
+      }
+     ],
+     "app": "PS"
+    }
+   },
+   "manual_steps": [
+    "Zoom to 200 % on a high-contrast edge in a corner to judge the fringe sliders.",
+    "RAW or JPEG with lens metadata: Filter > Camera Raw Filter > Optics (Remove Chromatic Aberration, Use Profile Corrections) by hand."
+   ],
+   "built_from": [
+    "2980",
+    "'LnCr'",
+    "Filter/Camera Raw Filter"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "retouch_cleanup",
+   "name": "Clean JPEG compression artefacts",
+   "id": "recipe:retouch_cleanup:jpeg_artifacts",
+   "app": "multi",
+   "status": "current",
+   "summary": "Softens the blocky 8x8 tiles, edge ringing and smeared colour of an over-compressed JPEG before it is reused, enlarged or printed.",
+   "use_for": [
+    "images saved from chat apps and social platforms",
+    "low-quality stock or client-supplied JPEGs",
+    "web images that must go to print"
+   ],
+   "avoid": [
+    "re-saving as JPEG at low quality afterwards: the artefacts come straight back; save PNG or high-quality JPEG",
+    "expecting lost detail to return: it smooths damage, it does not rebuild texture",
+    "Illustrator: no pixel retouching; retouch in Photoshop (or CorelDRAW for simple fixes) and place the result."
+   ],
+   "plans": {
+    "PS": {
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2980",
+       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "denoise",
+       "settings": {
+        "colorNoise": 30,
+        "sharpen": 0,
+        "removeJPEGArtifact": true
+       },
+       "note": "Filter > Noise > Reduce Noise with Remove JPEG Artifact on and Reduce Color Noise 30 % for the colour smear. Untested: the plate has no JPEG blocks (verdict not_rendered), so this caps the recipe at medium; the render did show Reduce Color Noise 100 % bleeding colour across hard borders, so keep it moderate."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "surfaceBlur",
+       "settings": {
+        "Radius": 3,
+        "Threshold": 12
+       },
+       "note": "Filter > Blur > Surface Blur, light: flattens the remaining block edges in smooth areas while real edges stay."
+      }
+     ],
+     "app": "PS"
+    },
+    "CDR": {
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "18ae168e-2d47-4321-804b-b260036861f1",
+       "note": "Bitmaps > Remove JPEG Artifacts: CorelDRAW's machine-learning clean-up, applied straight from the menu with no dialog (InvokeItem). No render test exists for menu commands."
+      }
+     ],
+     "app": "CDR"
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "2980",
+    "denoise",
+    "surfaceBlur",
+    "18ae168e-2d47-4321-804b-b260036861f1"
+   ],
+   "confidence": "medium"
+  }
+ ]
+}

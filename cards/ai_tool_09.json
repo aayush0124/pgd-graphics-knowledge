@@ -1,0 +1,231 @@
+{
+ "cards": [
+  {
+   "name": "Area Type Tool",
+   "id": "Adobe Area Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Turns an existing path into a text container: click the path and the text you type fills its interior, wrapping to the shape (the path itself loses its fill and stroke). The result is live, threadable area type such as copy inside a circle, a speech bubble or a custom silhouette.",
+   "how": "Draw the container first (rectangle, ellipse or any simple path; an open path is filled as if it were closed), pick Area Type Tool from the Type Tool flyout, click on the path and type or paste. The path loses its appearance and becomes the frame. Columns, rows, gutters, inset spacing and first-baseline position are set in Type > Area Type Options. A red plus in the frame's out port means overset text: click it with the Selection tool, then click or drag to thread the overflow into another frame. Reshape the frame with the Direct Selection tool and the text rewraps. The tool needs a path to click; for a plain rectangular box, drag with the Type Tool instead.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Area Type Tool\") only selects the tool. The result is fully scriptable: var f = doc.textFrames.areaText(pathItem, TextOrientation.HORIZONTAL) makes the PathItem the frame; f.contents sets the text and f.textRange.characterAttributes / paragraphAttributes style it. rowCount, columnCount, rowGutter, columnGutter, flowLinksHorizontally, firstBaseline and firstBaselineMin on the TextFrameItem cover most of Area Type Options; the DOM documents spacing as path text only, so inset spacing has no confirmed script property (app.executeMenuCommand(\"areatextoptions\") opens the dialog itself); nextFrame / previousFrame thread frames.",
+   "use_for": [
+    "body copy inside a custom shape: circle badge, speech bubble, product silhouette",
+    "multi-column text blocks on flyers, menus and brochures",
+    "threaded copy flowing across several frames of a poster or infographic",
+    "turning drawn placeholder shapes into text slots of a template"
+   ],
+   "avoid": [
+    "compound paths or clipping masks as the container: release them or draw a simple path first",
+    "keeping the shape's own fill or stroke: duplicate the shape first, because the container path loses its appearance",
+    "a single display line that should scale freely: use point text (click with the Type Tool)",
+    "long multi-page copy: set it in a layout app such as InDesign"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeCreateOrEditTool",
+    "CDR": "Toolbox/Text Tools/Text"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed \"spacing (inset)\": the AI DOM harvest documents TextFrameItem.spacing as path text only; added flowLinksHorizontally and firstBaselineMin, which the harvest lists as area-text properties; retry pass: re-checked every claim, API member, menu id (against harvest confirmed flags), shortcut and equivalent (pgd.py items); no further change"
+   }
+  },
+  {
+   "name": "Touch Type Tool",
+   "id": "Adobe Touch Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Selects one character at a time inside live type and transforms it directly with a small bounding box: move it, scale it horizontally, vertically or uniformly, or rotate it. The text stays editable; the changes are stored on that character as kerning, baseline shift, scale and rotation values.",
+   "how": "Press Shift+T (or use the Touch Type Tool button in the Character panel) and click a character in an existing type object to put a box around it. Drag inside the box to move the glyph (sideways moves change kerning, up and down changes baseline shift); drag the top-right corner to scale proportionally, the top-left corner to scale vertically, the bottom-right corner to scale horizontally, and the round handle above the box to rotate. Click the next character to keep going; the values appear in the Character panel and can be fine-tuned there.",
+   "shortcut": "Shift+T",
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Touch Type Tool\") only selects the tool; the drag gestures cannot be scripted, but the same per-character result can: textFrame.characters[i].characterAttributes.horizontalScale, verticalScale, rotation and baselineShift, plus TextRange.kerning for sideways moves.",
+   "use_for": [
+    "logo wordmarks with one tweaked letter: raised, tilted or oversized",
+    "playful poster or kids' headlines with bouncing, rotated letters",
+    "optical kerning of display type by eye",
+    "packaging or shop-sign type with an enlarged initial while keeping the text live"
+   ],
+   "avoid": [
+    "styling many characters the same way: select the range and set the values in the Character panel, or by script",
+    "changing a glyph's outline (stretching one stroke, cutting a counter): outline a copy with Type > Create Outlines and edit the paths",
+    "copy that will still be re-typed: per-character tweaks stay on those characters and can end up on the wrong letters after edits"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: dropped the unverified claim that the tool works on point, area and path type alike; script_api: kerning no longer pinned to \"the gap before the character\" (which pair(s) a sideways drag changes is not in the harvest); retry pass: re-checked every claim, API member, menu id (against harvest confirmed flags), shortcut and equivalent (pgd.py items); no further change"
+   }
+  },
+  {
+   "name": "Type on a Path Tool",
+   "id": "Adobe Path Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Sets type along an existing path: click the path and the text's baseline follows the curve, for lettering around a circle or along a wave or ribbon. The path loses its fill and stroke; the text stays live and can be slid, flipped and restyled later.",
+   "how": "Draw the path (open or closed), choose Type on a Path Tool from the Type Tool flyout, click on the path where the text should start and type. With the Selection or Direct Selection tool, drag the start and end brackets to set the run and the center bracket to slide the text; dragging the center bracket across the path flips the text to the other side. Type > Type on a Path offers the Rainbow, Skew, 3D Ribbon, Stair Step and Gravity looks, and Type on a Path Options sets the effect, alignment to the path (baseline, ascender, descender, center), spacing and flip. Baseline shift in the Character panel lifts text off the path.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Path Type Tool\") only selects the tool. The result is fully scriptable: doc.textFrames.pathText(pathItem, startTValue, endTValue, TextOrientation.HORIZONTAL) puts text on the PathItem; contents and textRange.characterAttributes style it; startTValue / endTValue on the TextFrameItem move the run and spacing (path text only) is the Options spacing. The path looks are menu commands on selected path type: app.executeMenuCommand(\"textpathtypeRainbow\"), \"textpathtypeSkew\", \"textpathtype3d\", \"textpathtypeGravity\", \"textpathtypestairs\", and \"textpathtypeOptions\" opens the Options dialog. None of these ids was confirmed by execution in the harvest; all are paired from the Keyboard Shortcuts dialog, and textpathtypestairs from dialog order alone.",
+   "use_for": [
+    "circular badge, seal and stamp text around an emblem",
+    "text following a ribbon, wave, road or river on posters and maps",
+    "curved labels on round stickers and product mockups",
+    "arched headlines on invitations and certificates"
+   ],
+   "avoid": [
+    "text on the top and bottom of one circle that must both read upright: use two path-type objects, one flipped, instead of a single run",
+    "very tight curves: letters crowd on the inside and splay on the outside; enlarge the radius or add tracking",
+    "an arched headline with no path to follow: Effect > Warp > Arc or an envelope distort may be quicker",
+    "handing the file to apps that cannot read path type: outline a copy with Type > Create Outlines"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeCreateOrEditTool",
+    "CDR": "Text/Fit Text to Path"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the harvest marks ALL textpathtype* ids as inferred, not confirmed by execution (card implied only Stair Step was); added textpathtypeOptions id and TextFrameItem.spacing (path text only); how: dropped the unsourced \"Rainbow (default)\", added the effect setting to the Options dialog list; retry pass: re-checked every claim, API member, menu id (against harvest confirmed flags), shortcut and equivalent (pgd.py items); no further change"
+   }
+  },
+  {
+   "name": "Type Tool",
+   "id": "Adobe Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Illustrator's main text tool: click to start point text (a line that grows as you type) or drag a box for area text that wraps; clicking into existing type edits it. The result is live, editable vector type styled from the Properties, Character and Paragraph panels.",
+   "how": "Press T. Click on empty canvas for point text or drag a rectangle for area text, then type; new frames may come pre-filled with placeholder text (a preference), which is selected so typing replaces it. Press Esc to finish and select the type object. Set font, size, leading, tracking and alignment in the Properties, Character and Paragraph panels. Double-click the round widget on the right edge of a type object's bounding box to switch it between point and area type. Positioned over an open path the cursor becomes type on a path, over a closed path area type, so both can be made without changing tools.",
+   "shortcut": "T",
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Type Tool\") only selects the tool. Text is fully scriptable: doc.textFrames.pointText([x, y]) (or textFrames.add()) for point text, textFrames.areaText(pathItem) for a box, then .contents, .textRange.characterAttributes (textFont = app.textFonts.getByName(\"<name>\"), where name is TextFont.name: the harvest calls it the font's full name, in practice it is the PostScript name (unverified); size, fillColor, tracking, leading) and .textRange.paragraphAttributes; textFrame.convertPointObjectToAreaObject() / convertAreaObjectToPointObject() do what the bounding-box widget does; textFrame.createOutline() converts it to paths.",
+   "use_for": [
+    "poster, flyer and social-post headlines",
+    "logo wordmarks before outlining",
+    "labels, captions and callouts in infographics and diagrams",
+    "template text that a script swaps for batch variations"
+   ],
+   "avoid": [
+    "vertical Japanese or Chinese text: use the Vertical Type Tool",
+    "long multi-page copy: set it in a layout app such as InDesign",
+    "files sent to print or other users without the fonts: outline a copy with Type > Create Outlines, keep the live original",
+    "moving or rotating single letters: use the Touch Type Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeCreateOrEditTool",
+    "CDR": "Toolbox/Text Tools/Text"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested TextFrameItem convertPointObjectToAreaObject / convertAreaObjectToPointObject methods, the scripted form of the point/area widget the how describes; nothing else wrong found; retry pass: script_api: textFonts.getByName argument flagged, the harvest documents TextFont.name as \"the font's full name\", not a PostScript name (kept as the practical value, marked unverified)"
+   }
+  },
+  {
+   "name": "Vertical Area Type Tool",
+   "id": "Adobe Vertical Area Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "The vertical counterpart of the Area Type Tool: click a path and the text fills it in vertical columns, characters running top to bottom and columns advancing right to left, the layout used for Japanese and Chinese. The path loses its fill and stroke and the text stays live.",
+   "how": "Draw the container path, pick Vertical Area Type Tool from the Type Tool flyout, click on the path and type. Area Type Options, threading overflow through the out port and reshaping the frame with the Direct Selection tool work as for horizontal area type. Type > Type Orientation switches an existing frame between horizontal and vertical. Use a font with East Asian glyphs for proper vertical forms of punctuation.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Vertical Area Type Tool\") only selects the tool. Scripted result: doc.textFrames.areaText(pathItem, TextOrientation.VERTICAL); an existing frame turns vertical with textFrame.orientation = TextOrientation.VERTICAL or app.executeMenuCommand(\"type-vertical\") (harvest id inferred, not execution-tested) on the selection.",
+   "use_for": [
+    "Japanese or Chinese body copy inside a shaped frame on posters, menus and packaging",
+    "vertical text columns in East Asian editorial layouts",
+    "vertical copy fitted to a tall, narrow banner shape"
+   ],
+   "avoid": [
+    "Latin text that should read up or down a spine or banner: set it horizontally and rotate the object 90 degrees",
+    "a plain rectangular vertical box: drag with the Vertical Type Tool",
+    "compound paths or clipping masks as the container: release them or use a simple path"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeVerticalCreateOrEditTool",
+    "CDR": "Toolbox/Text Tools/Text"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: flagged that the type-vertical menu id is inferred, not execution-tested, per the harvest (textFrame.orientation is the verified route); rest checked, no change; retry pass: re-checked every claim, API member, menu id (against harvest confirmed flags), shortcut and equivalent (pgd.py items); no further change"
+   }
+  },
+  {
+   "name": "Vertical Type on a Path Tool",
+   "id": "Adobe Vertical Path Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Places vertical-orientation type along a path: the text runs along the path the way vertical (East Asian) text runs down a column, so East Asian glyphs stand turned 90 degrees to the path compared with Type on a Path output. The path loses its fill and stroke and the text stays live. How Latin characters sit depends on the font and character rotation settings; not render-checked here.",
+   "how": "Draw a path, choose Vertical Type on a Path Tool from the Type Tool flyout, click on the path and type. The start, end and center brackets and flipping work as for horizontal path type; the Type > Type on a Path looks and Type on a Path Options are the same menu items, but their result on vertical path type was not checked. Type > Type Orientation switches the object between horizontal and vertical. Test a short sample before committing to a layout.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Vertical Path Type Tool\") only selects the tool. Scripted result: doc.textFrames.pathText(pathItem, startTValue, endTValue, TextOrientation.VERTICAL); an existing path type object can be switched with textFrame.orientation = TextOrientation.VERTICAL or app.executeMenuCommand(\"type-vertical\") (harvest id inferred, not execution-tested).",
+   "use_for": [
+    "Japanese or Chinese text running along a curve on posters, packaging or seals",
+    "vertical lettering that follows a curved guide in East Asian layouts"
+   ],
+   "avoid": [
+    "Latin text along a curve: use the Type on a Path Tool, the standard route for Latin; how Latin glyphs sit in vertical path type depends on the font and character rotation settings and was not checked",
+    "layouts where the exact glyph orientation matters but has not been checked: render a sample first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "typeVerticalCreateOrEditTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: spelled out textFrame.orientation = TextOrientation.VERTICAL and flagged the type-vertical menu id as inferred, not execution-tested, per the harvest; medium confidence kept (vertical-on-path glyph orientation not render-checked); retry pass: summary: the 90-degree turn now stated for East Asian glyphs only (Latin orientation is unchecked, as the summary itself says); avoid: dropped the unverified \"vertical orientation makes Latin read awkwardly\"; how: the Type on a Path looks/Options on vertical path type marked not checked instead of asserted to work as for horizontal"
+   }
+  },
+  {
+   "name": "Vertical Type Tool",
+   "id": "Adobe Vertical Type Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Type Tool",
+   "status": "current",
+   "summary": "Creates vertical type: click for a vertical point-text column or drag a box for vertical area text; characters stack top to bottom and new lines advance right to left, the convention for Japanese, Chinese and Korean. The text stays live and editable.",
+   "how": "Choose Vertical Type Tool from the Type Tool flyout, click to start a column (or drag a box for a vertical frame) and type; Esc finishes and selects the object. Type > Type Orientation > Horizontal / Vertical converts existing type either way. Use a font with East Asian glyphs so punctuation takes its vertical forms; short horizontal runs such as numbers inside a vertical line are set with Tate-chu-yoko from the Character panel menu.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Vertical Type Tool\") only selects the tool. Scripted result: doc.textFrames.pointText([x, y], TextOrientation.VERTICAL) or textFrames.areaText(pathItem, TextOrientation.VERTICAL); existing type turns vertical with textFrame.orientation = TextOrientation.VERTICAL or app.executeMenuCommand(\"type-vertical\") (harvest id inferred, not execution-tested).",
+   "use_for": [
+    "Japanese or Chinese posters, book covers, menus and signage set vertically",
+    "vertical labels on narrow banners, spines and hanging signs in East Asian layouts",
+    "calligraphy-style vertical title blocks"
+   ],
+   "avoid": [
+    "Latin text meant to read sideways up a spine or banner: set it horizontally and rotate the object 90 degrees",
+    "text that must fill a shape: use the Vertical Area Type Tool",
+    "text along a curve: use the Vertical Type on a Path Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeVerticalCreateOrEditTool",
+    "CDR": "Toolbox/Text Tools/Text"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: flagged that the type-vertical menu id is inferred, not execution-tested, per the harvest (textFrame.orientation is the verified route); rest checked, no change; retry pass: re-checked every claim, API member, menu id (against harvest confirmed flags), shortcut and equivalent (pgd.py items); no further change"
+   }
+  }
+ ]
+}

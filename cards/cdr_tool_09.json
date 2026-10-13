@@ -1,0 +1,364 @@
+{
+ "cards": [
+  {
+   "name": "Imposition Layout Tool",
+   "id": "d6d15fa9-65a6-46c0-bd9a-70c028364478",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Print Preview/Toolbox/Imposition Layout Tool",
+   "status": "current",
+   "summary": "Print Preview tool for imposition: arranges document pages (or repeated copies) on the printed sheet, e.g. 2-up to 16-up grids or 8-up saddle-stitch / perfect-bound booklet signatures, with page order, orientation, gutters and margins, so several pieces print on one sheet for cutting or folding. It changes the print layout only, not the drawing; the harvest could not activate it, so the property-bar details here come from general knowledge of the app.",
+   "how": "Open File > Print Preview, pick the Imposition Layout Tool in the preview toolbox, then use the property bar to choose a layout (the .cly layouts shipped in Custom Data/Layouts: grids from 1 x 2 (2-up) to 4 x 4 (16-up), 8-up Saddle-Stitch and 8-up Perfect Bound booklet signatures in Sheetwise, Work&Turn and Work&Tumble versions, and Readers Spread) and to switch what you are editing (basic settings, page placements, gutters and finishing, margins). Click page slots on the preview to set page order and rotation. Check the result in the preview before printing.",
+   "scriptable": "no",
+   "script_api": "None harvested. Automation.InvokeItem \"d6d15fa9-65a6-46c0-bd9a-70c028364478\" did not switch tools (the drawing window stayed on Pick), and the harvested print classes (Document.PrintSettings.Layout: UseBleedLimit, BleedLimit, PrintTiledPages, PrintTilingMarks, TileOverlap, Placement) have no imposition member. Untested idea: a print style saved with the layout and loaded with PrintSettings.Load might carry it.",
+   "use_for": [
+    "printing business cards or labels several-up on one sheet",
+    "folded booklets or greeting cards where pages must land in fold order",
+    "saving paper on short desktop print runs"
+   ],
+   "avoid": [
+    "single-page prints: leave the layout As in document",
+    "press work the print shop imposes itself: send single pages with bleed instead, imposing twice breaks their workflow",
+    "automated pipelines: there is no harvested script call, build the n-up sheet in the document instead (duplicate and position the artwork)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: layout list said '1 x 2 (2-up) ... 4 x 3 (12-up)'; the harvested Custom Data/Layouts .cly set runs to 4 x 4 (16-up) and also has 8-up Saddle-Stitch / Perfect Bound signatures (Sheetwise, Work&Turn, Work&Tumble) and Readers Spread; summary updated to match."
+   }
+  },
+  {
+   "name": "Marks Placement Tool",
+   "id": "7b70b671-b7cf-42b4-8ab6-30cf77b7c900",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Print Preview/Toolbox/Marks Placement Tool",
+   "status": "current",
+   "summary": "Print Preview tool for printer's marks: shows the area the marks occupy around the printed page and lets you move that area, while its property bar switches marks such as crop marks, registration marks, the colour calibration bar, densitometer scale and file information on or off. It affects only the print output; the harvest could not activate it, so the details are from general knowledge.",
+   "how": "Open File > Print Preview and pick the Marks Placement Tool. Toggle the marks you need on the property bar, then drag the marks rectangle to reposition the marks relative to the page (it needs paper larger than the trimmed page, otherwise marks fall off the sheet). Confirm in the preview that crop marks sit outside the bleed.",
+   "scriptable": "partial",
+   "script_api": "Automation.InvokeItem \"7b70b671-b7cf-42b4-8ab6-30cf77b7c900\" did not activate the tool in the harvest (the drawing window stayed on Pick). Which marks print can be set by script on Document.PrintSettings.Prepress (CropMarks, ExteriorCropMarks, RegistrationMarks, RegistrationStyle, ColorCalibrationBar, DensitometerScale, FileInfo, PageNumbers). Only coarse placement is exposed: PrintSettings.Options.MarksToPage (marks inside the page area), Prepress.InfoWithinPage (file info / page numbers inside the page area) and Prepress.MarksToObjects (marks around the objects instead of the page); dragging the marks rectangle to a free position has no script equivalent.",
+   "use_for": [
+    "adding crop and registration marks to a print-ready proof",
+    "trim guides for hand-cutting cards and flyers printed on oversize paper",
+    "colour bars and file info on a proof sent for sign-off"
+   ],
+   "avoid": [
+    "paper the same size as the page: there is no room for marks, print on larger stock or let the print shop add marks",
+    "PDF-for-press delivery: set marks in the PDF export / let the printer's RIP add them instead of printing them",
+    "marks as editable artwork: the tool only places print-time marks, so draw trim marks in the document if they must be objects (Prepress.MarksToObjects does not convert marks to objects, it only prints them around the objects instead of the page)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Print",
+    "AI": "File/Print..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: said Prepress.MarksToObjects makes marks editable objects; the harvest says it prints the marks around the objects rather than the page, rewritten. script_api: 'position not exposed' was too strong; added the coarse placement switches Options.MarksToPage, Prepress.InfoWithinPage, Prepress.MarksToObjects (descriptions from the typelib). equivalents: added AI File/Print... (its Marks and Bleed panel adds trim/registration marks and colour bars with an offset)."
+   }
+  },
+  {
+   "name": "Pick Tool",
+   "id": "5a6e2299-1bee-4d18-a1a6-34943f968e04",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Print Preview/Toolbox/Pick Tool",
+   "status": "current",
+   "summary": "The Pick tool inside the Print Preview window (not the drawing window's Pick tool): selects the artwork as it sits on the printed sheet so you can move or resize its placement on the paper. It changes how the page prints, not the document; it was not probed live (activation by script left the drawing window on its own Pick tool).",
+   "how": "Open File > Print Preview and choose the Pick Tool in the preview toolbox. Click the artwork on the preview sheet to select it, drag to move it on the paper and drag a corner handle to scale it; the preview's property bar and the placement setting (as in document, centered, fit to page ...) give exact positioning. Return to the document to change the design itself.",
+   "scriptable": "partial",
+   "script_api": "Automation.InvokeItem \"5a6e2299-1bee-4d18-a1a6-34943f968e04\" did not switch to this preview tool in the harvest. A script sets the same placement with Document.PrintSettings.Layout.Placement (PrnPlaceType: prnPlaceAsInDocument, prnPlaceFitToPage, prnPlaceCenterPage, prnPlaceLeftTop ... prnPlaceCustom) and prints with PrintSettings.PrintOut; free dragging has no script equivalent.",
+   "use_for": [
+    "centering or fitting a design on the paper for a desktop proof",
+    "nudging artwork away from a printer's unprintable margin",
+    "checking the print position before an expensive print"
+   ],
+   "avoid": [
+    "fixing the layout of the design: edit the document page, preview changes only affect printing",
+    "scaling for production: scale the artwork or set the page size in the document so exports match the print",
+    "multi-up sheets: use the Imposition Layout Tool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Print",
+    "AI": "File/Print..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: added AI File/Print... (its Print dialog positions the artwork on the paper, including dragging it in the preview); rest checked against the batch and PrintSettings.Layout.Placement / PrnPlaceType / PrintOut in the harvest, no other change."
+   }
+  },
+  {
+   "name": "Zoom Tool",
+   "id": "5fc8f7c9-5abb-4e04-b475-574611a26697",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Print Preview/Toolbox/Zoom Tool",
+   "status": "current",
+   "summary": "Zoom tool of the Print Preview window: magnifies or reduces the preview so you can inspect marks, bleed, separations and placement up close. It changes only the preview's view, never the print or the document; it was not probed live.",
+   "how": "In File > Print Preview, pick the Zoom Tool, click on the preview to zoom in, drag a marquee to zoom to an area, and zoom out with the tool's zoom-out option on the property bar (right-click zooms out with CorelDRAW's drawing-window Zoom tool; not confirmed for the preview). Use the property-bar zoom levels to return to a full-page view.",
+   "scriptable": "no",
+   "script_api": "Nothing to script: it only changes the preview's view. Automation.InvokeItem \"5fc8f7c9-5abb-4e04-b475-574611a26697\" did not activate it in the harvest (the drawing window stayed on Pick).",
+   "use_for": [
+    "checking crop marks and bleed at full size before printing",
+    "inspecting fine detail or separations in the preview"
+   ],
+   "avoid": [
+    "zooming the drawing window: that is the main toolbox Zoom tool (Toolbox/Zoom Tools/Zoom)",
+    "judging print sharpness from screen magnification: print a test proof instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "zoomTool",
+    "AI": "Adobe Zoom Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "3-Point Rectangle",
+   "id": "7593c3e1-5cb3-4993-83d8-cb9938ca7ab9",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Rectangle Tools/3-Point Rectangle",
+   "status": "current",
+   "summary": "Draws a rectangle at any angle by first drawing its baseline (width and angle) and then setting its height, giving a rotated rectangle in one gesture. The result is a normal CorelDRAW rectangle object, so its corners can still be rounded, scalloped or chamfered.",
+   "how": "Pick 3-Point Rectangle from the Rectangle tools flyout. Drag to draw the base edge at the angle you want (hold Ctrl to snap the angle to the constrain-angle steps), release, move the pointer to set the height and click. Corner type and radius are set afterwards on the property bar, like a normal rectangle.",
+   "scriptable": "yes",
+   "script_api": "Selecting the tool: Automation.InvokeItem \"7593c3e1-5cb3-4993-83d8-cb9938ca7ab9\" (ActiveTool reads -1, no cdrTools value). Same result without the tool: ActiveLayer.CreateRectangle2(x, y, Width, Height, RadiusUL, RadiusUR, RadiusLR, RadiusLL) then Shape.RotateEx(Angle, CenterX, CenterY) or Shape.Rotate(Angle).",
+   "use_for": [
+    "tilted labels, tags and banners behind angled text",
+    "panels aligned to a slanted edge in a layout",
+    "isometric-style or dynamic poster blocks"
+   ],
+   "avoid": [
+    "upright rectangles: the plain Rectangle tool (F6) is faster",
+    "exact angles from a spec: draw a normal rectangle and type the rotation on the property bar",
+    "non-rectangular slanted shapes (parallelograms): use a Common Shapes parallelogram or skew the rectangle"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rectangle",
+   "id": "1a105015-994f-44cc-b29c-2e23d6765870",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Rectangle Tools/Rectangle",
+   "status": "current",
+   "summary": "CorelDRAW's basic rectangle and square tool: drag to draw an axis-aligned rectangle object whose corners stay editable as round, scalloped or chamfered with a set radius. The object stays a live rectangle (not curves) until converted.",
+   "how": "Press F6 (or pick Rectangle in the toolbox) and drag on the page. Hold Ctrl for a square, Shift to draw from the centre, Ctrl+Shift for a square from the centre; double-clicking the tool icon adds a rectangle the size of the page. Set corner type (Round, Scalloped, Chamfered), corner radius, relative corner scaling and exact size on the property bar.",
+   "shortcut": "F6",
+   "scriptable": "yes",
+   "script_api": "Selecting the tool: Application.ActiveTool = 3 (cdrToolDrawRectangle) or Automation.InvokeItem \"1a105015-994f-44cc-b29c-2e23d6765870\". Drawing without the tool: ActiveLayer.CreateRectangle2(x, y, Width, Height, RadiusUL, RadiusUR, RadiusLR, RadiusLL) or CreateRectangle(Left, Top, Right, Bottom, ...); corners afterwards via Shape.Rectangle (CornerType, SetRadius, RelativeCornerScaling).",
+   "use_for": [
+    "background panels and colour blocks in posters and social posts",
+    "buttons and badges with rounded corners",
+    "page-size background rectangles and frames for print layouts"
+   ],
+   "avoid": [
+    "rotated rectangles drawn by eye: use 3-Point Rectangle",
+    "shapes that need individually edited nodes: convert to curves (Ctrl+Q) first, which loses live corner editing",
+    "grids of cells: use Graph Paper"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "rectangleTool",
+    "AI": "Adobe Rectangle Shape Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Common Shapes",
+   "id": "1c4173b2-86c8-4f9a-8e62-90e5b98be8a2",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Common Shapes",
+   "status": "current",
+   "summary": "Draws ready-made editable shapes picked from a property-bar library: basic shapes (parallelogram, trapezoid, heart, cylinder ...), arrows, flowchart symbols, banners and callouts. The shapes keep glyph handles that reshape their features (arrow head, banner fold, callout tail) without converting to curves.",
+   "how": "Pick Common Shapes in the Shape tools flyout, choose a shape from the Common Shapes picker on the property bar, then drag on the page (Ctrl keeps proportions). Drag the shape's glyph node (the coloured diamond) to adjust its feature, e.g. a callout's tail or an arrow's head width. Convert to curves (Ctrl+Q) for free node editing.",
+   "scriptable": "no",
+   "script_api": "Selecting the tool only: Application.ActiveTool = 123 (outside the cdrTools enum, audited) or Automation.InvokeItem \"1c4173b2-86c8-4f9a-8e62-90e5b98be8a2\". The API has ActiveLayer.CreateCustomShape(TypeID, Parameters), but no TypeID for these shapes is harvested, so drawing a given common shape by script is unproven.",
+   "use_for": [
+    "flowcharts and process diagrams",
+    "speech-bubble callouts on comics and social posts",
+    "ribbon banners and arrows on sale posters and infographics"
+   ],
+   "avoid": [
+    "brand marks or icons that need precise custom curves: draw with the Pen / Bezier tools",
+    "automated builds: build the shape from CreatePolygon / CreateRectangle2 / curves instead",
+    "heavy reshaping: once you need more than the glyph handle, convert to curves"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "customShapeTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Graph Paper",
+   "id": "0cedd43c-d6c1-4613-9839-5d00676c8f08",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Graph Paper",
+   "status": "current",
+   "summary": "Draws a grid of equal rectangles (a set number of columns and rows) as a group in one drag, like a sheet of graph paper. Each cell is a separate rectangle that can be ungrouped and filled individually.",
+   "how": "Press D (or pick Graph Paper in the Shape tools flyout), set the number of columns and rows on the property bar first, then drag on the page; Ctrl constrains the whole grid to a square (cells are square only when columns equal rows), Shift draws from the centre. Ungroup (Ctrl+U) to colour or move individual cells.",
+   "shortcut": "D",
+   "scriptable": "yes",
+   "script_api": "Selecting the tool: Application.ActiveTool = 63 (cdrToolDrawGrid) or Automation.InvokeItem \"0cedd43c-d6c1-4613-9839-5d00676c8f08\". Same result without the tool: ActiveLayer.CreateGridBoxes(Left, Top, Right, Bottom, Wide, High).",
+   "use_for": [
+    "tables, calendars and timetables with fillable cells",
+    "pixel-art or mosaic layouts",
+    "layout grids and modular backgrounds"
+   ],
+   "avoid": [
+    "tables with text in cells: use the Table tool, which keeps text and cell sizes together",
+    "alignment guides: use the document grid or guidelines instead of printed objects",
+    "very dense grids (hundreds of cells): many objects slow the file, use a pattern fill"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Rectangular Grid Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: 'Ctrl makes square cells overall' was muddled; Ctrl constrains the whole grid to a square, cells are square only when columns equal rows."
+   }
+  },
+  {
+   "name": "Impact tool",
+   "id": "874d2621-3a80-96b4-436e-e9f11b74bf02",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Impact tool",
+   "status": "current",
+   "summary": "Creates comic-style impact lines: radial burst (focus) lines or parallel speed lines, built from tapered strokes between an inner and an outer boundary, with controls for line spacing and width ranges, randomisation and stroke shape. The tool's own data source (IImpactToolDS) confirms the settings: EffectType, SpacingMin/Max, WidthMin/Max, RandomizeStartPoints/EndPoints, AngleDegrees, StrokeType, ThickestPointPosPercent.",
+   "how": "Pick the Impact tool in the Shape tools flyout, choose the effect type (radial or parallel) on the property bar, then drag on the page to set the area; adjust line spacing and width (with randomise options), the stroke style and where the thickest point falls, and for parallel lines the angle. Optionally pick inner and outer boundary shapes from the drawing so the lines stop at an object, e.g. around a headline.",
+   "scriptable": "no",
+   "script_api": "Selecting the tool only: Automation.InvokeItem \"874d2621-3a80-96b4-436e-e9f11b74bf02\" (ActiveTool reads -1). The ImpactTool.tlb class IImpactToolDS holds the property-bar settings, but no harvested call creates the effect; a script would have to draw the tapered lines itself as curves.",
+   "use_for": [
+    "manga / comic focus lines behind a character or product",
+    "speed lines for motion and sale-energy posters",
+    "burst backgrounds behind a headline or price"
+   ],
+   "avoid": [
+    "subtle or photographic designs: the effect reads strongly as comic art",
+    "automated pipelines: no script call creates it",
+    "simple sunburst backgrounds with even rays: a Polygon/Star or radial pattern is easier to control"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Polygon",
+   "id": "8a8221f7-354d-4d88-be12-8e15c97e788a",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Polygon",
+   "status": "current",
+   "summary": "Draws a regular polygon (triangle, pentagon, hexagon ...) with the number of sides set on the property bar. It stays a live polygon: editing one node with the Shape tool moves the matching nodes on every side symmetrically, which turns it into star- or flower-like shapes.",
+   "how": "Press Y (or pick Polygon in the Shape tools flyout), set Points or sides on the property bar, then drag; Ctrl keeps it symmetrical (equal width and height), Shift draws from the centre. Use the Shape tool (F10) on a node to reshape all sides at once; convert to curves (Ctrl+Q) for independent edits.",
+   "shortcut": "Y",
+   "scriptable": "yes",
+   "script_api": "Selecting the tool: Application.ActiveTool = 60 (cdrToolDrawPolygon) or Automation.InvokeItem \"8a8221f7-354d-4d88-be12-8e15c97e788a\". Same result without the tool: ActiveLayer.CreatePolygon2(CenterX, CenterY, Radius, Sides, Angle) or CreatePolygon(Left, Top, Right, Bottom, Sides); read or change it later through Shape.Polygon (Type, Sides, Sharpness).",
+   "use_for": [
+    "hexagon grids and badges",
+    "triangles and geometric poster elements",
+    "symmetric starbursts made by dragging one node"
+   ],
+   "avoid": [
+    "stars with a set point sharpness: use the Star tool",
+    "irregular polygons: draw with the Pen / Polyline tool",
+    "rounded-corner polygons for icons: the polygon has no live corner rounding, round it afterwards with the Corners docker (Window > Dockers > Corners: fillet, scallop, chamfer) or Shape.Fillet / Scallop / Chamfer in a script (the result is curves); Shape.Polygon exposes only Type, Sides and Sharpness"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "polygonTool",
+    "AI": "Adobe Shape Construction Regular Polygon Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: named the corner-rounding command as 'Fillet/Scallop/Chamfer'; in this version it is the Corners docker (Window/Dockers/Corners in the menu harvest), and Shape.Fillet / Scallop / Chamfer exist in the API, so it now names both."
+   }
+  },
+  {
+   "name": "Spiral",
+   "id": "98987710-ab20-498b-8925-34373b2d9ddd",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Spiral",
+   "status": "current",
+   "summary": "Draws an open spiral curve with a set number of revolutions, either symmetrical (evenly spaced turns) or logarithmic (turns that widen outward by an expansion factor). The result is an open curve, so it shows an outline, not a fill.",
+   "how": "Press A (or pick Spiral in the Shape tools flyout), set the number of revolutions and choose symmetrical or logarithmic (with its expansion slider) on the property bar before drawing, then drag; Ctrl keeps width and height equal, Shift draws from the centre. Style it with outline width and colour.",
+   "shortcut": "A",
+   "scriptable": "yes",
+   "script_api": "Selecting the tool: Application.ActiveTool = 62 (cdrToolDrawSpiral) or Automation.InvokeItem \"98987710-ab20-498b-8925-34373b2d9ddd\". Same result without the tool: ActiveLayer.CreateSpiral(Left, Top, Right, Bottom, NumRevolutions, SpiralType cdrSymmetric | cdrLogarithmic, GrowthRate).",
+   "use_for": [
+    "hypnotic or retro swirl backgrounds",
+    "decorative flourishes and ornament motifs",
+    "paths for text on a spiral"
+   ],
+   "avoid": [
+    "filled swirl shapes: an open spiral will not fill, convert the outline to an object or close the curve",
+    "adding revolutions after drawing: the count is fixed once drawn, redraw instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Shape Construction Spiral Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Star",
+   "id": "DDA23C6E-CB19-4BDC-8E9C-1E3082D99BB7",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Shape Tools/Star",
+   "status": "current",
+   "summary": "Draws a star with a chosen number of points and point sharpness as a single closed outline, ready to fill. It stays an editable star object (points and sharpness can be changed later on the property bar).",
+   "how": "Pick Star in the Shape tools flyout, set the number of points and the sharpness on the property bar, then drag; Ctrl keeps it symmetrical, Shift draws from the centre. Select it again to change points or sharpness; convert to curves (Ctrl+Q) for free node edits.",
+   "scriptable": "partial",
+   "script_api": "Selecting the tool: Automation.InvokeItem \"DDA23C6E-CB19-4BDC-8E9C-1E3082D99BB7\" (ActiveTool reads -1, no cdrTools value). Drawing a star by script: ActiveLayer.CreatePolygon2(CenterX, CenterY, Radius, Sides, Angle, InnerRadius, Star = True, Sharpness) or CreatePolygon(..., Star = True, StarComplexity); whether that returns the Star tool's object (Shape.Polygon.Type = cdrStar) or cdrPolygonAsStar was not probed, so read Polygon.Type back.",
+   "use_for": [
+    "sale and price-burst badges",
+    "rating stars and award icons",
+    "festive and kids' poster decoration"
+   ],
+   "avoid": [
+    "many-pointed sunbursts with uneven rays: use the Impact tool or a Polygon dragged into a burst",
+    "brand stars with exact proportions: build from a Polygon with typed values or draw precisely with the Pen tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "StarTool",
+    "AI": "Adobe Shape Construction Star Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

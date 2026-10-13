@@ -1,0 +1,839 @@
+{
+ "cards": [
+  {
+   "name": "Overprint Outline",
+   "id": "a86ade3d-a297-47c8-903a-324cabbb81e3",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Overprint Outline",
+   "status": "current",
+   "summary": "Check item that sets the selected object's outline to overprint. In colour separations the outline's ink then prints on top of the colours underneath instead of knocking them out, so a thin outline cannot open white gaps when plates misregister. Nothing changes on screen unless overprint simulation is on. The harvest shows it enabled only with a vector object selected, not with an empty document or a bitmap.",
+   "use_for": [
+    "black keylines and outlines on packaging and labels going to offset print",
+    "simple trapping of thin dark outlines over coloured fills",
+    "spot-colour die-line or cut-contour outlines that must not knock out the art beneath"
+   ],
+   "avoid": [
+    "light outline colours over darker art: overprinting mixes the inks and the light outline nearly disappears; leave it knocked out",
+    "RGB / screen output (web, social): overprint only matters in CMYK or spot separations and print PDFs",
+    "judging it in the normal view: preview with overprint simulation or check the separations in Print Preview"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Attributes"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"a86ade3d-a297-47c8-903a-324cabbb81e3\") toggles it for the selection. Object model: Shape.OverprintOutline = True / False; read it back with Shape.GetOverprintOutlineState (both harvested IVGShape members).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Pages",
+   "id": "1f481838-3b66-4b8e-8d63-0b1a665b7b0c",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Pages",
+   "status": "current",
+   "summary": "Opens or closes the Pages docker (the same item as Window/Dockers/Pages). The docker lists every page of the document as a thumbnail; you add, delete and rename pages there and drag thumbnails to reorder them. It is a toggle and is enabled in every harvest probe, including with no document open.",
+   "use_for": [
+    "multi-page brochures, menus and catalogues",
+    "carousel posts built as one document with a page per slide",
+    "reordering or renaming pages before PDF export"
+   ],
+   "avoid": [
+    "changing one page's size or orientation: use the page settings on the property bar / Layout menu",
+    "scripted page work: call Document.AddPages / InsertPages directly instead of driving the docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Artboards"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1f481838-3b66-4b8e-8d63-0b1a665b7b0c\") only shows / hides the docker. The page jobs it hosts are object-model calls (all harvested): Document.AddPages(NumberOfPages), Document.InsertPages(NumberOfPages, BeforePage, Page), Page.Delete() and Page.MoveTo(Index).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Page.Delete / Page.MoveTo(Index) are harvested IVGPage members, not unverified"
+   }
+  },
+  {
+   "name": "Draw in Perspective",
+   "id": "46d38bcb-1912-4793-a409-55b8bec3ebfc",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Perspective/Draw in Perspective",
+   "status": "current",
+   "summary": "Starts perspective drawing mode. A perspective grid appears, with a horizon line and vanishing points set by the One-point, Two-point or Three-point (worm's-eye / bird's-eye view) presets on the property bar. Objects you draw on the active plane are projected onto it, and finishing leaves an editable perspective group. The harvest shows it enabled with a document open and nothing selected, and disabled with a rectangle or bitmap selected.",
+   "use_for": [
+    "packaging and box mock-ups drawn on two or three faces",
+    "signage or posters on a building wall in an illustration",
+    "perspective cityscapes and room interiors",
+    "text running along a floor or wall plane"
+   ],
+   "avoid": [
+    "distorting one existing object quickly: use Add Perspective (Object/Perspective/Add Perspective) on it",
+    "realistic photo mock-ups: place the art onto the photo in Photoshop (Vanishing Point / Perspective Warp)",
+    "running it with objects selected: the harvest shows it disabled then, so deselect first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Perspective Grid Tool",
+    "PS": "Vanishing Point"
+   },
+   "how": "With nothing selected, run the command. Pick a preset on the property bar (One-point, Two-point, Three-point worm's-eye or bird's-eye view) and drag the vanishing points and horizon until the grid matches the scene. Choose the active plane, draw with the usual tools, then finish the mode to get a perspective group. Re-open it later with Edit Perspective Group.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"46d38bcb-1912-4793-a409-55b8bec3ebfc\") only enters the interactive mode (the harvest flags it as opening a dialog). For an existing group, the perspective type library (PerspectiveGroupToolOM.tlb) exposes IPerspectiveGroupShape.EnterEditMode / LeaveEditMode and IPerspectiveGroupProperties.SetVanishPoints / SetHorizonPoints; the presets are the cdrPerspPreset values cdrPerspPreset1Pt, cdrPerspPreset2Pt, cdrPerspPreset3PtBirdView and cdrPerspPreset3PtWormView. The only creation call is the generic Layer.CreateCustomShape(TypeID, Parameters), and the TypeID of a perspective group is not in the harvest (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'no call creates a perspective group' overstated; named the generic Layer.CreateCustomShape(TypeID, Parameters) and that the perspective TypeID is not harvested"
+   }
+  },
+  {
+   "name": "Edit Perspective Group",
+   "id": "70453c54-f634-4aca-9577-204f48008e7e",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Perspective/Edit Perspective Group",
+   "status": "needs_input",
+   "summary": "Re-opens perspective drawing mode for a selected perspective group made with Draw in Perspective. You can then move its vanishing points and horizon, switch the active plane, and add, move or redraw the objects on it. It was disabled in every harvest probe (no document, empty document, rectangle, bitmap) because it needs a perspective group selected.",
+   "use_for": [
+    "changing the viewpoint of a packaging or signage mock-up after review",
+    "adding labels or details to an existing perspective scene"
+   ],
+   "avoid": [
+    "plain objects or an Add Perspective effect: it works only on perspective groups; edit an Add Perspective effect with the Shape tool instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Perspective Grid Tool"
+   },
+   "how": "Select the perspective group and run the command. Adjust the grid handles or the preset on the property bar, edit or add objects on the active plane, then finish the mode.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"70453c54-f634-4aca-9577-204f48008e7e\") enters the mode for the selected group. Object model: Shape.Custom (harvested, returns IVGCustomShape, which IPerspectiveGroupShape inherits) gives the group; then IPerspectiveGroupShape.EnterEditMode() / LeaveEditMode() and GetPropertiesCopy / CopyAssignProperties(PropertiesToModify) (harvested, PerspectiveGroupToolLib). Treating Shape.Custom as an IPerspectiveGroupShape is unverified.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the harvest does show the route: IVGShape.Custom returns IVGCustomShape, which IPerspectiveGroupShape inherits"
+   }
+  },
+  {
+   "name": "Center",
+   "id": "273d95de-7dc4-485d-a654-04f1cf655ce2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Center",
+   "status": "needs_input",
+   "summary": "Moves the contents of the selected PowerClip so they sit centred in the frame, without scaling them. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "re-centring a photo or logo that drifted inside a frame",
+    "centring a product shot in a badge or circle frame",
+    "consistent centred crops across a grid of photo frames"
+   ],
+   "avoid": [
+    "contents that should cover the whole frame: use Fill Proportionally",
+    "contents larger than the frame that must show completely: use Fit Proportionally"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"273d95de-7dc4-485d-a654-04f1cf655ce2\") with the PowerClip selected. The harvested IVGPowerClip has no centre method. When placing content, contents.AddToPowerClip(Shape:=frame, CenterInContainer:=cdrTrue) centres it as it goes in (harvested IVGShape / IVGShapeRange.AddToPowerClip; cdrTrue = -1).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: AddToPowerClip keys are Shape and CenterInContainer (cdrTriState), not Frame"
+   }
+  },
+  {
+   "name": "Copy PowerClip From",
+   "id": "b9be1ce5-bfcf-4de2-b42c-94a49c317c8d",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Copy PowerClip From",
+   "status": "needs_input",
+   "summary": "Gives the selected object a copy of another PowerClip's contents. After the command the cursor becomes a pick arrow; you click the PowerClip to copy from, and the selected object becomes a frame holding a duplicate of those contents. It was disabled in every harvest probe, where no PowerClip existed to copy from.",
+   "use_for": [
+    "repeating the same photo or texture across several frames",
+    "building a set of matching badges or icons from one finished PowerClip"
+   ],
+   "avoid": [
+    "one image that must update everywhere: each copy is independent; put a symbol inside the frames instead",
+    "very large bitmaps: every copy duplicates the bitmap and grows the file; resample the image first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Select the object that should become the frame and run the command. Then click the source PowerClip with the arrow cursor.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b9be1ce5-bfcf-4de2-b42c-94a49c317c8d\") starts the pick and then waits for a click, so it cannot finish unattended. Object-model route: source.PowerClip.Shapes.All.Duplicate, then .AddToPowerClip(Shape:=target) (the members are harvested; the route is unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: real keys (Shapes.All, AddToPowerClip(Shape:=...))"
+   }
+  },
+  {
+   "name": "Create Empty PowerClip Frame",
+   "id": "25f351b0-a205-4c43-8f1a-f8e982220f61",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Create Empty PowerClip Frame",
+   "status": "current",
+   "summary": "Turns the selected object(s) into empty PowerClip frames: placeholder containers into which images or artwork are placed later and clipped to the frame's shape. The harvest shows it enabled with a vector rectangle selected, but not with a bitmap or with nothing selected.",
+   "use_for": [
+    "layout templates with photo placeholders (brochures, menus, social templates)",
+    "frames a client drops photos into later",
+    "grid layouts of image cells"
+   ],
+   "avoid": [
+    "bitmaps as frames: the harvest shows it disabled with a bitmap selected, so draw a vector shape",
+    "content already on the page: use Object/PowerClip/Place Inside Frame directly"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/New/Convert to Frame"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"25f351b0-a205-4c43-8f1a-f8e982220f61\") with the frame object(s) selected. The harvest has no object-model call that makes an empty frame; contents.AddToPowerClip(Shape:=frame) places content into a frame directly (harvested).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: AddToPowerClip key is Shape, not Frame"
+   }
+  },
+  {
+   "name": "Edit PowerClip",
+   "id": "cd3ae51f-d2df-4a10-8cf3-0a498e4ec026",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Edit PowerClip",
+   "status": "needs_input",
+   "summary": "Enters edit mode for the selected PowerClip. The frame shows as an outline and the contents become directly selectable, so you can move, scale, rotate or recolour them inside the frame; leave with Finish Editing PowerClip. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "reframing a photo inside a shape (crop, zoom, rotate)",
+    "editing text or art that was clipped into a badge",
+    "adding more objects to an existing PowerClip"
+   ],
+   "avoid": [
+    "simple re-centring or scaling: Center, Fit Proportionally and Fill Proportionally each do it in one step",
+    "pulling the contents out for good: use Extract Contents"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Clipping Mask/Edit Contents"
+   },
+   "how": "Select the PowerClip and run the command. Transform or edit the contents (anything moved outside the frame is hidden again when you finish), then run Finish Editing PowerClip.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"cd3ae51f-d2df-4a10-8cf3-0a498e4ec026\") enters the mode. Object model: Shape.PowerClip.EnterEditMode() (harvested). A script can also reach the contents without the mode through Shape.PowerClip.Shapes (harvested).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Extract Contents",
+   "id": "6ad732d1-4817-4be4-b482-a60ada98c11f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Extract Contents",
+   "status": "needs_input",
+   "summary": "Takes the contents out of the selected PowerClip and puts them back on the page as ordinary, unclipped objects in their current positions; the frame object stays. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "replacing the photo in a frame (extract, delete, place a new one)",
+    "recovering artwork clipped into the wrong shape",
+    "unpacking supplied files built with PowerClips before editing"
+   ],
+   "avoid": [
+    "just adjusting the crop or position: use Edit PowerClip or Center / Fit / Fill",
+    "keeping the frame filled: the frame is left without contents, so place new content right after"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Clipping Mask/Release"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6ad732d1-4817-4be4-b482-a60ada98c11f\") with the PowerClip selected. Object model: Shape.PowerClip.ExtractShapes() returns the extracted ShapeRange (harvested).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Fill Proportionally",
+   "id": "56a4aae7-146f-406d-ab7e-e61c27fc93cc",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Fill Proportionally",
+   "status": "needs_input",
+   "summary": "Scales the contents of the selected PowerClip uniformly and centres them until they cover the whole frame, so no part of the frame is left empty and the frame crops the overflow. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "photos in circle, card or banner frames that must be fully covered",
+    "uniform full-bleed photo cells in a grid layout",
+    "profile pictures in round frames"
+   ],
+   "avoid": [
+    "contents that must show completely (logos, product cut-outs): use Fit Proportionally",
+    "small bitmaps in big frames: scaling up softens them, so use a larger source"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"56a4aae7-146f-406d-ab7e-e61c27fc93cc\") with the PowerClip selected. The harvested IVGPowerClip has no fill method. By hand: read the frame with Shape.GetBoundingBox(x, y, Width, Height), scale Shape.PowerClip.Shapes.All by the larger of the two width / height ratios with ShapeRange.SetSize(Width, Height), then centre it (members harvested; the route is unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Shapes is a collection, so the range is Shapes.All; SetSize / GetBoundingBox are harvested members, only the route is unverified"
+   }
+  },
+  {
+   "name": "Finish Editing PowerClip",
+   "id": "22eabb92-56f4-422d-bae7-16a7341c66b7",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Finish Editing PowerClip",
+   "status": "needs_input",
+   "summary": "Leaves PowerClip edit mode (entered with Edit PowerClip) and clips the contents to the frame again. The harvest shows it enabled only while a PowerClip is being edited, so it was disabled in every probe.",
+   "use_for": [
+    "closing a crop or reframe edit on a photo frame",
+    "returning to normal editing after adding objects to a PowerClip"
+   ],
+   "avoid": [
+    "unclipping the contents: this re-applies the clip; use Extract Contents"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Exit Isolation Mode"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"22eabb92-56f4-422d-bae7-16a7341c66b7\") while in PowerClip edit mode. Object model: Document.ActivePowerClip.LeaveEditMode() (harvested IVGDocument.ActivePowerClip and IVGPowerClip.LeaveEditMode).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Fit Proportionally",
+   "id": "a369e3ae-6ed6-46d0-acd8-e0966241fce0",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Fit Proportionally",
+   "status": "needs_input",
+   "summary": "Scales the contents of the selected PowerClip uniformly and centres them until all of them fit inside the frame. Nothing is cropped, but empty margins remain on two sides when the proportions differ. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "logos or product cut-outs that must stay whole inside a badge or tile",
+    "showing a complete artwork inside a fixed-size frame",
+    "catalogue grid thumbnails"
+   ],
+   "avoid": [
+    "photos that must cover the frame: use Fill Proportionally",
+    "an exact frame-size fill where distortion is acceptable: use Stretch to Fill"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"a369e3ae-6ed6-46d0-acd8-e0966241fce0\") with the PowerClip selected. The harvested IVGPowerClip has no fit method. By hand: frame.GetBoundingBox(x, y, Width, Height), then Shape.PowerClip.Shapes.All.SetBoundingBox(x, y, Width, Height, KeepAspect:=True) (ReferencePoint defaults to cdrCenter; members harvested, result unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: named the harvested ShapeRange.SetBoundingBox(..., KeepAspect:=True), which fits inside a box, and Shapes.All"
+   }
+  },
+  {
+   "name": "Lock Contents to PowerClip",
+   "id": "6ea9b15a-040b-470c-a923-c7b21273649f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Lock Contents to PowerClip",
+   "status": "needs_input",
+   "summary": "Check item for the selected PowerClip. When it is on, the contents move, scale and rotate with the frame. When it is off, you can transform the frame by itself while the contents stay put on the page, which changes the part that shows through. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "sliding a frame across a large photo to choose the crop (off)",
+    "moving a finished photo frame around a layout with its crop intact (on)"
+   ],
+   "avoid": [
+    "leaving it off by accident: the frame then moves without its contents and the visible crop changes; turn it back on before rearranging the layout"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6ea9b15a-040b-470c-a923-c7b21273649f\") toggles it for the selected PowerClip. Object model: Shape.PowerClip.ContentsLocked = True / False (harvested).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Stretch to Fill",
+   "id": "8ab3326a-0c6a-46ee-9b20-0d3dcb43fcc1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/PowerClip/Stretch to Fill",
+   "status": "needs_input",
+   "summary": "Scales the contents of the selected PowerClip non-uniformly so they match the frame's width and height exactly. The frame is filled with no crop, but the contents distort when the proportions differ. It was disabled in every harvest probe because it needs a PowerClip selected.",
+   "use_for": [
+    "patterns, textures or gradients that may stretch to fill a shape",
+    "abstract background art inside panels of different sizes"
+   ],
+   "avoid": [
+    "photos, faces, logos and text: they distort; use Fill Proportionally or Fit Proportionally"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"8ab3326a-0c6a-46ee-9b20-0d3dcb43fcc1\") with the PowerClip selected. The harvested IVGPowerClip has no stretch method. By hand: frame.GetBoundingBox(x, y, Width, Height), then Shape.PowerClip.Shapes.All.SetBoundingBox(x, y, Width, Height, KeepAspect:=False) (members harvested, result unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: real keys, Shapes.All and SetBoundingBox(..., KeepAspect:=False)"
+   }
+  },
+  {
+   "name": "Properties",
+   "id": "b9c96a22-ab10-4b92-abb8-44d767c126ce",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Properties",
+   "status": "current",
+   "summary": "Opens or closes the Properties docker (also at Window/Dockers/Properties). This context-sensitive panel shows the fill, outline and transparency of the current selection or tool, plus character and paragraph settings for text. It is enabled in every harvest probe, including with no document.",
+   "use_for": [
+    "setting fills, outlines and transparency precisely by number",
+    "editing the formatting of a selected text object",
+    "checking the attributes of a supplied object"
+   ],
+   "avoid": [
+    "scripted work: set the attributes in the object model instead of driving the docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Properties",
+    "PS": "Window/Properties"
+   },
+   "shortcut": "Alt+Enter",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b9c96a22-ab10-4b92-abb8-44d767c126ce\") only shows / hides the docker. The attributes it edits are object-model properties: Shape.Fill, Shape.Outline and Shape.Transparency (harvested IVGShape members).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Shape.Fill / Outline / Transparency are harvested IVGShape properties, not unverified"
+   }
+  },
+  {
+   "name": "Create Rollover",
+   "id": "91dbd3be-062a-4e3f-b9f5-47abc99a6361",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Rollover/Create Rollover",
+   "status": "current",
+   "summary": "Turns the selected object(s) into a rollover: an interactive web object with Normal, Over and Down states, each starting as a copy of the artwork, that switch when the pointer hovers or clicks after the design is published to HTML. The harvest shows it enabled with a rectangle or a bitmap selected.",
+   "use_for": [
+    "web buttons and navigation built in CorelDRAW for HTML output",
+    "hover-state mock-ups of a button"
+   ],
+   "avoid": [
+    "modern websites and apps: build hover states in HTML/CSS or a UI design tool; CorelDRAW rollovers are an old-style web feature",
+    "print or image output: only the Normal look is ever seen"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"91dbd3be-062a-4e3f-b9f5-47abc99a6361\") with the artwork selected. The harvested object model has no call that creates a rollover; Document.SelectionInfo.IsRollOverSelected reports one afterwards.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the selection flags live on Document.SelectionInfo (IVGSelectionInformation); there is no SelectionInformation object to call"
+   }
+  },
+  {
+   "name": "Edit Rollover",
+   "id": "54cac40e-3a33-47a1-8b3f-532ea57cefa3",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Rollover/Edit Rollover",
+   "status": "needs_input",
+   "summary": "Enters rollover edit mode for the selected rollover, where you switch between its Normal, Over and Down states and change the artwork of each; leave with Finish Editing rollover. The harvest's enable rule needs exactly one rollover selected and not already in edit mode, so it was disabled in every probe.",
+   "use_for": [
+    "giving a web button different hover and pressed looks",
+    "fixing text or colour in one state of a rollover"
+   ],
+   "avoid": [
+    "several rollovers at once: it needs exactly one selected",
+    "print work: rollover states never print"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Select one rollover and run the command. Pick a state with the state control CorelDRAW shows in edit mode, edit that state's objects, repeat for the other states, then run Finish Editing rollover.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"54cac40e-3a33-47a1-8b3f-532ea57cefa3\") enters the mode (the harvest flags it as opening a dialog). The harvested object model only reports the state (Document.SelectionInfo.IsRollOverSelected / IsEditingRollOver); no edit method was found.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Document.SelectionInfo, not SelectionInformation"
+   }
+  },
+  {
+   "name": "Extract Rollover Objects",
+   "id": "9af6ee00-671c-4631-a270-8814bbc7b1a2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Rollover/Extract Rollover Objects",
+   "status": "needs_input",
+   "summary": "Takes the artwork of the selected rollover out as ordinary objects. The harvest's enable rule needs exactly one object selected, that it is a rollover and that it is not in edit mode. Whether the rollover itself is kept and whether all three states come out as separate objects was not probed, so check the result in the Objects docker.",
+   "use_for": [
+    "reusing a rollover button's artwork in a print or static design",
+    "cleaning up an old web file before export to another app"
+   ],
+   "avoid": [
+    "changing one state's look: use Edit Rollover instead"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9af6ee00-671c-4631-a270-8814bbc7b1a2\") with one rollover selected. No object-model equivalent was found in the harvest.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unprobed claim that the rollover behaviour is removed; both open questions now stated"
+   }
+  },
+  {
+   "name": "Finish Editing rollover",
+   "id": "7b203f56-22d1-49fd-b942-3d626219c438",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Rollover/Finish Editing rollover",
+   "status": "needs_input",
+   "summary": "Leaves rollover edit mode (entered with Edit Rollover) and returns to normal drawing, keeping the edited states. The harvest's enable rule allows it only while a rollover is being edited.",
+   "use_for": [
+    "closing a rollover state edit"
+   ],
+   "avoid": [
+    "unpacking the rollover into plain objects: use Extract Rollover Objects"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"7b203f56-22d1-49fd-b942-3d626219c438\") while in rollover edit mode. Document.SelectionInfo.IsEditingRollOver (harvested) tells whether that mode is active.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: Document.SelectionInfo, not SelectionInformation"
+   }
+  },
+  {
+   "name": "Rollover Live Preview",
+   "id": "9377c70c-7c40-47ef-93b2-a315c7d625ba",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Rollover/Rollover Live Preview",
+   "status": "current",
+   "summary": "Check item that turns live preview of rollovers on or off in the drawing window. When it is on, rollovers switch to their Over and Down artwork as you hover and click, so you can test button states without exporting. The harvest's enable rule needs an open document and disables it in full-screen preview, in the page sorter and while a rollover is being edited.",
+   "use_for": [
+    "testing web-button hover and click states before HTML output"
+   ],
+   "avoid": [
+    "selecting and editing rollovers while it is on: they react to the pointer; turn it off to edit"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9377c70c-7c40-47ef-93b2-a315c7d625ba\") toggles it. No object-model property for it was found in the harvest.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Back Minus Front",
+   "id": "f64b0582-0028-47dc-a075-f29a0a65fcba",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Back Minus Front",
+   "status": "needs_input",
+   "summary": "Shaping command for two or more selected objects. It removes the area of every object in front from the backmost object and deletes the front objects, leaving one curve with the back object's fill and outline. With only a single rectangle selected in the harvest probe it stayed disabled, because it needs at least two objects.",
+   "use_for": [
+    "cutting holes or notches out of a shape (bite marks, cut-out letters)",
+    "negative-space logos",
+    "stencil and vinyl-cut shapes"
+   ],
+   "avoid": [
+    "keeping the cutting objects: use Trim, which keeps them",
+    "edits you may want to undo later: the result is final, so keep a copy, or use a live Pathfinder effect in Illustrator"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Minus Front (selection)",
+    "PS": "Layer/Combine Shapes/Subtract Front Shape"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f64b0582-0028-47dc-a075-f29a0a65fcba\") with the objects selected. The harvest has no single Back Minus Front call; for two shapes, frontShape.Trim(TargetShape:=backShape, LeaveSource:=False) gives the same result (IVGShape.Trim is harvested; using it this way is unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Boundary",
+   "id": "b0491566-5ffe-450a-b17e-f2f496b4eb22",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Boundary",
+   "status": "current",
+   "summary": "Creates a new closed curve that traces the outer edge of the selected object(s), like a silhouette outline around the whole selection, and leaves the originals untouched. The harvest shows it enabled with a single rectangle or bitmap selected.",
+   "use_for": [
+    "cut contours for stickers, decals and vinyl (an outline around a logo)",
+    "a background shape or badge behind a group of text and icons",
+    "one silhouette shape of a complex illustration"
+   ],
+   "avoid": [
+    "merging the originals into one shape: use Weld",
+    "a cut line with breathing room: Boundary hugs the edge, so add an outside Contour to the boundary for an offset"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b0491566-5ffe-450a-b17e-f2f496b4eb22\") with the objects selected. Object model: ShapeRange.CreateBoundary(x, y, PlaceOnTop, DeleteSource) or Shape.CreateBoundary (harvested; PlaceOnTop and DeleteSource default to False).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Front Minus Back",
+   "id": "49d4605c-e1fd-4574-83f9-6bb8e57bf93a",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Front Minus Back",
+   "status": "needs_input",
+   "summary": "Shaping command for two or more selected objects. It removes the area of all objects behind from the frontmost object and deletes the back objects, leaving one curve with the front object's fill and outline. With only a single rectangle selected in the harvest probe it stayed disabled.",
+   "use_for": [
+    "trimming a foreground shape where it overlaps a background element",
+    "a crescent or partial shape from two circles, keeping the front one"
+   ],
+   "avoid": [
+    "keeping the back objects: use Trim with the front object as the target",
+    "removing the front objects instead: that is Back Minus Front"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Minus Back"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"49d4605c-e1fd-4574-83f9-6bb8e57bf93a\") with the objects selected. The harvest has no single call for it; for two shapes, backShape.Trim(TargetShape:=frontShape, LeaveSource:=False) gives the same result (IVGShape.Trim is harvested; using it this way is unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Intersect",
+   "id": "e5b41ae3-8c3b-4c5e-9f0f-46b4e5f1d9d0",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Intersect",
+   "status": "needs_input",
+   "summary": "Creates a new object from the area where the selected objects overlap. It takes the fill and outline of the target object (the last one selected, or the bottom one with a marquee selection) and keeps the originals. With only a single rectangle selected in the harvest probe it stayed disabled, because it needs two or more overlapping objects.",
+   "use_for": [
+    "Venn-diagram and colour-overlap graphics",
+    "cutting a shape to a frame edge without PowerClip",
+    "a highlight or shadow piece that exactly matches an overlap"
+   ],
+   "avoid": [
+    "clipping a photo or a group that must stay editable: use PowerClip",
+    "wanting only the overlap: the originals are kept, so delete them afterwards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Intersect (selection)",
+    "PS": "Layer/Combine Shapes/Unite Shapes at Overlap"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e5b41ae3-8c3b-4c5e-9f0f-46b4e5f1d9d0\") with the objects selected. Object model: shapeA.Intersect(TargetShape, LeaveSource, LeaveTarget) returns the new shape (harvested; both Leave flags default to True).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Shape",
+   "id": "bc9ee4f2-40b0-aba9-408e-9f6890ee355a",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Shape",
+   "status": "current",
+   "summary": "Opens or closes the Shape (shaping) docker, also at Window/Dockers/Shape. It is one panel for Weld, Trim, Intersect, Simplify, Front Minus Back, Back Minus Front and Boundary, with options to keep the original source and / or target objects instead of consuming them. It is enabled in every harvest probe.",
+   "use_for": [
+    "shaping operations that must keep the originals",
+    "repeated weld and trim work while drawing logos and icons"
+   ],
+   "avoid": [
+    "scripted shaping: call Shape.Weld / Trim / Intersect / CreateBoundary directly"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Pathfinder"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"bc9ee4f2-40b0-aba9-408e-9f6890ee355a\") only shows / hides the docker. The operations are object-model calls: Shape.Weld, Shape.Trim and Shape.Intersect (each with LeaveSource / LeaveTarget flags) and ShapeRange.CreateBoundary (harvested).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Simplify",
+   "id": "7da36c72-627c-4782-b51a-01718a43551b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Simplify",
+   "status": "needs_input",
+   "summary": "Shaping command that trims away every part of the selected objects that is hidden behind an object in front, so nothing overlaps any more. All the objects remain, each with its own fill, as non-overlapping pieces. With only a single rectangle selected in the harvest probe it stayed disabled, because it needs two or more overlapping objects.",
+   "use_for": [
+    "vinyl-cutting and screen-printing files where stacked layers must not overlap",
+    "laser or CNC artwork that needs flat, non-overlapping regions",
+    "turning a stacked illustration into cut-ready pieces"
+   ],
+   "avoid": [
+    "reducing the nodes of a curve (what Illustrator calls Simplify): use Reduce nodes with the Shape tool; this command is about overlaps",
+    "artwork whose stacking you still need to change: it is destructive"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Trim"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"7da36c72-627c-4782-b51a-01718a43551b\") with the objects selected. The harvest has no single call for it; looping frontShape.Trim(backShape) over each overlapping pair from front to back does the same job (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Trim",
+   "id": "1d425d4a-4ca9-4130-87ae-78eae87ead13",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Trim",
+   "status": "needs_input",
+   "summary": "Shaping command that cuts the shape of the other selected objects out of the target object (the last one selected, or the bottom one with a marquee selection). The cutting objects stay on the page, so the result is the target with holes or notches. With only a single rectangle selected in the harvest probe it stayed disabled, because it needs two or more objects.",
+   "use_for": [
+    "knocking text or icons out of a background shape while keeping the text",
+    "gaps between interlocking shapes (logo knots, overlapping rings)",
+    "cutting a shape apart for stickers or vinyl"
+   ],
+   "avoid": [
+    "removing the cutters as well: use Back Minus Front",
+    "trimming the wrong object: selection order picks the target, so check it before running"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Minus Front (selection)",
+    "PS": "Layer/Combine Shapes/Subtract Front Shape"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1d425d4a-4ca9-4130-87ae-78eae87ead13\") with the objects selected. Object model: cutter.Trim(TargetShape, LeaveSource, LeaveTarget) (harvested; LeaveSource defaults to True and LeaveTarget to False).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Weld",
+   "id": "416c9d7d-7ca2-4947-92b7-7c4b8191ca2c",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Shaping/Weld",
+   "status": "current",
+   "summary": "Shaping command that merges the selected objects into a single curve along their combined outer outline, removing the lines where they overlap. The result takes the target object's fill and outline. The harvest shows it enabled even with one rectangle or one bitmap selected, but it needs two or more objects to change anything visibly.",
+   "use_for": [
+    "joining letters into one connected logotype",
+    "building icons and badges from overlapping basic shapes",
+    "one cut path for vinyl or laser from overlapping shapes"
+   ],
+   "avoid": [
+    "keeping the original pieces editable: use the Shape docker with the keep-originals options, or Group",
+    "objects of different colours: all of them take the target's single fill; Group them if the colours must stay"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Unite (selection)",
+    "PS": "Layer/Combine Shapes/Unite Shapes"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"416c9d7d-7ca2-4947-92b7-7c4b8191ca2c\") with the objects selected. Object model: shapeA.Weld(TargetShape, LeaveSource, LeaveTarget) (harvested; both flags default to False).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Break Link",
+   "id": "fc7aec5f-29d0-486e-96b5-b5f0317192d8",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Symbol/Break Link",
+   "status": "needs_input",
+   "summary": "For a symbol linked to an external symbol library, breaks the link so the symbol definition becomes local to this document and stops updating from the library. It was disabled in every harvest probe because it needs a linked symbol selected.",
+   "use_for": [
+    "freezing a library-linked logo or icon before handing a file over",
+    "editing a linked symbol locally without changing the shared library"
+   ],
+   "avoid": [
+    "turning the instance into ordinary editable objects: use Object/Symbol/Revert to Objects",
+    "symbols defined in this document: they have no library link to break"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"fc7aec5f-29d0-486e-96b5-b5f0317192d8\") with the linked symbol selected. Object model: Shape.Symbol.Definition.BreakLink() (harvested; described as breaking the link to an external library and making the definition local); Shape.Symbol.Definition.Linked is True while a library link exists.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested Definition.Linked check"
+   }
+  },
+  {
+   "name": "Create New Symbol",
+   "id": "be9422c1-aa32-4556-b812-fb7a598834c1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Object/Symbol/Create New Symbol",
+   "status": "current",
+   "summary": "Turns the selected object(s) into a symbol: the artwork is stored once as a definition in the document's symbol library and an instance replaces the selection. Copies stay linked, so editing the definition updates every instance. The harvest shows it enabled with a rectangle or a bitmap selected.",
+   "use_for": [
+    "logos, icons and repeated elements used many times in a layout",
+    "keeping file size down for maps, patterns and seating plans with many repeated objects",
+    "repeated UI elements in mock-ups that must change together"
+   ],
+   "avoid": [
+    "one-off artwork: a plain group is simpler",
+    "copies that each need their own edits: instances share one definition, so Revert to Objects first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "New Symbol"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"be9422c1-aa32-4556-b812-fb7a598834c1\") with the artwork selected. The harvest does not flag a dialog, but Corel documents a name prompt, so the call can stop on it unattended. Object model: ShapeRange.ConvertToSymbol(Name) or Shape.ConvertToSymbol(Name) takes the name as an argument and returns the instance (harvested).",
+   "how": "Select the artwork and run the command. CorelDRAW's documentation describes a name prompt: type the symbol name and confirm. The selection is replaced by an instance and the definition appears in the Symbols docker (Object/Symbol/Symbols).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial (InvokeItem can stop on the name prompt the card itself describes, as the writer's own report said); added how; script_api tightened"
+   }
+  }
+ ]
+}

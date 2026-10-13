@@ -1,0 +1,433 @@
+{
+ "cards": [
+  {
+   "name": "IVGShape",
+   "id": "class:IVGShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGShape",
+   "status": "current",
+   "summary": "The Shape object: every drawable thing in a CorelDRAW document (rectangle, ellipse, curve, text, bitmap, group, effect group, guide, the selection itself) is an IVGShape. It carries geometry (position, size, rotation, matrix), styling (Fill, Outline, Transparency), stacking and layer placement, shaping (Weld/Trim/Intersect), live effects (drop shadow, contour, blend, envelope, extrude, lens) and conversion (to curves, to bitmap).",
+   "use_for": [
+    "place and size a logo, badge or price tag at exact page coordinates in a layout",
+    "restyle an object's fill/outline and rename it for later lookup in a template",
+    "boolean shaping for logos and icons (weld, trim, intersect, fillet/chamfer corners)",
+    "add a drop shadow, inner shadow or contour to a headline or product card",
+    "convert text to curves or rasterize an object before sending print-ready files",
+    "PowerClip a photo inside a frame shape for a poster or social card"
+   ],
+   "avoid": [
+    "operating on many objects one by one in a loop when a ShapeRange call (ApplyUniformFill, AlignAndDistribute, Group) does it in one step",
+    "IVGShape.Group / IVGShape.Combine on a single shape: they act on the current selection; build an IVGShapeRange and call its Group / Combine instead",
+    "ConvertToCurves on text that still needs editing: it is one-way, keep a hidden duplicate first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "PageItem",
+    "PS": "ArtLayer"
+   },
+   "how": "Dual dispinterface in VGCore (VGCoreAuto.tlb). A script never creates it directly: it comes back from Layer.CreateRectangle2 / CreateEllipse2 / CreateArtisticText, from ActiveShape / ActiveSelection, from Shapes.Item(i) or ShapeRange.Item(i), or from methods that return a new shape (Duplicate, Clone, Weld, Trim, ConvertToBitmapEx). Type (cdrShapeType) tells which type-specific sub-object (Rectangle, Ellipse, Polygon, Curve, Text, Bitmap, Connector) is meaningful. PowerClip is not a Type: any shape can be a PowerClip container, so test Shape.PowerClip itself (expected Nothing when it is not one, unverified).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrShapeType: check before touching type-specific sub-objects (Text, Curve, Bitmap ...)"
+    },
+    {
+     "name": "Name",
+     "use": "read/write object name; set it so later scripts can FindShape by name"
+    },
+    {
+     "name": "LeftX",
+     "use": "left edge in document units (also RightX, TopY, BottomY): placement independent of ReferencePoint"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move to PositionX, PositionY measured at the document ReferencePoint"
+    },
+    {
+     "name": "SetSize",
+     "use": "stretch to Width / Height (either optional)"
+    },
+    {
+     "name": "SetBoundingBox",
+     "use": "move and resize into a box in one call, KeepAspect optional"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "IVGRect of the shape's bounds without ByRef out-params"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "absolute rotation in degrees, read/write"
+    },
+    {
+     "name": "Fill",
+     "use": "IVGFill: uniform, fountain, pattern, texture fills"
+    },
+    {
+     "name": "Outline",
+     "use": "IVGOutline: width, colour, style, arrows"
+    },
+    {
+     "name": "Duplicate",
+     "use": "independent copy offset by OffsetX/OffsetY (default 0, 0)"
+    },
+    {
+     "name": "Weld",
+     "use": "union with TargetShape; LeaveSource / LeaveTarget default False"
+    },
+    {
+     "name": "Trim",
+     "use": "cut this shape out of TargetShape; LeaveSource default True, LeaveTarget default False"
+    },
+    {
+     "name": "Intersect",
+     "use": "new shape from the overlap; LeaveSource / LeaveTarget default True"
+    },
+    {
+     "name": "CreateDropShadow",
+     "use": "live drop shadow: Opacity 50, Feather 15, Offset 0,0 by default"
+    },
+    {
+     "name": "CreateContour",
+     "use": "live contour (inside/outside steps) around the shape"
+    },
+    {
+     "name": "AddToPowerClip",
+     "use": "put this shape inside a container shape (PowerClip)"
+    },
+    {
+     "name": "ConvertToCurves",
+     "use": "turn text / primitives into editable curves (one-way)"
+    },
+    {
+     "name": "ConvertToBitmapEx",
+     "use": "rasterize to a bitmap shape; Resolution defaults to 72"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the shape from the document"
+    }
+   ],
+   "gotchas": [
+    "Coordinates and sizes are in ActiveDocument.Unit, measured from the page's lower-left corner with Y increasing upward (a Photoshop/Illustrator-style top-down Y gives mirrored layouts). Set the unit explicitly at the start of a script; the default for script-created documents may be inches (unverified).",
+    "PositionX / PositionY / SetPosition are measured at the document's ReferencePoint, so the same numbers land differently if a script or user changed it; LeftX / TopY / CenterX / SetPositionEx are unambiguous.",
+    "GetBoundingBox, GetPosition, GetSize and GetMatrix return values through ByRef parameters (the harvest marks them byref). Late-bound callers such as Python win32com may not get them back; read BoundingBox, LeftX/RightX/TopY/BottomY or SizeWidth/SizeHeight instead (unverified for every binding).",
+    "Shaping defaults differ per method: Weld consumes both shapes, Trim keeps the cutter and replaces the target, Intersect keeps both and adds a new shape. Use the returned shape, not the old reference, afterwards.",
+    "ConvertToBitmapEx defaults to Resolution 72: pass 300 or more for print. ConvertToCurves and ConvertToBitmap are destructive.",
+    "CreateDropShadow with default OffsetX/OffsetY 0 puts the shadow straight behind the object (only the feather shows); pass offsets for a visible cast shadow. The shadow becomes a separate effect object reachable through Effects.",
+    "After Delete, Cut, Weld or Combine the old reference is dead; touching it raises an automation error (unverified for every case).",
+    "Group and Combine on IVGShape operate on the current selection, not on this shape alone; use ShapeRange.Group / ShapeRange.Combine for predictable results.",
+    "Long loops redraw on every change: wrap them in Application.Optimization = True ... False (then ActiveWindow.Refresh) and ActiveDocument.BeginCommandGroup / EndCommandGroup for one undo step; a script that dies with Optimization still True leaves the UI not redrawing."
+   ],
+   "example": "Dim s As Shape, c As Shape\nSet s = ActiveLayer.CreateRectangle2(1, 1, 3, 1.5)\ns.Name = \"price_tag\"\ns.Fill.ApplyUniformFill CreateRGBColor(230, 40, 40)\ns.RotationAngle = 8\ns.CreateDropShadow Opacity:=60, Feather:=10, OffsetX:=0.05, OffsetY:=-0.05\nSet c = s.Duplicate(0, -2)\nc.SetSize 3, 0.75",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed PowerClip from the sub-objects selected by Type (cdrShapeType has no PowerClip value); added Polygon/Connector and a note that PowerClip is tested separately."
+   }
+  },
+  {
+   "name": "IVGShapeRange",
+   "id": "class:IVGShapeRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGShapeRange",
+   "status": "current",
+   "summary": "A ShapeRange is a script-held list of shapes (any mix of shape types and layers) that you can transform, style, align, group or combine as one unit. It is what ActiveSelectionRange, Shapes.All, Shapes.FindShapes and Application.CreateShapeRange return, and it does not change the user's selection unless asked.",
+   "use_for": [
+    "recolor every object of a brand element at once (ApplyUniformFill, ApplyFountainFill, SetOutlineProperties)",
+    "align and distribute a row of icons, buttons or product shots on a grid",
+    "group or combine the parts of a logo lock-up after building it",
+    "step-and-repeat a set of objects for labels, tickets or tile patterns",
+    "resize or move a whole block of a layout (SizeWidth, SetBoundingBox, Move)",
+    "filter a selection down to one shape type (FindAnyOfType) before batch edits"
+   ],
+   "avoid": [
+    "assuming it tracks the document live: shapes created or deleted after the range was built are not added or removed for you; rebuild it",
+    "Delete when you only mean to drop a shape from the list: Delete removes every shape in the range from the document, Remove / RemoveRange only edit the list",
+    "relying on it to change what the user sees selected: call CreateSelection or AddToSelection when the UI selection matters"
+   ],
+   "confidence": "high",
+   "how": "Dual dispinterface in VGCore. Reach it from Application.ActiveSelectionRange, Document.SelectionRange, Shapes.All / Range / FindShapes, Shape.DuplicateAsRange / UngroupEx / BreakApartEx, or start empty with Application.CreateShapeRange and fill it with Add / AddRange. Items are 1-based; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of shapes in the list"
+    },
+    {
+     "name": "Item",
+     "use": "1-based index or shape name"
+    },
+    {
+     "name": "Add",
+     "use": "append one shape to the list"
+    },
+    {
+     "name": "AddRange",
+     "use": "append another range"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the shape at Index from the list only"
+    },
+    {
+     "name": "Group",
+     "use": "group all shapes and return the group shape"
+    },
+    {
+     "name": "Combine",
+     "use": "combine all shapes into one curve and return it"
+    },
+    {
+     "name": "ApplyUniformFill",
+     "use": "solid fill on every shape (needs an IVGColor)"
+    },
+    {
+     "name": "ApplyFountainFill",
+     "use": "gradient fill on every shape"
+    },
+    {
+     "name": "SetOutlineProperties",
+     "use": "set width / colour / style etc. on every outline, named args"
+    },
+    {
+     "name": "AlignAndDistribute",
+     "use": "align and / or distribute the shapes (MethodH, MethodV, AlignTo)"
+    },
+    {
+     "name": "AlignToShape",
+     "use": "align every shape to one key shape"
+    },
+    {
+     "name": "SetBoundingBox",
+     "use": "move and resize the whole block into a box"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "width of the range's combined bounds, read/write (SizeHeight likewise)"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "IVGRect of the combined bounds"
+    },
+    {
+     "name": "FindAnyOfType",
+     "use": "sub-range of shapes whose type is in TypeList"
+    },
+    {
+     "name": "Sort",
+     "use": "reorder the list with a CQL compare expression"
+    },
+    {
+     "name": "StepAndRepeat",
+     "use": "make NumCopies copies at DistanceX / DistanceY"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "make this range the UI selection"
+    },
+    {
+     "name": "Delete",
+     "use": "delete every shape in the range from the document"
+    }
+   ],
+   "gotchas": [
+    "ActiveSelectionRange is a snapshot taken when you read it; later selection changes do not update it, and reading ActiveSelection instead gives a single Selection Shape whose Shapes are the selected objects.",
+    "Delete removes all shapes from the document; DeleteItem(Index) deletes one shape from the document; Remove(Index) / RemoveRange / RemoveAll only change the list.",
+    "Group, Combine and ConvertToBitmapEx return a new IVGShape; continue with the returned shape, since the range is not updated to it and its old references may be grouped, merged away or replaced (unverified per method).",
+    "Combine merges everything into one curve object with one fill and outline; the other shapes' styles are lost (which shape's style wins is unverified).",
+    "Setting SizeWidth or SizeHeight alone stretches the block non-proportionally; use SetSize with both values or SetBoundingBox with KeepAspect.",
+    "GetBoundingBox / GetPosition / GetSize use ByRef out-params, awkward from Python win32com; read BoundingBox, LeftX/RightX/TopY/BottomY or CenterX/CenterY instead (unverified for every binding).",
+    "Sort takes a CQL comparison of two shapes (written with @shape1 / @shape2, e.g. \"@shape1.left < @shape2.left\") (unverified).",
+    "Split and GetColors return SAFEARRAYs: in VBA a Variant array, in Python a tuple."
+   ],
+   "example": "Dim sr As ShapeRange, g As Shape\nSet sr = ActiveSelectionRange\nIf sr.Count < 2 Then Exit Sub\nsr.ApplyUniformFill CreateRGBColor(0, 90, 160)\nsr.SetBoundingBox 1, 1, 6, 2, True\nSet g = sr.Group\ng.Name = \"logo_lockup\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unconfirmed \"or pages\" mix; gotcha on Group/Combine/ConvertToBitmapEx no longer states as fact that the range still lists the old shapes (marked unverified)."
+   }
+  },
+  {
+   "name": "IVGShapes",
+   "id": "class:IVGShapes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGShapes",
+   "status": "current",
+   "summary": "The live Shapes collection owned by a page, layer, group, PowerClip or the selection: it lists the shapes directly inside that container, in stacking order, and offers lookup by index, name, type or a CQL query (FindShape / FindShapes). Converting it to a ShapeRange (All, Range, AllExcluding) is how scripts act on its contents in bulk.",
+   "use_for": [
+    "find a named placeholder (headline, price, photo frame) in a template page and fill it",
+    "list everything on a layer before an export or preflight pass",
+    "walk the children of a group or PowerClip to restyle them",
+    "collect all shapes of one type (text, bitmaps) for batch font or resolution checks"
+   ],
+   "avoid": [
+    "deleting shapes inside For Each over the same collection: it skips items; loop by index from Count down to 1, or take All first",
+    "expecting Count to include objects inside groups: only direct children are counted; use FindShapes with Recursive for nested ones"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "PageItems",
+    "PS": "Layers"
+   },
+   "how": "Dual dispinterface in VGCore, read-only container. Reached as Page.Shapes, Layer.Shapes, Shape.Shapes (children of a group, or the selected objects of a Selection Shape) and PowerClip.Shapes. It is live: it reflects shapes added or removed after you read it. Item is 1-based and also accepts a name.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of direct child shapes"
+    },
+    {
+     "name": "Item",
+     "use": "1-based index or shape name"
+    },
+    {
+     "name": "First",
+     "use": "first shape in the collection"
+    },
+    {
+     "name": "Last",
+     "use": "last shape in the collection"
+    },
+    {
+     "name": "FindShape",
+     "use": "first shape matching Name / Type / StaticID / Query; Recursive defaults True"
+    },
+    {
+     "name": "FindShapes",
+     "use": "all shapes matching Name / Type / Query as a ShapeRange; Recursive defaults True"
+    },
+    {
+     "name": "All",
+     "use": "snapshot of every shape as a ShapeRange"
+    },
+    {
+     "name": "Range",
+     "use": "ShapeRange of the shapes at the given indexes"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "ShapeRange of every shape except the given indexes"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "makes For Each work"
+    }
+   ],
+   "gotchas": [
+    "Page.Shapes, Layer.Shapes and Shape.Shapes are different scopes: a page's collection spans its layers, a layer's only that layer, a group's only its children.",
+    "FindShape / FindShapes search inside groups by default (Recursive defaults True); pass Recursive:=False to stay at the top level.",
+    "The Query argument is a CQL expression evaluated per shape (e.g. on @name or @type); a syntax error fails at run time, so test the query on a small page first (unverified error behaviour).",
+    "Which item Item(\"name\") returns when several shapes share a name, and whether a missing name raises or returns Nothing, is not confirmed; prefer FindShape(Name:=...) and test for Nothing (unverified).",
+    "Indexes follow stacking order and change when shapes are added, deleted or reordered; do not cache an index, cache the shape or its StaticID.",
+    "Guidelines and master-layer objects live on their own layers and may appear in page-wide searches (unverified); filter by Type or by Layer."
+   ],
+   "example": "Dim i As Long, sr As ShapeRange\nFor i = ActiveLayer.Shapes.Count To 1 Step -1\n  If ActiveLayer.Shapes.Item(i).Name = \"temp\" Then ActiveLayer.Shapes.Item(i).Delete\nNext i\nSet sr = ActivePage.Shapes.FindShapes(Name:=\"price\")\nDebug.Print sr.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSnapPoint",
+   "id": "class:IVGSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSnapPoint",
+   "status": "current",
+   "summary": "One snap point of a shape: a position that snapping and connector lines can attach to. cdrPointType lists user, object, bounding-box, edge, free and auto points; the User, Object, BBox and Edge sub-objects hold the type-specific details, and IsMovable / IsDeletable say whether a given point can be moved or deleted.",
+   "use_for": [
+    "add custom anchor points to an icon or diagram block so connector lines attach where you want",
+    "read exact corner or centre positions of an object to place callouts, labels or dimension marks",
+    "find the point a connector is attached to, then move the attached object precisely"
+   ],
+   "avoid": [
+    "moving or deleting a snap point without checking IsMovable / IsDeletable: object and bounding-box points follow the shape, move the shape or its nodes instead",
+    "using it to edit path geometry: nodes are edited through IVGCurve / IVGNode, a snap point only exposes the Node it sits on"
+   ],
+   "confidence": "medium",
+   "how": "Dual dispinterface in VGCore. Reached from a shape's snap-point collection (Shape.SnapPoints, Shape.SnapPointsOfType, Shape.FindSnapPoint by ReferenceData), from SnapPoints.AddUserSnapPoint for a new user point, from the SnapPoints finders (User by ID, Object, BBox, Edge, Auto, FindClosest), and from a connector's StartPoint / EndPoint. Type (cdrPointType) says which of User / Object / BBox / Edge applies.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrPointType: which kind of snap point this is"
+    },
+    {
+     "name": "PositionX",
+     "use": "X in document units, read/write"
+    },
+    {
+     "name": "PositionY",
+     "use": "Y in document units, read/write"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move the point to PositionX, PositionY"
+    },
+    {
+     "name": "Move",
+     "use": "shift the point by OffsetX, OffsetY"
+    },
+    {
+     "name": "IsMovable",
+     "use": "True when Move / SetPosition are allowed"
+    },
+    {
+     "name": "IsDeletable",
+     "use": "True when Delete is allowed"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the point (user points)"
+    },
+    {
+     "name": "ReferenceData",
+     "use": "stable string id; pass to Shape.FindSnapPoint to get the point back later"
+    },
+    {
+     "name": "Shape",
+     "use": "the shape the point belongs to"
+    },
+    {
+     "name": "Node",
+     "use": "the curve node under the point, if any"
+    },
+    {
+     "name": "User",
+     "use": "user-point details: ID (GUID) and AutoSnap"
+    },
+    {
+     "name": "Object",
+     "use": "object-point details: its cdrObjectSnapPointType"
+    },
+    {
+     "name": "BBox",
+     "use": "bounding-box-point details: which cdrReferencePoint it is"
+    },
+    {
+     "name": "Edge",
+     "use": "edge-point details: SegmentIndex and SegmentOffset along the path"
+    },
+    {
+     "name": "Direction",
+     "use": "default direction of the point, used when UsesDirection is True (unit not stated in the harvest)"
+    },
+    {
+     "name": "UsesDirection",
+     "use": "whether the point uses Direction"
+    }
+   ],
+   "gotchas": [
+    "Only some points can be edited: check IsMovable before Move / SetPosition and IsDeletable before Delete; built-in object and bounding-box points are typically fixed to the shape (unverified for every type).",
+    "Only the sub-object that matches Type (User, Object, BBox or Edge) is meaningful; the others are expected to return Nothing (unverified).",
+    "Positions are expected to be page coordinates in ActiveDocument.Unit with Y increasing upward, not offsets relative to the shape (unverified).",
+    "Store ReferenceData, not a collection index, to find the same point again; indexes can shift as the shape is edited (unverified).",
+    "Connector lines attach to snap points: moving or deleting a point a connector uses re-routes or detaches that connector (unverified)."
+   ],
+   "example": "Dim sp As SnapPoint, ref As String\nSet sp = ActiveShape.SnapPoints.AddUserSnapPoint(4, 3)\nref = sp.ReferenceData\nIf sp.IsMovable Then sp.SetPosition 4.5, 3\nSet sp = ActiveShape.FindSnapPoint(ref)\nDebug.Print sp.PositionX, sp.PositionY",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: listed all cdrPointType kinds (free and auto were missing) and replaced the unconfirmed \"user points movable, built-in mostly not\" with IsMovable / IsDeletable; how: added the SnapPoints finders; key_members User/Object/BBox/Edge/Direction/UsesDirection now say what the harvest exposes (dropped invented \"degrees\" and \"connector exit direction\"); coordinate gotcha marked unverified."
+   }
+  }
+ ]
+}

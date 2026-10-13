@@ -1,0 +1,427 @@
+{
+ "cards": [
+  {
+   "name": "Add Anchor Point Tool",
+   "id": "addKnotTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Pen Tool/Add Anchor Point Tool",
+   "status": "current",
+   "summary": "Adds an anchor point to an existing path, shape-layer outline or vector mask where you click on a segment; the outline does not move until you drag the new point or its handles.",
+   "how": "Show the path first (select the shape layer or vector mask, or the path in the Paths panel). Click on a segment to add a point; drag while clicking to add the point and bend the segment in one go. Hold Ctrl to switch temporarily to the Direct Selection Tool and move the new point. The tool sits in the Pen Tool flyout; with the Pen Tool's Auto Add/Delete option on, the Pen Tool adds points the same way. The harvested options (geometryToolMode = path, shapeOperation = xor / exclude overlap) are generic path options, not settings of this tool.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.currentTool = \"addKnotTool\". Clicking on a segment cannot be scripted; instead a script reads the path's SubPathItems / PathPoints, inserts a PathPointInfo (anchor, leftDirection, rightDirection, kind) at the wanted spot and rebuilds it with app.activeDocument.pathItems.add(name, [SubPathInfo]), then removes the old path.",
+   "use_for": [
+    "adding a point to a shape-layer outline so a logo corner or badge edge can be bent",
+    "giving a vector mask enough points to follow a curved product edge",
+    "splitting a long path segment before reshaping a custom icon"
+   ],
+   "avoid": [
+    "when you are drawing anyway: the Pen Tool with Auto Add/Delete adds points without switching tools",
+    "to change a point between smooth and corner: use the Convert Point Tool",
+    "adding many points to smooth a curve: fewer, well-placed points give cleaner curves"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Add Anchor Point Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Adjustment Brush Tool",
+   "id": "adjustmentBrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Paints a tonal or colour adjustment onto only the areas you brush: Photoshop creates an adjustment layer and the strokes become its mask, so the correction stays editable and non-destructive.",
+   "how": "Pick the tool, choose the adjustment type from the options bar, then paint over the area to correct; the strokes go into the mask of a new adjustment layer, whose settings you change afterwards in the Properties panel. Brush size and hardness work as for the Brush Tool ([ and ] change size); Opacity and Flow (read back as 100 / 100) build the mask up gradually. Paint out mistakes in the subtract mode or with black on the mask. The harvest found no default keyboard shortcut and no toolbar group for it.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.currentTool = \"adjustmentBrushTool\". A script reaches the same result without the tool: make the adjustment layer itself (see the ps_adjustment cards) and build its mask from a selection, or select the mask and stroke a path into it with pathItem.strokePath(ToolType.BRUSH). ToolType has no adjustment-brush value, so the tool's own strokes cannot be replayed.",
+   "use_for": [
+    "brightening a face or product that sits in shadow without touching the background",
+    "darkening a hot sky corner or vignette area on a poster photo",
+    "boosting saturation on one garment or label in a fashion or packshot image"
+   ],
+   "avoid": [
+    "when the correction covers the whole layer: add a normal adjustment layer",
+    "when the area needs a precise edge: make a selection (Select Subject, Object Selection) and add the adjustment layer from it",
+    "for heavy pixel-level retouching: use healing tools; this only adjusts tone and colour"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Alignment Tool",
+   "id": "taskspace/Content-Aware Fill/Alignment Tool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Content-Aware Fill workspace/Alignment Tool",
+   "status": "needs_input",
+   "summary": "A tool that exists only inside the Content-Aware Fill workspace (default shortcut A there); the harvest found no app.currentTool id for it (it tried none) and read no options, so what it does is not confirmed. From the name it probably controls how the sampled source lines up with the fill area, but treat that as unverified.",
+   "how": "Make a selection on a pixel layer, open Edit > Content-Aware Fill to enter the workspace, then press A (the harvested shortcut) or pick it from the workspace's toolbar if it is shown there. Its behaviour and options have not been checked; the workspace's main controls are the Sampling Brush Tool and the fill settings panel.",
+   "shortcut": "A",
+   "scriptable": "no",
+   "script_api": "None for the tool: the harvest had no app.currentTool id to try for it (its error: taskspace tools are not accepted outside their workspace). A script can run the fill instead: Edit > Content-Aware Fill (ps_menu id 1510) opens the workspace, and Edit > Fill (ps_menu id 1042) with Content-Aware contents fills a selection in one step.",
+   "use_for": [
+    "fine-tuning a Content-Aware Fill result while removing an object from a photo (unverified role)"
+   ],
+   "avoid": [
+    "relying on it in an automated pipeline: it cannot be selected by script and its function is unconfirmed",
+    "for most removals: the Remove Tool or Edit > Fill with Content-Aware is quicker"
+   ],
+   "confidence": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/script_api no longer say app.currentTool rejected an id: the harvest error lists 'ids tried: {}' (none was tried)"
+   }
+  },
+  {
+   "name": "Art History Brush Tool",
+   "id": "artBrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/History Brush Tool/Art History Brush Tool",
+   "status": "current",
+   "summary": "Paints stylised, automatically generated dabs and curls whose colours come from a chosen History state or snapshot, turning a photo into a loose painterly impression as you brush over it.",
+   "how": "In the History panel set the source (click the brush column beside the snapshot or state to sample, usually the opening snapshot). Fill or blank the layer you paint on, then brush over it with the tool: each click sprays several strokes. Style (Tight Short, Loose Medium, Dab, Curl ...), Area (how far the strokes spread) and Tolerance (where strokes may land) shape the look; the harvest read three unnamed options AHBs = 1, AHBc = 50, AHBt = 0, which fit Style, Area and Tolerance but the mapping is not confirmed. Start with a large brush for the base and finish detail with a small one. Press Y (Shift+Y switches between History Brush and Art History Brush).",
+   "shortcut": "Y",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"artBrushTool\". A script can paint with it along a path: build a path with app.activeDocument.pathItems.add(...) and call pathItem.strokePath(ToolType.ARTHISTORYBRUSH), which uses the tool's current options and the current history source. Freehand brushing itself is not scriptable.",
+   "use_for": [
+    "a painterly or impressionist poster background from a photo",
+    "a hand-made texture layer to blend over a clean product shot",
+    "quick stylised art for a book cover or event flyer"
+   ],
+   "avoid": [
+    "when you want the original pixels back exactly: use the History Brush Tool",
+    "for a controllable oil-paint look: use Filter > Stylize > Oil Paint or the Mixer Brush",
+    "after cropping or resizing the canvas: the source history state no longer matches and the tool refuses to paint"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Artboard Tool",
+   "id": "artboardTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Artboard Tool",
+   "status": "current",
+   "summary": "Creates, resizes and arranges artboards: separate canvases inside one document, each with its own size and layers, for designing several screens or formats side by side.",
+   "how": "Drag on the canvas to draw a new artboard, or pick a size preset and orientation on the options bar. Select an artboard and drag its edge handles to resize it; click the + icons beside a selected artboard to add a new one next to it (Alt-click the + to duplicate it with its contents). Drag the artboard name to move it. Press V (Shift+V switches between Move Tool and Artboard Tool). Export each one with File > Export > Artboards to Files or Artboards to PDF.",
+   "shortcut": "V",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"artboardTool\" (the harvest's only option is an unnamed object 'AbtI'). Drawing and dragging artboards is a mouse job; a script creates them through the Layer > New > Artboard commands instead (ps_menu ids 9220 Artboard, 9221 Artboard from Group, 9222 Artboard from Layers) or the Action Manager, and exports them with the Artboards to Files script preset.",
+   "use_for": [
+    "an Instagram post, story and banner of one campaign in a single file",
+    "app or web screen mockups laid out side by side",
+    "a multi-size ad set exported in one go with Artboards to Files"
+   ],
+   "avoid": [
+    "print layouts with bleed, many pages or live text flow: use Illustrator or InDesign",
+    "a single-canvas design: artboards add a layer of nesting with no benefit"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Artboard"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.AI = Artboard (ai_tool id 'Adobe Crop Tool' is in the AI harvest; the writer said it was not); Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Background Eraser Tool",
+   "id": "backgroundEraserTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Eraser Tool/Background Eraser Tool",
+   "status": "current",
+   "summary": "Erases pixels to transparency by sampling the colour under the brush's centre crosshair and removing similar colours inside the brush, so you can trace around a subject and drop out a fairly even background while keeping the edge.",
+   "how": "Brush along the subject's edge keeping the crosshair on the background colour (if the crosshair touches the subject, the subject is erased too). Options: Sampling (Continuous, Once, Background Swatch), Limits (Discontiguous, Contiguous, Find Edges), Tolerance (read back as 50) and Protect Foreground Color (Alt-click the subject colour first to make it the foreground colour). Painting on the Background layer converts it to a normal layer. The harvest's unnamed options BECn = 1, BEPr = false, BESm = 0 likely hold Limits, Protect Foreground and Sampling. Press E (Shift+E cycles Eraser, Background Eraser, Magic Eraser).",
+   "shortcut": "E",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"backgroundEraserTool\". A script can run it along a path with pathItem.strokePath(ToolType.BACKGROUNDERASER) using the current options, but the result depends on where the crosshair lands, so a selection or mask (Select Subject, then a layer mask) is the reliable scripted route.",
+   "use_for": [
+    "dropping out a plain studio or sky background behind a product or portrait",
+    "cleaning stray background colour from hair edges against an even backdrop",
+    "quick cut-outs for a social post when the background colour differs clearly from the subject"
+   ],
+   "avoid": [
+    "busy or similar-coloured backgrounds: use Select Subject or Remove Background with a layer mask",
+    "when you may need the pixels back: it deletes pixels; work on a duplicate layer or use a mask",
+    "solid flat backgrounds in one click: the Magic Eraser Tool or Magic Wand plus mask is faster"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Blur Tool",
+   "id": "blurTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Blur Tool",
+   "status": "current",
+   "summary": "Softens the pixels you brush over by lowering local contrast, for blurring small areas or hard edges by hand.",
+   "how": "Brush over the area; repeated strokes blur more. Options: Mode, Strength (the harvest read flow = 50, which matches the usual 50% Strength) and Sample All Layers (probably the unnamed option 'BlrS' = false); with Sample All Layers on you can blur onto an empty layer above and keep the original untouched. Shares a flyout with the Sharpen and Smudge tools; the harvest found no default shortcut.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"blurTool\". A script can blur along a path with pathItem.strokePath(ToolType.BLUR). For a scripted blur of an area, apply a blur filter to a selection instead (e.g. artLayer.applyGaussianBlur).",
+   "use_for": [
+    "softening a too-sharp edge where a cut-out meets a new background",
+    "toning down a distracting detail or texture in a small area",
+    "smoothing small skin blemishes or noise patches by hand"
+   ],
+   "avoid": [
+    "large areas or even background blur: use Gaussian Blur or Lens Blur on a smart object with a mask",
+    "depth-of-field looks: use the Blur Gallery filters",
+    "direct painting on the original layer: work on an empty layer with Sample All Layers"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Brush Tool",
+   "id": "paintbrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Brush Tool",
+   "status": "current",
+   "summary": "Paints pixels with the foreground colour using the current brush tip, for freehand painting, mask painting and retouch strokes.",
+   "how": "Pick a brush tip in the options bar or Brushes panel, then drag to paint. [ and ] change size, Shift+[ and Shift+] change hardness, number keys set opacity, Shift-click paints a straight line between clicks, Alt temporarily switches to the Eyedropper. Options that matter: Mode, Opacity, Flow (last-used values read back as 100 and 18), Smoothing and the pen-pressure overrides. Paint black or white on a layer mask to hide or reveal. Press B (Shift+B cycles Brush, Pencil, Color Replacement, Mixer Brush).",
+   "shortcut": "B",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"paintbrushTool\". Strokes can be scripted: build a path with app.activeDocument.pathItems.add(name, [SubPathInfo]) and call pathItem.strokePath(ToolType.BRUSH, simulatePressure); the stroke uses the tool's current brush tip and options. Freehand gestures and pressure from a pen are not scriptable.",
+   "use_for": [
+    "painting layer masks to blend a composite or reveal a product",
+    "hand-painted highlights, shadows and light leaks on a poster",
+    "digital illustration and lettering touches"
+   ],
+   "avoid": [
+    "crisp vector lines that must scale: draw a shape or path, or work in Illustrator",
+    "colour corrections on the image itself: use an adjustment layer and paint its mask instead",
+    "pixel-hard edges for pixel art: use the Pencil Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Brush Tool",
+    "CDR": "Painterly Brush"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Burn Tool",
+   "id": "burnInTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Dodge Tool/Burn Tool",
+   "status": "current",
+   "summary": "Darkens the pixels you brush over, imitating the darkroom burning technique, to deepen shadows or add depth in chosen areas.",
+   "how": "Choose Range (harvest mode values burnInS / burnInM / burnInH = Shadows / Midtones / Highlights; read back as burnInM) and Exposure (read back as 50); keep Exposure low and build up with several strokes. Protect Tones in the options bar limits colour shifts. Press O (Shift+O cycles Dodge, Burn, Sponge).",
+   "shortcut": "O",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"burnInTool\". A script can burn along a path with pathItem.strokePath(ToolType.BURN) using the current Range and Exposure. A scripted, non-destructive alternative is a Curves or Levels adjustment layer with a masked area.",
+   "use_for": [
+    "deepening shadows to add contour on a portrait or product",
+    "darkening edges to pull the eye to a poster's subject",
+    "adding weight to clouds or texture in a landscape"
+   ],
+   "avoid": [
+    "burning directly on the original pixels: paint on a 50% gray layer in Overlay mode or use a masked Curves layer",
+    "high Exposure in one pass: it gives muddy, saturated patches",
+    "large even darkening: use an adjustment layer"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unsourced Exposure range 5-15%; Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Clone Stamp Tool",
+   "id": "cloneStampTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Clone Stamp Tool",
+   "status": "current",
+   "summary": "Copies pixels from a sampled source point to where you paint, an exact duplicate with no blending, used to remove objects or duplicate texture by hand.",
+   "how": "Alt-click to set the source, then paint elsewhere. Aligned keeps the source moving with the brush (the harvest's unnamed StmA = true probably holds it); Sample chooses Current Layer, Current & Below or All Layers, so you can clone onto an empty layer. The Clone Source panel sets offset, scale, rotation and several stored sources. Use a soft brush and resample often to avoid repeated patterns. Press S (Shift+S switches between Clone Stamp and Pattern Stamp).",
+   "shortcut": "S",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"cloneStampTool\". pathItem.strokePath(ToolType.CLONESTAMP) can drive it along a path, but the source point is set by Alt-click, which the DOM does not expose, so a scripted clone is unverified. For scripted removal use a selection plus Edit > Fill with Content-Aware contents (ps_menu id 1042).",
+   "use_for": [
+    "removing wires, signs or people where texture must stay exact",
+    "repairing repeating patterns like brick, tiles or fabric",
+    "extending a background for a wider poster crop"
+   ],
+   "avoid": [
+    "areas with changing tone or lighting: the Healing Brush or Spot Healing blends better",
+    "large removals: Remove Tool, Content-Aware Fill or Generative Fill",
+    "cloning onto the original layer: clone onto an empty layer with Current & Below"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unsourced 'up to five sources'; Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Color Replacement Tool",
+   "id": "colorReplacementBrushTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Brush Tool/Color Replacement Tool",
+   "status": "current",
+   "summary": "Replaces the colour under the brush with the foreground colour while keeping the original shading and texture, for recolouring an object by painting over it.",
+   "how": "Set the foreground colour, then paint over the object keeping the crosshair on the colour to replace. Options: Mode (Hue, Saturation, Color, Luminosity; harvest key CRTm read back as color), Sampling (Continuous, Once, Background Swatch), Limits (Discontiguous, Contiguous, Find Edges), Tolerance (read back as 30) and Anti-alias (probably CRAl = true). The unnamed CRSm = 0 and CRCg = 1 likely hold Sampling and Limits. It does not work in Bitmap, Indexed or Multichannel mode. Press B (Shift+B cycles Brush, Pencil, Color Replacement, Mixer Brush).",
+   "shortcut": "B",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"colorReplacementBrushTool\". A script can paint with it along a path with pathItem.strokePath(ToolType.COLORREPLACEMENTTOOL). A more predictable scripted recolour is a Hue/Saturation or Solid Color (Color blend mode) layer with a mask.",
+   "use_for": [
+    "trying product colourways (a shirt, car or bag) on a photo",
+    "fixing a colour cast on one object",
+    "quick recolour of eyes or small accents"
+   ],
+   "avoid": [
+    "very dark or very light areas: Color mode cannot add colour to near-black or near-white",
+    "when edits must stay editable: use a Hue/Saturation adjustment layer with a mask",
+    "large areas with similar neighbouring colours: select the object first"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Color Sampler Tool",
+   "id": "colorSamplerTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Eyedropper Tool/Color Sampler Tool",
+   "status": "current",
+   "summary": "Places fixed colour-readout points on the image whose values show live in the Info panel, so you can watch exact colour numbers while correcting.",
+   "how": "Click to drop a sampler; drag one to move it, Alt-click to delete it, Clear All on the options bar removes them all. Sample Size (point or an averaged area; harvest key eyeDropperSample read back as 0) sets how many pixels are averaged. The Info panel shows each sampler's values before / after while an adjustment dialog is open. Samplers are not printed. Press I (Shift+I cycles Eyedropper, Color Sampler, Ruler, Note, Count).",
+   "shortcut": "I",
+   "scriptable": "yes",
+   "script_api": "Activation: app.currentTool = \"colorSamplerTool\". The result is fully scriptable: app.activeDocument.colorSamplers.add([x, y]) creates a sampler, colorSampler.color returns its SolidColor, colorSampler.move([x, y]) moves one and colorSampler.remove() deletes it; to clear them all, loop over colorSamplers calling remove() (the harvested model lists removeAll() only on ColorSampler, not on the collection).",
+   "use_for": [
+    "checking a neutral grey or white point while colour-correcting a product photo",
+    "matching skin tone values between images in a campaign",
+    "verifying brand colour values on a flattened mock-up"
+   ],
+   "avoid": [
+    "picking a colour to paint with: use the Eyedropper Tool",
+    "noisy images with Point Sample: use an averaged sample size"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unsourced 'up to 10'; script_api no longer cites colorSamplers.removeAll() (the harvested ColorSamplers collection has no removeAll; it is listed on ColorSampler), clears by looping remove(); Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Content-Aware Move Tool",
+   "id": "recomposeSelection",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Spot Healing Brush Tool/Content-Aware Move Tool",
+   "status": "current",
+   "summary": "Moves (or extends) a selected part of a photo to a new spot and automatically fills the hole it leaves with surrounding content, blending the moved patch into its new background.",
+   "how": "Draw a loose selection around the object with the tool (or any selection tool), then drag it to the new place. Mode: Move or Extend (Extend copies, for lengthening fences or hair); Structure sets how strictly the patch keeps its shape (harvest patchStructureAdapt read back as 4); Color sets how much colour blends (patchColorAdaptation read back as 0); Sample All Layers lets you work on an empty layer; Transform On Drop (read back true) lets you scale or rotate before committing. Press J (Shift+J cycles Spot Healing Brush, Healing Brush, Patch, Content-Aware Move, Red Eye).",
+   "shortcut": "J",
+   "scriptable": "partial",
+   "script_api": "Activation: app.currentTool = \"recomposeSelection\". No harvested call performs the move-and-heal, so the blended result is not reproduced exactly. A script can approximate it: duplicate the selection to a new layer and translate it, then fill the vacated selection with Edit > Fill using Content-Aware contents (ps_menu id 1042).",
+   "use_for": [
+    "repositioning a person or object for a better composition in a photo",
+    "extending a fence, horizon line or building to fit a wider banner",
+    "moving a product closer to the title area on an ad layout"
+   ],
+   "avoid": [
+    "busy or patterned backgrounds: the fill smears; use Select Subject, a separate layer and Content-Aware Fill or Generative Fill",
+    "objects with hard straight edges near other details: the blend creeps into neighbours",
+    "when the original must remain: work on an empty layer with Sample All Layers"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unsourced ranges Structure 1-7 / Color 0-10 (batch has no min/max); scriptable no -> partial (the tool activates by its invoke and the result is approximated by script, as on the Patch Tool card); Shift-letter cycling replaces 'Shortcut X cycles' (default prefs: the letter alone does not cycle)"
+   }
+  },
+  {
+   "name": "Content-Aware Tracing Tool",
+   "id": "tooltip/CATracePenTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "obsolete",
+   "summary": "A former Technology Preview pen-family tool that detected edges in an image and turned them into paths when you hovered and clicked. In 27.4 only its toolbar tooltip string remains: app.currentTool rejected the id with 'functionality may not be available in this version', so it cannot be used here.",
+   "how": "Not available in this version. Where it existed it was switched on under Preferences > Technology Previews, appeared in the Pen Tool flyout, highlighted a detected edge under the pointer and made a path on click, with a Detail setting for edge detection. Use the Pen or Curvature Pen Tool, or a selection converted to a work path, instead.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None: no id was accepted by app.currentTool (tried CATracePenTool and cATracePenTool). To get a path from image edges by script, make a selection (for example Select Subject) and call app.activeDocument.selection.makeWorkPath(tolerance).",
+   "use_for": [
+    "nothing in 27.4; historically, quick paths along clear object edges"
+   ],
+   "avoid": [
+    "any current workflow: use the Pen / Curvature Pen Tool for precise paths, or Select Subject plus Make Work Path"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Convert Point Tool",
+   "id": "convertKnotTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "path": "Toolbar/Pen Tool/Convert Point Tool",
+   "status": "current",
+   "summary": "Switches anchor points between smooth and corner on a path, shape outline or vector mask, and lets you break or pull out direction handles to reshape curves.",
+   "how": "Click a smooth point to make it a sharp corner (its handles retract); drag from a corner point to pull out symmetric handles and make it smooth; drag one direction handle to break the pair so each side bends independently. Hold Ctrl to switch temporarily to the Direct Selection Tool. While using the Pen Tool, Alt gives the same behaviour without switching tools. The harvested options (geometryToolMode = path, shapeOperation = xor / exclude overlap) are generic path options, not settings of this tool.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.currentTool = \"convertKnotTool\". The result can be scripted by rebuilding the path: read its PathPoints, set PathPointInfo.kind (PointKind.CORNERPOINT / SMOOTHPOINT) and the leftDirection / rightDirection handles, then app.activeDocument.pathItems.add(name, [SubPathInfo]).",
+   "use_for": [
+    "turning a rounded corner of a shape layer into a sharp point for an icon or badge",
+    "smoothing a jagged pen path around a product before making a mask",
+    "making cusp points for leaf, flame or lettering shapes"
+   ],
+   "avoid": [
+    "adding or removing points: use the Add / Delete Anchor Point tools",
+    "heavy redrawing of a curve: redraw it with the Curvature Pen Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Anchor Point Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,159 @@
+{
+ "cards": [
+  {
+   "name": "ContactSheetOptions",
+   "id": "class:ContactSheetOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/ContactSheetOptions",
+   "status": "current",
+   "summary": "Plain options object for the scripted Contact Sheet command (app.makeContactSheet): sets the size, resolution and colour mode of the sheet document, the column x row grid of thumbnails, their spacing, best-fit rotation and the filename caption font. The result is a new document with the input images laid out as a thumbnail grid.",
+   "use_for": [
+    "proof sheet of a photo shoot for client selection",
+    "thumbnail index of an asset or stock folder",
+    "quick visual inventory of a batch of exported social graphics"
+   ],
+   "avoid": [
+    "full-size print sheets: width and height stop at 2900 px, so a 300 ppi A4 or Letter page does not fit; build the layout from placed smart objects instead",
+    "branded or custom-font layouts: captions only offer the four GalleryFontType fonts; lay the grid out by script with text layers",
+    "relying on app.makeContactSheet in 27.x without a test: the menu command is now a script (Presets/Scripts/ContactSheetII.jsx), so the native call may fail (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Created empty with new ContactSheetOptions() in ExtendScript (or CreateObject(\"Photoshop.ContactSheetOptions\") over COM, where the properties are PascalCase: Width, ColumnCount ...), filled in, and passed as the optional second argument of app.makeContactSheet(inputFiles, options), the legacy DOM counterpart of File > Automate > Contact Sheet II (in 27.4 that menu item runs the bundled Presets/Scripts/ContactSheetII.jsx, not this method). Harvested defaults: 576 x 720 px at 72 ppi, NewDocumentMode.RGB, flattened, 5 columns x 6 rows filled across first, auto spacing on (1 px manual spacing), no best-fit rotation, filename captions in GalleryFontType.ARIAL at 12.",
+   "key_members": [
+    {
+     "name": "width",
+     "use": "sheet document width in px, range 100 to 2900 (default 576)"
+    },
+    {
+     "name": "height",
+     "use": "sheet document height in px, range 100 to 2900 (default 720)"
+    },
+    {
+     "name": "resolution",
+     "use": "sheet resolution in ppi, range 35 to 1200 (default 72)"
+    },
+    {
+     "name": "mode",
+     "use": "colour mode of the sheet, a NewDocumentMode value (GRAYSCALE, RGB, CMYK, LAB, BITMAP); the COM type library describes this property as Grayscale, RGB, CMYK or Lab only"
+    },
+    {
+     "name": "flatten",
+     "use": "true (default) flattens all layers of the finished sheet; false keeps its separate thumbnail and caption layers for later editing (unverified)"
+    },
+    {
+     "name": "columnCount",
+     "use": "thumbnails per row (default 5)"
+    },
+    {
+     "name": "rowCount",
+     "use": "thumbnail rows per sheet (default 6)"
+    },
+    {
+     "name": "acrossFirst",
+     "use": "true fills left to right then down; false fills top to bottom then across"
+    },
+    {
+     "name": "useAutoSpacing",
+     "use": "let Photoshop space the grid evenly instead of using horizontal / vertical"
+    },
+    {
+     "name": "horizontal",
+     "use": "manual horizontal gap between thumbnails in px, 0 to 29000 (default 1)"
+    },
+    {
+     "name": "vertical",
+     "use": "manual vertical gap between thumbnails in px, 0 to 29000 (default 1)"
+    },
+    {
+     "name": "bestFit",
+     "use": "rotate thumbnails so portrait and landscape images fill the cells better"
+    },
+    {
+     "name": "caption",
+     "use": "print each file name under its thumbnail"
+    },
+    {
+     "name": "font",
+     "use": "caption font, a GalleryFontType value: ARIAL, COURIERNEW, HELVETICA or TIMESNEWROMAN"
+    },
+    {
+     "name": "fontSize",
+     "use": "caption size (default 12)"
+    }
+   ],
+   "gotchas": [
+    "width and height are capped at 2900 px (harvested range), so at 300 ppi the sheet is at most about 9.7 in on a side",
+    "the dictionary lists no parent or typename members for it (the COM side only adds Application): it is a value bag, not a document object, and does nothing until passed to app.makeContactSheet",
+    "File > Automate > Contact Sheet II is implemented by the bundled ContactSheetII.jsx script; the legacy native app.makeContactSheet path may throw or be unavailable in current Photoshop, so test it once and fall back to running the script or laying out the grid yourself (unverified)",
+    "with useAutoSpacing left true the horizontal / vertical values are ignored (unverified)",
+    "more input files than columnCount x rowCount produce several sheet documents rather than shrinking the thumbnails (unverified)",
+    "mode accepts NewDocumentMode.BITMAP, but the COM type library describes the contact sheet mode as Grayscale, RGB, CMYK or Lab only, so Bitmap is likely to fail; build in GRAYSCALE and convert afterwards"
+   ],
+   "example": "var files = Folder(\"~/shoot\").getFiles(/\\.(jpe?g|tif|psd)$/i);\nvar o = new ContactSheetOptions();\no.width = 2400; o.height = 2900; o.resolution = 300;  // px cap 2900\no.columnCount = 4; o.rowCount = 5; o.useAutoSpacing = true;\no.mode = NewDocumentMode.RGB; o.flatten = false; o.bestFit = true;\no.caption = true; o.font = GalleryFontType.HELVETICA; o.fontSize = 9;\napp.makeContactSheet(files, o);  // legacy native call: test in 27.x first",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: makeContactSheet called the legacy DOM counterpart of Contact Sheet II, not its scripting face (the 27.4 menu item runs ContactSheetII.jsx per the menu harvest); mode member and Bitmap gotcha now cite the COM Mode description (Grayscale, RGB, CMYK or Lab) instead of a bare unverified guess; flatten=false layer claim marked unverified; parent/typename gotcha reworded as what the dictionary lists rather than a runtime absence claim"
+   }
+  },
+  {
+   "name": "CountItem",
+   "id": "class:CountItem",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Scripting commands and classes for Adobe Photoshop/CountItem",
+   "status": "current",
+   "summary": "One numbered marker placed by the Count Tool (Image > Analysis > Count Tool), the small numbered dots used to count objects in an image. The scripting object only exposes the marker's read-only position and ways to delete it; markers are created through the document's countItems collection.",
+   "use_for": [
+    "counting objects in a photo (people in a crowd, products on a shelf, cells or seeds) and reading the total back into a script",
+    "numbering spots to discuss on a comp while reviewing it inside Photoshop (the markers are a Photoshop view overlay, not part of an exported image, unverified)",
+    "auditing how many items a layout or photo contains before writing a caption or spec"
+   ],
+   "avoid": [
+    "visible numbered callouts in finished artwork: count markers are on-screen annotations (shown via View > Show > Count), not image pixels; draw callouts with shape and text layers instead (unverified that they never export)",
+    "moving a marker: position is read-only, so remove it and add a new one at the new point"
+   ],
+   "confidence": "high",
+   "how": "Reached through the Document's countItems collection: app.activeDocument.countItems[i], with countItems.length as the running total and countItems.add([x, y]) to place a new marker at a UnitPoint. Document.autoCount(channel, threshold), threshold 0 to 255, fills the collection automatically from a channel. The harvest notes the count feature was Extended-only in older versions; in Photoshop 2026 it is part of the single edition. Over COM the object is CountItem with Position, Parent, Application and Delete only.",
+   "key_members": [
+    {
+     "name": "position",
+     "use": "read-only UnitPoint [x, y] of the marker in the document"
+    },
+    {
+     "name": "remove",
+     "use": "delete this one marker"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every count marker, a quick reset before a fresh count"
+    },
+    {
+     "name": "add",
+     "use": "generic element add listed on the class; to place a marker at a point use the collection's countItems.add(position)"
+    },
+    {
+     "name": "parent",
+     "use": "the document that holds the marker"
+    },
+    {
+     "name": "typename",
+     "use": "class name string \"CountItem\", for type checks"
+    }
+   ],
+   "gotchas": [
+    "position is read-only: there is no move, so relocating a marker means remove plus countItems.add at the new point",
+    "the add on CountItem takes no position; the useful add is on the CountItems collection, which takes a UnitPoint",
+    "over COM (win32com / VBScript) the delete call is Delete, and add / remove / removeAll / typename do not exist on the item (harvested COM diff); place and clear markers through the CountItems collection, which over COM has Add(Position), RemoveAll and Count",
+    "position comes back as UnitValues; convert with .as(\"px\") instead of assuming the ruler units (unverified)",
+    "the DOM has no count-group members, so removeAll and new markers may only act on the current count group set in the Count Tool options (unverified)",
+    "deleting while iterating shifts the indexes; walk countItems from the end to the start"
+   ],
+   "example": "var doc = app.activeDocument;\nvar ci = doc.countItems.add([UnitValue(120, \"px\"), UnitValue(80, \"px\")]);\nalert(doc.countItems.length + \" marked; last at x=\" + ci.position[0].as(\"px\"));\nfor (var i = doc.countItems.length - 1; i >= 0; i--) {\n  if (doc.countItems[i].position[0].as(\"px\") < 50) doc.countItems[i].remove();\n}\n// ci.removeAll();  // clear every marker",
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha now points to the CountItems collection Add(Position) / RemoveAll / Count (harvested) so removeAll does not read as unavailable over COM; autoCount threshold range 0-255 added from the Document harvest; review-marker use_for qualified as an in-Photoshop overlay"
+   }
+  }
+ ]
+}

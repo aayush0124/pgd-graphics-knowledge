@@ -1,0 +1,261 @@
+{
+ "cards": [
+  {
+   "name": "Application",
+   "id": "class:Application",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Suite that applies to all applications/Application",
+   "status": "current",
+   "summary": "Root of the Photoshop scripting object model (the predefined global app in ExtendScript, Photoshop.Application over COM). It opens files, reaches the open documents, holds the foreground / background colours, preferences and dialog mode, and is the entry point to the Action Manager (executeAction / executeActionGet) and to menu commands (runMenuItem) and recorded actions (doAction).",
+   "use_for": [
+    "batch pipeline entry point: open each source photo, run a brand action, save, close",
+    "set brand foreground / background colours before fills, strokes and gradients",
+    "run Photoshop commands the DOM has no method for, through executeAction or runMenuItem",
+    "read document / layer properties the DOM does not expose with executeActionGet",
+    "silence modal dialogs for an unattended render with displayDialogs",
+    "keep per-pipeline settings between runs with putCustomOptions / getCustomOptions"
+   ],
+   "avoid": [
+    "keystroke / UI automation to trigger commands: use runMenuItem or executeAction instead",
+    "makePhotomerge and makePhotoGallery: the harvest marks both DEPRECATED, and Photomerge needs user interaction",
+    "the PRIVATE helpers (saveToolBrushToFile, applyToolBrushFromFile, thumbnailStyleFile, thumbnailText): undocumented internals that can change between releases",
+    "pixel work on a specific image: get the Document (app.activeDocument or app.documents) and work there"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: the predefined global app (one per Photoshop process, never constructed); everything else hangs off it: app.activeDocument, app.documents, app.preferences, app.fonts. COM: the harvested typelib library Photoshop has coclass Application, so Python win32com Dispatch('Photoshop.Application') returns the same object with capitalised member names (ActiveDocument, Open, ExecuteAction). Action Manager calls build IDs with stringIDToTypeID / charIDToTypeID and pass ActionDescriptor / ActionReference objects; runMenuItem fires a menu command by its type ID.",
+   "key_members": [
+    {
+     "name": "activeDocument",
+     "use": "the frontmost Document; assign a Document to bring it to the front"
+    },
+    {
+     "name": "documents",
+     "use": "Documents collection of every open document (length, getByName, add)"
+    },
+    {
+     "name": "open",
+     "use": "open a File and return its Document; optional as (format) and asSmartObject"
+    },
+    {
+     "name": "displayDialogs",
+     "use": "DialogModes.NO / ERROR / ALL: whether commands may show modal dialogs"
+    },
+    {
+     "name": "foregroundColor",
+     "use": "SolidColor used by paint, fill and stroke"
+    },
+    {
+     "name": "backgroundColor",
+     "use": "SolidColor used by eraser on Background, canvas extension and gradients"
+    },
+    {
+     "name": "preferences",
+     "use": "Preferences object (Edit > Preferences), e.g. ruler units for plain numbers"
+    },
+    {
+     "name": "executeAction",
+     "use": "play any Action Manager event (filters, commands) with a descriptor and dialog mode"
+    },
+    {
+     "name": "executeActionGet",
+     "use": "read a property descriptor for an ActionReference (layer, document, application)"
+    },
+    {
+     "name": "stringIDToTypeID",
+     "use": "turn a stringID such as 'fitOnScreen' into the runtime ID the calls need"
+    },
+    {
+     "name": "charIDToTypeID",
+     "use": "turn a four-character code from ScriptListener into a runtime ID"
+    },
+    {
+     "name": "typeIDToStringID",
+     "use": "decode an ID read back from a descriptor into its stringID"
+    },
+    {
+     "name": "runMenuItem",
+     "use": "run a menu command by type ID"
+    },
+    {
+     "name": "doAction",
+     "use": "play a recorded action by action name and action set name"
+    },
+    {
+     "name": "batch",
+     "use": "File > Automate > Batch: run an action over a list of files with BatchOptions"
+    },
+    {
+     "name": "purge",
+     "use": "free undo / history / clipboard caches (PurgeTarget) during long batches"
+    },
+    {
+     "name": "refresh",
+     "use": "pause until the screen redraws, so a user can see intermediate state"
+    },
+    {
+     "name": "fonts",
+     "use": "TextFonts collection of installed fonts (look up postScriptName before setting text)"
+    },
+    {
+     "name": "version",
+     "use": "Photoshop version string, e.g. to gate features by release"
+    },
+    {
+     "name": "putCustomOptions",
+     "use": "store an ActionDescriptor under a key in the Photoshop registry (read with getCustomOptions)"
+    }
+   ],
+   "gotchas": [
+    "app.activeDocument throws when no document is open: test app.documents.length first",
+    "displayDialogs is application-wide: save the old value, set DialogModes.NO for unattended runs and restore it at the end, or later manual work also runs without dialogs (unverified that it outlives the script)",
+    "runMenuItem refuses the numeric menuBarInfo command ids ('<unknown> menu item is not currently available', seen in the ps_menu harvest audit); pass app.stringIDToTypeID('<menuItemType stringID>') such as 'fitOnScreen' instead",
+    "build Action Manager IDs with stringIDToTypeID / charIDToTypeID at run time; do not hard-code numbers ScriptListener printed for stringIDs, those runtime IDs are not guaranteed stable across sessions",
+    "doAction: action and action set names are case-sensitive and must match the names as they appear in the Actions panel (harvest parameter notes), so the set has to be loaded there before the script runs",
+    "over COM the typelib has no runMenuItem, system, doProgress*, put/get/eraseCustomOptions, showColorPicker, refreshFonts, bringToFront, beep, togglePalettes or playbackParameters / playbackDisplayDialogs (full list in extra.com.diff), and Open takes a path string; run those as ExtendScript through the COM-only DoJavaScript method (harvested typelib)",
+    "foregroundColor / backgroundColor: build a SolidColor, set it, then assign it to app.foregroundColor; editing app.foregroundColor.rgb in place may not stick (unverified)",
+    "refresh() pauses the script until Photoshop redraws, so calling it inside a loop slows a batch badly",
+    "the ExtendScript member list comes from omv.xml, the CC 2015.5 dictionary generated in 2016 and not regenerated for 27.4; the Photoshop 2026 COM library is the current listing, so check extra.com before relying on a member the 2016 dictionary lacks (harvest notes)"
+   ],
+   "example": "var oldDialogs = app.displayDialogs;\napp.displayDialogs = DialogModes.NO;                 // no modal dialogs in a batch\napp.open(new File(\"C:/in/product.jpg\"));\napp.doAction(\"Web Export\", \"Brand Actions\");        // names are case-sensitive\napp.runMenuItem(app.stringIDToTypeID(\"fitOnScreen\"));\napp.purge(PurgeTarget.HISTORYCACHES);\napp.displayDialogs = oldDialogs;",
+   "equivalents": {
+    "AI": "class:Application",
+    "CDR": "class:Application"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "doAction gotcha: 'set must be loaded' now follows from the harvested note instead of being cited as it; COM gotcha: added the other ExtendScript-only members from extra.com.diff (bringToFront, beep, togglePalettes, playback*); added a gotcha that the ExtendScript dictionary is the 2016 CC 2015.5 omv.xml (harvest notes). Members, enums (DialogModes, PurgeTarget), example, runMenuItem/fitOnScreen claim (ps_menu audit) and equivalents checked: correct"
+   }
+  },
+  {
+   "name": "Document",
+   "id": "class:Document",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Suite that applies to all applications/Document",
+   "status": "current",
+   "summary": "One open Photoshop document (image): its pixel size, resolution, colour mode and profile, the layers / channels / paths / history collections and the selection, plus whole-image operations: resize image or canvas, crop, trim, rotate / flip canvas, mode and profile conversion, flatten, duplicate, save, export and close.",
+   "use_for": [
+    "resize a master to a social post or story size with resizeImage, then resizeCanvas / crop to the exact frame",
+    "convert RGB artwork to a press CMYK profile with convertProfile before print handoff",
+    "trim the transparent margin off a cut-out product PNG",
+    "save a flattened web JPEG copy while the layered master stays open and untouched",
+    "wrap a multi-step script in a single undo step with suspendHistory",
+    "walk layers, layer sets and the selection of an image to build or audit a layout"
+   ],
+   "avoid": [
+    "pixel or style edits on one layer: work on the ArtLayer (doc.activeLayer, doc.artLayers) instead",
+    "changing pixel size by assigning width / height: both are read-only, use resizeImage or resizeCanvas",
+    "flatten or mergeVisibleLayers on a master you still need layered: duplicate first and flatten the copy"
+   ],
+   "confidence": "high",
+   "how": "Reached from the Application: app.activeDocument (frontmost), app.documents[i] or app.documents.getByName(name), or the return value of app.open / app.documents.add / duplicate. Over COM it is the Document dispinterface with capitalised names (ActiveDocument.ResizeImage, SaveAs, Close). Whole-image commands live here; layer content lives on Layer / ArtLayer / LayerSet objects from its layers, artLayers and layerSets collections.",
+   "key_members": [
+    {
+     "name": "activeLayer",
+     "use": "the selected layer; assign a layer to select it"
+    },
+    {
+     "name": "layers",
+     "use": "all top-level layers and groups, top of stack first"
+    },
+    {
+     "name": "artLayers",
+     "use": "top-level pixel / text / adjustment layers (add() creates a new layer)"
+    },
+    {
+     "name": "selection",
+     "use": "the Selection object: select, fill, stroke, feather, deselect"
+    },
+    {
+     "name": "width",
+     "use": "canvas width as a read-only UnitValue"
+    },
+    {
+     "name": "height",
+     "use": "canvas height as a read-only UnitValue"
+    },
+    {
+     "name": "resolution",
+     "use": "pixels per inch (read-only; change with resizeImage)"
+    },
+    {
+     "name": "mode",
+     "use": "colour mode (DocumentMode), read-only"
+    },
+    {
+     "name": "changeMode",
+     "use": "convert mode (ChangeMode: grayscale, RGB, CMYK, Lab, bitmap, indexed colour, multichannel) with optional DocumentConversionOptions"
+    },
+    {
+     "name": "convertProfile",
+     "use": "convert to a named ICC profile with rendering intent, black point compensation and dither"
+    },
+    {
+     "name": "resizeImage",
+     "use": "resample to a new width / height / resolution with a ResampleMethod"
+    },
+    {
+     "name": "resizeCanvas",
+     "use": "add or cut canvas around the image from an AnchorPosition (default MIDDLECENTER), no resampling"
+    },
+    {
+     "name": "crop",
+     "use": "crop to bounds, optionally rotating and resizing in the same step"
+    },
+    {
+     "name": "trim",
+     "use": "cut away transparent or edge-colour margins (TrimType TRANSPARENT / TOPLEFT / BOTTOMRIGHT) on chosen sides"
+    },
+    {
+     "name": "flatten",
+     "use": "merge every layer into a Background layer"
+    },
+    {
+     "name": "duplicate",
+     "use": "duplicate(name, mergeLayersOnly) returns a new Document copy"
+    },
+    {
+     "name": "saveAs",
+     "use": "save to a File with format options (JPEGSaveOptions, PNGSaveOptions ...) and asCopy"
+    },
+    {
+     "name": "exportDocument",
+     "use": "export as Illustrator paths (default) or Save for Web (ExportType)"
+    },
+    {
+     "name": "close",
+     "use": "close with SaveOptionsType SAVECHANGES / DONOTSAVECHANGES / PROMPTTOSAVECHANGES"
+    },
+    {
+     "name": "suspendHistory",
+     "use": "run a JavaScript string as one history state, so the whole script undoes in one step"
+    }
+   ],
+   "gotchas": [
+    "plain numbers passed to resizeImage / resizeCanvas / crop are read in the current ruler units (Edit > Preferences > Units & Rulers); pass UnitValue(1080, 'px') to be unit-safe",
+    "resizeImage with only a resolution and ResampleMethod.NONE changes the ppi tag without touching pixels; any other resample method changes the pixel count",
+    "passing only width (height undefined) to resizeImage keeps the aspect ratio (unverified)",
+    "mode is read-only: use changeMode, or convertProfile with a CMYK profile name to go to CMYK with a specific press profile",
+    "close() with no argument uses the harvested default SaveOptionsType.PROMPTTOSAVECHANGES, so a modified document raises a save prompt that blocks an unattended run: pass SaveOptionsType.DONOTSAVECHANGES or SAVECHANGES",
+    "saveAs(file, options, true) writes a copy and the open document keeps its own name and path; without asCopy the document is retargeted to the new file (unverified)",
+    "suspendHistory evaluates its second argument as a string of code, so it only sees globals: call a global function such as 'main()', not a closure",
+    "many DOM operations act on the frontmost document: set app.activeDocument = doc before working on a document that is not in front (unverified)",
+    "backgroundLayer is only valid for documents that have a Background layer (typelib description); a transparent PNG has none and reading it there throws (unverified)",
+    "trim() with no type uses the harvested default TrimType.TOPLEFT (colour of the top-left pixel), although its description says 'transparent area': pass TrimType.TRANSPARENT to trim a cut-out",
+    "setting activeLayer to a hidden layer can switch that layer visible (unverified)",
+    "trap only works in CMYK mode, histogram only in RGB, CMYK or indexed mode; exportDocument defaults to ExportType.ILLUSTRATORPATHS, pass ExportType.SAVEFORWEB for a web export (harvest notes)",
+    "over COM the Document typelib has no SuspendHistory, Guides, PrintSettings or PrintOneCopy, names exportDocument Export and print PrintOut; run the missing parts as ExtendScript through the Application's DoJavaScript (harvested typelib)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar copy = doc.duplicate(\"web copy\");\ncopy.resizeImage(UnitValue(1080, \"px\"), undefined, 72, ResampleMethod.BICUBICSHARPER);\ncopy.flatten();\nvar jpg = new JPEGSaveOptions(); jpg.quality = 10;\ncopy.saveAs(new File(\"C:/out/post_1080.jpg\"), jpg, true);\ncopy.close(SaveOptionsType.DONOTSAVECHANGES);",
+   "equivalents": {
+    "AI": "class:Document",
+    "CDR": "class:Document"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: dropped the 1080x1350 / 1080x1920 sizes (not in the batch); changeMode: added multichannel (ChangeMode enum); trim / resizeCanvas: named the harvested TrimType values and the MIDDLECENTER anchor default; added a gotcha that trim() defaults to TrimType.TOPLEFT, not TRANSPARENT; close gotcha now cites the harvested PROMPTTOSAVECHANGES default; backgroundLayer gotcha now cites the typelib note; COM gotcha: added printOneCopy missing and print -> PrintOut. Members, enums, example (JPEGSaveOptions.quality 10 inside 0-12) and equivalents checked: correct"
+   }
+  }
+ ]
+}

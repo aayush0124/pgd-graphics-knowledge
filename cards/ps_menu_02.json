@@ -1,0 +1,848 @@
+{
+ "cards": [
+  {
+   "name": "Paste without Formatting",
+   "id": "9143",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Paste Special/Paste without Formatting",
+   "status": "needs_input",
+   "summary": "Pastes clipboard text into the type layer being edited without the source's font, size, colour or styling, so it takes on the style at the insertion point. Disabled in every scratch state the harvest tried, including one with a text layer active but not in edit mode; none of those states entered text editing or put text on the clipboard, so it most likely needs both (inferred, not tested).",
+   "use_for": [
+    "pasting copy from a Word doc or web page into a poster headline without dragging in its font",
+    "dropping client-supplied text into a styled social-card template and keeping the template's type style",
+    "refreshing body text in a menu or flyer layout without restyling each paste"
+   ],
+   "avoid": [
+    "pasting images or layers: use Edit > Paste, or Edit > Paste Special > Paste in Place",
+    "scripted text replacement: set the type layer's textItem.contents instead (unverified: expected to keep the layer's existing type style)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "pasteWithoutFormatting",
+    "CDR": "Edit/Paste Special"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None found by the harvest (no menuItemType or event matches). Same job from a script (unverified): app.activeDocument.activeLayer.textItem.contents = \"...\" on a LayerKind.TEXT layer keeps that layer's existing style.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the enabling condition (type edit mode + text on the clipboard) is now marked as inferred: the harvest fixtures never entered text editing or copied text; confidence high -> medium for that reason; avoid: Paste in Place is Edit > Paste Special > Paste in Place; textItem.contents style claim marked unverified"
+   }
+  },
+  {
+   "name": "Perspective Warp",
+   "id": "17001",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Perspective Warp",
+   "status": "needs_input",
+   "summary": "Interactive perspective editing for one layer: in Layout mode you draw planes (quads) over the image and align their edges to its architecture, then in Warp mode you drag the corner pins to change the viewing angle while lines stay straight. Needs an open document with a single layer active (disabled for groups and multiple layers), the graphics processor enabled, and a person to draw the planes.",
+   "how": "Layout: drag to draw a plane and snap its edges to the building or box sides; draw a second plane against the first to join them along an edge. Warp: drag pins, Shift-click an edge to straighten it, or use the automatic straighten / level buttons on the options bar; press Enter or the check mark to commit.",
+   "use_for": [
+    "fixing the camera angle of a building photo for a property flyer",
+    "matching a product shot's perspective to a background plate before compositing",
+    "flattening a sign or packaging face so a new label can be placed on it"
+   ],
+   "avoid": [
+    "a single flat face such as a screen or poster mock-up: Edit > Transform > Perspective or Distort is quicker",
+    "lens barrel or keystone correction from camera metadata: use Filter > Lens Correction or Camera Raw Geometry",
+    "unattended pipelines: the command waits for planes drawn by hand"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('perspectiveWarpTransform')) (terminology menuItemType label match, not run): it would enter the interactive Layout mode and wait for a person. Do not call executeAction('perspectiveWarpTransform') with an empty descriptor: the same call for Puppet Warp (rigidTransform) left Photoshop in its interactive mode and hung the script bridge. Unattended (unverified): replay a ScriptListener-recorded perspectiveWarpTransform descriptor (Photoshop's terminology lists the event's keys: mode, referenceRect, vertices, warpedVertices, quads, constrainedSides) with DialogModes.NO, behind a timeout.",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: removed AI Free Distort and CDR Add Perspective: those are the counterparts of Edit > Transform > Distort / Perspective (their own cards say so, and this card's avoid line sends single-face jobs there); neither app has a multi-plane perspective warp; how: dropped the invented options-bar button names; script_api: added the empty-descriptor hang warning (sibling rigidTransform hung) and the event's terminology keys for the unattended route"
+   }
+  },
+  {
+   "name": "Camera Raw",
+   "id": "2324",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Camera Raw",
+   "status": "current",
+   "summary": "Opens the Camera Raw Preferences dialog (Adobe Camera Raw's own settings, separate from Photoshop's panes): where edits are stored (sidecar XMP or the Camera Raw database), raw defaults, GPU use, and which JPEG, HEIC and TIFF files open in Camera Raw instead of Photoshop. Enabled with no document open.",
+   "how": "The choices that matter most: File Handling (JPEG / HEIC / TIFF: automatically open all supported, open with settings, or disable), where image settings are saved (sidecar .xmp files keep edits with the raw file), Raw Defaults (Adobe Default, Camera Settings or a preset) and the graphics processor setting.",
+   "use_for": [
+    "stopping JPEGs from opening in Camera Raw when a batch of product shots should go straight into Photoshop",
+    "making every raw file open with the studio's base preset for consistent catalogue colour",
+    "keeping edits in sidecar XMP files so a photographer's adjustments travel with the raw files"
+   ],
+   "avoid": [
+    "editing one photo's look: open it in Filter > Camera Raw Filter or the Camera Raw dialog",
+    "Photoshop's own file and save options: use Edit > Preferences > File Handling"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('cameraRawPrefs')) would open the dialog (terminology label match, not run: preferences are skipped by rule). No object-model call for these settings is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Cursors",
+   "id": "2312",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Cursors",
+   "status": "current",
+   "summary": "Opens Preferences at the Cursors pane: how painting tools show on the canvas (Standard icon, Precise crosshair, Normal or Full Size brush tip, optional crosshair in the tip) and how other tools show (Standard or Precise), plus the brush preview colour. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Painting Cursors: Normal Brush Tip (outline of the brush's stronger core) or Full Size Brush Tip (the whole soft edge), Show Crosshair in Brush Tip, Show Only Crosshair While Painting. Other Cursors: Standard or Precise. Caps Lock switches to the precise cursor while it is on.",
+   "use_for": [
+    "seeing the true soft edge of a large brush while masking a product cut-out",
+    "precise crosshair cursors for pixel-exact retouching of logos and icons",
+    "setting up a new workstation to match the studio's retouching habits"
+   ],
+   "avoid": [
+    "a cursor that suddenly turned into a crosshair: Caps Lock is probably on, no preference change is needed",
+    "fixing a misbehaving Photoshop: one pane rarely helps; reset all preferences (General > Reset Preferences On Quit) instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route found. Same settings without the dialog (unverified): app.preferences.paintingCursors = PaintingCursors.BRUSHSIZE / PRECISE / STANDARD; app.preferences.otherCursors = OtherPaintingCursors.PRECISEOTHER / STANDARDOTHER.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the unharvested '50%' figure; Caps Lock gives the precise cursor while it is on, not 'for a moment'; avoid: removed the unharvested Ctrl+Alt+Shift launch key combo"
+   }
+  },
+  {
+   "name": "Enhanced Controls",
+   "id": "2333",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Enhanced Controls",
+   "status": "unusable",
+   "summary": "A Preferences pane that, as far as is known, holds settings for supported external control hardware (dial or console devices); what it contains in 27.4 is not confirmed. It was disabled in every state the harvest tried, with and without documents, so on this machine it cannot be opened, most likely because no such device is connected.",
+   "use_for": [
+    "configuring a supported control dial or console for brush size and zoom, when one is connected"
+   ],
+   "avoid": [
+    "anything on this machine: the item stayed disabled in every state tried",
+    "keyboard shortcut changes: use Edit > Keyboard Shortcuts"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Export",
+   "id": "Edit/Preferences/Export",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Export",
+   "status": "current",
+   "summary": "Opens Preferences at the Export pane: the format and options used by File > Export > Quick Export (the item is titled after the chosen format; the harvest saw Quick Export as PNG), where quick exports go, what metadata is written, whether colour is converted to sRGB, and the option to bring back the legacy Export As dialog. Same command as File > Export > Export Preferences.",
+   "how": "Quick Export Format (with PNG transparency or JPG quality), Quick Export Location (ask every time, or an assets folder next to the document), Metadata (none, or copyright and contact info), Convert to sRGB, and Use Legacy Export As (Photoshop's terminology lists these keys under Export Preferences).",
+   "use_for": [
+    "making Quick Export produce transparent PNGs for social stickers and logo files in one click",
+    "forcing sRGB conversion so web banners do not shift colour in browsers",
+    "stripping metadata from client deliverables"
+   ],
+   "avoid": [
+    "print output: use File > Save As (TIFF, PDF) with a CMYK workflow, not the Export settings",
+    "sizes and per-file options for one export: use File > Export > Export As"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "The harvest's candidate runMenuItem(stringIDToTypeID('exportTimelineComments')) was not run and matched only on the generic menuItemType label 'Export'; in the terminology that stringID is the Export Timeline Comments event, so it is probably not this pane. No object-model call for these settings is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: menu item is 'Quick Export as PNG' in the harvest (title follows the chosen format), dropped the unharvested PNG/JPG/GIF/SVG list; how: removed 'embed profile' (not among the Export Preferences terminology keys: file type, location, metadata, convert to sRGB, legacy Export As, JPG quality, PNG transparency); scriptable 'no' confirmed: exportTimelineComments is the 'Export Timeline Comments' event; script_api: says why the candidate matched (generic label 'Export') and what the stringID is"
+   }
+  },
+  {
+   "name": "File Handling",
+   "id": "2317",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/File Handling",
+   "status": "current",
+   "summary": "Opens Preferences at the File Handling pane: image previews and extensions on save, background saving and auto-save of recovery information, Maximize PSD/PSB compatibility, PSD compression, layered-TIFF warnings, Camera Raw hand-off, legacy Save As, and the length of the recent-files list. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "The choices that matter: Maximize PSD and PSB File Compatibility (Always keeps a flattened composite other apps and previews can read, at a larger file size; Never saves smaller files), Automatically Save Recovery Information every N minutes, Save in Background, Enable legacy Save As, Prefer Adobe Camera Raw for supported raw files, and Recent File List contains N files.",
+   "use_for": [
+    "setting Maximize Compatibility to Always so layered PSDs preview and place correctly in other apps",
+    "shortening auto-recovery intervals on long poster or banner sessions",
+    "turning on legacy Save As so Save As offers JPEG and PNG again"
+   ],
+   "avoid": [
+    "reducing a single file's size: flatten or save a copy instead of changing a global preference",
+    "Camera Raw-specific handling of JPEG or HEIC files: use Edit > Preferences > Camera Raw"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/File Handling..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route found. Several settings without the dialog (unverified): app.preferences.maximizeCompatibility = QueryStateType.ALWAYS / NEVER / ASK; imagePreviews; appendExtension; useLowerCaseExtension; askBeforeSavingLayeredTIFF; recentFileListLength.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "General",
+   "id": "2311",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/General",
+   "status": "current",
+   "summary": "Opens the Preferences dialog at the General pane (Ctrl+K): color picker type, default image interpolation for resampling, and general options such as Auto-Update Open Documents, Beep When Done, Export Clipboard, Resize Image During Place, Always Create Smart Objects When Placing, legacy Free Transform and New Document dialogs, Reset All Warning Dialogs and Reset Preferences On Quit. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Image Interpolation sets the default resampling for Image Size and transforms (Bicubic Automatic suits most work; Nearest Neighbor keeps pixel art hard-edged). Turn off Resize Image During Place to keep placed assets at their own size; Reset Preferences On Quit is the clean way to restore defaults.",
+   "use_for": [
+    "setting Nearest Neighbor interpolation for pixel-art or icon scaling",
+    "stopping placed logos from being scaled to fit the canvas",
+    "restoring a clean Photoshop setup before a production run"
+   ],
+   "avoid": [
+    "changing one image's resampling: pick the method in Image > Image Size instead",
+    "performance or memory problems: use Edit > Preferences > Performance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "preference",
+    "CDR": "Tools/Options/CorelDRAW"
+   },
+   "shortcut": "Ctrl+K",
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('generalPreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.colorPicker, interpolation, beepWhenDone, exportClipboard, autoUpdateOpenDocuments.",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.CDR: Tools/Options/Global (suite-wide settings shared by the Graphics Suite apps) -> Tools/Options/CorelDRAW (CorelDRAW's own app preferences; that card and the AI General card point back here)"
+   }
+  },
+  {
+   "name": "Guides, Grid & Slices",
+   "id": "2315",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Guides, Grid & Slices",
+   "status": "current",
+   "summary": "Opens Preferences at the Guides, Grid & Slices pane: colour and line style of guides, Smart Guides and artboard guides, the grid's colour, style, spacing (gridline every N units) and subdivisions, and slice line colour and numbering. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Set Gridline Every and Subdivisions in the layout's unit (pixels for social and web, millimetres for print); change guide colour when guides vanish against the artwork.",
+   "use_for": [
+    "setting the grid spacing and subdivisions used for social carousels and web mock-ups",
+    "making guides visible on a cyan or bright-blue poster background",
+    "setting a print layout grid in millimetres for brochure pages"
+   ],
+   "avoid": [
+    "adding the guides themselves: use View > Guides > New Guide Layout",
+    "turning the grid on or off: use View > Show > Grid"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/Guides & Grid...",
+    "CDR": "Layout/Document Options"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('guidesGridPreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.guideStyle, gridStyle, gridSubDivisions, showSliceNumber.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the unharvested 100 px / 4 subdivisions / 10 mm examples; use_for: the grid preference sets one uniform grid, it does not build a 12-column grid (that is View > Guides > New Guide Layout, as the card's own avoid line says)"
+   }
+  },
+  {
+   "name": "History & Content Credentials",
+   "id": "2329",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/History & Content Credentials",
+   "status": "current",
+   "summary": "Opens Preferences at the History & Content Credentials pane: the History Log (save an edit log to file metadata, a text file or both, at Sessions Only, Concise or Detailed level) and the Content Credentials setting that attaches provenance information (including generative-AI use) to exported files. Exact Content Credentials options in 27.4 are not confirmed by the harvest.",
+   "how": "History Log on, Save Log Items To: Metadata / Text File / Both, Edit Log Items: Sessions Only / Concise / Detailed. Content Credentials: switch on to record edit provenance with exports.",
+   "use_for": [
+    "keeping a detailed edit log on retouching jobs that need an audit trail",
+    "attaching Content Credentials to AI-assisted campaign images so platforms can show provenance",
+    "documenting what was done to a press or news photo"
+   ],
+   "avoid": [
+    "undoing past steps: use the History panel, which is per session",
+    "sharing files where edit history is confidential: keep the log off or saved to a separate text file"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route found. History log without the dialog (unverified): app.preferences.useHistoryLog, saveLogItems, saveLogItemsFile, editLogItems. No call is known for the Content Credentials setting.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Image Processing",
+   "id": "2335",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Image Processing",
+   "status": "current",
+   "summary": "Opens Preferences at the Image Processing pane, which chooses where Select Subject (and Remove Background, which builds on it) runs: on the Device (faster) or in the Cloud (more detailed edges). Photoshop's terminology confirms this Device / Cloud key; it lists no other key for the pane.",
+   "how": "Select Subject and Remove Background processing: Device (faster, offline) or Cloud (detailed results, needs sign-in and a connection).",
+   "use_for": [
+    "choosing cloud processing for hair and fur cut-outs on fashion and product shots",
+    "forcing device processing for confidential client images or offline work"
+   ],
+   "avoid": [
+    "refining a cut-out edge after the fact: use Select > Select and Mask",
+    "general speed problems: use Edit > Preferences > Performance"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: Device / Cloud choice now grounded in the terminology class imageProcessingPrefs (imageProcessingSelectSubjectPrefs: Device | Cloud) instead of 'as far as is known'"
+   }
+  },
+  {
+   "name": "Interface",
+   "id": "2323",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Interface",
+   "status": "current",
+   "summary": "Opens Preferences at the Interface pane: colour theme (gray, dark gray, medium gray or light gray) and highlight colour, canvas colour and border for each screen mode, UI language, UI font size and scaling, and options such as Show Channels in Color, Dynamic Color Sliders and Show Menu Colors. Language and scaling changes apply after a restart.",
+   "how": "Color Theme and Highlight Color change the panel look; Standard / Fullscreen with Menus / Fullscreen set the canvas surround colour (neutral grey is safest for judging colour); UI Font Size and Scale UI To Font fix tiny text on high-DPI screens.",
+   "use_for": [
+    "setting a neutral grey canvas surround before colour-critical retouching",
+    "enlarging the UI on a high-resolution monitor",
+    "switching the UI language to English to match tutorials and scripts"
+   ],
+   "avoid": [
+    "panel layout and docking behaviour: use Edit > Preferences > Workspace or Window > Workspace",
+    "judging print colour: set up View > Proof Setup instead of changing the theme"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "userInterfacePref"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('interfacePrefs')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.colorChannelsInColor, dynamicColorSliders.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: theme count replaced by the four brightness values named in Photoshop's terminology (uiBrightnessLevelEnumType); use_for: removed the unharvested '4K' figure"
+   }
+  },
+  {
+   "name": "Notifications",
+   "id": "2337",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Notifications",
+   "status": "current",
+   "summary": "Opens Preferences at the Notifications pane. Photoshop's own terminology (Notifications Preferences class) lists its switches as Quiet Mode, Show Tooltips, Show Rich Tooltips, Show What's New and Show Feature Onboarding; the harvest did not open the pane, so the on-screen layout is unconfirmed.",
+   "use_for": [
+    "silencing What's New and onboarding pop-ups during a client screen-share or demo (Quiet Mode)",
+    "turning tooltips or rich tooltips off on a production workstation"
+   ],
+   "avoid": [
+    "warning dialogs inside Photoshop: reset or suppress them in Edit > Preferences > General",
+    "tool behaviour such as zoom or Shift-key tool switching: use Edit > Preferences > Tools"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known for the pane (no script route found; preferences are skipped by rule). Tooltips alone (unverified): app.preferences.showToolTips = false.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/use_for: replaced the guessed list (cloud-document invites, comments) with the switches in the terminology class notificationsPreferences (quietMode, showToolTips, useRichToolTips, showWhatsNew, showFeatureOnboarding); confidence low -> medium; script_api: added the DOM showToolTips property (unverified); avoid: points tool behaviour to the Tools pane"
+   }
+  },
+  {
+   "name": "Performance",
+   "id": "2304",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Performance",
+   "status": "current",
+   "summary": "Opens Preferences at the Performance pane: how much RAM Photoshop may use, history states, and cache levels and tile size (or let Photoshop set those two automatically), and graphics processor settings. Memory and GPU changes take effect after a restart.",
+   "how": "Memory Usage: give Photoshop as much RAM as the other running apps can spare. History States: fewer saves memory on huge files. Cache Levels: raise for large flat images, lower for many-layer UI work. Use Graphics Processor must be on for Perspective Warp, Select and Mask speed and smooth zoom.",
+   "use_for": [
+    "making large print posters and very high-resolution composites responsive",
+    "fixing GPU-dependent features that are greyed out (turn on Use Graphics Processor)",
+    "raising History States for long retouching sessions"
+   ],
+   "avoid": [
+    "running out of disk space during saves: change Scratch Disks instead",
+    "a slow single document: purge histories with Edit > Purge first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/Performance..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route found. Without the dialog (unverified): app.preferences.maxRAMuse, numberOfHistoryStates, imageCacheLevels.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the cache preset list ('tall-thin' is a preset name from old releases; the harvest and the Performance Preferences terminology only have an auto cache levels / tile size switch); how: removed the unharvested 70-85% RAM figure; use_for: removed the unharvested '8K' figure"
+   }
+  },
+  {
+   "name": "Plugins",
+   "id": "2316",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Plugins",
+   "status": "current",
+   "summary": "Opens Preferences at the Plugins pane: Generator (image asset export from layer names), remote connections, showing all Filter Gallery groups and names in the Filter menu, and whether extension panels load and may connect to the internet. Changes apply after a restart.",
+   "how": "Enable Generator for Image Assets export (the harvest found the Image Assets script, Presets/Scripts/generate.jsx, but no File > Generate menu item, presumably because Generator is off here); Show All Filter Gallery Groups and Names puts the Artistic, Sketch, Texture and other gallery filters back as individual Filter menu items; Load Extension Panels must be on for third-party panels.",
+   "use_for": [
+    "exposing Filter Gallery effects as separate menu items for actions and scripts",
+    "turning on Generator for automatic PNG/JPG asset export from layer names in UI kits",
+    "troubleshooting a third-party panel that does not appear"
+   ],
+   "avoid": [
+    "installing UXP or CEP plugins: use the Creative Cloud app or the Plugins menu",
+    "scratch disk or memory settings: use Edit > Preferences > Scratch Disks or Performance"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: removed AI Plug-ins & Scratch Disks (it holds an additional plug-ins folder and scratch disks, none of this pane's Generator / Filter Gallery / extension-panel settings; that card points back to PS Scratch Disks only); how: File > Generate > Image Assets is not in the harvested menus, now cites the harvested generate.jsx script instead"
+   }
+  },
+  {
+   "name": "Product Improvement",
+   "id": "2334",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Product Improvement",
+   "status": "current",
+   "summary": "Opens Preferences at the Product Improvement pane, where you opt in or out of sending Adobe anonymous usage information about Photoshop. It does not change any document or tool behaviour.",
+   "use_for": [
+    "opting out of usage data on machines that handle confidential client work",
+    "setting a studio-wide privacy policy on new installs"
+   ],
+   "avoid": [
+    "anything about image output: this pane only controls data sharing"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Scratch Disks",
+   "id": "2328",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Scratch Disks",
+   "status": "current",
+   "summary": "Opens Preferences at the Scratch Disks pane: tick which drives Photoshop uses as virtual memory when RAM runs out, and set their order, with free space shown for each. Takes effect after a restart.",
+   "how": "Tick a fast internal SSD with plenty of free space and move it to the top; untick the system drive if it is nearly full. Errors like 'scratch disks are full' are fixed here.",
+   "use_for": [
+    "fixing 'scratch disks are full' errors on large print composites",
+    "moving scratch to a fast SSD before a big batch of high-resolution banners"
+   ],
+   "avoid": [
+    "speed problems with enough free disk space: adjust Edit > Preferences > Performance",
+    "using a network or slow USB drive as scratch: it slows everything down"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/Plug-ins & Scratch Disks..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Technology Previews",
+   "id": "2327",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Technology Previews",
+   "status": "current",
+   "summary": "Opens Preferences at the Technology Previews pane: switches for experimental features Adobe ships for testing. The list changes from release to release and is not recorded in the harvest.",
+   "use_for": [
+    "trying a preview feature on a test file before it ships",
+    "turning a preview feature off when it causes a problem in production"
+   ],
+   "avoid": [
+    "production pipelines: preview features can change or disappear in the next update"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (no script route found; preferences are skipped by rule).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Tools",
+   "id": "2330",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Tools",
+   "status": "current",
+   "summary": "Opens Preferences at the Tools pane: Use Shift Key for Tool Switch, zoom behaviour (animated zoom, zoom with scroll wheel, zoom resizes windows, zoom clicked point to center), flick panning, overscroll, snapping vector tools and transforms to the pixel grid, the on-canvas transformation values readout, and similar tool behaviour switches. Photoshop's terminology lists the tooltip switches under Notifications Preferences, not Tools. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Snap Vector Tools and Transforms to Pixel Grid keeps icon and UI shapes crisp; Zoom with Scroll Wheel changes the mouse wheel from scrolling to zooming; turning off Use Shift Key for Tool Switch lets a single letter cycle through a tool group.",
+   "use_for": [
+    "crisp, pixel-aligned shapes for app icons and UI mock-ups",
+    "setting scroll-wheel zoom for fast retouching navigation",
+    "hiding the on-canvas transformation values readout when it covers small artwork"
+   ],
+   "avoid": [
+    "keyboard shortcut changes: use Edit > Keyboard Shortcuts",
+    "cursor shapes: use Edit > Preferences > Cursors",
+    "tooltips and rich tooltips: use Edit > Preferences > Notifications"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Tools/Options/Tools"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('toolsPreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.useShiftKeyForToolSwitch, keyboardZoomResizesWindows.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/use_for/script_api: tooltips moved out (the 27.4 terminology puts showToolTips / useRichToolTips in notificationsPreferences; toolsPreferences has no tooltip key); added the transformation values readout (showHUD) that the Tools class does list; avoid: tooltips -> Notifications"
+   }
+  },
+  {
+   "name": "Transparency & Gamut",
+   "id": "2313",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Transparency & Gamut",
+   "status": "current",
+   "summary": "Opens Preferences at the Transparency & Gamut pane: the size and colours of the checkerboard that shows transparent pixels, and the colour and opacity of the gamut warning overlay (View > Gamut Warning). The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Grid Size: None, Small, Medium or Large; Grid Colors: light, medium, dark or custom (a dark checkerboard shows white logos on transparency). Gamut Warning: pick a colour that cannot occur in the artwork and raise its opacity so it stands out.",
+   "use_for": [
+    "checking a white logo or sticker cut-out against a dark checkerboard",
+    "setting a vivid gamut-warning colour before preparing a CMYK print job"
+   ],
+   "avoid": [
+    "checking colours for print accurately: use View > Proof Setup and Proof Colors as well",
+    "making areas transparent: this only changes how transparency is displayed"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('transparencyGamutPreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.gridSize = GridSize.NONE / SMALL / MEDIUM / LARGE (checkerboard size), gamutWarningOpacity.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the unharvested '100% opacity' figure"
+   }
+  },
+  {
+   "name": "Type",
+   "id": "2322",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Type",
+   "status": "current",
+   "summary": "Opens Preferences at the Type pane: smart quotes, missing-glyph protection, font names in English, Esc to commit text, placeholder text for new type layers, font preview size, the number of recent fonts, and the text engine (East Asian, or Middle Eastern and South Asian / World-Ready layout). The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Choose the Middle Eastern and South Asian text engine before setting Hindi (Devanagari), Arabic or other complex scripts, or their conjuncts and vowel signs render broken; turn off Fill New Type Layers With Placeholder Text for clean templates; Smart Quotes on for typographic quotes.",
+   "use_for": [
+    "correct Devanagari rendering for Hindi posters and social cards",
+    "typographic curly quotes in magazine-style layouts",
+    "stopping Lorem Ipsum from appearing in every new text layer"
+   ],
+   "avoid": [
+    "styling one layer: use the Character and Paragraph panels",
+    "missing fonts in a file: use Type > Manage Missing Fonts or Type > Match Font"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/Type..."
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('typePreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified): app.preferences.smartQuotes, showEnglishFontNames, showAsianTextOptions, fontPreviewSize.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'Type > Resolve Missing Fonts' does not exist; the harvested item is Type > Manage Missing Fonts"
+   }
+  },
+  {
+   "name": "Units & Rulers",
+   "id": "2314",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Units & Rulers",
+   "status": "current",
+   "summary": "Opens Preferences at the Units & Rulers pane: ruler units (pixels, inches, cm, mm, points, picas, percent), type units (points, pixels, mm), column width and gutter, default resolutions for new print and screen documents, and the point/pica size (PostScript or Traditional). The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Set Rulers to Pixels and Type to Pixels for social and web work so font sizes match CSS; use Millimeters and Points for print; Column Size defines the Columns unit used in Image Size, Canvas Size and New Document.",
+   "use_for": [
+    "pixel units for Instagram and YouTube graphics so sizes match the export",
+    "millimetre rulers for an A4 flyer or visiting card with bleed",
+    "making scripts behave predictably by fixing ruler and type units first"
+   ],
+   "avoid": [
+    "changing one document's size or resolution: use Image > Image Size or Canvas Size",
+    "showing or hiding the rulers: use View > Rulers (Ctrl+R)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Preferences/Units...",
+    "CDR": "Layout/Document Options"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('unitsRulersPreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). Without the dialog (unverified, common in scripts): app.preferences.rulerUnits = Units.PIXELS; app.preferences.typeUnits = TypeUnits.PIXELS; columnWidth, columnGutter, pointSize.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the unharvested 72 / 72.27 points-per-inch figures (the harvest has only the PointType values POSTSCRIPT / TRADITIONAL)"
+   }
+  },
+  {
+   "name": "Workspace",
+   "id": "2331",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Preferences/Workspace",
+   "status": "current",
+   "summary": "Opens Preferences at the Workspace pane: panel and document-window behaviour such as Auto-Collapse Iconic Panels, Auto-Show Hidden Panels, Open Documents as Tabs, floating document window docking, large tabs and a narrow options bar. The choice is saved in the user's Photoshop preferences file and applies to every document, not just the open one.",
+   "how": "Turn off Open Documents as Tabs to compare two images side by side as floating windows; Auto-Collapse Iconic Panels keeps icon panels from staying open after use.",
+   "use_for": [
+    "floating windows for comparing a reference image with the design in progress",
+    "a compact panel setup on a laptop screen"
+   ],
+   "avoid": [
+    "saving or switching panel layouts: use Window > Workspace (New Workspace, Reset)",
+    "theme and UI size: use Edit > Preferences > Interface"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "userInterfacePref"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('workspacePreferences')) would open the pane (terminology label match, not run: preferences are skipped by rule). No object-model call for these settings is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "confidence medium -> high: every switch in the summary is in the 27.4 terminology class workspacePreferences (openNewDocsAsTabs, enableFloatingDocDocking, autoCollapseDrawers, autoShowRevealStrips, enableNarrowOptionBar, enableLargeTabs)"
+   }
+  },
+  {
+   "name": "Migrate Presets",
+   "id": "1211",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Presets/Migrate Presets",
+   "status": "current",
+   "summary": "Copies presets (brushes, swatches, gradients, patterns, styles, shapes, tool presets and similar) from an older Photoshop version installed on the same computer into this one, after a confirmation prompt. Enabled with no document open; it changes the user's preset libraries permanently.",
+   "how": "Photoshop asks whether to migrate presets from the previous version; Yes imports them into the current preset panels. Nothing to set beyond the confirmation.",
+   "use_for": [
+    "bringing a designer's custom brushes and brand swatches across after upgrading Photoshop",
+    "restoring a studio's preset set on an upgraded workstation"
+   ],
+   "avoid": [
+    "loading presets from a file or another machine: use the panel menu Import, or Edit > Presets > Preset Manager",
+    "machines with no older Photoshop installed: there is nothing to migrate"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None known (not run by the harvest because it changes user presets permanently). Loading a preset file instead (unverified): app.load(File(path)) with an .abr, .grd, .pat or .asl file.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Preset Manager",
+   "id": "1214",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Presets/Preset Manager",
+   "status": "current",
+   "summary": "Opens the Preset Manager dialog, confirmed by the harvest: pick a preset type, then load, save, rename, delete and reorder presets, or save a selected subset as a library file. Contours and tool presets are managed here; brushes, swatches, gradients, styles, patterns and shapes are, as far as is known, managed in their own panels instead. The dialog's Preset Type list in 27.4 is not recorded in the harvest.",
+   "how": "Choose the Preset Type, select presets (Shift or Ctrl-click), then Save Set to export just those as a library file to share, Load to add a library, Rename or Delete.",
+   "use_for": [
+    "exporting a team's tool presets as one library file",
+    "cleaning out unused contours and tool presets before packaging a template kit",
+    "loading a client's contour or tool-preset library"
+   ],
+   "avoid": [
+    "moving presets from an older Photoshop on the same computer: use Edit > Presets > Migrate Presets",
+    "organising swatches, gradients or patterns into groups: use their own panels",
+    "exporting or loading brushes, layer styles or patterns: use the Brushes, Styles or Patterns panel menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "runMenuItem(stringIDToTypeID('presetManager')) (confirmed 2026-10-04: opens the Preset Manager dialog). Loading a library without the dialog (unverified): app.load(File(path)) with an .abr, .grd, .pat, .asl, .csh or .tpl file.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/use_for: no longer implies brushes, layer styles and patterns are exported or loaded here (the summary itself says those live in their own panels; the old use_for exported layer styles and loaded brush / pattern libraries through this dialog); avoid: points those jobs to their panels"
+   }
+  },
+  {
+   "name": "Puppet Warp",
+   "id": "2221",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Puppet Warp",
+   "status": "needs_input",
+   "summary": "Interactive pin-based bending of one layer: Photoshop lays a triangle mesh over the layer's content, you click to add pins and drag them to bend limbs, tails, text or objects while pinned areas stay put. On a Smart Object it is applied as an editable Smart Filter. Needs an open document with a single layer active (disabled for groups and multiple layers) and a person to place and drag the pins.",
+   "how": "Options bar: Mode (Rigid, Normal, Distort), Density (Fewer Points, Normal, More Points), Expansion (how far the mesh extends past the edge), Show Mesh, Pin Depth (which part overlaps), Rotate (Auto or Fixed; Alt-drag near a pin to rotate around it). Press Enter to commit.",
+   "use_for": [
+    "bending a cut-out arm, scarf or tail into a new pose for a composite",
+    "curving a cut-out product or ribbon to follow a layout path on a poster",
+    "small posture fixes on a model cut-out without redrawing"
+   ],
+   "avoid": [
+    "unattended scripts: the harvest's empty-descriptor call hung Photoshop in this mode and needed a force-restart",
+    "even, overall shape changes: use Edit > Transform > Warp, or Filter > Liquify for face and body shaping"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Puppet Warp Tool"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Harvest candidate rigidTransform, not confirmed: executeAction(stringIDToTypeID('rigidTransform'), new ActionDescriptor(), DialogModes.NO) put Photoshop into the interactive Puppet Warp mode and it stopped answering scripts (2026-10-04, force-restarted); runMenuItem(stringIDToTypeID('rigidTransform')) would do the same. Unattended (unverified): replay a ScriptListener-recorded rigidTransform descriptor with its pins (Photoshop's terminology lists the event's keys: rigidType, puppetShapeList), behind a timeout.",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: removed CDR Mesh Warp (a grid-node rubber-sheet warp whose own card maps it to PS Edit > Transform > Warp, the job this card's avoid line sends elsewhere; CorelDRAW has no pin-based warp); script_api: added the event's terminology keys"
+   }
+  },
+  {
+   "name": "All",
+   "id": "2915",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Purge/All",
+   "status": "current",
+   "summary": "Frees memory by clearing the undo buffer, the clipboard and the history states of all open documents at once; it cannot be undone. Needs an open document. Confirmed by the harvest: history states went from 7 to 2 and the clipboard changed.",
+   "use_for": [
+    "freeing RAM in the middle of a heavy poster or composite session before a big filter",
+    "clearing memory between files in a long batch script"
+   ],
+   "avoid": [
+    "when you may still need to step back: snapshot or save a copy first, since history is gone",
+    "only one kind of cache: use Purge > Clipboard or Purge > Histories"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.purge(PurgeTarget.ALLCACHES) (confirmed 2026-10-04 on a scratch document: history states 7 -> 2, clipboard changed).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Clipboard",
+   "id": "2912",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Purge/Clipboard",
+   "status": "current",
+   "summary": "Empties Photoshop's clipboard to free the memory a large copy holds. The menu item was disabled in every scratch state the harvest tried, none of which had copied anything, so it is presumably greyed out until Photoshop holds clipboard data; the script route ran and changed the clipboard after a select-all and copy.",
+   "use_for": [
+    "releasing memory after copying a large layer between print-size documents",
+    "clearing the clipboard between steps of a batch script"
+   ],
+   "avoid": [
+    "when the copied pixels still need pasting: paste first",
+    "clearing history as well: use Purge > All"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.purge(PurgeTarget.CLIPBOARDCACHE) (confirmed 2026-10-04 after selectAll(); copy(); deselect() on a scratch document: clipboard changed).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the greyed-out explanation is now tied to the fixture (no enabled-state fixture copied anything) and marked as an inference"
+   }
+  },
+  {
+   "name": "Histories",
+   "id": "2361",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Purge/Histories",
+   "status": "current",
+   "summary": "Clears the history states of every open document to free memory; it cannot be undone. Needs an open document. Confirmed by the harvest: history states went from 7 to 2.",
+   "use_for": [
+    "freeing memory after many retouching steps on a large image",
+    "keeping a long scripted batch from slowing down as history piles up"
+   ],
+   "avoid": [
+    "clearing history of just one document: use Clear History in the History panel menu",
+    "when you may want to go back: take a snapshot or save first"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.purge(PurgeTarget.HISTORYCACHES) (confirmed 2026-10-04 on a scratch document: history states 7 -> 2).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Undo",
+   "id": "2911",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Edit/Purge/Undo",
+   "status": "hidden",
+   "summary": "Hidden Purge > Undo command (not visible in the menu and disabled in every state tried), probably left over from the older single-step undo; it would clear the undo buffer. The hand-mapped script call ran without error but changed nothing observable, so its effect is unconfirmed.",
+   "use_for": [
+    "nothing in normal work: use Purge > Histories or Purge > All to free memory"
+   ],
+   "avoid": [
+    "relying on it from scripts: app.purge(PurgeTarget.UNDOCACHES) showed no observable change; use HISTORYCACHES or ALLCACHES"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "app.purge(PurgeTarget.UNDOCACHES) (hand-mapped candidate, run 2026-10-04: no error but no observable change).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

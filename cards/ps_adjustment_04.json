@@ -1,0 +1,796 @@
+{
+ "cards": [
+  {
+   "name": "HDR Toning",
+   "id": "Image/Adjustments/HDR Toning",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/HDR Toning",
+   "status": "current",
+   "summary": "Tone-maps the whole image through Photoshop's 32-bit HDR toning step, run by the bundled Required/HDRToning.jsx: it flattens the document (after asking), takes an 8 or 16-bit image up to 32 bpc and back down to its own depth through the HDR Toning dialog (a 32-bit document goes down to 16 and back up, so it stays 32-bit). Highlights are compressed, shadows opened and local edge contrast and detail pushed, giving the punchy, gritty 'HDR photo' look, with halo glow at strong settings. The dialog's controls were not harvested.",
+   "use_for": [
+    "faux-HDR / gritty detail grade on a single flat exposure (architecture, cars, landscapes)",
+    "tone-mapping a 32-bit File/Automate/Merge to HDR Pro result in place (it stays 32-bit; Image/Mode/16 Bits/Channel is the step that converts it down)",
+    "punchy poster or album-art look with exaggerated local contrast"
+   ],
+   "avoid": [
+    "layered files: the script flattens the document (it asks first); work on a duplicate, or use Filter/Camera Raw Filter on a smart object for an editable version",
+    "faces and skin: halos and grit show fast; Image/Adjustments/Shadows/Highlights or Camera Raw is gentler",
+    "CMYK or Lab documents: the script only works in RGB or Grayscale and offers to convert",
+    "unattended scripts: there is no Action Manager event (harvest error); the menu script can raise confirm() prompts (flatten, convert to RGB) and always opens the HDR Toning dialog. The only no-dialog route is a helper in the installed StackSupport.jsx (see scripting), not run-tested"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "HDR",
+    "tone mapping",
+    "gritty detail",
+    "local contrast",
+    "halo glow",
+    "dramatic",
+    "over-processed"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "File/Automate/Merge to HDR Pro (its 32-bit result, tone-mapped in place)",
+    "Image/Adjustments/Shadows/Highlights (gentler shadow lift)",
+    "Filter/Camera Raw Filter (non-destructive alternative)",
+    "Presets/HDR Toning (16 factory .hdt presets: Photorealistic, Surrealistic, Monochromatic, City Twilight ...)"
+   ],
+   "scripting": "No Action Manager event (harvest: HDR Toning is implemented by Required/HDRToning.jsx). With the dialog: $.evalFile(new File(app.path + '/Required/HDRToning.jsx'));  // asks before flattening / converting to RGB, converts to 32 bpc, opens the HDR Toning dialog. Without the dialog (installed Presets/Scripts/Stack Scripts Only/StackSupport.jsx convertFromHDRNoDialog; not run-tested, value ranges not harvested), on a flat RGB document already at 32 bpc: var t = new ActionDescriptor(); t.putInteger(stringIDToTypeID('version'), 4); t.putEnumerated(charIDToTypeID('Mthd'), stringIDToTypeID('hdrToningMethodType'), stringIDToTypeID('hdrtype4')); /* Local Adaptation: the helper also copies the doubles radius, threshold, saturation, vibrance, detail, shallow, highlights, contrast, brightness, the boolean smooth and a classFXShapeCurve toning curve; hdrtype1 = Highlight Compression, hdrtype2 = Exposure and Gamma (exposure, gamma), hdrtype3 = Equalize Histogram */ var d = new ActionDescriptor(); d.putInteger(charIDToTypeID('Dpth'), 8); d.putObject(charIDToTypeID('With'), stringIDToTypeID('hdrOptions'), t); executeAction(charIDToTypeID('CnvM'), d, DialogModes.NO);  The menu's command id -485 is negative, which the ps_menu harvest records as assigned per session (script entries), so it is not a stable performMenuCommand target.",
+   "scriptable": "partial",
+   "non_destructive": "no: destructive (harvest) and it flattens the document; no adjustment-layer or smart-filter form",
+   "cost": "heavy: flatten + 32-bit conversion + tone-mapping pass, slow on large files",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for / summary: a 32-bit document is tone-mapped in place and stays 32-bit (HDRToning.jsx converts it to 16 and back), not converted down to 16 or 8 bit; scripting: dropped performMenuCommand -485 (ps_menu harvest: negative ids are assigned per session); added the no-dialog convertMode + hdrOptions route found in the installed StackSupport.jsx (not run-tested), so 'values cannot be set headless' in avoid is corrected; pairs_with: the 16 harvested factory HDR Toning .hdt presets"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no scripted route (gallery/ps_adjustment/failed.json: the harvest has no Action Manager event; HDR Toning runs through Required/HDRToning.jsx and its dialog), so there is no frame: a harness limit, not a fault of the effect.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "harness",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Hue/Saturation",
+   "id": "hueSaturation",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Hue/Saturation",
+   "status": "current",
+   "shortcut": "Ctrl+U",
+   "summary": "Shifts hue, saturation and lightness for the whole image (Master) or for one colour family (Reds, Yellows, Greens, Cyans, Blues, Magentas); Colorize instead tints the whole image one hue for a monotone or sepia look. From Image > Adjustments it rewrites the pixels.",
+   "use_for": [
+    "recolouring a product or garment by shifting one colour family",
+    "sepia / single-colour toning with Colorize for a vintage poster or thumbnail",
+    "pulling down an over-saturated colour or boosting a dull background",
+    "desaturating every colour family but one for a selective-colour look"
+   ],
+   "avoid": [
+    "recolouring one object whose colour also appears elsewhere: Hue/Saturation hits every pixel in the range; mask a Layer/New Adjustment Layer/Hue/Saturation or use Image/Adjustments/Replace Color",
+    "big hue shifts on gradients or skin: banding and odd edges",
+    "editable work: this menu version is destructive, use Layer/New Adjustment Layer/Hue/Saturation"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Hue/Saturation/Lightness",
+    "AI": "Edit/Edit Colors/Recolor Artwork..."
+   },
+   "look": [
+    "hue shift",
+    "recolour",
+    "colorize",
+    "sepia tint",
+    "monotone",
+    "desaturate",
+    "saturation boost",
+    "colour swap"
+   ],
+   "params": [
+    {
+     "name": "Colorize",
+     "does": "On: replaces all colour with a single hue set by the Adjustment values while keeping the tones, for a monotone / sepia look",
+     "typical": "off for corrections, on for tints (default off)"
+    },
+    {
+     "name": "Adjustment",
+     "does": "the actual Hue / Saturation / Lightness values, for Master or a colour family; declared as an object (/hueSatAdjustment) whose member keys the harvest did not read",
+     "typical": "hue +/-10 to 40 for shifts, saturation all the way down to strip colour"
+    },
+    {
+     "name": "Using",
+     "does": "loads a saved Hue/Saturation preset file (.ahu, e.g. Presets/Hue and Saturation/Sepia.ahu) instead of inline values",
+     "typical": "a factory preset such as Sepia, Cyanotype or Strong Saturation"
+    },
+    {
+     "name": "Preset Kind",
+     "does": "records where the settings came from (Default, Factory Preset, User Preset, Custom)",
+     "typical": "presetKindCustom when you pass your own values"
+    }
+   ],
+   "demo_settings": {
+    "Preset Kind": "presetKindCustom",
+    "Colorize": true
+   },
+   "enum_labels": {
+    "presetKindDefault": "Default",
+    "presetKindFactory": "Factory Preset",
+    "presetKindUserDefined": "User Preset",
+    "presetKindCustom": "Custom"
+   },
+   "pairs_with": [
+    "a selection or layer mask to limit the shift",
+    "Layer/New Adjustment Layer/Hue/Saturation (same control, editable)",
+    "Image/Adjustments/Replace Color (choose the colour by sampling)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putEnumerated(stringIDToTypeID('presetKind'), stringIDToTypeID('presetKindType'), stringIDToTypeID('presetKindCustom')); d.putBoolean(stringIDToTypeID('colorize'), true); /* values: the 'adjustment' key (declared /hueSatAdjustment, member keys not harvested; record one with ScriptingListener); or, instead of values, a factory preset: d.putPath(stringIDToTypeID('using'), new File(app.path + '/Presets/Hue and Saturation/Sepia.ahu')) (not run-tested) */ executeAction(stringIDToTypeID('hueSaturation'), d, DialogModes.NO);",
+   "scriptable": "partial",
+   "non_destructive": "no: Image > Adjustments rewrites the pixels (harvest: destructive); the editable form is Layer/New Adjustment Layer/Hue/Saturation",
+   "cost": "instant",
+   "demo_note": "Colorize alone: the Hue / Saturation / Lightness amounts sit in the Adjustment value, which the harvest did not break down, so the plate shows Photoshop's stored colorize amounts (a one-hue tint, or plain grey if that saturation is 0); untested.",
+   "review": {
+    "by": "adversarial",
+    "changes": "Adjustment described as the harvested object type (/hueSatAdjustment), not an ActionList the harvest never showed; demo_settings: added Preset Kind presetKindCustom to match the scripting call; gallery-limit note moved from avoid to demo_note"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/cc71a033cf9a.png",
+    "note": "Same red-brown Colorize monotone as the adjustment layer at the same values.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Invert",
+   "id": "invert",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Invert",
+   "status": "current",
+   "shortcut": "Ctrl+I",
+   "summary": "Turns the image into its negative: every channel value is flipped to its opposite, so light becomes dark and each colour becomes its complement (red to cyan, blue to yellow). It has no settings.",
+   "use_for": [
+    "photo-negative / x-ray look for a poster or album cover",
+    "flipping a mask, channel or black-on-white line art to white-on-black",
+    "a quick dark version of a scanned logo or sketch"
+   ],
+   "avoid": [
+    "inverting brightness but keeping the hues: use an Invert adjustment layer set to Luminosity blend mode",
+    "CMYK documents: each ink channel, black included, is inverted, which differs from an RGB negative; invert in RGB",
+    "editable work: use Layer/New Adjustment Layer/Invert"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Transform/Invert Colors",
+    "AI": "Edit/Edit Colors/Invert Colors"
+   },
+   "look": [
+    "negative",
+    "inverted colours",
+    "x-ray",
+    "complementary colours",
+    "photo negative"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Luminosity blend mode (invert tones, keep hues)",
+    "Image/Adjustments/Gradient Map (recolour the negative)",
+    "layer masks (Ctrl+I on a mask flips what shows)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID('invert'), undefined, DialogModes.NO);  // no params",
+   "scriptable": "yes",
+   "non_destructive": "no: destructive (harvest); the editable form is Layer/New Adjustment Layer/Invert",
+   "cost": "instant",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/a1754a8aa138.png",
+    "note": "Full negative of the plate, ramp reversed, blocks to their complements.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Levels",
+   "id": "levels",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Levels",
+   "status": "current",
+   "shortcut": "Ctrl+L",
+   "summary": "Sets the black point, white point and midtone gamma of the composite or of each colour channel, plus output black / white, against a histogram: stretching the range adds contrast, moving channel points removes a cast. Its Auto flags are Photoshop's automatic corrections: the ps_menu harvest ran Image/Auto Tone (auto), Image/Auto Contrast (autoContrast) and Image/Auto Color (autoBlackWhite + autoNeutrals) live as this levels event.",
+   "use_for": [
+    "fixing flat, low-contrast or washed-out photos before they go into a layout",
+    "clean black and white points on scanned art, sketches or documents",
+    "removing a colour cast channel by channel",
+    "lifted output blacks for a faded film look"
+   ],
+   "avoid": [
+    "shaping specific tones (S-curve, cross-process): use Image/Adjustments/Curves",
+    "editable work: use Layer/New Adjustment Layer/Levels"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Levels"
+   },
+   "look": [
+    "contrast",
+    "black point",
+    "white point",
+    "gamma",
+    "tone correction",
+    "auto color",
+    "colour cast removal",
+    "faded blacks"
+   ],
+   "params": [
+    {
+     "name": "Adjustment",
+     "does": "the input black / gamma / white and output black / white values for the composite or a channel; declared as an object (/levelsAdjustment) whose member keys the harvest did not read",
+     "typical": "input black 10-30, white 225-245, gamma 0.8-1.2"
+    },
+    {
+     "name": "Auto",
+     "does": "true = Image/Auto Tone (ps_menu harvest: this event with auto, run live)",
+     "typical": "true for a one-click fix"
+    },
+    {
+     "name": "Auto Contrast",
+     "does": "true = Image/Auto Contrast (ps_menu harvest: run live): contrast stretch on the composite, keeps the colour balance",
+     "typical": "true when the colours are fine but the image is flat"
+    },
+    {
+     "name": "Auto Black & White",
+     "does": "automatic per-channel black and white points; with Auto Neutrals it is Image/Auto Color (ps_menu harvest: run live)",
+     "typical": "true together with Auto Neutrals"
+    },
+    {
+     "name": "Auto Neutrals",
+     "does": "snaps midtones toward neutral grey to remove a cast",
+     "typical": "true together with Auto Black & White"
+    },
+    {
+     "name": "Using",
+     "does": "loads a saved Levels preset file (.alv, e.g. Presets/Levels/Increase Contrast 2.alv)",
+     "typical": "Increase Contrast 1-3, Lighten Shadows, Midtones Brighter"
+    }
+   ],
+   "demo_settings": {
+    "Auto Black & White": true,
+    "Auto Neutrals": true
+   },
+   "enum_labels": {
+    "presetKindDefault": "Default",
+    "presetKindFactory": "Factory Preset",
+    "presetKindUserDefined": "User Preset",
+    "presetKindCustom": "Custom"
+   },
+   "pairs_with": [
+    "Image/Adjustments/Curves (finer tone shaping after Levels)",
+    "Layer/New Adjustment Layer/Levels (editable, maskable)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putBoolean(stringIDToTypeID('autoBlackWhite'), true); d.putBoolean(stringIDToTypeID('autoNeutrals'), true); executeAction(stringIDToTypeID('levels'), d, DialogModes.NO);  // = Image/Auto Color (run live in the ps_menu harvest). Manual values: the 'adjustment' key (declared /levelsAdjustment, member keys not harvested) or, instead, a factory preset: d.putPath(stringIDToTypeID('using'), new File(app.path + '/Presets/Levels/Increase Contrast 2.alv')) (not run-tested)",
+   "scriptable": "partial",
+   "non_destructive": "no: destructive (harvest); the editable form is Layer/New Adjustment Layer/Levels",
+   "cost": "instant",
+   "demo_note": "Auto Color (Auto Black & White + Auto Neutrals, the descriptor the ps_menu harvest ran live for Image/Auto Color): the plate's bottom strip already spans black to white, so expect a modest contrast / cast change on the photo.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / params: Auto, Auto Contrast and Auto Black & White + Auto Neutrals now cite the ps_menu harvest, which ran Image/Auto Tone, Auto Contrast and Auto Color live as this event (the card said 'not probed'); Adjustment described as the harvested object type (/levelsAdjustment), not an ActionList; gallery-limit note moved from avoid to demo_note"
+   },
+   "verified": {
+    "verdict": "weak",
+    "frame": "gallery/ps_adjustment/038757475d60.png",
+    "note": "Barely changed (mean diff 3.3): Auto Black & White + Auto Neutrals cool the neutrals a little (white type 255 to 243/250/255, the light ramp end to 235/241/250) and slightly mute the warm photo; the plate already spans 0-255, so the auto stretch has almost nothing to do. No stronger demo exists inside the harvest (the point values are in the unharvested Adjustment object), so demo_settings stay and rerender is false.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "weak",
+     "cause": "plate",
+     "note": "Plate check: the photo plate already has true black (type band) and near-white (ramp end), so auto black / white points cannot stretch it; the small cool shift is Auto Neutrals working as intended, so the frame does show the effect, weakly. Not a harness fault (index: nothing dropped). A visible Levels demo needs explicit points, which the harvest does not have."
+    }
+   }
+  },
+  {
+   "name": "Match Color",
+   "id": "matchColor",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Match Color",
+   "status": "current",
+   "summary": "Matches the target layer's colour and brightness statistics to a Source (another open image or layer, optionally only a selection in either) so shots from different sources look like one set. With no source it is a quick corrector: Luminance brightens or darkens, Color Range (the dialog's Color Intensity) raises or lowers colour intensity, Neutralize Color removes a cast and Fade blends back to the original. On the photo plate, Luminance 140 with Color Intensity 200 brightens the frame and pushes colourful areas further (the tan wall turns redder) while near-greys hardly change, and the already saturated blue and violet blocks clip and swing to magenta.",
+   "use_for": [
+    "making photos from different cameras or events look like one set in a layout",
+    "matching a composited cut-out to its background plate",
+    "a quick cast fix (Neutralize) plus saturation boost without a reference"
+   ],
+   "avoid": [
+    "CMYK or Lab documents: Match Color works in RGB mode only",
+    "precise grading: it is statistical and can overshoot; use Curves or Color Balance adjustment layers",
+    "editable work: no adjustment-layer form; apply to a duplicate layer",
+    "scripted matching to a reference: Source is an object reference (another document or layer) whose structure the harvest did not read",
+    "Color Intensity near its maximum is not a clean saturation boost: saturated blues and violets clip and swing to magenta, so keep it well below 200 and check the blues"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "colour match",
+    "consistent grade",
+    "neutralize cast",
+    "saturation boost",
+    "brighten",
+    "colour transfer"
+   ],
+   "params": [
+    {
+     "name": "Luminance",
+     "does": "brightness of the result, 100 = unchanged (harvested 0-200)",
+     "typical": "80-130"
+    },
+    {
+     "name": "Color Range",
+     "does": "colour intensity, 100 = unchanged, 0 = greyscale, higher = more saturated (harvested 0-200)",
+     "typical": "90-150"
+    },
+    {
+     "name": "Fade",
+     "does": "blends the result back toward the original (harvested 0-100)",
+     "typical": "0-40"
+    },
+    {
+     "name": "Neutralize Color",
+     "does": "removes a colour cast from the target",
+     "typical": "on for casty indoor shots"
+    },
+    {
+     "name": "No Reference Image",
+     "does": "true = no Source, only the sliders apply (the default)",
+     "typical": "false when matching to a Source"
+    },
+    {
+     "name": "Source",
+     "does": "the reference image / layer to match",
+     "typical": "another open document"
+    },
+    {
+     "name": "Use Source Selection",
+     "does": "compute the reference colours from the source's selection only",
+     "typical": "on when only part of the reference is relevant"
+    },
+    {
+     "name": "Use Target Selection",
+     "does": "compute the target statistics from the target's selection",
+     "typical": "on to match a subject, not the whole frame"
+    }
+   ],
+   "demo_settings": {
+    "Luminance": 140,
+    "Color Range": 200,
+    "Fade": 0,
+    "No Reference Image": true
+   },
+   "pairs_with": [
+    "a selection in source and target (matches the subject, not the background)",
+    "Image/Adjustments/Curves (final tone touch after matching)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID('lightness'), 140); d.putInteger(stringIDToTypeID('colorRange'), 200); d.putInteger(stringIDToTypeID('fade'), 0); d.putBoolean(stringIDToTypeID('noReference'), true); executeAction(stringIDToTypeID('matchColor'), d, DialogModes.NO);  // to match a reference: noReference false + stringIDToTypeID('source') (/referenceOrFile, structure not harvested)",
+   "scriptable": "yes",
+   "non_destructive": "no: destructive (harvest); no adjustment-layer form",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_adjustment/f6ddc09b57a3.png",
+    "note": "Brighter (photo mean 138/108/70 to 153/117/74) with colourful areas pushed further (chroma of colourful pixels +15-30 %, the tan wall redder) while near-greys lose a little colour, and the saturated blue and violet blocks clip and swing to magenta (30/63/255 and 122/43/217 to 255/0/255): Color Intensity at 200 is not a plain saturation boost. Summary and avoid now say so.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "effect text",
+     "note": "Re-sampled: blue block 30/63/255 and violet block 122/43/217 are both 255/0/255 in the frame, sky-blue 0/163/224 is 125/131/255, colourful pixels gain chroma while near-greys lose a little; not a plate artefact (the blocks are flat colours) and not the harness (control matched dialogs). The rewritten sentence and the new avoid line state only this."
+    }
+   }
+  },
+  {
+   "name": "OpenColorIO Transform",
+   "id": "Image/Adjustments/OpenColorIO Transform",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/OpenColorIO Transform",
+   "status": "hidden",
+   "summary": "Appears to convert the layer's pixel values from one OpenColorIO colour space to another (for example a scene-linear working space to a display / view transform) using the document's OCIO configuration. The menu item was hidden in this harvest (the harvest notes the OCIO adjustment items appear only with an OCIO document open) and its options were not harvested, so the exact controls are unconfirmed.",
+   "use_for": [
+    "VFX or 3D renders in ACES / scene-linear colour that need a display-space version",
+    "keeping a Photoshop paint-over in step with a compositing pipeline's OCIO colour spaces"
+   ],
+   "avoid": [
+    "ordinary sRGB / CMYK design work: use Edit/Convert to Profile (ICC) instead",
+    "scripts: no Action Manager event was found (harvest error); the adjustment-layer form only names an unverified candidate event adjustmentLayerOCIOAdjustment"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "look": [
+    "colour space conversion",
+    "ACES",
+    "OCIO",
+    "view transform",
+    "linear to display"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Layer/New Adjustment Layer/OpenColorIO Transform (editable form, also hidden)",
+    "File/New OpenColorIO, File/Open as OpenColorIO or Edit/Convert to OpenColorIO (make the OCIO document first; all hidden or disabled in the harvest's scratch states)",
+    "Edit/OpenColorIO Settings"
+   ],
+   "scripting": "No Action Manager event in Photoshop.exe's terminology (harvest error). Menu route only, when an OCIO document is open: UXP core.performMenuCommand({commandID: 3099}) (menuBarInfo id, not run-tested); it opens the dialog.",
+   "scriptable": "no",
+   "non_destructive": "no: the Image > Adjustments form is destructive (harvest)",
+   "cost": "light: a per-pixel colour transform (presumed)",
+   "review": {
+    "by": "adversarial",
+    "changes": "pairs_with: replaced the unsupported '32-bit documents' with the harvested OCIO document commands; summary: the 'only with an OCIO document' condition attributed to the harvest note"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: status hidden (needs an OCIO-managed document; options not harvested), so it was not rendered.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "input / status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Photo Filter",
+   "id": "photoFilter",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Photo Filter",
+   "status": "current",
+   "summary": "Tints the image as if shot through a coloured lens filter: all tones are pushed toward the Filter Color by Density, and Preserve Luminosity keeps the brightness so the image does not darken. The default is an orange warming colour at density 25.",
+   "use_for": [
+    "warming a cold photo (golden-hour feel) or cooling a warm one",
+    "unifying mixed photos in a collage under one shared colour cast",
+    "a strong single-colour wash behind type on a mood poster or thumbnail"
+   ],
+   "avoid": [
+    "a full monotone: use Hue/Saturation Colorize or Image/Adjustments/Gradient Map",
+    "editable work: use Layer/New Adjustment Layer/Photo Filter",
+    "Density above 100: the harvest probe stored any number unclamped (1e6 and -1e6 kept as sent) and the result past 100% was not tested; keep it a percentage at or below 100"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Camera/Photo Filter"
+   },
+   "look": [
+    "warming filter",
+    "cooling filter",
+    "colour cast",
+    "tint",
+    "golden hour",
+    "lens filter",
+    "colour wash"
+   ],
+   "params": [
+    {
+     "name": "Filter Color",
+     "does": "the filter's colour (stored as Lab; default orange, Lab 67.06 / 32 / 120, which shows as #EC8A00 in sRGB)",
+     "typical": "orange #EC8A00 to warm, blue #006DFF to cool"
+    },
+    {
+     "name": "Density",
+     "does": "strength of the tint in percent (default 25)",
+     "typical": "20-40 subtle, 60-90 strong wash"
+    },
+    {
+     "name": "Preserve Luminosity",
+     "does": "on keeps the original brightness; off darkens like a real glass filter",
+     "typical": "on (the default)"
+    }
+   ],
+   "demo_settings": {
+    "Filter Color": "#EC8A00",
+    "Density": 80,
+    "Preserve Luminosity": true
+   },
+   "pairs_with": [
+    "Layer/New Adjustment Layer/Photo Filter with a mask (warm only the subject)",
+    "Image/Adjustments/Levels (restore contrast after a heavy filter)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); var c = new ActionDescriptor(); c.putDouble(stringIDToTypeID('luminance'), 67.06); c.putDouble(stringIDToTypeID('a'), 32); c.putDouble(stringIDToTypeID('b'), 120); d.putObject(stringIDToTypeID('color'), stringIDToTypeID('labColor'), c); d.putInteger(stringIDToTypeID('density'), 80); d.putBoolean(stringIDToTypeID('preserveLuminosity'), true); executeAction(stringIDToTypeID('photoFilter'), d, DialogModes.NO);  // Lab 67.06 / 32 / 120 is the harvested default and shows as #EC8A00 (the demo colour) in sRGB; for another hex use Photoshop's D50 Lab, e.g. #006DFF = 48.3 / 19.8 / -81.1",
+   "scriptable": "yes",
+   "non_destructive": "no: destructive (harvest); the editable form is Layer/New Adjustment Layer/Photo Filter",
+   "cost": "instant",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: no longer states an unharvested 1-100 dialog range; Filter Color / scripting: the harvested default Lab displays as #EC8A00, so the scripting call and the demo agree; D50 Lab example for other colours"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/677a87451258.png",
+    "note": "Orange #EC8A00 at density 80 gives a strong warm cast (the cyan block turns grey, blue to violet) with brightness kept, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Posterize",
+   "id": "posterization",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Posterize",
+   "status": "current",
+   "summary": "Cuts each colour channel down to the given number of tone levels, so smooth gradients and skin break into flat, hard-edged bands of colour: a screen-print / pop-art poster look. Levels counts per channel, so 4 allows up to 64 colours in RGB.",
+   "use_for": [
+    "pop-art or screen-print style posters and thumbnails",
+    "flattening a photo into a few colour areas before tracing it to vectors",
+    "a retro limited-palette comic or game look"
+   ],
+   "avoid": [
+    "high Levels values (above about 16) on soft images: the change is barely visible; use 2-8 for a clear look",
+    "a limited palette with chosen colours: use Image/Adjustments/Gradient Map or Indexed Color",
+    "noisy photos turn speckled: smooth first with Filter/Blur/Surface Blur",
+    "editable work: use Layer/New Adjustment Layer/Posterize"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Transform/Posterize"
+   },
+   "look": [
+    "posterized",
+    "pop art",
+    "screen print",
+    "banding",
+    "flat colour",
+    "limited palette",
+    "retro"
+   ],
+   "params": [
+    {
+     "name": "Levels",
+     "does": "tone levels per channel (harvested 2-255, default 4)",
+     "typical": "3-6 strong, 8-12 subtle"
+    }
+   ],
+   "demo_settings": {
+    "Levels": 4
+   },
+   "pairs_with": [
+    "Filter/Blur/Surface Blur (cleaner bands)",
+    "Image/Adjustments/Gradient Map (recolour the bands)",
+    "Filter/Pixelate/Color Halftone (print-dot finish on the flat bands)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID('levels'), 4); executeAction(stringIDToTypeID('posterization'), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "no: destructive (harvest); the editable form is Layer/New Adjustment Layer/Posterize",
+   "cost": "instant",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/2c533ba9167a.png",
+    "note": "Four levels per channel: flat colour bands and a four-step ramp, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Replace Color",
+   "id": "replaceColor",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Replace Color",
+   "status": "needs_input",
+   "summary": "Selects pixels by colour (eyedropper samples define a colour range, widened by Fuzziness, or Localized Color Clusters) and shifts only that range's Hue, Saturation and Lightness, e.g. turning a red stripe teal while the rest stays put. It needs the sampled colour range: the harvest's call with an empty descriptor failed ('parameters not currently valid').",
+   "use_for": [
+    "recolouring one coloured object (shirt, car, logo patch) to show colour variants",
+    "quick product colourway mock-ups",
+    "toning down a distracting coloured element in a photo"
+   ],
+   "avoid": [
+    "a colour that also appears elsewhere (red top next to skin): every matching pixel shifts; select the object first or mask a Hue/Saturation adjustment layer",
+    "editable work: no adjustment-layer form; work on a duplicate layer",
+    "headless calls without a colour range: executeAction failed in the harvest; the full descriptor (Minimum / Maximum colours plus shifts) was not run-tested",
+    "big hue shifts on low-saturation colours look grey and muddy; raise Saturation too"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Replace Colors",
+    "AI": "Edit/Edit Colors/Recolor Artwork..."
+   },
+   "look": [
+    "colour swap",
+    "recolour",
+    "colour variant",
+    "hue shift one colour",
+    "selective recolour"
+   ],
+   "params": [
+    {
+     "name": "Fuzziness",
+     "does": "how far around the sampled colours the selection spreads",
+     "typical": "40-80"
+    },
+    {
+     "name": "Minimum",
+     "does": "low corner of the sampled colour range",
+     "typical": "darkest sample of the target colour"
+    },
+    {
+     "name": "Maximum",
+     "does": "high corner of the sampled colour range",
+     "typical": "lightest sample of the target colour"
+    },
+    {
+     "name": "Hue",
+     "does": "hue shift applied to the selected colours",
+     "typical": "+/-30 to 180"
+    },
+    {
+     "name": "Saturation",
+     "does": "saturation change for the selected colours",
+     "typical": "0 to +30"
+    },
+    {
+     "name": "Lightness",
+     "does": "lightness change for the selected colours",
+     "typical": "-20 to +20"
+    },
+    {
+     "name": "Foreground Color Clusters",
+     "does": "Localized Color Clusters data for the sampled colours",
+     "typical": "left to the dialog"
+    }
+   ],
+   "demo_settings": {
+    "Fuzziness": 80,
+    "Minimum": "#9A1428",
+    "Maximum": "#FF2020",
+    "Hue": 160,
+    "Saturation": 0,
+    "Lightness": 0
+   },
+   "pairs_with": [
+    "a selection around the object (limits the swap)",
+    "Image/Adjustments/Hue/Saturation"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID('fuzziness'), 80); /* d.putObject(stringIDToTypeID('minimum'), <colour class>, c1); d.putObject(stringIDToTypeID('maximum'), <colour class>, c2): declared /color, class not harvested; if Lab (D50): #9A1428 = 33.6 / 53.1 / 27.3, #FF2020 = 55.5 / 78.0 / 60.3, which brackets the plate's red block #E8202A = 50.8 / 72.2 / 49.6 */ d.putInteger(stringIDToTypeID('hue'), 160); d.putInteger(stringIDToTypeID('saturation'), 0); d.putInteger(stringIDToTypeID('lightness'), 0); executeAction(stringIDToTypeID('replaceColor'), d, DialogModes.NO);  // not run-tested; the empty call failed",
+   "scriptable": "partial",
+   "non_destructive": "no: destructive (harvest); no adjustment-layer form",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: D50 Lab of the demo Minimum / Maximum, checked to bracket the plate's red block"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: status needs_input (the harvest's call failed without a sampled colour range), so the gallery skipped it.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "input / status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Selective Color",
+   "id": "selectiveColor",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Selective Color",
+   "status": "current",
+   "summary": "Adds or removes cyan, magenta, yellow and black inside one colour family at a time (Reds, Yellows, Greens, Cyans, Blues, Magentas, Whites, Neutrals, Blacks), e.g. making greens more yellow or deepening blacks without touching other colours. Method picks Relative (scaled by the ink already there) or Absolute (a fixed amount).",
+   "use_for": [
+    "film-look grades (teal shadows via Blacks, warm highlights via Whites)",
+    "fixing one off colour (greenish skin, cyan-heavy sky) in print-bound photos",
+    "nudging a brand colour in a product shot without a mask"
+   ],
+   "avoid": [
+    "large hue swaps: use Hue/Saturation or Replace Color",
+    "editable work: use Layer/New Adjustment Layer/Selective Color",
+    "Reds is a wide family: Reds cyan +50 also pulled red out of the orange (255 -> 196), yellow (255 -> 233) and pink-magenta (224 -> 167) bars in the gallery frame; mask it, or balance with Yellows / Magentas",
+    "read-backs name the Reds family 'radius' (a shared type id); send 'reds'"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Selective Color"
+   },
+   "look": [
+    "selective color",
+    "film grade",
+    "teal and orange",
+    "colour correction",
+    "CMYK tweak",
+    "deep blacks"
+   ],
+   "params": [
+    {
+     "name": "Color Correction",
+     "does": "the per-colour-family ink amounts, an ActionList with one colorCorrection per family: colors (reds, yellows, greens, cyans, blues, magentas, whites, neutrals, blacks), cyan, magenta, yellowColor, black",
+     "typical": "+/-10 to 40 per ink in one or two families"
+    },
+    {
+     "name": "Method",
+     "does": "relative scales the change by the ink already present; absolute adds a fixed amount (stronger)",
+     "typical": "relative for subtle fixes, absolute for bold grades"
+    },
+    {
+     "name": "Using",
+     "does": "loads a saved Selective Color preset file",
+     "typical": "a user-saved preset; the PS preset harvest has no factory Selective Color presets (no Presets/Selective Color folder)"
+    }
+   ],
+   "demo_settings": {
+    "Preset Kind": "presetKindCustom",
+    "Method": "absolute",
+    "Color Correction": [
+     {
+      "colors": "reds",
+      "cyan": 50,
+      "magenta": 0,
+      "yellowColor": 0,
+      "black": 0
+     }
+    ]
+   },
+   "enum_labels": {
+    "presetKindDefault": "Default",
+    "presetKindFactory": "Factory Preset",
+    "presetKindUserDefined": "User Preset",
+    "presetKindCustom": "Custom",
+    "relative": "relative",
+    "absolute": "absolute"
+   },
+   "pairs_with": [
+    "Layer/New Adjustment Layer/Selective Color",
+    "Image/Adjustments/Curves"
+   ],
+   "scripting": "var s=stringIDToTypeID, a=new ActionDescriptor(); a.putEnumerated(s('presetKind'), s('presetKindType'), s('presetKindCustom')); a.putEnumerated(s('method'), s('correctionMethod'), s('absolute')); var cc=new ActionDescriptor(); cc.putEnumerated(s('colors'), s('colors'), s('reds')); cc.putInteger(s('cyan'), 50); cc.putInteger(s('magenta'), 0); cc.putInteger(s('yellowColor'), 0); cc.putInteger(s('black'), 0); var lst=new ActionList(); lst.putObject(s('colorCorrection'), cc); a.putList(s('colorCorrection'), lst); executeAction(s('selectiveColor'), a, DialogModes.NO); /* the structure the gallery rendered */",
+   "scriptable": "yes",
+   "non_destructive": "no: destructive (harvest); the editable form is Layer/New Adjustment Layer/Selective Color",
+   "cost": "instant",
+   "review": {
+    "by": "adversarial",
+    "changes": "enum_labels for method set to the harvested labels (relative / absolute); Using: no factory Selective Color presets are installed; gallery-limit note moved from avoid to demo_note; demo still shows nothing (Color Correction not settable)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/ddd068e71cec.png",
+    "note": "Reds cyan +50 (absolute) acts only on red-family colours: the red bar drops 232 -> 137 in red alone (orange, yellow and pink bars lose red too), green / cyan / blue / violet bars and the grey ramp are untouched (difference 0.0), red stripes and the dark-red panel darken (red -30 on red pixels): selective, as described. Same pixels as the adjustment-layer frame (difference 0.0).",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "gallery/ps_adjustment/ddd068e71cec.png",
+     "note": "Untested: frame identical to the plate (diff 0.0): Method was dropped and no Color Correction list was sent (inner keys not harvested; the renderer cannot encode lists).",
+     "rerender": false,
+     "second_opinion": {
+      "agree": true,
+      "verdict": "not_rendered",
+      "cause": "harness",
+      "note": "Frame vs ref diff 0.0 confirmed in index.json: nothing was applied, so the effect is untested rather than broken; the card text is not contradicted by the frame."
+     }
+    }
+   }
+  }
+ ]
+}

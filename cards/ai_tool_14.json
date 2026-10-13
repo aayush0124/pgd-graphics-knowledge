@@ -1,0 +1,91 @@
+{
+ "cards": [
+  {
+   "name": "Toggle Fill/Stroke",
+   "id": "Adobe Toggle Fill Stroke",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": null,
+   "status": "current",
+   "summary": "Keyboard command that switches which of the two color boxes (Fill or Stroke, in the toolbar and the Color panel) is active, so the next swatch click or Color panel edit goes to that attribute. It changes no artwork by itself; only the active-box focus flips.",
+   "use_for": [
+    "fast recoloring loops: X, click a swatch for the outline, X, click a swatch for the fill",
+    "line-art and icon work where strokes and fills are colored in turns",
+    "making sure a gradient or pattern swatch lands on the stroke rather than the fill"
+   ],
+   "avoid": [
+    "pressing X while a text cursor is in a type object: it types the letter; press Esc (or switch to a selection tool) first",
+    "expecting the two colors to trade places: that is Swap Fill/Stroke (Shift+X)",
+    "resetting to white fill / black stroke: use Default (D)",
+    "scripts: a script cannot flip the active box (the harvested DOM has no setter; app.isFillActive() / isStrokeActive() only read it), so set fillColor / strokeColor on the item directly"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Press X with no text being edited. The box that comes to the front (Fill = solid square, Stroke = hollow square) is the one swatches, the Color panel, the Color Picker and the color-mode buttons now edit, for the selected objects and for new ones. Click the boxes in the toolbar to do the same by mouse.",
+   "shortcut": "X",
+   "scriptable": "partial",
+   "script_api": "The harvest did not reach this id with app.selectTool (\"Adobe Toggle Fill Stroke\" is untested). No harvested call sets the active box; a script can only read it with app.isFillActive() / app.isStrokeActive(), and does the color job without the toggle: set PathItem.fillColor / strokeColor (with filled / stroked) on the selection, or Document.defaultFillColor / defaultStrokeColor for new objects.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the Properties panel from where the active Fill/Stroke box lives. avoid + script_api: replaced 'a script never needs the active box' (app.isFillActive / isStrokeActive exist to read it) with the harvest fact that no DOM call sets the active box, which is why scriptable is partial. Rest checked against batch and harvest (X, Shift+X Swap Fill/Stroke, D Default, defaultFillColor / defaultStrokeColor, filled / stroked)."
+   }
+  },
+  {
+   "name": "Toggle Screen Mode",
+   "id": "Adobe Toggle Screen Mode",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": null,
+   "status": "current",
+   "summary": "Keyboard command that cycles the window through Illustrator's screen modes: Normal Screen Mode, Full Screen with Menu Bar Mode and Full Screen Mode (no title or menu bar), then back to Normal. It changes only the workspace view, never the artwork.",
+   "use_for": [
+    "more canvas room while drawing or reviewing a layout",
+    "showing a poster or logo to a client on screen with less interface around it",
+    "distraction-free checking of composition and balance"
+   ],
+   "avoid": [
+    "pressing F while editing text: it types the letter; press Esc first",
+    "a clean slideshow of the artboards: use View > Presentation Mode (Shift+F) instead",
+    "hiding only the panels: press Tab (Shift+Tab keeps the toolbar), which keeps the current screen mode"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "View/Screen Mode/Full Screen Mode With Menu Bar"
+   },
+   "how": "Press F (no text being edited) to step to the next screen mode; keep pressing F to come back to Normal Screen Mode. The same modes are on View > Screen Mode and the screen-mode button at the bottom of the toolbar, where you can pick one directly.",
+   "shortcut": "F",
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Toggle Screen Mode\") was not verified by the harvest. Set the mode directly instead: app.activeDocument.views[0].screenMode = ScreenMode.MULTIWINDOW (Normal), ScreenMode.DESKTOP (full screen with menu bar) or ScreenMode.FULLSCREEN (no menu bar) (or views[0].setScreenMode(...)); to cycle like F, read screenMode and set the next value. This needs an open document (views live on Document); the View > Screen Mode menu items are enabled with no document open (harvest menu walk), F's no-document behavior is unverified. The menu items (View/Screen Mode/...) have no executeMenuCommand id in the harvest, only Win32 command numbers 404 / 405 / 406.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added setScreenMode and the read-then-set cycle; replaced the unsupported claim that F works with no document (only the View > Screen Mode menu items are recorded as enabled without one). avoid: added Presentation Mode's harvested shortcut Shift+F. Kept PS equivalent View/Screen Mode/Full Screen Mode With Menu Bar: PS has no cycling item in the harvest and that mode is what one F press gives from Normal. ScreenMode MULTIWINDOW/DESKTOP/FULLSCREEN, Win32 404/405/406 and Tab / Shift+Tab checked against the harvest."
+   }
+  },
+  {
+   "name": "CC Charts Tool",
+   "id": "CC Charts Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": null,
+   "status": "hidden",
+   "summary": "A tool id listed in Illustrator 2026's default shortcut set (Defaults.kys /Tools) that sits on no built-in toolbar and has no entry in the Keyboard Shortcuts dialog. The name suggests a chart-making tool separate from the classic Graph tools, but the harvest found no display name and never reached it live, so what it draws and how it behaves are unknown.",
+   "use_for": [
+    "nothing in a production pipeline until it is identified live; for charts use the Graph tools (Column Graph Tool, J, and its flyout)"
+   ],
+   "avoid": [
+    "any automated chart build: the tool was never verified, so use Column Graph Tool and the other Graph tools, or draw bars and wedges from data with a script",
+    "assuming it is the same as the classic Graph tools: the harvest gives no evidence either way"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Unknown. It is in none of the built-in toolbar presets the harvest read (Default, Basic, Getting Started) and the Keyboard Shortcuts dialog does not list it, so the harvest found no way for a designer to pick it from the default UI. Identify it live in Illustrator 30.2.1 (app.selectTool(\"CC Charts Tool\"), then app.getSelectedToolName()) before relying on it.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None verified. app.selectTool(\"CC Charts Tool\") is untested (the harvest probe never reached this id, and selecting a tool would not draw a chart anyway). The only chart objects in the harvested DOM are classic graphs via Document.graphItems / GraphItem, which a script can move, duplicate or remove but not create.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the advice to look on Window > Toolbars > Advanced / Edit Toolbar, which contradicts the batch (the id is on no built-in toolbar preset; the harvest read Default, Basic, Getting Started); now points to a live selectTool / getSelectedToolName probe. Checked: no Chart class in the AI DOM, GraphItems has no add, Column Graph Tool = J; status hidden / scriptable no / confidence low kept."
+   }
+  }
+ ]
+}

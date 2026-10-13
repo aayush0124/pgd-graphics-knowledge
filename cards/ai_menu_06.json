@@ -1,0 +1,809 @@
+{
+ "cards": [
+  {
+   "name": "Expand Appearance",
+   "id": "expandStyle",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Expand Appearance",
+   "status": "current",
+   "summary": "Bakes the selected object's appearance into ordinary artwork: live effects (Drop Shadow, Offset Path, Warp, Roughen ...), brush strokes, variable-width strokes, extra fills and strokes and applied graphic styles become real paths, groups and (for raster effects such as shadows and glows) embedded images. The art looks the same but is no longer editable through the Appearance panel.",
+   "use_for": [
+    "handing a logo with live effects to a print shop, cutter or another app that cannot read Illustrator effects",
+    "turning a brush stroke or variable-width line into a filled outline before exporting an SVG or cut path",
+    "freezing a warped or roughened headline so its shape survives in older or non-Adobe software"
+   ],
+   "avoid": [
+    "a master file you will keep editing: duplicate the object or keep an unexpanded copy on a hidden layer first, the effect settings are gone afterwards",
+    "objects whose appearance holds raster effects when you need pure vectors: the shadow or glow becomes an embedded image; rebuild it as vector art instead",
+    "plain paths with only a single fill and stroke: nothing to expand there, use Object/Expand... or Object/Path/Outline Stroke to outline the stroke"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Rasterize/Layer Style"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"expandStyle\") on the current selection. The harvest paired this id by dialog alignment only and its live test was inconclusive (neither the id nor the menu item changed the test document, whose selection was a plain filled rectangle and ellipse with no effects), so check the result. No object-model call expands an appearance.",
+   "review": {
+    "by": "adversarial",
+    "changes": "dropped CDR equivalent Object/Break Apart (it splits combined curves, it does not bake effects); script_api now states what the inconclusive test actually saw instead of an inferred reason"
+   }
+  },
+  {
+   "name": "Expand...",
+   "id": "Expand3",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Expand...",
+   "status": "current",
+   "summary": "Opens the Expand dialog, which breaks the selected object into its component objects: strokes become filled outline paths, fills become separate paths, symbols and type become plain artwork, and gradient fills become a gradient mesh or a set of stepped color bands. The look stays the same but the object is no longer live.",
+   "how": "Tick what to expand: Object, Fill and/or Stroke. If the selection has a gradient, choose Expand Gradient To: Gradient Mesh (smooth, editable mesh) or Specify N Objects (that many discrete color bands, good for screen print). Click OK. If the object carries live effects or brushes, use Expand Appearance first; Expand works on the base fill and stroke.",
+   "use_for": [
+    "outlining strokes of an icon so line weights stay fixed when it is scaled",
+    "turning a gradient into a fixed number of spot-color bands for screen printing or vinyl cutting",
+    "converting a symbol instance or pattern fill into editable paths"
+   ],
+   "avoid": [
+    "objects with live effects, brushes or multiple strokes: run Expand Appearance first",
+    "just outlining a stroke on a simple path: Object/Path/Outline Stroke does it in one step without a dialog",
+    "files you will keep editing: expanded strokes and gradients cannot be changed back to live ones"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Convert Outline to Object"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Expand3\") opens the Expand dialog (confirmed by the harvest). No object-model Expand call; for a stroke-only outline, app.executeMenuCommand(\"OffsetPath v22\") (Object/Path/Outline Stroke) runs it in one step (that id is confirmed by the harvest's live test).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the Outline Stroke id OffsetPath v22 is confirmed in the harvest, no longer marked unverified"
+   }
+  },
+  {
+   "name": "Flatten Transparency...",
+   "id": "Flatten Transparency",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Flatten Transparency...",
+   "status": "current",
+   "summary": "Opens the Flatten Transparency dialog and permanently flattens the selected artwork: wherever transparency (opacity, blend modes, soft shadows) overlaps other objects, the art is cut into opaque pieces that reproduce the look, and areas too complex for vectors are rasterized. The output prints the same on devices that cannot handle live transparency, but the pieces are no longer editable as the original objects.",
+   "how": "Pick a Preset ([High Resolution], [Medium Resolution], [Low Resolution], [For Complex Art] or a custom one) or set the Raster/Vector Balance slider (towards vectors keeps more art as paths), Line Art and Text Resolution and Gradient and Mesh Resolution. Options: Convert All Text to Outlines, Convert All Strokes to Outlines, Clip Complex Regions, Preserve Alpha Transparency, Preserve Overprints and Spot Colors. Use Preview, or Window/Flattener Preview to see which areas will be rasterized, then OK.",
+   "use_for": [
+    "preparing artwork with drop shadows or blend modes for an older RIP, cutter or a PDF/X-1a print workflow",
+    "checking how transparency will separate before sending a job to print",
+    "handing artwork to a program that drops or misrenders live transparency"
+   ],
+   "avoid": [
+    "the master file: flattening is destructive; keep transparency live and let the PDF or print export flatten on output",
+    "text and thin lines near transparent areas at low settings: they can be rasterized or thickened; tick Convert All Text to Outlines or raise the vector balance"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Flatten Transparency\") opens the dialog (confirmed by the harvest audit). No object-model call flattens a selection; flattening at output is set through PDFSaveOptions.flattenerOptions / flattenerPreset (PrintFlattenerOptions.flatteningBalance, rasterizationResolution) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generate Patterns",
+   "id": "path:Object/Generative/Generate Patterns",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generate Patterns",
+   "status": "needs_input",
+   "summary": "Opens Illustrator's Firefly-powered pattern generator (the same command also sits at Object/Pattern/Generate Patterns): you type a text prompt and it returns several seamless, editable vector pattern variations that can be applied to the selected shapes and saved as pattern swatches. It needs a prompt, an Adobe sign-in, an internet connection and generative credits.",
+   "how": "Select the shapes to fill (optional), type a prompt describing motif, style and colors (for example 'hand-drawn lemons on navy'), optionally pick colors or a style, and generate. Click a variation to apply it; it is stored as a pattern swatch you can edit with Pattern Options.",
+   "use_for": [
+    "quick background or packaging patterns for a mock-up",
+    "giftwrap, textile or wallpaper pattern ideas to refine by hand",
+    "filling a poster background with a themed repeat"
+   ],
+   "avoid": [
+    "offline or credit-limited work: every generation spends generative credits and needs a connection",
+    "exact brand motifs: generated tiles are approximate; build the tile yourself with Object/Pattern/Make",
+    "automated pipelines: the harvest found no executeMenuCommand id and the result depends on a prompt typed in the panel"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired. It can only be reached by its menu path (Win32 command 2147484105), and the prompt still has to be typed in the panel.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generate Vectors...",
+   "id": "path:Object/Generative/Generate Vectors...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generate Vectors...",
+   "status": "needs_input",
+   "summary": "Opens Generate Vectors (the successor of Text to Vector Graphic): from a text prompt it creates editable, grouped vector artwork, such as a subject, a full scene, an icon or a pattern, and offers several variations to place on the artboard or into a selected frame shape. It needs a prompt, an Adobe sign-in, a connection and generative credits.",
+   "how": "Optionally draw or select a rectangle or shape to set where and how big the result goes. Type a prompt, choose the content type (Subject, Scene, Icon or Pattern in recent versions), set the Detail level and optionally a style reference (existing artwork or a preset style) and colors, then generate and click the variation you want. The exact controls of the 2026 dialog were not captured by the harvest.",
+   "use_for": [
+    "placeholder or concept illustrations for a poster or social post",
+    "icon sets and spot illustrations to clean up by hand",
+    "quick scene backdrops behind a headline"
+   ],
+   "avoid": [
+    "final logos or brand marks: results are generic and their rights depend on Adobe's generative AI terms; draw them",
+    "precise technical or text-bearing art: generated vectors are often heavy in anchor points and cannot spell reliably",
+    "unattended pipelines: no executeMenuCommand id was found and each run spends credits"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Generate Image"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired. Reachable only by its menu path (Win32 command 2147484096); the prompt must be entered in its dialog.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generation History",
+   "id": "path:Object/Generative/Generation History",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generation History",
+   "status": "current",
+   "summary": "Opens the Generation History panel (also at Window/Generation History), which lists the results of earlier generative runs so you can look back at a variation and reuse it. It does not generate anything itself. Which generative commands feed it, and what the 2026 panel keeps and for how long, was not checked in the harvest.",
+   "use_for": [
+    "going back to an earlier generated variation after trying several prompts",
+    "comparing generated options side by side before choosing one for a layout"
+   ],
+   "avoid": [
+    "treating it as an asset library: keep chosen results in the document or a CC Library",
+    "expecting a generation: use Generate Vectors, Generative Shape Fill or Generate Patterns"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484107).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the unverified list of which generations the panel keeps"
+   }
+  },
+  {
+   "name": "Combine",
+   "id": "path:Object/Generative/Generative Expand/Combine",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generative Expand/Combine",
+   "status": "needs_input",
+   "summary": "Part of Generative Expand, which extends vector artwork past its current edges with Firefly-generated vectors. This item most likely merges the generated extension with the original artwork into one piece once you have accepted a result; the exact behavior was not observed in the harvest, so treat this as unconfirmed.",
+   "use_for": [
+    "finishing a Generative Expand result so the original and generated parts move and edit together",
+    "cleaning up an extended background before resizing a layout to a new format"
+   ],
+   "avoid": [
+    "relying on it before testing: what it combines and whether it can be undone beyond Edit/Undo is unconfirmed",
+    "artwork that must stay exact: generated extensions are approximate; extend the art by hand"
+   ],
+   "confidence": "low",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484101).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "path:Object/Generative/Generative Expand/Make",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generative Expand/Make",
+   "status": "needs_input",
+   "summary": "Starts Generative Expand on the selected artwork: Illustrator uses Firefly to generate new vector artwork that continues the design beyond its current bounds (for example when a layout is resized to a wider format). It most likely sets up the area to fill and then offers variations; the exact steps were not observed in the harvest. Needs selected art, a connection and generative credits.",
+   "use_for": [
+    "widening an illustrated background when adapting a poster to a banner or social format",
+    "filling the empty sides after changing an artboard's aspect ratio"
+   ],
+   "avoid": [
+    "precise or brand-critical edges: check every generated piece, or extend the art by hand",
+    "automated runs: no executeMenuCommand id was found and it spends generative credits"
+   ],
+   "confidence": "low",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484100).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generative Recolor",
+   "id": "path:Object/Generative/Generative Recolor",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generative Recolor",
+   "status": "needs_input",
+   "summary": "Recolors the selected vector artwork from a text prompt (for example 'autumn forest' or 'neon night'): Firefly suggests several color variations, each a new palette mapped onto the existing shapes, which keep their geometry. Same command as Edit/Edit Colors/Generative Recolor. Needs selected vector art, a prompt, a connection and generative credits.",
+   "how": "Select the artwork, open the command, type a prompt or pick a sample prompt, optionally add specific colors the result must use, then generate and click a variation to apply it. Fine-tune afterwards with Edit/Edit Colors/Recolor Artwork....",
+   "use_for": [
+    "exploring seasonal or campaign color schemes for an illustration or pattern",
+    "quick colorway variations of packaging or a poster for client review"
+   ],
+   "avoid": [
+    "exact brand palettes: use Recolor Artwork... with the brand swatch group instead",
+    "raster images or embedded photos: it recolors vector fills and strokes only"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484104).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generative Shape Fill...",
+   "id": "path:Object/Generative/Generative Shape Fill...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Generative Shape Fill...",
+   "status": "needs_input",
+   "summary": "Fills a selected closed vector shape with Firefly-generated vector detail that follows the shape's outline, guided by a text prompt and optionally by the style of existing artwork; several variations are offered and the result is editable vector art. Needs a selected shape, a prompt, a connection and generative credits.",
+   "how": "Select one closed shape, open the dialog, type a prompt, set how strictly the result follows the shape (Shape Strength) and how much detail it has, optionally pick a style reference, then generate and choose a variation. The exact 2026 dialog fields were not captured by the harvest.",
+   "use_for": [
+    "turning a silhouette (animal, letter, map outline) into a detailed illustration",
+    "decorative fills for badges, stickers and icons",
+    "concept art inside a fixed frame of a layout"
+   ],
+   "avoid": [
+    "open paths or groups of many shapes: select a single closed shape",
+    "final production art without cleanup: generated paths are dense; simplify and check them",
+    "unattended runs: no executeMenuCommand id was found and it spends credits"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Generative Fill"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484097).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Print Bleed",
+   "id": "path:Object/Generative/Print Bleed",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Generative/Print Bleed",
+   "status": "needs_input",
+   "summary": "A generative command new in the Illustrator 2026 Generative menu. Judging by its name and place, it extends edge-to-edge artwork out into the document's bleed area with generated content so a print job has bleed; this was not observed in the harvest and is unconfirmed.",
+   "use_for": [
+    "adding bleed to a flyer or poster whose background was designed only to the trim edge (unconfirmed)"
+   ],
+   "avoid": [
+    "relying on it without checking the bleed area in Outline view and in the exported PDF",
+    "backgrounds that are a flat color or simple gradient: just extend the shape to the bleed guide by hand"
+   ],
+   "confidence": "low",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484102).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Column...",
+   "id": "setBarDesign",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Graph/Column...",
+   "status": "needs_input",
+   "summary": "Opens the Graph Column dialog, which replaces the plain bars of a selected column or bar graph with a graph design (artwork saved through Object/Graph/Design...), giving picture graphs such as stacks of coins or scaled bottles.",
+   "how": "Select the graph (or individual columns with the Group Selection tool), choose a design, then a Column Type: Vertically Scaled (stretched vertically), Uniformly Scaled (scaled in both directions), Repeating (stacked copies; set Each Design Represents N units and For Fractions: Scale Design or Chop Design) or Sliding (stretched only at the slide line defined in the design). Rotate Legend Design controls the legend sample.",
+   "use_for": [
+    "infographic bar charts built from icons (people, coins, bottles)",
+    "editorial charts where each column is an illustrated object"
+   ],
+   "avoid": [
+    "running it with no graph selected: the harvest test (a selected rectangle and ellipse) got only an alert",
+    "line, scatter or pie graphs: use Object/Graph/Marker... for line and scatter markers",
+    "charts whose numbers change often in a layout pipeline: build them from data in a charting tool and import"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"setBarDesign\") runs the same command as the menu item (confirmed: on the harvest's test document, a selected rectangle and ellipse with no graph, both showed the same alert and changed the document the same way). With a graph selected it opens the Graph Column dialog; that was not tested. GraphItem exposes no design properties in the object model.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api no longer claims the dialog opening was confirmed: the harvest confirmed only the same alert on a test document with no graph"
+   }
+  },
+  {
+   "name": "Data...",
+   "id": "editGraphData",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Graph/Data...",
+   "status": "needs_input",
+   "summary": "Opens the Graph Data window for the selected graph: a small spreadsheet where you type or import the values, labels and legend entries; applying it redraws the graph.",
+   "how": "Select the graph and open the window. Type into cells (first row or column for legend and category labels, labels in quotes if they are numbers), or use Import Data (tab-delimited text), Transpose row/column, Switch x/y (scatter graphs) and Cell Style (decimals, column width), then Apply (the check-mark button). Revert undoes unapplied edits.",
+   "use_for": [
+    "updating the numbers of an infographic chart",
+    "pasting spreadsheet data into a native Illustrator graph"
+   ],
+   "avoid": [
+    "graphs that have been ungrouped or expanded: they are no longer graphs and cannot take new data",
+    "large or frequently changing datasets: Illustrator graphs are basic; use a charting tool or data-driven variables"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"editGraphData\") (id inferred by name and dialog alignment, not confirmed by execution) opens the data window. GraphItem has no data members; graph data can be bound to a Graph Data variable through GraphItem.contentVariable (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Design...",
+   "id": "graphDesigns",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Graph/Design...",
+   "status": "current",
+   "summary": "Opens the Graph Design dialog, the library of artwork that can stand in for columns and markers in graphs: you save selected artwork as a new design, rename, delete or paste designs back onto the artboard. It changes no graph by itself.",
+   "how": "Draw the artwork with a rectangle as its backmost object (the rectangle sets the design's bounds; for a sliding design add a horizontal line marking where it should stretch and turn it into a guide with View/Guides/Make Guides), select it all, open the dialog and click New Design, then Rename. Paste Design puts a design back on the artboard for editing; Select Unused finds designs no graph uses. Apply designs with Column... or Marker....",
+   "use_for": [
+    "setting up icon artwork for pictogram charts",
+    "editing an existing chart design and re-saving it"
+   ],
+   "avoid": [
+    "artwork without a backmost bounding rectangle: the design's scale and spacing come out wrong",
+    "expecting it to change a graph: apply the design with Object/Graph/Column... or Object/Graph/Marker..."
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"graphDesigns\") opens the dialog (id inferred by name and dialog alignment, not confirmed by execution). No object-model access to graph designs.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the sliding-design line must be made a guide (View/Guides/Make Guides)"
+   }
+  },
+  {
+   "name": "Marker...",
+   "id": "setIconDesign",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Graph/Marker...",
+   "status": "needs_input",
+   "summary": "Opens the Graph Marker dialog, which replaces the square data-point markers of a selected line or scatter graph with a graph design, so each point is drawn as an icon.",
+   "how": "Select the graph or just its markers (Group Selection tool), pick a design in the list and click OK. The design is scaled so its backmost rectangle matches the size of the default square marker, so draw the design's bounding rectangle to suit.",
+   "use_for": [
+    "line charts whose data points are icons (stars, pins, logos)",
+    "scatter plots with category symbols"
+   ],
+   "avoid": [
+    "column or bar graphs: use Object/Graph/Column...",
+    "running it with no graph selected: the harvest test (a selected rectangle and ellipse) got only an alert"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"setIconDesign\") runs the same command as the menu item (confirmed: on the harvest's test document, a selected rectangle and ellipse with no graph, both showed the same alert and changed the document the same way). With a graph selected it opens the Graph Marker dialog; that was not tested. No object-model access to markers.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api no longer claims the dialog opening was confirmed: the harvest confirmed only the same alert on a test document with no graph"
+   }
+  },
+  {
+   "name": "Type...",
+   "id": "path:Object/Graph/Type...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Graph/Type...",
+   "status": "needs_input",
+   "summary": "Opens the Graph Type dialog for the selected graph: switches it between column, stacked column, bar, stacked bar, line, area, scatter, pie and radar, and sets its style, options and axis formatting. The data stays the same; the graph is redrawn.",
+   "how": "Select the graph and open the dialog. In Graph Options pick the type, the Value Axis side, Style (Add Drop Shadow, Add Legend Across Top, First Row in Front, First Column in Front) and type options (Column Width and Cluster Width; for line graphs Mark Data Points, Connect Data Points, Edge-to-Edge Lines, Draw Filled Lines; legend and sort options for pie). Switch the top menu to Value Axis or Category Axis to override tick values, set tick marks and add label prefixes or suffixes (for example a currency sign or %).",
+   "use_for": [
+    "turning a column chart into a pie or line chart for a report",
+    "adding a % suffix or fixed min/max to a chart's value axis"
+   ],
+   "avoid": [
+    "graphs that were ungrouped or expanded: they are plain artwork and the command does nothing",
+    "scripted pipelines: no id was paired in the harvest"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None paired in the harvest: reach it by its menu path (Win32 command 74). The harvest also holds the unpaired id \"setGraphStyle\", which may be this command (unverified). GraphItem exposes no graph-type property.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Group",
+   "id": "group",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Group",
+   "status": "current",
+   "summary": "Puts the selected objects into one group that selects, moves and transforms as a unit while each object keeps its own fill, stroke and effects; the group lands on the layer of the topmost selected object. The harvest confirmed it: a selected path became a group.",
+   "use_for": [
+    "keeping a logo lockup or icon together while laying out a poster",
+    "applying one effect, opacity or graphic style to several objects at group level",
+    "organising illustrations into named groups in the Layers panel"
+   ],
+   "avoid": [
+    "merging shapes into one outline: use the Pathfinder Unite or a compound path instead",
+    "objects spread over several layers you want to keep apart: grouping pulls them onto one layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Group Layers",
+    "CDR": "Object/Group/Group"
+   },
+   "shortcut": "Ctrl+G",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"group\") (verified live). Object-model alternative (unverified): var g = doc.groupItems.add(); then item.move(g, ElementPlacement.PLACEATEND) for each selected item.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "All Artwork Above",
+   "id": "Selection Hat 4",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Hide/All Artwork Above",
+   "status": "current",
+   "summary": "Hides every object stacked above the selected object in the same layer, so the selected object and what lies under it can be seen and edited. Hidden objects stay in the file but do not display, print or export until Object/Show All (Alt+Ctrl+3).",
+   "use_for": [
+    "getting at a background shape buried under many foreground objects",
+    "editing an underlayer of a layered illustration without moving the art on top"
+   ],
+   "avoid": [
+    "objects above it on other layers: they stay visible; toggle those layers in the Layers panel",
+    "forgetting hidden art before export: run Object/Show All"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Selection Hat 4\"), id inferred from the Keyboard Shortcuts dialog order only and not confirmed (the live test was inconclusive). Object-model alternative (unverified): set pageItem.hidden = true for items in the same layer with a higher stacking position than the selection.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Other Layers",
+   "id": "Selection Hat 6",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Hide/Other Layers",
+   "status": "current",
+   "summary": "Hides every layer except the ones that hold the selected objects, so you work on that layer alone. The layers are switched off (eye icon) in the Layers panel, not deleted.",
+   "use_for": [
+    "focusing on one layer of a complex poster or map",
+    "checking a single layer's artwork before exporting it on its own"
+   ],
+   "avoid": [
+    "hiding single objects: use Object/Hide/Selection",
+    "forgetting the hidden layers: hidden layers are left out of print and of some exports; turn them back on in the Layers panel"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Selection Hat 6\"), id inferred from the Keyboard Shortcuts dialog order only and not confirmed (the live test was inconclusive). Object-model alternative (unverified): for each layer in doc.layers set layer.visible = layer.hasSelectedArtwork.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Selection",
+   "id": "hide",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Hide/Selection",
+   "status": "current",
+   "summary": "Hides the selected objects: they stay in the document (shown in the Layers panel with the eye off) but are not displayed, printed or exported until Object/Show All (Alt+Ctrl+3).",
+   "use_for": [
+    "parking alternative headlines or versions inside one layout file",
+    "getting a front object out of the way while editing what is behind it"
+   ],
+   "avoid": [
+    "forgetting hidden art in a delivered file: run Object/Show All before handing off",
+    "hiding a whole layer: switch the layer's eye off in the Layers panel or use Object/Hide/Other Layers"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Hide Layers",
+    "CDR": "Object/Hide/Hide"
+   },
+   "shortcut": "Ctrl+3",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"hide\") (id paired by its Ctrl+3 shortcut, not confirmed by execution). Object-model alternative: pageItem.hidden = true for each item in doc.selection.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Expand",
+   "id": "Expand Image Tracing",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Image Trace/Expand",
+   "status": "needs_input",
+   "summary": "Converts a selected Image Trace object into ordinary vector paths (a group of filled and/or stroked paths), ending the live link to the source image and its trace settings. The look is what the trace preview showed; the paths can now be edited node by node.",
+   "use_for": [
+    "finishing a traced logo or sketch so its shapes can be edited, recolored or cut",
+    "preparing a traced image for SVG export or a vinyl cutter"
+   ],
+   "avoid": [
+    "before you are happy with the trace settings: adjust them in Window/Image Trace first, they cannot be changed afterwards",
+    "photos traced at high fidelity: expanding creates thousands of paths and a heavy file"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Expand Image Tracing\") (id inferred, not confirmed by execution). Object-model alternative: pluginItem.tracing.expandTracing() on the tracing PluginItem (TracingObject.expandTracing).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "Make Image Tracing",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Image Trace/Make",
+   "status": "needs_input",
+   "summary": "Traces the selected placed or embedded raster image with the default Image Trace settings (a black-and-white result), turning it into a live Image Trace object: a vector preview that stays linked to the image and can still be re-tuned (preset, colors, paths, threshold) in Window/Image Trace.",
+   "use_for": [
+    "vectorizing a scanned logo, sketch or hand lettering",
+    "turning a photo into a posterized vector illustration with a color preset",
+    "trying trace settings before committing with Expand"
+   ],
+   "avoid": [
+    "small or blurry images: results are lumpy; trace the largest, sharpest source available",
+    "when you already know the settings and need paths straight away: use Make and Expand",
+    "photographs needing detail: high-fidelity traces produce huge files; keep the photo raster"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Make Image Tracing\"); the harvest's two matchers disagree (the alternative 'Adobe Make Pattern' is the harvested id of Object/Pattern/Make), not confirmed by execution. Object-model alternative: var p = placedOrRasterItem.trace(); p.tracing.tracingOptions.loadFromPreset(\"<preset>\").",
+   "review": {
+    "by": "adversarial",
+    "changes": "dropped CDR equivalent Quick Trace (it outputs finished curves, the counterpart of Make and Expand, not a live trace); summary no longer says a panel preset changes what Make uses"
+   }
+  },
+  {
+   "name": "Make and Expand",
+   "id": "Make and Expand Image Tracing",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Image Trace/Make and Expand",
+   "status": "needs_input",
+   "summary": "Traces the selected raster image with the default Image Trace settings and expands the result at once, giving a group of editable vector paths with no live trace object left to re-tune.",
+   "use_for": [
+    "one-step vectorizing of black-and-white logos, icons and line art with known-good settings",
+    "batch or scripted tracing where no preview is needed"
+   ],
+   "avoid": [
+    "first attempts on an unfamiliar image: use Make, tune in the Image Trace panel, then Expand",
+    "photographs: the expanded result can hold thousands of paths"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Quick Trace"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Make and Expand Image Tracing\") (id inferred, not confirmed by execution). Object-model alternative: var p = placedOrRasterItem.trace(); p.tracing.expandTracing().",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Release",
+   "id": "Release Image Tracing",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Image Trace/Release",
+   "status": "needs_input",
+   "summary": "Discards the trace on a selected Image Trace object and gives back the original placed or embedded image, unchanged.",
+   "use_for": [
+    "starting over when a trace came out wrong",
+    "getting the source photo back to crop or edit it before tracing again"
+   ],
+   "avoid": [
+    "traces that were already expanded: they are paths now; use Edit/Undo or re-place the image",
+    "just changing the trace look: adjust the live trace in Window/Image Trace instead"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Release Image Tracing\") (id inferred, not confirmed by execution). Object-model alternative: pluginItem.tracing.releaseTracing() (TracingObject.releaseTracing).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Edit",
+   "id": "path:Object/Intertwine/Edit",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Intertwine/Edit",
+   "status": "needs_input",
+   "summary": "Re-enters editing on a selected Intertwine object, so you can click or draw over its overlap zones again to change which object passes in front of which.",
+   "use_for": [
+    "fixing the over/under order of linked rings or a chain after the first pass",
+    "adding a new weave crossing after moving one of the objects"
+   ],
+   "avoid": [
+    "artwork that is not an Intertwine object: create one first with Object/Intertwine/Make",
+    "scripted runs: the editing is interactive and no id was paired in the harvest"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484112), and the editing itself needs the mouse.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "path:Object/Intertwine/Make",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Intertwine/Make",
+   "status": "current",
+   "summary": "Turns two or more overlapping selected objects into an Intertwine object, then lets you click or draw around the places where they overlap to bring one object in front of the other at just that spot, so the objects look woven or linked together without cutting any paths.",
+   "how": "Select the overlapping objects, choose Make, then click or draw around each overlap zone whose front/back order you want to flip. Re-open the weave later with Object/Intertwine/Edit.",
+   "use_for": [
+    "interlocking rings, chain links and knot logos",
+    "a headline that weaves through an illustration (text behind one stroke, in front of another)",
+    "ribbons and bands wrapping around a product or badge"
+   ],
+   "avoid": [
+    "objects that do not overlap: nothing to intertwine",
+    "files for older Illustrator versions or other apps: the effect relies on Illustrator's Intertwine object; expand or flatten a copy for delivery"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484110), and choosing the overlap zones needs the mouse.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Release",
+   "id": "path:Object/Intertwine/Release",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Intertwine/Release",
+   "status": "needs_input",
+   "summary": "Releases a selected Intertwine object back into its original separate objects in their normal stacking order, removing the woven over/under effect.",
+   "use_for": [
+    "undoing a weave so the objects can be edited or recombined differently",
+    "removing an Intertwine before sending a file to an app that cannot read it"
+   ],
+   "avoid": [
+    "just changing which crossing is on top: use Object/Intertwine/Edit"
+   ],
+   "confidence": "medium",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None in the harvest: no executeMenuCommand id could be paired; reachable by its menu path (Win32 command 2147484111).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Expand",
+   "id": "path:Object/Live Paint/Expand",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Live Paint/Expand",
+   "status": "needs_input",
+   "summary": "Converts a selected Live Paint group into ordinary artwork: each painted face becomes a filled path and each edge a stroked path, grouped together. It looks the same but can no longer be repainted with the Live Paint Bucket.",
+   "use_for": [
+    "finishing a colored line drawing or comic panel so it opens correctly in other software",
+    "editing individual colored regions as normal shapes"
+   ],
+   "avoid": [
+    "artwork you still want to recolor region by region: keep it live and use the Live Paint Bucket",
+    "returning to the original paths: Object/Live Paint/Release does that instead"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None paired in the harvest: reach it by its menu path (Win32 command 2147483886). The harvest also holds the unpaired id \"Expand Planet X\", which may run this command (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Gap Options...",
+   "id": "path:Object/Live Paint/Gap Options...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Live Paint/Gap Options...",
+   "status": "current",
+   "summary": "Opens the Gap Options dialog, which sets how a Live Paint group treats small gaps between its paths: whether paint leaks through or stops at gaps of a given size, and optionally closes the gaps with real paths.",
+   "how": "Select a Live Paint group, open the dialog, tick Gap Detection, choose Paint Stops At: Small Gaps, Medium Gaps, Large Gaps or Custom (a distance), pick a Gap Preview Color, check Gaps Found, and use Close Gaps With Paths to seal them permanently. View/Show Live Paint Gaps shows them on the artboard.",
+   "use_for": [
+    "coloring hand-drawn or traced line art whose lines do not quite meet",
+    "stopping fills leaking across a whole cartoon or coloring-book page"
+   ],
+   "avoid": [
+    "large deliberate openings: raise the gap size carefully, or close the shape with a path yourself",
+    "artwork that is not a Live Paint group: create one with Object/Live Paint/Make first"
+   ],
+   "confidence": "high",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None paired in the harvest: reach it by its menu path (Win32 command 2147483884). The harvest also holds the unpaired id \"Planet X Options\", which may open this dialog (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "Make Planet X",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Live Paint/Make",
+   "status": "current",
+   "summary": "Turns the selected paths into a Live Paint group: every region enclosed by crossing or touching paths becomes a paintable face and every path segment between crossings a paintable edge, which you then fill and stroke with the Live Paint Bucket like coloring a drawing. The paths stay editable and the fills follow when they move.",
+   "use_for": [
+    "coloring line art, cartoons and traced sketches region by region",
+    "quick flat-color illustrations built from overlapping lines",
+    "coloring-book and comic flatting work"
+   ],
+   "avoid": [
+    "type and brush strokes: convert them to plain paths first (Type/Create Outlines, Object/Expand Appearance); placed images cannot become Live Paint, trace them first (Object/Image Trace/Make and Expand)",
+    "line art with open gaps: set Object/Live Paint/Gap Options... or close the gaps first",
+    "files that must open in other apps: expand the Live Paint group (Object/Live Paint/Expand) before delivery"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Smart Fill"
+   },
+   "shortcut": "Alt+Ctrl+X",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Make Planet X\") (id paired by its Alt+Ctrl+X shortcut, not confirmed by execution). No object-model call creates or paints Live Paint groups.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: placed images need tracing, not Create Outlines / Expand Appearance; menu paths in harvest form"
+   }
+  }
+ ]
+}

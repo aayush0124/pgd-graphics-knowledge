@@ -1,0 +1,2840 @@
+{
+ "cards": [
+  {
+   "name": "IVectorEffectsDataSource",
+   "id": "class:IVectorEffectsDataSource",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VectorEffectsLib/IVectorEffectsDataSource",
+   "status": "current",
+   "summary": "Data-source interface behind the Pointillizer docker (Effects > Pointillizer): its properties are the docker's settings (density in tiles per square inch, screen angle, tile scale, rendering method, merge-adjacent count, tile shape, colour limit, weld overlapping tiles, keep source) and OnApply turns the selected bitmap or vector objects into a vector mosaic of many small filled shapes. It is UI state, not a document object.",
+   "use_for": [
+    "vector dot / tile mosaic poster from a photo that stays sharp at any print size",
+    "pop-art halftone-dot or square-pixel portrait built from real vector shapes",
+    "mosaic logo treatment using a custom tile shape picked from the drawing",
+    "vinyl-cut or laser-ready mosaic artwork (every tile is a separate vector object)"
+   ],
+   "avoid": [
+    "a raster-only mosaic or pixel look: the bitmap effects Effects/Creative/Mosaic or Effects/Distort/Pixelate are far lighter",
+    "large areas at high Density: thousands of tiles make the file and redraw slow; lower DpiValue, raise CombineFactor (Merge adjacent) or limit colours",
+    "unattended COM batches: it is a docker data source, so driving it from a script is fragile; prefer opening the docker and applying by hand"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "path:Object/Create Object Mosaic..."
+   },
+   "how": "Implemented by the Pointillizer docker (cdr_effect item Pointillizer, Effects/Pointillizer, which opens docker 899d052c-fc8b-93b0-43c7-bda85ca8f417). The install's DrawUI.xml binds the docker's controls to this interface under the data-source name VectorEffectsDS, and Languages/EN/Data/strings.xml gives their English labels: Density (DpiValue, 'number of tiles per square inch'), Scale (Scale, size of each tile), Screen angle (Angle), Keep original source (KeepSource), Limit colors (LimitColors) with Number (NumColors), Method (ScaleMode from ScaleModeList, 'rendering style'), Merge adjacent (CombineFactor, 'maximum number of adjacent tiles of similar color to combine into a single tile'), Weld adjacent overlap (WeldPixels, 'weld together overlapping tiles'), Shape (Shape from ShapeList) with a Select button (OnPickShape, 'select a closed curve to use as a tile shape') and a preview (ShapePreview), and the apply button (OnApply). OnCancel and the OperationProgress bar sit in a separate Pointillizer progress dialog, shown while InProgress. No VGCore property returns it. A script can only reach it through the UI data context: app.FrameWork.Application.DataContext.GetDataSource(\"VectorEffectsDS\") returns an ICUIDataSourceProxy whose GetProperty / SetProperty / InvokeMethod take these member names as strings (route unverified at run time).",
+   "key_members": [
+    {
+     "name": "DpiValue",
+     "use": "long: Density, the number of tiles per square inch (the docker's Density slider)"
+    },
+    {
+     "name": "Angle",
+     "use": "double: Screen angle of the tile grid (the docker's spinner)"
+    },
+    {
+     "name": "Scale",
+     "use": "double: Scale, enlarges or shrinks each tile (the docker's Scale slider)"
+    },
+    {
+     "name": "CombineFactor",
+     "use": "long: Merge adjacent, the maximum number of adjacent tiles of similar colour combined into one tile"
+    },
+    {
+     "name": "ScaleMode",
+     "use": "string: Method, the rendering style; must be one of the entries in ScaleModeList"
+    },
+    {
+     "name": "ScaleModeList",
+     "use": "read-only string: the list of allowed Method (ScaleMode) entries"
+    },
+    {
+     "name": "Shape",
+     "use": "string: the tile shape, chosen from ShapeList"
+    },
+    {
+     "name": "ShapeList",
+     "use": "read-only string: available tile shapes for the Shape combo"
+    },
+    {
+     "name": "ShapePreview",
+     "use": "read-only variant: preview of the current tile shape shown in the docker"
+    },
+    {
+     "name": "OnPickShape",
+     "use": "method: Select, pick a closed curve from the drawing to use as the tile shape (only when PickShapeEnabled)"
+    },
+    {
+     "name": "PickShapeEnabled",
+     "use": "read-only bool: whether a custom tile shape can be picked now"
+    },
+    {
+     "name": "LimitColors",
+     "use": "bool: reduce the mosaic to NumColors colours"
+    },
+    {
+     "name": "NumColors",
+     "use": "long: colour count used when LimitColors is on (the docker enables its slider only while LimitColors is true)"
+    },
+    {
+     "name": "WeldPixels",
+     "use": "bool: Weld adjacent overlap, weld overlapping tiles together (settable only while WeldPixelsEnabled)"
+    },
+    {
+     "name": "WeldPixelsEnabled",
+     "use": "read-only bool: whether WeldPixels applies to the current settings"
+    },
+    {
+     "name": "KeepSource",
+     "use": "bool: Keep original source; the mosaic is placed on top of the original graphic"
+    },
+    {
+     "name": "ApplyEnabled",
+     "use": "read-only bool: true when the current selection can be converted; check it before OnApply"
+    },
+    {
+     "name": "OnApply",
+     "use": "method: run the Pointillizer on the current selection (the docker's default button)"
+    },
+    {
+     "name": "OnCancel",
+     "use": "method: cancel a running apply (the Cancel button of the Pointillizer progress dialog)"
+    },
+    {
+     "name": "InProgress",
+     "use": "read-only bool: an apply is running (shows the progress dialog's status text)"
+    },
+    {
+     "name": "OperationProgress",
+     "use": "double: progress of the running apply, drives the progress bar in the Pointillizer progress dialog"
+    }
+   ],
+   "gotchas": [
+    "Not a document object: nothing in VGCore returns it, and the type library only gives the interface; an instance lives inside the UI framework under the DrawUI.xml name VectorEffectsDS.",
+    "GetDataSource may return nothing until the Pointillizer docker has been opened at least once in the session (unverified).",
+    "ScaleMode and Shape are strings that must match an entry of ScaleModeList / ShapeList; those entries are UI text and may be localised, so read the list instead of hard-coding English names (unverified).",
+    "OnApply works on the current selection and may run in the background: poll InProgress until it is false before touching the result (unverified).",
+    "The result is one vector object per tile unless CombineFactor merges similar-colour neighbours or WeldPixels welds overlapping tiles; a high Density on a big photo can produce tens of thousands of objects.",
+    "Values set through the proxy change the docker's stored settings, so the next manual use starts from them (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nds = app.FrameWork.Application.DataContext.GetDataSource(\"VectorEffectsDS\")\nds.SetProperty(\"LimitColors\", True)\nds.SetProperty(\"NumColors\", 8)\nds.SetProperty(\"WeldPixels\", True)\nif ds.GetProperty(\"ApplyEnabled\"):\n    ds.InvokeMethod(\"OnApply\")",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Corrected member meanings from the install's UI labels (Languages/EN/Data/strings.xml): DpiValue is Density in tiles per square inch, not sampling resolution; CombineFactor is Merge adjacent (similar-colour tiles combined), not density; WeldPixels welds overlapping tiles, not same-colour neighbours; ScaleMode is the Method / rendering style. OnCancel and the progress bar are in a separate progress dialog, not the docker. Updated summary, how, the avoid entry and the gotcha to match."
+   }
+  },
+  {
+   "name": "_IGlobalMacroStorage",
+   "id": "class:_IGlobalMacroStorage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/_IGlobalMacroStorage",
+   "status": "hidden",
+   "summary": "Hidden, member-less default interface of the GlobalMacroStorage class, the object behind the ThisMacroStorage module of a CorelDRAW global macro (GMS) VBA project. It carries nothing itself; its value is that GlobalMacroStorage sources the application events (Start, DocumentOpen, DocumentBeforeSave, Quit ...) so a GMS can react to them.",
+   "use_for": [
+    "auto-run a studio setup macro when CorelDRAW starts (GlobalMacroStorage_Start)",
+    "force document settings (units, colour context) whenever a file is opened or created",
+    "a preflight hook before saving, printing or exporting print files (DocumentBeforeSave / DocumentBeforeExport)"
+   ],
+   "avoid": [
+    "out-of-process Python / COM scripts: this interface exposes no members; subscribe to application events with Application.AdviseEvents instead",
+    "heavy work in high-frequency events such as SelectionChange: it slows every click"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:Notifier"
+   },
+   "how": "Type-library interface only (flags hidden, dual, dispatchable; no members). The coclass GlobalMacroStorage (class:GlobalMacroStorage) implements it as its default interface and declares DIVGApplicationEvents as its event source. In the VBA editor every GMS project has a ThisMacroStorage object of that class; pick GlobalMacroStorage in the module's object list and write handlers named GlobalMacroStorage_<event>, e.g. GlobalMacroStorage_DocumentOpen(ByVal Doc As Document, ByVal FileName As String).",
+   "key_members": [
+    {
+     "name": "GlobalMacroStorage",
+     "use": "not a member (this interface has none): the coclass that implements it, i.e. ThisMacroStorage in a GMS project"
+    },
+    {
+     "name": "DIVGApplicationEvents",
+     "use": "not a member: the event interface GlobalMacroStorage sources; its events (Start, Quit, DocumentOpen, DocumentNew, DocumentBeforeSave, DocumentAfterSave, DocumentBeforeExport, SelectionChange, WindowActivate ...) become GlobalMacroStorage_<event> handlers"
+    }
+   ],
+   "gotchas": [
+    "The harvested interface has no members at all and is flagged hidden, so the Object Browser does not show it unless hidden members are shown.",
+    "Handlers only run from a GMS project that CorelDRAW loaded at start-up (the GMS folder); editing them needs VBA installed (unverified).",
+    "Application.EventsEnabled = False switches the events off for every GMS; a batch script that sets it and crashes leaves them off until restored.",
+    "Query* events (QueryDocumentSave, QueryQuit ...) can cancel the action; a bug there can block saving or quitting (unverified)."
+   ],
+   "example": "' VBA, in a GMS project's ThisMacroStorage module\nPrivate Sub GlobalMacroStorage_DocumentOpen(ByVal Doc As Document, ByVal FileName As String)\n    Doc.Unit = cdrMillimeter\nEnd Sub",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ActiveView",
+   "id": "class:ActiveView",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ActiveView",
+   "status": "current",
+   "summary": "The zoom and scroll state of one document window: zoom level, view centre, fit-to-page / selection / all-objects commands, multipage view and on-screen overprint or proof-colour simulation. It only changes what is shown on screen, never the document.",
+   "use_for": [
+    "frame the selection or the page before an automated screenshot or review capture",
+    "set an exact zoom for a screen-recorded tutorial or client walkthrough",
+    "turn on overprint simulation or proof colours for an on-screen print check",
+    "navigate a multipage view to a given page"
+   ],
+   "avoid": [
+    "exporting a preview image: the view does not affect exports; use Document.ExportBitmap",
+    "measuring or positioning objects: read and set Shape position and size, not view coordinates"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:View"
+   },
+   "how": "Coclass whose members are on IVGActiveView. Reached as app.ActiveWindow.ActiveView (Window.ActiveView); each document window has its own. Positions are in document coordinates at the document's current Unit; Zoom is the view zoom level.",
+   "key_members": [
+    {
+     "name": "Zoom",
+     "use": "get / set the zoom level of the window"
+    },
+    {
+     "name": "OriginX",
+     "use": "get / set the horizontal view origin (document coordinates)"
+    },
+    {
+     "name": "OriginY",
+     "use": "get / set the vertical view origin"
+    },
+    {
+     "name": "SetViewPoint",
+     "use": "centre the view on x, y and optionally set Zoom in one call"
+    },
+    {
+     "name": "ToFitPage",
+     "use": "zoom to the whole page"
+    },
+    {
+     "name": "ToFitSelection",
+     "use": "zoom to the current selection"
+    },
+    {
+     "name": "ToFitShape",
+     "use": "zoom to one shape"
+    },
+    {
+     "name": "ToFitShapeRange",
+     "use": "zoom to a ShapeRange"
+    },
+    {
+     "name": "ToFitAllObjects",
+     "use": "zoom to everything in the document"
+    },
+    {
+     "name": "ToFitArea",
+     "use": "zoom to a rectangle given as Left, Top, Right, Bottom"
+    },
+    {
+     "name": "SetActualSize",
+     "use": "zoom to 1:1"
+    },
+    {
+     "name": "GetViewArea",
+     "use": "read the visible document rectangle (x, y, width, height via ByRef arguments)"
+    },
+    {
+     "name": "SetViewArea",
+     "use": "show a given document rectangle"
+    },
+    {
+     "name": "SimulateOverprints",
+     "use": "on-screen overprint preview on / off"
+    },
+    {
+     "name": "ShowProofColors",
+     "use": "show colour proofing in this window"
+    },
+    {
+     "name": "ProofColorSettings",
+     "use": "the proofing profile / intent used when ShowProofColors is on"
+    },
+    {
+     "name": "UseMultipageView",
+     "use": "switch the window to Multipage view"
+    },
+    {
+     "name": "FindPageAtPoint",
+     "use": "page under a point in Multipage view"
+    },
+    {
+     "name": "GetPageOrigin",
+     "use": "origin of a page inside the Multipage view"
+    },
+    {
+     "name": "ToFitAllPages",
+     "use": "zoom to show all pages"
+    },
+    {
+     "name": "Type",
+     "use": "view type (cdrViewType)"
+    }
+   ],
+   "gotchas": [
+    "It belongs to a window: with no open document window there is no ActiveView, and app.ActiveWindow is None.",
+    "GetViewArea / GetPageOrigin return values through ByRef arguments; in Python win32com they come back as a tuple only with makepy / gencache type info (unverified).",
+    "Coordinates follow the document's Unit and origin; a script that changes Document.Unit sees different OriginX / OriginY numbers for the same view.",
+    "In Multipage view pages are laid side by side, so a page is no longer at the document origin; use GetPageOrigin or FindPageAtPoint.",
+    "View changes are cosmetic and not undoable; they also do nothing visible while Application.Optimization is on (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nview = app.ActiveWindow.ActiveView\nview.ToFitSelection()\nview.Zoom = 200\nview.SimulateOverprints = True\nprint(view.OriginX, view.OriginY, view.Zoom)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Application",
+   "id": "class:Application",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Application",
+   "status": "current",
+   "summary": "The root of CorelDRAW's object model: the running app with its open documents, the active document / page / layer / selection, document creation and opening, colour factories (CreateRGBColor, CreateCMYKColor, spot colours), units, version, UI framework and app-wide settings. Every script starts here.",
+   "use_for": [
+    "batch-open client .cdr / .ai / .pdf files and export them for print or web",
+    "create a new document and build a layout (flyer, label sheet, certificate run) by script",
+    "make exact brand colours (CMYK, spot) to apply to fills and outlines",
+    "speed up big generated layouts with Optimization / EventsEnabled",
+    "check the installed version before using newer calls"
+   ],
+   "avoid": [
+    "Quit on an instance a designer is working in: it closes everything; check Documents first",
+    "hiding the app (Visible = False) while a modal dialog may appear: the COM call then waits forever"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Application",
+    "AI": "class:Application"
+   },
+   "how": "Coclass (flags appobject, cancreate); members are on IVGApplication, and it also implements ICUIApplication (UI framework) and sources DIVGApplicationEvents. From Python: win32com.client.Dispatch(\"CorelDRAW.Application.25\") attaches to the running 2024 instance or starts one; in VBA / GMS macros it is the global Application, and because it is the appobject its members work unqualified (ActiveDocument, ActiveLayer ...).",
+   "key_members": [
+    {
+     "name": "ActiveDocument",
+     "use": "the current document (None when nothing is open)"
+    },
+    {
+     "name": "Documents",
+     "use": "all open documents"
+    },
+    {
+     "name": "OpenDocument",
+     "use": "open a file by path, returns the Document"
+    },
+    {
+     "name": "OpenDocumentEx",
+     "use": "open with a StructOpenOptions object (colour conversion, code page ...)"
+    },
+    {
+     "name": "CreateDocument",
+     "use": "new document with default settings"
+    },
+    {
+     "name": "CreateDocumentEx",
+     "use": "new document from a StructCreateOptions object (size, units, colour context)"
+    },
+    {
+     "name": "CreateStructCreateOptions",
+     "use": "make the options object for CreateDocumentEx"
+    },
+    {
+     "name": "ActivePage",
+     "use": "current page"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "current layer, where Create* methods draw"
+    },
+    {
+     "name": "ActiveSelectionRange",
+     "use": "the selection as a ShapeRange"
+    },
+    {
+     "name": "ActiveShape",
+     "use": "the single active shape"
+    },
+    {
+     "name": "ActiveWindow",
+     "use": "current document window (for ActiveView)"
+    },
+    {
+     "name": "CreateRGBColor",
+     "use": "RGB colour object"
+    },
+    {
+     "name": "CreateCMYKColor",
+     "use": "CMYK colour object"
+    },
+    {
+     "name": "CreateSpotColorByName",
+     "use": "spot colour from a palette by colour name"
+    },
+    {
+     "name": "CreateShapeRange",
+     "use": "empty ShapeRange to collect shapes"
+    },
+    {
+     "name": "CreateCurve",
+     "use": "free Curve object for building path geometry"
+    },
+    {
+     "name": "Unit",
+     "use": "default unit when there is no document context"
+    },
+    {
+     "name": "ConvertUnits",
+     "use": "convert a value between cdrUnit units"
+    },
+    {
+     "name": "Optimization",
+     "use": "suspend screen updates during heavy scripts"
+    },
+    {
+     "name": "EventsEnabled",
+     "use": "turn application events off / on"
+    },
+    {
+     "name": "Visible",
+     "use": "show or hide the application window"
+    },
+    {
+     "name": "VersionMajor",
+     "use": "major version (25 for CorelDRAW 2024)"
+    },
+    {
+     "name": "FrameWork",
+     "use": "UI framework: docker / dialog control, command invocation, data contexts"
+    },
+    {
+     "name": "Quit",
+     "use": "close the application"
+    }
+   ],
+   "gotchas": [
+    "Set Optimization = True (and EventsEnabled = False) only inside try / finally: if the script dies with them on, the screen stops redrawing and GMS events stay off until restored.",
+    "Measurements in method calls use the active document's Unit, which scripts should set explicitly (Document.Unit) before creating shapes; Application.Unit applies only without a document.",
+    "Dispatch(\"CorelDRAW.Application.25\") pins the 2024 install; a bare \"CorelDRAW.Application\" may bind whichever version registered last (unverified).",
+    "ActiveDocument, ActiveLayer, ActiveSelectionRange are None when no document is open; check Documents.Count first.",
+    "Modal dialogs (missing fonts, import options, profile mismatch warnings) block the COM call until a person answers; set the ColorManager policies and use OpenDocumentEx options for unattended runs.",
+    "Units: CorelDRAW's object model defaults to inches unless the script sets Document.Unit (unverified for documents created from templates)."
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ndoc = app.CreateDocument()\napp.Optimization = True\nred = app.CreateCMYKColor(0, 100, 100, 0)\napp.ActiveLayer.CreateRectangle(1, 3, 3, 1).Fill.ApplyUniformFill(red)\napp.Optimization = False\nprint(app.VersionMajor, app.Documents.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "AppStatus",
+   "id": "class:AppStatus",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/AppStatus",
+   "status": "current",
+   "summary": "The status-bar progress meter: show a progress bar with a message during a long macro, advance it, change its text and let the user stop the job with Esc (Aborted).",
+   "use_for": [
+    "progress feedback during a long batch export or auto-layout run inside CorelDRAW",
+    "an Esc-to-cancel loop for a long generative pattern / mosaic macro"
+   ],
+   "avoid": [
+    "a real dialog with buttons: this only drives the status-bar meter",
+    "unattended background runs nobody watches: it adds nothing there"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGAppStatus. Reached as app.Status (Application.Status). BeginProgress(Message, CanAbort) shows the meter, UpdateProgress(Step) moves it on, Progress sets an absolute position, SetProgressMessage changes the text, EndProgress hides it.",
+   "key_members": [
+    {
+     "name": "BeginProgress",
+     "use": "show the meter with a message; CanAbort = True lets Esc set Aborted"
+    },
+    {
+     "name": "UpdateProgress",
+     "use": "advance the meter by Step (default 1)"
+    },
+    {
+     "name": "Progress",
+     "use": "get / set the meter position directly"
+    },
+    {
+     "name": "SetProgressMessage",
+     "use": "change the text next to the meter"
+    },
+    {
+     "name": "Aborted",
+     "use": "read-only: True after the user pressed Esc"
+    },
+    {
+     "name": "EndProgress",
+     "use": "hide the meter"
+    }
+   ],
+   "gotchas": [
+    "Always pair BeginProgress with EndProgress (try / finally); a crashed script can leave the meter showing (unverified).",
+    "Aborted only reports Esc if BeginProgress was called with CanAbort = True, and only while CorelDRAW gets to process messages, so check it inside the loop.",
+    "The scale of Progress (percent or steps) is not in the harvest; test before relying on it (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nst = app.Status\nst.BeginProgress(\"Exporting pages...\", True)\nfor i in range(100):\n    if st.Aborted:\n        break\n    st.Progress = i\nst.EndProgress()",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "AppWindow",
+   "id": "class:AppWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/AppWindow",
+   "status": "current",
+   "summary": "The main CorelDRAW window itself: position, size, state (normal, minimized, maximized), caption, client-area size, activation and the native window handle.",
+   "use_for": [
+    "restore or maximize CorelDRAW before screenshots or UI automation",
+    "get the window handle to send targeted window messages instead of global keystrokes",
+    "put the window at a fixed size so screen captures are repeatable"
+   ],
+   "avoid": [
+    "document windows and zoom: use Window / ActiveView",
+    "hiding the whole app: use Application.Visible"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGAppWindow. Reached as app.AppWindow. WindowState takes cdrWindowState constants (cdrWindowNormal, cdrWindowMinimized, cdrWindowMaximized, cdrWindowRestore); Handle is the HWND as a long.",
+   "key_members": [
+    {
+     "name": "WindowState",
+     "use": "get / set normal, minimized or maximized"
+    },
+    {
+     "name": "Activate",
+     "use": "bring the CorelDRAW window to the front"
+    },
+    {
+     "name": "Active",
+     "use": "read-only: is the window active"
+    },
+    {
+     "name": "Handle",
+     "use": "read-only native window handle (HWND)"
+    },
+    {
+     "name": "Caption",
+     "use": "get / set the title-bar text"
+    },
+    {
+     "name": "Left",
+     "use": "window left position in screen pixels"
+    },
+    {
+     "name": "Top",
+     "use": "window top position"
+    },
+    {
+     "name": "Width",
+     "use": "window width"
+    },
+    {
+     "name": "Height",
+     "use": "window height"
+    },
+    {
+     "name": "ClientWidth",
+     "use": "read-only width of the client area"
+    },
+    {
+     "name": "ClientHeight",
+     "use": "read-only height of the client area"
+    }
+   ],
+   "gotchas": [
+    "A minimized CorelDRAW makes screenshot- and UI-driven steps fail or return blank frames; set WindowState back to normal or maximized first.",
+    "Activate may only flash the taskbar button because of Windows focus-stealing rules (unverified).",
+    "CorelDRAW rewrites Caption when the active document changes, so a custom caption does not stick (unverified).",
+    "Win32 constants via win32com.client.constants need gencache.EnsureDispatch; with plain Dispatch use the numeric values."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\nw = app.AppWindow\nw.WindowState = c.cdrWindowMaximized\nw.Activate()\nprint(w.Handle, w.ClientWidth, w.ClientHeight)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ArrowHead",
+   "id": "class:ArrowHead",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ArrowHead",
+   "status": "current",
+   "summary": "One arrowhead definition: the curve of the head and how it attaches to a line (centre, line offset, outline scale), plus its name. It describes the head's shape, not its size on a particular line; that lives in ArrowHeadOptions.",
+   "use_for": [
+    "arrows on callout and leader lines in infographics or technical drawings",
+    "consistent pointer style across a diagram set",
+    "registering a custom brand arrowhead made from a curve"
+   ],
+   "avoid": [
+    "sizing, flipping or rotating the head on one line: use Outline.StartArrowOptions / EndArrowOptions (ArrowHeadOptions)",
+    "a big decorative arrow as artwork: draw it as a curve or a Perfect Shape instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGArrowHead. Get one from app.ArrowHeads.Item(i) (the global list), from a shape's Outline.StartArrow / EndArrow, or make one with Document.CreateArrowHead(curve) or CreateArrowHead2(curve, name); assign it back to Outline.StartArrow / EndArrow.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "read-only position in the global arrowhead list"
+    },
+    {
+     "name": "Name",
+     "use": "custom name (settable)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "read-only name shown in the UI (generated when no custom name)"
+    },
+    {
+     "name": "Curve",
+     "use": "read-only: the curve that draws the head"
+    },
+    {
+     "name": "CenterX",
+     "use": "read-only relative horizontal centre of the head"
+    },
+    {
+     "name": "CenterY",
+     "use": "read-only relative vertical centre"
+    },
+    {
+     "name": "LineOffset",
+     "use": "read-only relative amount the line is shortened so the head fits"
+    },
+    {
+     "name": "BaseOutlineScale",
+     "use": "read-only outline width relative to the head curve"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "copy that reports coordinates in a given document's units"
+    },
+    {
+     "name": "CompareWith",
+     "use": "True if two arrowheads are the same"
+    }
+   ],
+   "gotchas": [
+    "Index numbers depend on the installed arrowhead list; find a head by DisplayName or Name instead of hard-coding an index.",
+    "CenterX, CenterY, LineOffset and BaseOutlineScale are relative, read-only values; the head drawn on a line scales with the outline width.",
+    "Curve coordinates are abstract until BindToDocument returns a copy tied to a document.",
+    "An outline with no arrowhead returns an empty / Nothing StartArrow or EndArrow (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nline = app.ActiveShape\nheads = app.ArrowHeads\nhead = heads.Item(2)\nprint(head.Index, head.DisplayName)\nline.Outline.EndArrow = head",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ArrowHeadOptions",
+   "id": "class:ArrowHeadOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ArrowHeadOptions",
+   "status": "current",
+   "summary": "Per-line arrowhead settings for one end of an outline: head length and width, offset from the line end, horizontal / vertical flip and rotation (the Arrowhead attributes of the Outline Pen).",
+   "use_for": [
+    "shrink or enlarge arrowheads on thin callout lines",
+    "flip or rotate a head so it points back along the line",
+    "copy one leader line's arrow sizing to all others"
+   ],
+   "avoid": [
+    "choosing which head is drawn: that is the ArrowHead set on Outline.StartArrow / EndArrow"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGArrowHeadOptions. Read from a shape's Outline.StartArrowOptions / EndArrowOptions, or build one with Document.CreateArrowHeadOptions(Length, Width, OffsetX, OffsetY, RotationAngle, FlipHorizontal, FlipVertical), then assign it back to the outline.",
+   "key_members": [
+    {
+     "name": "Length",
+     "use": "head length (horizontal size)"
+    },
+    {
+     "name": "Width",
+     "use": "head width (vertical size)"
+    },
+    {
+     "name": "OffsetX",
+     "use": "horizontal offset from the line end, in percent of the length"
+    },
+    {
+     "name": "OffsetY",
+     "use": "vertical offset, in percent of the width"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "rotation of the head around its origin"
+    },
+    {
+     "name": "FlipHorizontal",
+     "use": "mirror the head horizontally"
+    },
+    {
+     "name": "FlipVertical",
+     "use": "mirror the head vertically"
+    },
+    {
+     "name": "Flip",
+     "use": "flip by cdrFlipAxes in one call"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy of the options"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy all values from another options object"
+    },
+    {
+     "name": "FlipVerical",
+     "use": "misspelt duplicate of FlipVertical kept in the type library"
+    }
+   ],
+   "gotchas": [
+    "The type library has both FlipVertical and a misspelt FlipVerical; use FlipVertical (FlipVerical is probably a legacy alias, unverified).",
+    "OffsetX / OffsetY are percentages of the head's length / width, not document units.",
+    "Options read from an outline may be a copy: change them and assign back to Outline.EndArrowOptions so the change sticks (unverified).",
+    "Length and Width follow the document Unit (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nol = app.ActiveShape.Outline\nopt = ol.EndArrowOptions\nopt.Length = 0.2\nopt.Width = 0.15\nopt.FlipHorizontal = True\nol.EndArrowOptions = opt",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ArrowHeads",
+   "id": "class:ArrowHeads",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ArrowHeads",
+   "status": "current",
+   "summary": "The application-wide list of arrowheads (what the arrowhead picker shows): count, 1-based access, enumeration, and adding, replacing or removing custom heads.",
+   "use_for": [
+    "find an arrowhead by name for scripted diagrams",
+    "install a custom brand arrowhead for everyone using the workstation",
+    "list available heads to build an arrow style guide"
+   ],
+   "avoid": [
+    "arrows on one line: set the shape's Outline.StartArrow / EndArrow"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGArrowHeads. Reached as app.ArrowHeads; Item(Index) is 1-based and _NewEnum makes it iterable (For Each in VBA).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of arrowheads"
+    },
+    {
+     "name": "Item",
+     "use": "arrowhead by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator for For Each / Python iteration"
+    },
+    {
+     "name": "Add",
+     "use": "add a custom arrowhead to the global list; returns the stored copy"
+    },
+    {
+     "name": "Replace",
+     "use": "replace an existing entry"
+    },
+    {
+     "name": "Remove",
+     "use": "delete an entry"
+    },
+    {
+     "name": "Application",
+     "use": "owning application"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1, not 0.",
+    "Add / Replace / Remove change the global list kept with the user's settings, so other jobs and sessions see it (unverified).",
+    "Indexes shift after Remove; look heads up again by name."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nheads = app.ArrowHeads\nfor i in range(1, heads.Count + 1):\n    h = heads.Item(i)\n    print(i, h.DisplayName)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BBoxSnapPoint",
+   "id": "class:BBoxSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/BBoxSnapPoint",
+   "status": "current",
+   "summary": "Extra information for a snap point that sits on an object's bounding box: which of the nine reference positions (corners, edge midpoints, centre) it is.",
+   "use_for": [
+    "attach flowchart connectors to the top or bottom middle of boxes",
+    "snap or align objects by a chosen corner or centre in scripted layouts"
+   ],
+   "avoid": [
+    "snapping to nodes on a curve: use the generic SnapPoint returned by SnapPoints"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGBBoxSnapPoint. A SnapPoint on a bounding box exposes it as SnapPoint.BBox; shape.SnapPoints.BBox(cdrReferencePoint) finds that SnapPoint directly.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrReferencePoint: which corner, edge midpoint or centre this point is"
+    }
+   ],
+   "gotchas": [
+    "Only one member; the position comes from the owning SnapPoint, not from this object.",
+    "SnapPoints.BBox returns the SnapPoint, and its .BBox property gives this object; do not confuse the two.",
+    "Snap points of rotated objects may follow the rotated box (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\na = app.ActiveSelectionRange.Item(1)\nb = app.ActiveSelectionRange.Item(2)\nsp = a.SnapPoints.BBox(c.cdrBottomMiddle)\nprint(sp.BBox.Type)\napp.ActiveLayer.CreateConnector(sp, b.SnapPoints.BBox(c.cdrTopMiddle))",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Bitmap",
+   "id": "class:Bitmap",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Bitmap",
+   "status": "current",
+   "summary": "The pixel image inside a bitmap object on the page: pixel size, stored resolution, colour mode, link / embed state and clipping path, with operations to resample, convert colour mode, apply bitmap effects, trace to vectors, crop and save out.",
+   "use_for": [
+    "preflight placed photos for low resolution before print",
+    "convert RGB images to CMYK or grayscale for press",
+    "auto-trace a scanned logo to vectors (Trace)",
+    "embed linked images before packaging a job (ResolveLink)",
+    "downsample oversized images to shrink file size"
+   ],
+   "avoid": [
+    "vector objects: convert with Shape.ConvertToBitmap first",
+    "detailed photo retouching: do it in Photoshop or Corel PHOTO-PAINT and relink"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:RasterItem"
+   },
+   "how": "Coclass whose members are on IVGBitmap. Reached as shape.Bitmap on a shape whose Type is cdrBitmapShape (an imported image, or the result of Shape.ConvertToBitmap / ConvertToBitmapEx). SizeWidth / SizeHeight are pixels; the size on the page is the shape's size.",
+   "key_members": [
+    {
+     "name": "SizeWidth",
+     "use": "read-only width in pixels"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "read-only height in pixels"
+    },
+    {
+     "name": "ResolutionX",
+     "use": "read-only stored horizontal resolution"
+    },
+    {
+     "name": "ResolutionY",
+     "use": "read-only stored vertical resolution"
+    },
+    {
+     "name": "Mode",
+     "use": "read-only colour mode (cdrImageType)"
+    },
+    {
+     "name": "ConvertTo",
+     "use": "change colour mode, e.g. to cdrCMYKColorImage"
+    },
+    {
+     "name": "Resample",
+     "use": "resample to a new pixel size or resolution"
+    },
+    {
+     "name": "ExternallyLinked",
+     "use": "read-only: linked to an outside file"
+    },
+    {
+     "name": "LinkFileName",
+     "use": "path of the linked file"
+    },
+    {
+     "name": "ResolveLink",
+     "use": "embed a linked bitmap"
+    },
+    {
+     "name": "UpdateLink",
+     "use": "reload a linked bitmap from its file"
+    },
+    {
+     "name": "Trace",
+     "use": "convert to vectors (cdrTraceType); returns TraceSettings"
+    },
+    {
+     "name": "ApplyBitmapEffect",
+     "use": "run a bitmap effect from its command string"
+    },
+    {
+     "name": "Crop",
+     "use": "crop the pixels to the clipping path"
+    },
+    {
+     "name": "CropEnvelope",
+     "use": "read-only clipping path curve"
+    },
+    {
+     "name": "ResetCropEnvelope",
+     "use": "remove the clipping path"
+    },
+    {
+     "name": "ConvertToBW",
+     "use": "convert to 1-bit with a render type (halftone, threshold ...)"
+    },
+    {
+     "name": "ConvertToDuotone",
+     "use": "convert to duotone with a Duotone object"
+    },
+    {
+     "name": "Transparent",
+     "use": "read-only: has transparency"
+    },
+    {
+     "name": "SaveAs",
+     "use": "save the bitmap to a file with a cdrFilter"
+    },
+    {
+     "name": "Image",
+     "use": "read-only image data (IVGImage)"
+    },
+    {
+     "name": "SetImageData",
+     "use": "replace pixels (and alpha) from IVGImage objects"
+    }
+   ],
+   "gotchas": [
+    "ResolutionX / Y are the stored dpi, not the effective dpi at the placed size; compute effective dpi from SizeWidth and the shape's width in inches.",
+    "ConvertTo, Resample and Crop rewrite the embedded pixels; only Undo in the same session brings them back.",
+    "Trace returns a TraceSettings object and the vectors are created when you call its Finish method; DeleteOriginalObject defaults to False, so the bitmap stays.",
+    "ApplyBitmapEffect takes an undo label and a raw command string whose syntax is undocumented; take it from the harvested effect's cdr_effect_cmd invoke instead of guessing.",
+    "Operations on an externally linked bitmap may fail until ResolveLink embeds it (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\ns = app.ActiveShape\nbmp = s.Bitmap\nw_in = app.ConvertUnits(s.SizeWidth, app.ActiveDocument.Unit, c.cdrInch)\nprint(bmp.SizeWidth / w_in, bmp.ResolutionX, bmp.Mode)   # effective ppi\nif bmp.ExternallyLinked:\n    bmp.ResolveLink()",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Example switched the user's Document.Unit to inches just to measure; now converts the width with Application.ConvertUnits and leaves the document alone."
+   }
+  },
+  {
+   "name": "BitmapImage",
+   "id": "class:BitmapImage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/BitmapImage",
+   "status": "current",
+   "summary": "A small image object used by CorelDRAW's UI framework (icons and pictures in custom dockers, message boxes and data-bound controls) with only validity and pixel size readable. It is not a bitmap on the page.",
+   "use_for": [
+    "icon for a custom docker, toolbar or message box",
+    "checking that an icon file loaded before showing custom UI"
+   ],
+   "avoid": [
+    "putting an image into the drawing: import it (Layer.Import) and work with Bitmap"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUIBitmapImage. Created with app.FrameWork.Application.CreateBitmapImage(ImageData, MaxSize), where ImageData is a file name, a byte array or a stream; passed to UI calls such as FrameWork.ShowMessageBox (its pImage argument).",
+   "key_members": [
+    {
+     "name": "Valid",
+     "use": "read-only: the image loaded and is usable"
+    },
+    {
+     "name": "Width",
+     "use": "read-only width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "read-only height in pixels"
+    }
+   ],
+   "gotchas": [
+    "Only three read-only members: the pixels cannot be read or edited.",
+    "Valid is False when the file could not be read; check it before handing the image to UI calls.",
+    "MaxSize appears to cap the loaded size (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nui = app.FrameWork.Application\nimg = ui.CreateBitmapImage(r\"C:\\icons\\logo.png\", 32)\nif img.Valid:\n    print(img.Width, img.Height)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BSpline",
+   "id": "class:BSpline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/BSpline",
+   "status": "current",
+   "summary": "A B-spline curve definition: an ordered set of control points that a smooth curve is pulled toward (and passes through where a point is clamped), open or closed. It is the geometry the B-spline tool draws.",
+   "use_for": [
+    "smooth flowing lines and organic shapes from a few control points",
+    "generated swooshes, ribbons and wave guides in layouts",
+    "keeping an easily editable smooth contour for signage or cut paths"
+   ],
+   "avoid": [
+    "exact Bezier control for logos and type: use Curve with nodes",
+    "a curve that must pass through every given point: fit a Curve to the points (Curve.AppendSubpathFitToPoints) or clamp all points"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGBSpline. Create with doc.CreateBSpline(NumControlPoints, Closed), position the points through ControlPoints, then place it with Layer.CreateBSpline(bspline). shape.BSpline reads the spline of an existing B-spline shape (read-only).",
+   "key_members": [
+    {
+     "name": "ControlPoints",
+     "use": "collection of the control points"
+    },
+    {
+     "name": "Closed",
+     "use": "get / set whether the spline is closed"
+    },
+    {
+     "name": "InsertControlPoint",
+     "use": "insert one point before an index (x, y, Clamped)"
+    },
+    {
+     "name": "InsertControlPoints",
+     "use": "insert several points at once"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy another BSpline into this one"
+    }
+   ],
+   "gotchas": [
+    "shape.BSpline is read-only: edit a GetCopy() and create a new shape from it.",
+    "New points created by ControlPoints.Resize sit at (0, 0); set every point after resizing.",
+    "Coordinates follow the document Unit."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbs = app.ActiveDocument.CreateBSpline(4, False)\npts = [(1, 1), (2, 3), (3, 1), (4, 3)]\nfor i, (x, y) in enumerate(pts, 1):\n    bs.ControlPoints.Item(i).SetPosition(x, y)\napp.ActiveLayer.CreateBSpline(bs)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BSplineControlPoint",
+   "id": "class:BSplineControlPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/BSplineControlPoint",
+   "status": "current",
+   "summary": "One control point of a B-spline: its x / y position and whether it is clamped (the curve passes through it, giving a corner).",
+   "use_for": [
+    "move B-spline handles by script to vary a generated shape",
+    "make a sharp corner on a smooth B-spline by clamping one point"
+   ],
+   "avoid": [
+    "Bezier nodes on ordinary curves: use Node / Curve"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGBSplineControlPoint. Reached as bspline.ControlPoints.Item(i), .First or .Last.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "get / set horizontal position"
+    },
+    {
+     "name": "y",
+     "use": "get / set vertical position"
+    },
+    {
+     "name": "Clamped",
+     "use": "True: the spline passes through this point (cusp)"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move to an absolute position"
+    },
+    {
+     "name": "Move",
+     "use": "move by a distance (relative)"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set x, y and Clamped in one call"
+    },
+    {
+     "name": "GetPosition",
+     "use": "read position through ByRef arguments"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the point"
+    },
+    {
+     "name": "Index",
+     "use": "read-only position in the spline"
+    }
+   ],
+   "gotchas": [
+    "The position members are lower-case x and y.",
+    "Move is relative, SetPosition is absolute.",
+    "GetPosition returns through ByRef arguments; in Python read x and y instead (unverified tuple return)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbs = app.ActiveDocument.CreateBSpline(4, False)\ncp = bs.ControlPoints.Item(2)\ncp.SetProperties(2.0, 3.5, True)\ncp.Move(0.25, 0)\nprint(cp.Index, cp.x, cp.y, cp.Clamped)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BSplineControlPoints",
+   "id": "class:BSplineControlPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/BSplineControlPoints",
+   "status": "current",
+   "summary": "The ordered collection of a B-spline's control points, with first / last access, index access, count and Resize to change how many points there are.",
+   "use_for": [
+    "loop over a spline's points to read or reshape it",
+    "set the number of points before filling in generated positions"
+   ],
+   "avoid": [
+    "inserting a point at a specific spot without moving others: use BSpline.InsertControlPoint"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGBSplineControlPoints. Reached as bspline.ControlPoints.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of control points"
+    },
+    {
+     "name": "Item",
+     "use": "control point by index"
+    },
+    {
+     "name": "First",
+     "use": "first point"
+    },
+    {
+     "name": "Last",
+     "use": "last point"
+    },
+    {
+     "name": "Resize",
+     "use": "change the number of points; new ones are placed at (0, 0)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator for For Each / iteration"
+    }
+   ],
+   "gotchas": [
+    "Resize puts added points at (0, 0); set their positions afterwards.",
+    "Item is 1-based like other CorelDRAW collections (unverified for this collection)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\npts = app.ActiveShape.BSpline.ControlPoints\nprint(pts.Count, pts.First.x, pts.Last.x)\nfor i in range(1, pts.Count + 1):\n    print(pts.Item(i).x, pts.Item(i).y)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Clipboard",
+   "id": "class:Clipboard",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Clipboard",
+   "status": "current",
+   "summary": "The clipboard as CorelDRAW sees it: whether it holds content CorelDRAW can paste, whether a given format is there, and Clear. It does not read or write the clipboard's data.",
+   "use_for": [
+    "check that a Copy worked before Layer.Paste in an automated layout",
+    "test for a format before Layer.PasteSpecial",
+    "clear stale clipboard content after a batch"
+   ],
+   "avoid": [
+    "moving objects between documents when CopyToLayer works: it avoids the system clipboard entirely",
+    "reading text or image data from the clipboard: not possible through this object"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGClipboard. Reached as app.Clipboard. Copy with Shape.Copy / ShapeRange.Copy, paste with Layer.Paste, PasteEx or PasteSpecial.",
+   "key_members": [
+    {
+     "name": "Valid",
+     "use": "read-only: the clipboard holds content CorelDRAW can use"
+    },
+    {
+     "name": "Empty",
+     "use": "read-only clipboard content check"
+    },
+    {
+     "name": "DataPresent",
+     "use": "True if data in a named clipboard format is present"
+    },
+    {
+     "name": "Clear",
+     "use": "empty the clipboard"
+    }
+   ],
+   "gotchas": [
+    "Empty's harvested description reads 'Checks if the clipboard has content', which conflicts with its name; test which way it reports before relying on it (unverified).",
+    "DataPresent needs a clipboard format name; the names CorelDRAW accepts are not in the harvest (unverified).",
+    "The clipboard is shared by all of Windows: another program can replace it between Copy and Paste; prefer Shape.CopyToLayer inside CorelDRAW."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\napp.ActiveShape.Copy()\nif app.Clipboard.Valid:\n    pasted = app.ActiveLayer.Paste()\napp.Clipboard.Clear()",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CloneLink",
+   "id": "class:CloneLink",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CloneLink",
+   "status": "current",
+   "summary": "The link between a clone and its master object: which attributes (fill, outline, shape, transform, bitmap colour mask) still follow the master, the master itself, and a way to restore all broken links.",
+   "use_for": [
+    "repeat a master graphic (badge, icon, frame) across a layout so editing the master updates every copy",
+    "check which clone attributes were overridden before a brand update",
+    "relink clones after local edits"
+   ],
+   "avoid": [
+    "many instances across pages or files: symbols (Shape.ConvertToSymbol) are lighter and easier to manage",
+    "independent copies: use Duplicate"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGCloneLink. Reached as shape.CloneLink on a shape made by master.Clone(OffsetX, OffsetY); CloneParent returns the master, and the master lists its clones in Shape.Clones.",
+   "key_members": [
+    {
+     "name": "CloneParent",
+     "use": "read-only: the master shape"
+    },
+    {
+     "name": "FillLinked",
+     "use": "fill follows the master"
+    },
+    {
+     "name": "OutlineLinked",
+     "use": "outline follows the master"
+    },
+    {
+     "name": "ShapeLinked",
+     "use": "geometry follows the master"
+    },
+    {
+     "name": "TransformLinked",
+     "use": "position / scale / rotation follow the master"
+    },
+    {
+     "name": "BitmapColorMaskLinked",
+     "use": "bitmap colour mask follows the master"
+    },
+    {
+     "name": "RestoreAllLinks",
+     "use": "re-link every attribute to the master"
+    },
+    {
+     "name": "Parent",
+     "use": "read-only: the clone shape this link belongs to"
+    }
+   ],
+   "gotchas": [
+    "CloneLink is None on a shape that is not a clone.",
+    "Editing a clone's fill or outline directly breaks that link silently; check the *Linked flags before assuming a master edit propagates.",
+    "Setting a *Linked flag back to True may not re-link; use RestoreAllLinks or ShapeRange.RestoreCloneLink (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nmaster = app.ActiveShape\nclone = master.Clone(2.0, 0)\nlink = clone.CloneLink\nlink.FillLinked = False\nclone.Fill.ApplyUniformFill(app.CreateRGBColor(255, 0, 0))\nlink.RestoreAllLinks()",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Color",
+   "id": "class:Color",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Color",
+   "status": "current",
+   "summary": "One colour value in any CorelDRAW colour model (RGB, CMYK, CMY, HSB, HLS, Lab, YIQ, grayscale, black and white, registration, palette / spot colour, colour style) with methods to assign, read, compare and convert it. Fills, outlines and effects take and return Color objects.",
+   "use_for": [
+    "set exact brand CMYK or spot (Pantone) values on fills and outlines",
+    "convert colours between RGB and CMYK through the document's colour profiles",
+    "preflight: find spot colours, out-of-gamut colours or rich black in a file",
+    "move web hex colours in and out (HexValue)"
+   ],
+   "avoid": [
+    "judging visual similarity with IsSame (it compares model and numbers); use GetColorDistanceFrom",
+    "editing a whole palette: use Palette / Colors"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:SolidColor",
+    "AI": "class:Color"
+   },
+   "how": "Coclass whose members are on IVGColor. Make one with app.CreateColor(), CreateRGBColor, CreateCMYKColor, CreateSpotColorByName and the other Create*Color factories, or read one from shape.Fill.UniformColor / shape.Outline.Color. Change it with the *Assign methods, convert with ConvertToRGB / ConvertToCMYK / ConvertTo(ColorType, contexts).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only colour model (cdrColorType)"
+    },
+    {
+     "name": "RGBAssign",
+     "use": "set as RGB"
+    },
+    {
+     "name": "CMYKAssign",
+     "use": "set as CMYK"
+    },
+    {
+     "name": "SpotAssignByName",
+     "use": "set as a spot colour from a palette, by colour name"
+    },
+    {
+     "name": "HexValue",
+     "use": "get / set as a web hex string"
+    },
+    {
+     "name": "RGBValue",
+     "use": "get / set RGB as one integer"
+    },
+    {
+     "name": "ConvertToRGB",
+     "use": "convert this colour to RGB"
+    },
+    {
+     "name": "ConvertToCMYK",
+     "use": "convert this colour to CMYK"
+    },
+    {
+     "name": "ConvertTo",
+     "use": "convert to any cdrColorType with optional source / destination colour contexts"
+    },
+    {
+     "name": "Name",
+     "use": "colour name (palette / spot colours)"
+    },
+    {
+     "name": "IsSpot",
+     "use": "read-only: spot colour"
+    },
+    {
+     "name": "IsCMYK",
+     "use": "read-only: CMYK"
+    },
+    {
+     "name": "IsInGamut",
+     "use": "read-only: inside the current printer gamut"
+    },
+    {
+     "name": "InGamutColor",
+     "use": "read-only: nearest in-gamut colour"
+    },
+    {
+     "name": "Tint",
+     "use": "tint of a fixed / spot colour"
+    },
+    {
+     "name": "IsSame",
+     "use": "same model and same values"
+    },
+    {
+     "name": "GetColorDistanceFrom",
+     "use": "numeric distance between two colours"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy another colour into this one"
+    },
+    {
+     "name": "ToString",
+     "use": "encode the colour as a string"
+    },
+    {
+     "name": "StringAssign",
+     "use": "decode a colour string made by ToString"
+    },
+    {
+     "name": "ColorContext",
+     "use": "read-only colour context the values are interpreted in"
+    }
+   ],
+   "gotchas": [
+    "Colour components are whole numbers (long); there are no fractional CMYK percentages.",
+    "A Color read from Fill.UniformColor or Outline.Color may be live: assigning or converting it can recolour the object; use GetCopy() when you need a detached value (unverified).",
+    "IsSame is strict: an RGB red and its CMYK conversion are not the same.",
+    "Conversions use the colour context (profiles and rendering intent), so the same numbers convert differently in documents with different profiles.",
+    "Name only gives a real name for palette, spot and style colours (unverified for process colours)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncol = app.CreateCMYKColor(0, 60, 100, 0)\napp.ActiveShape.Fill.ApplyUniformFill(col)\nweb = col.GetCopy()\nweb.ConvertToRGB()\nprint(web.HexValue, col.IsInGamut, col.IsSpot)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ColorContext",
+   "id": "class:ColorContext",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ColorContext",
+   "status": "current",
+   "summary": "A colour-management setup: the RGB, CMYK and grayscale profiles, rendering intent and blending colour model that decide how a document's or a colour's numbers map to real colour.",
+   "use_for": [
+    "put the press CMYK profile on a document before converting artwork for print",
+    "make RGB-to-CMYK conversions repeatable across machines",
+    "check which profiles a client file uses"
+   ],
+   "avoid": [
+    "changing app-wide defaults: edit ColorManager.DefaultColorContext",
+    "converting a single colour: use Color.ConvertTo with a context"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGColorContext. Read from Document.ColorContext or Color.ColorContext (read-only), app.DefaultColorContext (read-only), or make one with app.CreateColorContext(RGBProfile, CMYKProfile, GrayscaleProfile, RenderingIntent, BlendingColorModel) or CreateColorContext2(ColorProfileList, ...). Apply to a document with Document.AssignColorContext (keeps colour values, appearance may change) or Document.ConvertToColorContext (keeps appearance, values may change).",
+   "key_members": [
+    {
+     "name": "RGBColorProfile",
+     "use": "RGB profile"
+    },
+    {
+     "name": "CMYKColorProfile",
+     "use": "CMYK profile"
+    },
+    {
+     "name": "GrayscaleColorProfile",
+     "use": "grayscale profile"
+    },
+    {
+     "name": "RenderingIntent",
+     "use": "rendering intent (clrRenderingIntent)"
+    },
+    {
+     "name": "BlendingColorModel",
+     "use": "colour model used for transparency blending"
+    },
+    {
+     "name": "ColorProfile",
+     "use": "profile for a given clrColorModel"
+    },
+    {
+     "name": "ColorProfiles",
+     "use": "read-only collection of all profiles in the context"
+    },
+    {
+     "name": "ColorProfileNameList",
+     "use": "read-only comma-separated profile names"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "read-only flag: True for contexts you may not change"
+    },
+    {
+     "name": "GetCopy",
+     "use": "editable copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy another context into this one"
+    },
+    {
+     "name": "Merge",
+     "use": "take the non-empty profiles of another context"
+    },
+    {
+     "name": "IsSame",
+     "use": "True when both contexts have the same settings"
+    }
+   ],
+   "gotchas": [
+    "Contexts from Color.ColorContext and app.DefaultColorContext are read-only (ReadOnly is True); change a GetCopy().",
+    "Document.ConvertToColorContext keeps appearance and changes colour values (per the harvest); to relabel without touching values use AssignColorContext. Run either on a copy of the job first.",
+    "Profile names for CreateColorContext2 must match installed profile names exactly; they vary between machines.",
+    "BlendingColorModel changes how transparencies and blend modes mix (RGB vs CMYK), so the same file can look different."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\ndoc = app.ActiveDocument\nctx = doc.ColorContext.GetCopy()\nprint(ctx.ColorProfileNameList, ctx.RenderingIntent)\nctx.CMYKColorProfile = app.ColorManager.GetProfilesByColorModel(c.clrColorModelCMYK).Item(1)\ndoc.ConvertToColorContext(ctx)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Added Document.AssignColorContext (harvested) next to ConvertToColorContext and replaced the unverified gotcha with the harvested descriptions of both."
+   }
+  },
+  {
+   "name": "ColorManagementPolicy",
+   "id": "class:ColorManagementPolicy",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ColorManagementPolicy",
+   "status": "current",
+   "summary": "Rules for what CorelDRAW does with colour when a file is opened or artwork is imported or pasted with profiles that differ from the document's: one action each for RGB, CMYK and grayscale, plus whether to warn about mismatched or missing profiles.",
+   "use_for": [
+    "silent batch opening of client files without profile-mismatch dialogs",
+    "enforce converting imported artwork to the document profile for consistent print colour"
+   ],
+   "avoid": [
+    "setting the document's own profiles: use ColorContext"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGColorManagementPolicy. Reached as app.ColorManager.PolicyForOpen / PolicyForImport (app defaults) or StructColorConversionOptions.ColorPolicy for a single open or import.",
+   "key_members": [
+    {
+     "name": "ActionForRGB",
+     "use": "what to do with RGB colours (clrColorPolicyAction)"
+    },
+    {
+     "name": "ActionForCMYK",
+     "use": "what to do with CMYK colours"
+    },
+    {
+     "name": "ActionForGrayscale",
+     "use": "what to do with grayscale colours"
+    },
+    {
+     "name": "WarnOnMismatchedProfiles",
+     "use": "show a warning when profiles differ"
+    },
+    {
+     "name": "WarnOnMissingProfiles",
+     "use": "show a warning when a file has no profile"
+    }
+   ],
+   "gotchas": [
+    "The warnings are modal dialogs and stall a COM batch; set both Warn* flags to False before unattended opens (unverified that this silences every colour dialog).",
+    "Changing PolicyForOpen / PolicyForImport changes the user's application settings; restore them after the batch (unverified that they persist).",
+    "Action values come from the clrColorPolicyAction enumeration; read the current value before changing it."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\npol = app.ColorManager.PolicyForOpen\nold = pol.WarnOnMismatchedProfiles\npol.WarnOnMismatchedProfiles = False\npol.WarnOnMissingProfiles = False\ndoc = app.OpenDocument(r\"C:\\jobs\\client.cdr\")\npol.WarnOnMismatchedProfiles = old",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ColorManager",
+   "id": "class:ColorManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ColorManager",
+   "status": "current",
+   "summary": "Application-wide colour management: colour engine and rendering intent, installed and current profiles per device, the default colour context, import / export correction, open / import policies, out-of-gamut warning display, CMYK shown as percentages, pure-black and gray-to-K handling, and saved colour-management styles.",
+   "use_for": [
+    "set up identical print colour settings on every studio workstation",
+    "show out-of-gamut warnings while designing RGB artwork for CMYK print",
+    "list installed ICC profiles for a preflight report",
+    "keep 100K black text pure black through conversions (PreservePureBlack)"
+   ],
+   "avoid": [
+    "one document's profiles: read Document.ColorContext, change them with Document.AssignColorContext / ConvertToColorContext"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGColorManager. Reached as app.ColorManager.",
+   "key_members": [
+    {
+     "name": "DefaultColorContext",
+     "use": "editable default context for new documents"
+    },
+    {
+     "name": "ColorProfiles",
+     "use": "all profiles installed on the system"
+    },
+    {
+     "name": "GetProfilesByColorModel",
+     "use": "profiles for one clrColorModel"
+    },
+    {
+     "name": "InstalledProfiles",
+     "use": "profiles for a clrDeviceType"
+    },
+    {
+     "name": "CurrentProfile",
+     "use": "profile in use for a clrDeviceType"
+    },
+    {
+     "name": "RenderingIntent",
+     "use": "default rendering intent"
+    },
+    {
+     "name": "ColorEngine",
+     "use": "colour engine (clrColorEngine)"
+    },
+    {
+     "name": "PreservePureBlack",
+     "use": "keep pure black pure through conversions"
+    },
+    {
+     "name": "MapGrayToCMYKBlack",
+     "use": "send grays to the K channel only"
+    },
+    {
+     "name": "ShowOutOfGamut",
+     "use": "mark out-of-gamut colours on screen"
+    },
+    {
+     "name": "OutOfGamutColor",
+     "use": "warning colour for out-of-gamut areas"
+    },
+    {
+     "name": "PolicyForOpen",
+     "use": "policy for opening files"
+    },
+    {
+     "name": "PolicyForImport",
+     "use": "policy for importing / pasting"
+    },
+    {
+     "name": "ColorCorrectionOnImport",
+     "use": "import colour correction"
+    },
+    {
+     "name": "ColorCorrectionOnExport",
+     "use": "export colour correction"
+    },
+    {
+     "name": "CMYKInPercents",
+     "use": "show CMYK components as percentages"
+    },
+    {
+     "name": "StyleCount",
+     "use": "number of colour-management styles"
+    },
+    {
+     "name": "StyleByIndex",
+     "use": "style name by index"
+    },
+    {
+     "name": "LoadStyle",
+     "use": "apply a saved style"
+    },
+    {
+     "name": "SaveStyle",
+     "use": "save the current settings as a style"
+    }
+   ],
+   "gotchas": [
+    "Every change is application-wide and stays with the user, so it affects other jobs running in the same CorelDRAW.",
+    "DefaultColorContext here is editable; Application.DefaultColorContext is a read-only copy.",
+    "InstalledProfiles, CurrentProfile, StyleByIndex and GenericProfileName take arguments; in Python they are called like methods.",
+    "ShowOutOfGamut is only an on-screen warning; it does not change colours."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncm = app.ColorManager\ncm.ShowOutOfGamut = True\ncm.PreservePureBlack = True\nprint(cm.StyleCount, cm.RenderingIntent)\nprint(cm.DefaultColorContext.ColorProfileNameList)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "AVOID now says Document.ColorContext is for reading and names the methods that change a document's profiles."
+   }
+  },
+  {
+   "name": "ColorProfile",
+   "id": "class:ColorProfile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ColorProfile",
+   "status": "current",
+   "summary": "One ICC colour profile: its name, file, device type, colour model, maker and model, whether it is installed or only embedded in a document, and whether it is the device's current profile; it can make a ColorContext.",
+   "use_for": [
+    "check a file uses the press profile the printer asked for",
+    "build a ColorContext from a specific CMYK profile",
+    "list device profiles in a preflight report"
+   ],
+   "avoid": [
+    "choosing profiles for a document: Document.ColorContext is read-only; build a ColorContext and use Document.AssignColorContext or ConvertToColorContext"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGColorProfile. Get one from ColorProfiles.Item(...), ColorManager.CurrentProfile(device), ColorContext.RGBColorProfile / CMYKColorProfile, and so on.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "full profile name"
+    },
+    {
+     "name": "FileName",
+     "use": "profile file"
+    },
+    {
+     "name": "ID",
+     "use": "unique identifier"
+    },
+    {
+     "name": "ColorModel",
+     "use": "clrColorModel of the profile"
+    },
+    {
+     "name": "DeviceType",
+     "use": "clrDeviceType"
+    },
+    {
+     "name": "Installed",
+     "use": "False when only embedded in a document"
+    },
+    {
+     "name": "Generic",
+     "use": "True for the device's generic profile"
+    },
+    {
+     "name": "Selected",
+     "use": "True when the device currently uses it"
+    },
+    {
+     "name": "Select",
+     "use": "make it the device's current profile"
+    },
+    {
+     "name": "CreateColorContext",
+     "use": "colour context built from this profile"
+    },
+    {
+     "name": "IsSame",
+     "use": "same profile"
+    },
+    {
+     "name": "Manufacturer",
+     "use": "device manufacturer"
+    },
+    {
+     "name": "DeviceModel",
+     "use": "device model"
+    }
+   ],
+   "gotchas": [
+    "Installed False means the profile only lives inside a document; other documents cannot use it.",
+    "Select changes the device's active profile for the whole application.",
+    "Compare profiles with IsSame or ID; display names can differ between machines."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nctx = app.ActiveDocument.ColorContext\np = ctx.CMYKColorProfile\nprint(p.Name, p.FileName, p.Installed, p.ColorModel)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "AVOID said to set profiles on Document.ColorContext, which the harvest marks read-only; now points to AssignColorContext / ConvertToColorContext."
+   }
+  },
+  {
+   "name": "ColorProfiles",
+   "id": "class:ColorProfiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ColorProfiles",
+   "status": "current",
+   "summary": "A list of ICC profiles for one device or colour model, with access by index or full name, the generic profile, selecting one by name, and installing a profile file.",
+   "use_for": [
+    "find a profile by its exact name before building a colour context",
+    "install a printer's supplied .icc file by script for a studio setup"
+   ],
+   "avoid": [
+    "document-level profile choice: use Document.AssignColorContext / ConvertToColorContext (Document.ColorContext is read-only)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGColorProfiles. Returned by ColorManager.ColorProfiles, InstalledProfiles(device), GetProfilesByColorModel(model), GetProfilesForDevice(...) and ColorContext.ColorProfiles.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of profiles"
+    },
+    {
+     "name": "Item",
+     "use": "profile by index or exact full name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    },
+    {
+     "name": "DeviceType",
+     "use": "device the list was made for"
+    },
+    {
+     "name": "SelectByName",
+     "use": "make a profile the device default by name"
+    },
+    {
+     "name": "Install",
+     "use": "install a profile from a file"
+    },
+    {
+     "name": "GenericProfile",
+     "use": "generic profile for the device"
+    }
+   ],
+   "gotchas": [
+    "Item accepts an index or the exact full profile name.",
+    "Install copies a profile into the system colour folder and may need administrator rights (unverified).",
+    "SelectByName changes the application's device default, not just one document."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nprofs = app.ColorManager.ColorProfiles\nfor i in range(1, profs.Count + 1):\n    p = profs.Item(i)\n    print(p.Name, p.ColorModel)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "AVOID pointed at the read-only Document.ColorContext; now names AssignColorContext / ConvertToColorContext."
+   }
+  },
+  {
+   "name": "Colors",
+   "id": "class:Colors",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Colors",
+   "status": "current",
+   "summary": "A read-only list of Color objects: the colours of a palette (Palette.Colors()) or a document's colour styles (StyleSheet.AllColorStyles).",
+   "use_for": [
+    "export a palette's colours to a brand sheet or JSON",
+    "check that a document's colour styles match the brand palette"
+   ],
+   "avoid": [
+    "adding colours: use Palette.AddColor / InsertColor (custom palettes only, per the harvest)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Swatches"
+   },
+   "how": "Coclass whose members are on IVGColors. Reached as palette.Colors() (a method) or StyleSheet.AllColorStyles.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of colours"
+    },
+    {
+     "name": "Item",
+     "use": "colour by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    },
+    {
+     "name": "Parent",
+     "use": "owning palette (None when not from a palette)"
+    },
+    {
+     "name": "Application",
+     "use": "owning application"
+    }
+   ],
+   "gotchas": [
+    "Palette.Colors is a method: call it (palette.Colors()), do not read it as a property.",
+    "Item is base 1.",
+    "Parent is None for colour collections that do not come from a palette (e.g. colour styles)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncols = app.ActivePalette.Colors()\nfor i in range(1, cols.Count + 1):\n    col = cols.Item(i)\n    print(col.Name, col.HexValue)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Replaced the '(unverified API)' avoid entry with the harvested Palette.AddColor / InsertColor."
+   }
+  },
+  {
+   "name": "CommandBar",
+   "id": "class:CommandBar",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CommandBar",
+   "status": "current",
+   "summary": "One toolbar, menu bar, popup menu or the status bar in CorelDRAW's interface: visibility, position, size, its controls and modes; it can be shown as a popup, reset to default or deleted.",
+   "use_for": [
+    "a studio toolbar with buttons that run house macros",
+    "reset a broken toolbar in a shared workspace",
+    "show a popup of handy commands from a macro"
+   ],
+   "avoid": [
+    "running a menu command by script: use FrameWork.Automation.InvokeItem with the command GUID"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUICommandBar. Reached as app.CommandBars.Item(name or index), app.MainMenu, app.StatusBar, or created with app.CommandBars.Add(Name, Position, Temporary).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "internal name"
+    },
+    {
+     "name": "NameLocal",
+     "use": "localised name"
+    },
+    {
+     "name": "Type",
+     "use": "read-only bar type (cuiBarType)"
+    },
+    {
+     "name": "Visible",
+     "use": "show / hide"
+    },
+    {
+     "name": "Enabled",
+     "use": "enable / disable"
+    },
+    {
+     "name": "Controls",
+     "use": "the buttons and controls on the bar"
+    },
+    {
+     "name": "Modes",
+     "use": "context modes (for bars like the property bar)"
+    },
+    {
+     "name": "Position",
+     "use": "docked side or floating (cuiBarPosition)"
+    },
+    {
+     "name": "Protection",
+     "use": "what the user may change (cuiBarProtection)"
+    },
+    {
+     "name": "Left",
+     "use": "screen position"
+    },
+    {
+     "name": "Top",
+     "use": "screen position"
+    },
+    {
+     "name": "Width",
+     "use": "read-only width"
+    },
+    {
+     "name": "SetWidth",
+     "use": "set the width"
+    },
+    {
+     "name": "BuiltIn",
+     "use": "read-only: shipped with CorelDRAW"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default contents"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the bar"
+    },
+    {
+     "name": "ShowPopup",
+     "use": "show the bar as a popup at x, y"
+    }
+   ],
+   "gotchas": [
+    "Look bars up by Name; NameLocal changes with the UI language.",
+    "Changes are saved into the user's workspace; pass Temporary = True to CommandBars.Add for bars that should vanish on exit.",
+    "Width and Height are read-only; use SetWidth.",
+    "Deleting a built-in bar may be refused (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbar = app.CommandBars.Add(\"PGD Tools\", 4, True)   # 4 = cuiBarFloating; temporary bar\nbar.Visible = True\nprint(bar.Name, bar.Controls.Count, bar.BuiltIn)\nmenu = app.MainMenu\nprint(menu.Controls.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Example created a permanent toolbar in the user's workspace (Temporary defaulted to False), contradicting its own gotcha; now passes Temporary = True."
+   }
+  },
+  {
+   "name": "CommandBarMode",
+   "id": "class:CommandBarMode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CommandBarMode",
+   "status": "current",
+   "summary": "One mode of a context-dependent command bar (such as the property bar, which shows a different set of controls for each tool or selection): its name and the controls shown in that mode.",
+   "use_for": [
+    "add a custom button to the property bar only for one tool's context",
+    "list what a context bar shows in each mode"
+   ],
+   "avoid": [
+    "ordinary toolbars with one fixed set of controls: use CommandBar.Controls"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUICommandBarMode. Reached as commandBar.Modes.Item(index or name).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "internal mode name"
+    },
+    {
+     "name": "NameLocal",
+     "use": "localised mode name"
+    },
+    {
+     "name": "Controls",
+     "use": "the controls shown in this mode"
+    }
+   ],
+   "gotchas": [
+    "Which bars have modes, and the mode names, are not in the harvest; list Modes first (unverified).",
+    "Controls added to a mode appear only while that mode is active."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbar = app.CommandBars.Item(1)\nfor i in range(1, bar.Modes.Count + 1):\n    m = bar.Modes.Item(i)\n    print(m.Name, m.NameLocal, m.Controls.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CommandBarModes",
+   "id": "class:CommandBarModes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CommandBarModes",
+   "status": "current",
+   "summary": "The list of modes of a context-dependent command bar, with access by index or name and a count.",
+   "use_for": [
+    "find the property-bar mode for a particular tool before adding controls to it"
+   ],
+   "avoid": [
+    "bars without modes: use CommandBar.Controls"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUICommandBarModes. Reached as commandBar.Modes.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of modes"
+    },
+    {
+     "name": "Item",
+     "use": "mode by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    }
+   ],
+   "gotchas": [
+    "Item accepts an index or a name; mode names are internal and not documented in the harvest (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nmodes = app.CommandBars.Item(1).Modes\nprint(modes.Count)\nif modes.Count:\n    print(modes.Item(1).Name)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CommandBars",
+   "id": "class:CommandBars",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CommandBars",
+   "status": "current",
+   "summary": "All of CorelDRAW's command bars (toolbars, menus, popups, status bar), with access by index or name, a count and Add to create a new custom toolbar.",
+   "use_for": [
+    "create a custom studio toolbar for house macros",
+    "find and show / hide a toolbar for a clean screen recording"
+   ],
+   "avoid": [
+    "running commands: use FrameWork.Automation.InvokeItem"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUICommandBars. Reached as app.CommandBars (or app.FrameWork.CommandBars).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of bars"
+    },
+    {
+     "name": "Item",
+     "use": "bar by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    },
+    {
+     "name": "Add",
+     "use": "create a bar (Name, Position, Temporary)"
+    }
+   ],
+   "gotchas": [
+    "Add without Temporary = True saves the new bar into the user's workspace for good.",
+    "Look bars up by internal name; the localised name differs by UI language."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbars = app.CommandBars\nfor i in range(1, bars.Count + 1):\n    b = bars.Item(i)\n    print(b.Name, b.Visible)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Component",
+   "id": "class:Component",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Component",
+   "status": "current",
+   "summary": "One installed application component, identified only by its ComponentID string; components are optional feature modules that can also expose commands run through CustomCommand.",
+   "use_for": [
+    "check which optional modules a workstation has before a script relies on them"
+   ],
+   "avoid": [
+    "testing for one known component: Components.IsComponentInstalled is simpler"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGComponent. Reached as app.Components.Item(index or name) or doc.Components.Item(...). Document, Layer, Shape and ShapeRange have CustomCommand(ComponentID, CommandID, Parameters) to call into a component.",
+   "key_members": [
+    {
+     "name": "ComponentID",
+     "use": "read-only identifier string of the component"
+    }
+   ],
+   "gotchas": [
+    "Only one member; what each component does is not in the harvest, and the ID strings are not documented (unverified).",
+    "CustomCommand IDs and parameters per component are not in the harvest; do not guess them."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncomps = app.Components\nfor i in range(1, comps.Count + 1):\n    print(comps.Item(i).ComponentID)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Components",
+   "id": "class:Components",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Components",
+   "status": "current",
+   "summary": "The collection of application or document components (optional feature modules), with access by index or name, a count and a check whether a given component is installed.",
+   "use_for": [
+    "guard a script: check a needed component is installed before calling it",
+    "inventory installed modules on studio machines"
+   ],
+   "avoid": [
+    "looking for menu commands: those are in the cdr_menu items and run through FrameWork.Automation"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGComponents. Reached as app.Components (application components) or doc.Components (document components).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of components"
+    },
+    {
+     "name": "Item",
+     "use": "component by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    },
+    {
+     "name": "IsComponentInstalled",
+     "use": "True if a component with this ID is installed"
+    }
+   ],
+   "gotchas": [
+    "Application and document component lists differ; use the one the CustomCommand call will go to.",
+    "Component IDs are not documented in the harvest; list them first (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncomps = app.Components\nids = [comps.Item(i).ComponentID for i in range(1, comps.Count + 1)]\nprint(ids)\nprint(comps.IsComponentInstalled(ids[0]) if ids else None)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Connector",
+   "id": "class:Connector",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Connector",
+   "status": "current",
+   "summary": "The connector line made by the Connector tools: its start and end snap points (which keep it attached when the joined objects move) and its type (straight, right-angle, B-spline, Bezier or object connector).",
+   "use_for": [
+    "flowcharts and org charts whose lines stay attached when boxes are moved",
+    "process diagrams and infographics built by script",
+    "re-pointing a connector to another box"
+   ],
+   "avoid": [
+    "plain lines that should not follow objects: draw a curve"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGConnector. Reached as shape.Connector on a connector shape (Type cdrConnectorShape). Create one with Layer.CreateConnector(Start, End), CreateConnectorEx(Type, Start, End), CreateRightAngleConnector or CreateFreeConnector.",
+   "key_members": [
+    {
+     "name": "StartPoint",
+     "use": "get / set the snap point the line starts at"
+    },
+    {
+     "name": "EndPoint",
+     "use": "get / set the snap point the line ends at"
+    },
+    {
+     "name": "Type",
+     "use": "read-only connector type (cdrConnectorType)"
+    }
+   ],
+   "gotchas": [
+    "A connector attached to object snap points follows them; one made with free points (CreateFreeConnector) does not.",
+    "Type is read-only: create a new connector with CreateConnectorEx to change it.",
+    "Styling (arrowheads, width, colour) is on the shape's Outline, not here."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\na = app.ActiveSelectionRange.Item(1)\nb = app.ActiveSelectionRange.Item(2)\nline = app.ActiveLayer.CreateConnector(a.SnapPoints.Item(1), b.SnapPoints.Item(1))\ncon = line.Connector\nprint(con.Type)\nline.Outline.EndArrow = app.ArrowHeads.Item(2)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Control",
+   "id": "class:Control",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Control",
+   "status": "current",
+   "summary": "One button or control on a command bar: caption, tooltip, description, icon, size, visibility, its command ID and two spare fields (Tag, Parameter) for macro data.",
+   "use_for": [
+    "label and icon a custom macro button on a studio toolbar",
+    "hide built-in buttons for a simplified training workspace"
+   ],
+   "avoid": [
+    "running the command behind a button: use FrameWork.Automation.InvokeItem with its ID"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUIControl. Reached as commandBar.Controls.Item(index) or returned by Controls.Add / AddCustomButton / AddCustomControl / AddToggleButton.",
+   "key_members": [
+    {
+     "name": "Caption",
+     "use": "button text"
+    },
+    {
+     "name": "ToolTipText",
+     "use": "tooltip"
+    },
+    {
+     "name": "DescriptionText",
+     "use": "longer description"
+    },
+    {
+     "name": "ID",
+     "use": "read-only command ID (GUID)"
+    },
+    {
+     "name": "Visible",
+     "use": "show / hide"
+    },
+    {
+     "name": "Width",
+     "use": "width"
+    },
+    {
+     "name": "Height",
+     "use": "height"
+    },
+    {
+     "name": "Tag",
+     "use": "free string for your own data"
+    },
+    {
+     "name": "Parameter",
+     "use": "free variant for your own data"
+    },
+    {
+     "name": "SetIcon2",
+     "use": "set the icon from an icon string"
+    },
+    {
+     "name": "SetCustomIcon",
+     "use": "set the icon from an image file"
+    },
+    {
+     "name": "SetIcon",
+     "use": "set the icon by row / column in the icon strip"
+    }
+   ],
+   "gotchas": [
+    "Changes persist in the user's workspace unless the control was added with Temporary = True.",
+    "ID is read-only; to run the command, pass the ID to FrameWork.Automation.InvokeItem.",
+    "The icon string format for SetIcon2 is not in the harvest (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nctl = app.CommandBars.Item(1).Controls.Item(1)\nprint(ctl.ID, ctl.Caption, ctl.Visible)\nctl.ToolTipText = \"Run the studio export\"",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Controls",
+   "id": "class:Controls",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Controls",
+   "status": "current",
+   "summary": "The controls on a command bar or command-bar mode: count, index access, and methods to add a built-in control by ID, a macro button, a custom .NET control or a toggle button, or remove one.",
+   "use_for": [
+    "build a custom toolbar of macro buttons for a studio workflow",
+    "add a built-in command to a bar by its GUID",
+    "strip unused buttons from a training workspace"
+   ],
+   "avoid": [
+    "menus users must keep: changes persist in the workspace unless Temporary = True"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICUIControls. Reached as commandBar.Controls or commandBarMode.Controls.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of controls"
+    },
+    {
+     "name": "Item",
+     "use": "control by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    },
+    {
+     "name": "Add",
+     "use": "add a built-in control by ControlID (GUID)"
+    },
+    {
+     "name": "AddCustomButton",
+     "use": "add a button that runs a macro command"
+    },
+    {
+     "name": "AddCustomControl",
+     "use": "add a custom control class from a .NET assembly"
+    },
+    {
+     "name": "AddToggleButton",
+     "use": "add a button that shows / hides a UI element by GUID"
+    },
+    {
+     "name": "Remove",
+     "use": "remove a control by index"
+    }
+   ],
+   "gotchas": [
+    "Every Add* method takes Temporary; without it the change is saved into the user's workspace.",
+    "AddCustomButton needs a category ID and a macro command string whose formats are not in the harvest (unverified); copy them from an existing button.",
+    "Indexes shift after Remove."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nbar = app.CommandBars.Add(\"PGD Tools\", 4, True)   # 4 = harvested default Position; temporary bar\nctls = bar.Controls\nctl = ctls.Add(app.CommandBars.Item(1).Controls.Item(1).ID, 0, True)\nbar.Visible = True\nprint(ctls.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CorelScriptTools",
+   "id": "class:CorelScriptTools",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CorelScriptTools",
+   "status": "current",
+   "summary": "Legacy Corel SCRIPT helper library kept for old macros: length and angle unit conversion, a few maths functions, file and folder helpers, file / folder / colour / font picker dialogs, wait cursor and date / time helpers.",
+   "use_for": [
+    "porting old Corel SCRIPT macros that call these helpers",
+    "a quick folder or file picker inside a VBA macro run by a designer"
+   ],
+   "avoid": [
+    "new scripts: use Application.ConvertUnits and the scripting language's own file and date functions",
+    "unattended runs: GetFileBox, GetFolder, GetColor and GetFont open modal dialogs"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass whose members are on ICorelScriptTools. Reached by calling app.CorelScriptTools() (it is a method on Application, not a property).",
+   "key_members": [
+    {
+     "name": "ToInches",
+     "use": "convert a Corel SCRIPT length to inches"
+    },
+    {
+     "name": "FromInches",
+     "use": "convert inches to a Corel SCRIPT length"
+    },
+    {
+     "name": "ToPoints",
+     "use": "convert to points"
+    },
+    {
+     "name": "FromPoints",
+     "use": "convert from points"
+    },
+    {
+     "name": "ToCentimeters",
+     "use": "convert to centimetres"
+    },
+    {
+     "name": "FromCentimeters",
+     "use": "convert from centimetres"
+    },
+    {
+     "name": "LengthConvert",
+     "use": "convert a length between unit codes"
+    },
+    {
+     "name": "AngleConvert",
+     "use": "convert an angle between unit codes"
+    },
+    {
+     "name": "GetFileBox",
+     "use": "file open / save dialog"
+    },
+    {
+     "name": "GetFolder",
+     "use": "folder picker dialog"
+    },
+    {
+     "name": "GetColor",
+     "use": "colour picker dialog"
+    },
+    {
+     "name": "GetFont",
+     "use": "font picker dialog"
+    },
+    {
+     "name": "MkFolder",
+     "use": "create a folder"
+    },
+    {
+     "name": "GetTempFolder",
+     "use": "temp folder path"
+    },
+    {
+     "name": "BeginWaitCursor",
+     "use": "show the wait cursor"
+    },
+    {
+     "name": "EndWaitCursor",
+     "use": "restore the cursor"
+    },
+    {
+     "name": "FormatTime",
+     "use": "format a date / time"
+    }
+   ],
+   "gotchas": [
+    "The To* / From* functions convert to and from Corel SCRIPT's internal length unit, not CorelDRAW document units; its size is not in the harvest, so always convert with the To* / From* pairs (e.g. ToInches(FromCentimeters(2.54)) should give 1).",
+    "The dialog functions are modal and stall an unattended COM batch.",
+    "GetColor and GetFont return values through ByRef arguments; awkward from Python (unverified).",
+    "Legacy surface: kept for compatibility, so prefer Application.ConvertUnits for unit maths."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ntools = app.CorelScriptTools()\ntools.BeginWaitCursor()\nprint(tools.GetTempFolder(), tools.ToInches(tools.FromCentimeters(2.54)))\ntools.EndWaitCursor()",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Removed the invented 'tenths of a micron' unit size (not in the harvest)."
+   }
+  },
+  {
+   "name": "CrossPoint",
+   "id": "class:CrossPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CrossPoint",
+   "status": "current",
+   "summary": "One intersection between two path segments or subpaths: where it is (x, y) and how far along each of the two paths it lies.",
+   "use_for": [
+    "place markers or labels where lines cross (maps, diagrams)",
+    "find split points to cut paths for vinyl / laser jobs",
+    "check whether a generated path overlaps a keep-out line"
+   ],
+   "avoid": [
+    "Boolean shape operations (trim, intersect, weld): use the Shape methods instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGCrossPoint. Returned inside a CrossPoints collection by Segment.GetIntersections(Target, OffsetType) or SubPath.GetIntersections(Target, OffsetType).",
+   "key_members": [
+    {
+     "name": "PositionX",
+     "use": "read-only x of the intersection"
+    },
+    {
+     "name": "PositionY",
+     "use": "read-only y of the intersection"
+    },
+    {
+     "name": "Offset",
+     "use": "read-only position along the first path"
+    },
+    {
+     "name": "Offset2",
+     "use": "read-only position along the second path"
+    }
+   ],
+   "gotchas": [
+    "Offset values are expressed in the OffsetType chosen in GetIntersections (cdrSegmentOffsetType), not always in document units.",
+    "Positions are in document units at the document's current Unit."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\na = app.ActiveSelectionRange.Item(1).Curve.SubPaths.Item(1)\nb = app.ActiveSelectionRange.Item(2).Curve.SubPaths.Item(1)\nhits = a.GetIntersections(b, c.cdrAbsoluteSegmentOffset)\nfor i in range(1, hits.Count + 1):\n    p = hits.Item(i)\n    print(p.PositionX, p.PositionY, p.Offset, p.Offset2)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CrossPoints",
+   "id": "class:CrossPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CrossPoints",
+   "status": "current",
+   "summary": "The list of intersection points found between two segments or subpaths, with a count and 1-based access.",
+   "use_for": [
+    "count how many times two paths cross",
+    "loop over crossings to place markers or split paths"
+   ],
+   "avoid": [
+    "Boolean shape operations: use Shape trim / intersect / weld"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGCrossPoints. Returned by Segment.GetIntersections and SubPath.GetIntersections.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of intersections (0 when the paths do not cross)"
+    },
+    {
+     "name": "Item",
+     "use": "intersection by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1.",
+    "An empty collection (Count 0) means no crossing; it is not an error."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ns1 = app.ActiveSelectionRange.Item(1).Curve.SubPaths.Item(1)\ns2 = app.ActiveSelectionRange.Item(2).Curve.SubPaths.Item(1)\nhits = s1.GetIntersections(s2, 0)   # 0 = cdrAbsoluteSegmentOffset\nprint(\"crossings:\", hits.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Curve",
+   "id": "class:Curve",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Curve",
+   "status": "current",
+   "summary": "The path geometry of a curve object, or a free path not yet on the page: subpaths, nodes and segments, open / closed state, length and area, plus geometry tools (add rectangles, circles, ellipses and arcs, build from node arrays, contour offset, weld, hit tests, node reduction, transforms).",
+   "use_for": [
+    "generate logos, badges and patterns from exact geometry",
+    "measure cut length or area for vinyl, laser or print quotes",
+    "make offset outlines (cut lines, bleeds) with Contour",
+    "clean up traced artwork by reducing nodes"
+   ],
+   "avoid": [
+    "simple rectangles / ellipses that should stay editable: use Layer.CreateRectangle / CreateEllipse",
+    "Boolean operations between shapes in the document: Shape.Weld / Trim / Intersect are simpler"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:PathItem",
+    "AI": "class:PathItem"
+   },
+   "how": "Coclass whose members are on IVGCurve. Reached as shape.Curve on curve shapes (convert others with Shape.ConvertToCurves first), or created free with app.CreateCurve(doc), doc.CreateCurve() or doc.CreateCurveFromArray(...), then placed with Layer.CreateCurve(curve).",
+   "key_members": [
+    {
+     "name": "SubPaths",
+     "use": "the subpaths (separate outlines) in the curve"
+    },
+    {
+     "name": "Nodes",
+     "use": "all nodes"
+    },
+    {
+     "name": "Segments",
+     "use": "all segments"
+    },
+    {
+     "name": "Closed",
+     "use": "get / set closed"
+    },
+    {
+     "name": "Length",
+     "use": "read-only total length"
+    },
+    {
+     "name": "Area",
+     "use": "read-only area of a closed curve"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "read-only bounding rectangle"
+    },
+    {
+     "name": "CreateSubPath",
+     "use": "start a new subpath at x, y"
+    },
+    {
+     "name": "AppendSubpathRectangle",
+     "use": "add a rectangle subpath"
+    },
+    {
+     "name": "AppendSubpathCircle",
+     "use": "add a circle subpath"
+    },
+    {
+     "name": "AppendSubpathEllipse",
+     "use": "add an ellipse subpath"
+    },
+    {
+     "name": "AppendSubpathThreePointArc",
+     "use": "add a three-point arc"
+    },
+    {
+     "name": "AppendSubpathFitToPoints",
+     "use": "add a smooth subpath fitted to points"
+    },
+    {
+     "name": "GetCurveInfo",
+     "use": "read all nodes as a CurveElement array"
+    },
+    {
+     "name": "PutCurveInfo",
+     "use": "replace the geometry from a CurveElement array"
+    },
+    {
+     "name": "Contour",
+     "use": "offset copy of the curve (inside / outside)"
+    },
+    {
+     "name": "WeldWith",
+     "use": "weld with another curve"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "point-in-shape test"
+    },
+    {
+     "name": "IntersectsWith",
+     "use": "True if two curves intersect"
+    },
+    {
+     "name": "AutoReduceNodes",
+     "use": "remove redundant nodes"
+    },
+    {
+     "name": "ReverseDirection",
+     "use": "reverse node order"
+    },
+    {
+     "name": "ApplyTransformMatrix",
+     "use": "transform the geometry"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent free copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "replace this geometry with another curve's"
+    }
+   ],
+   "gotchas": [
+    "shape.Curve is None for rectangles, ellipses, polygons and text until the shape is converted to curves.",
+    "shape.Curve is live: each edit redraws the shape; for many edits change a GetCopy() and CopyAssign it back.",
+    "A free curve made without a document has no document units until BindToDocument.",
+    "GetCurveInfo / PutCurveInfo pass arrays of the CurveElement record, which do not marshal well through Python win32com (unverified); in Python build geometry with the AppendSubpath* methods.",
+    "Area is only meaningful for closed curves; Length counts every subpath."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\ncrv = app.ActiveDocument.CreateCurve()\ncrv.AppendSubpathRectangle(1, 3, 4, 1)\ncrv.AppendSubpathCircle(2.5, 2, 0.5)\nshape = app.ActiveLayer.CreateCurve(crv)\nprint(crv.Length, crv.Area, crv.SubPaths.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CurveElement",
+   "id": "class:CurveElement",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CurveElement",
+   "status": "current",
+   "summary": "One record of the low-level node array that describes a curve: a point position, what the point is (subpath start, end of a line, end of a curve, or a Bezier control point), its node type and flag bits. Used to read or write whole paths in one call.",
+   "use_for": [
+    "export exact path geometry (cut files, plotter output, custom formats)",
+    "rebuild or batch-modify paths fast in VBA (one PutCurveInfo instead of many node edits)",
+    "copy geometry between documents without the clipboard"
+   ],
+   "avoid": [
+    "Python win32com scripts: record arrays marshal poorly; use Curve.AppendSubpath* or node objects",
+    "single node edits: use Node objects"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:PathPointInfo",
+    "AI": "class:PathPoint"
+   },
+   "how": "A record (struct) type, not an object: it is never created on its own. Curve.GetCurveInfo and SubPath.GetCurveInfo return an array of it; Curve.PutCurveInfo, Curve.CreateSubPathFromArray and Document.CreateCurveFromArray take one. ElementType uses cdrCurveElementType (cdrElementStart, cdrElementLine, cdrElementCurve, cdrElementControl), NodeType uses cdrNodeType (cdrCuspNode, cdrSmoothNode, cdrSymmetricalNode) and Flags holds cdrCurveElementFlags bits (cdrFlagSelected, cdrFlagUser, cdrFlagClosed, cdrFlagValid).",
+   "key_members": [
+    {
+     "name": "PositionX",
+     "use": "x of the point, in document units"
+    },
+    {
+     "name": "PositionY",
+     "use": "y of the point"
+    },
+    {
+     "name": "ElementType",
+     "use": "what the point is (cdrCurveElementType): start, line end, curve end or control point"
+    },
+    {
+     "name": "NodeType",
+     "use": "cusp, smooth or symmetrical (cdrNodeType)"
+    },
+    {
+     "name": "Flags",
+     "use": "byte of cdrCurveElementFlags bits (selected, user, closed, valid)"
+    }
+   ],
+   "gotchas": [
+    "A Bezier segment is stored as two cdrElementControl records followed by the cdrElementCurve end point; a straight segment is one cdrElementLine record (order unverified).",
+    "Each subpath starts with a cdrElementStart record; the closed state is carried in Flags (cdrFlagClosed) (unverified).",
+    "Arrays of this record (SAFEARRAY of a user-defined type) do not marshal reliably through Python win32com late binding (unverified); use VBA or the Curve AppendSubpath* methods.",
+    "Positions use the document's current Unit when the curve is bound to a document."
+   ],
+   "example": "' VBA\nDim info() As CurveElement, i As Long\ninfo = ActiveShape.Curve.GetCurveInfo\nFor i = LBound(info) To UBound(info)\n    Debug.Print info(i).ElementType, info(i).PositionX, info(i).PositionY\nNext i\nActiveShape.Curve.PutCurveInfo info",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CustomEffect",
+   "id": "class:CustomEffect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CustomEffect",
+   "status": "current",
+   "summary": "The settings view of an effect that is implemented as a custom (plugin-style) effect, when Effect.Type is cdrCustomEffect: the effect's ID string and the group of shapes the effect generated. Which CorelDRAW features are built this way is not in the harvest.",
+   "use_for": [
+    "identify plugin-style effects on objects during a file audit",
+    "reach the generated shapes of a custom effect (EffectGroup) to recolour or export them"
+   ],
+   "avoid": [
+    "built-in interactive effects (blend, contour, extrude, drop shadow ...): use their own Effect properties"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGCustomEffect. Reached as effect.Custom for an Effect from shape.Effects whose Type is cdrCustomEffect; new ones are created with Shape.CreateCustomEffect(EffectID, Parameters).",
+   "key_members": [
+    {
+     "name": "EffectID",
+     "use": "read-only identifier string of the custom effect"
+    },
+    {
+     "name": "EffectGroup",
+     "use": "read-only group shape holding the generated objects"
+    }
+   ],
+   "gotchas": [
+    "Effect ID strings and their Parameters arrays are not in the harvest; read EffectID from an existing effect before trying Shape.CreateCustomEffect (unverified).",
+    "Both members are read-only; changing the effect's settings is not possible through this object."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\neffs = app.ActiveShape.Effects\nfor i in range(1, effs.Count + 1):\n    e = effs.Item(i)\n    if e.Type == c.cdrCustomEffect:\n        print(e.Custom.EffectID, e.Custom.EffectGroup.Shapes.Count)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CustomShape",
+   "id": "class:CustomShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/CustomShape",
+   "status": "current",
+   "summary": "The base view of a custom shape, an object type supplied by an add-on component instead of the core shape types (Shape.Type is cdrCustomShape): only its TypeID string, which tells which kind of custom object it is.",
+   "use_for": [
+    "detect add-on object types during a file audit before converting or exporting",
+    "branch a script by custom object kind"
+   ],
+   "avoid": [
+    "ordinary shapes: use Shape and its type-specific properties"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Coclass whose members are on IVGCustomShape. Reached as shape.Custom when shape.Type is cdrCustomShape; created with Layer.CreateCustomShape(TypeID, Parameters).",
+   "key_members": [
+    {
+     "name": "TypeID",
+     "use": "read-only identifier string of the custom shape type"
+    }
+   ],
+   "gotchas": [
+    "TypeID values and the Parameters arrays for CreateCustomShape are not in the harvest; read TypeID from an existing object first (unverified).",
+    "Which built-in objects (for example tables) are custom shapes is not confirmed by the harvest (unverified)."
+   ],
+   "example": "# app = win32com.client.Dispatch(\"CorelDRAW.Application.25\")\nfrom win32com.client import constants as c   # after gencache.EnsureDispatch\ns = app.ActiveShape\nif s.Type == c.cdrCustomShape:\n    print(s.Custom.TypeID)",
+   "source": "cdr_api_05 agent: harvest + typelib members of the default interface; behaviour from app knowledge",
+   "review": {
+    "by": "adversarial",
+    "changes": "Example tested 's.Custom is not None' (may raise on ordinary shapes); now checks Shape.Type == cdrCustomShape as the how text says."
+   }
+  }
+ ]
+}

@@ -1,0 +1,451 @@
+{
+ "cards": [
+  {
+   "name": "Script Events Manager",
+   "id": "File/Scripts/Script Events Manager",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Scripts/Script Events Manager",
+   "status": "current",
+   "summary": "Runs Adobe's installed Script Events Manager.jsx, which opens a dialog for attaching a script or an action to a Photoshop event (Start Application, New Document, Open Document, Save Document, Close Document, Print Document, Export Document, Everything, or a custom event), so it runs automatically every time that event fires. Works with or without a document open.",
+   "how": "Tick Enable Events to Run Scripts/Actions first (nothing fires without it). Pick the Photoshop Event, then either Script (one of the bundled event scripts such as Save Extra JPEG, Resize, Update File Info, Warn if RGB, Clean Listener, or Browse... for your own .jsx) or Action (action set and action name). Add puts the pairing in the list; Remove / Remove All clear pairings. Pairings persist across sessions until removed.",
+   "use_for": [
+    "automatically saving a flattened JPEG proof next to every PSD when it is saved",
+    "warning when an RGB file is opened in a CMYK print workflow",
+    "running a house-style action (guides, colour settings) on every new document"
+   ],
+   "avoid": [
+    "one-off batch work on a folder of files: use File > Automate > Batch or Image Processor instead of a permanent event hook",
+    "leaving a heavy action on Everything or Open Document: it slows every open and is easy to forget; remove pairings when the job ends"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(new File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Script Events Manager.jsx\")) runs the installed script (invoke.file), which opens its dialog (not run in the harvest). Without the dialog (unverified): app.notifiersEnabled = true; app.notifiers.add(\"save\", new File(\"<event script>.jsx\")).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Statistics",
+   "id": "File/Scripts/Statistics",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Scripts/Statistics",
+   "status": "current",
+   "summary": "Runs Adobe's installed Statistics.jsx, which opens the Image Statistics dialog: it loads a set of images into one new document as a single smart object and applies a stack mode (Mean, Median, Maximum, Minimum, Range, Variance, Standard Deviation, Summation, Entropy, Kurtosis, Skewness) that combines them pixel by pixel. Median of several shots of the same scene removes moving people; Mean averages away noise.",
+   "how": "Choose Stack Mode, then pick sources with Use (Files, Folder or Open Files) and Browse / Add Open Files. Tick Attempt to Automatically Align Source Images for hand-held shots. The result is a smart object whose stack mode can be changed later in Layer > Smart Objects > Stack Mode.",
+   "use_for": [
+    "removing tourists and cars from a landmark shot taken as a burst on a tripod (Median)",
+    "cleaning noise from a low-light product shot by averaging several identical frames (Mean)",
+    "building light-trail or star-trail composites from a sequence (Maximum)"
+   ],
+   "avoid": [
+    "images that are not the same framing and exposure: the stack smears; align first or shoot on a tripod",
+    "plain layering of different images for a collage: use File > Scripts > Load Files into Stack, which keeps separate layers"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(new File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Statistics.jsx\")) runs the installed script (invoke.file), which opens the Image Statistics dialog (not run in the harvest). Without the dialog (unverified as a chain): stack the images as layers (File/Scripts/Load Files into Stack), convert them to one smart object with app.runMenuItem(stringIDToTypeID(\"newPlacedLayer\")), then apply the Layer/Smart Objects/Stack Mode/<mode> event: executeAction(stringIDToTypeID(\"applyImageStackPluginRenderer\"), desc, DialogModes.NO) with desc imageStackPlugin (class) = the mode, e.g. charIDToTypeID(\"medn\"), and name (string) = \"Median\" (the route the Stack Mode cards verified live).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the no-dialog route used executeAction(newPlacedLayer) and a bare menu path; replaced with the harvest-verified runMenuItem(newPlacedLayer) and applyImageStackPluginRenderer calls from the Convert to Smart Object and Stack Mode items"
+   }
+  },
+  {
+   "name": "Search Adobe Express Templates",
+   "id": "15202",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Search Adobe Express Templates",
+   "status": "current",
+   "summary": "Opens Adobe's search for Adobe Express templates (ready-made social posts, flyers, banners) so one can be picked as a starting point. The harvest classed it as opening web content and did not run it, so whether the chosen template opens as a layered Photoshop document or in Adobe Express was not observed. Works with no document open.",
+   "use_for": [
+    "finding a quick starting layout for a social post or flyer when there is no brand template",
+    "browsing current template trends for a reference board"
+   ],
+   "avoid": [
+    "brand-locked work: a stock template rarely matches brand fonts and grids; build from the brand's own PSD/PSDT templates",
+    "unattended pipelines: it needs a signed-in user and web content, with no script route"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens web content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15202}); ExtendScript app.runMenuItem(15202) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'command id 15202 is not runnable through app.runMenuItem' overstated the audit (it tried 1017/1192/1135 only); added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Search Adobe Stock",
+   "id": "15201",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Search Adobe Stock",
+   "status": "current",
+   "summary": "Opens an Adobe Stock search (stock.adobe.com web content) for photos, illustrations, vectors and templates. Watermarked previews or licensed assets saved to a Creative Cloud Library can then be placed into the document from the Libraries panel. Works with no document open.",
+   "use_for": [
+    "finding a background photo or texture for a poster and placing the watermarked comp before licensing",
+    "sourcing a licensed hero image for a campaign key visual"
+   ],
+   "avoid": [
+    "unattended pipelines: it needs a signed-in browser session and no script route exists; download assets separately and use File > Place Embedded",
+    "assuming a placed preview is cleared for use: comps are watermarked until licensed"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Search Adobe Stock..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens web content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15201}); ExtendScript app.runMenuItem(15201) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'command id 15201 is not runnable through app.runMenuItem' overstated the audit (it tried 1017/1192/1135 only); added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Share for Review",
+   "id": "5966",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Share for Review",
+   "status": "current",
+   "summary": "Creates a web review link for the open document: Photoshop uploads a review copy to Adobe's cloud, and anyone with the link can view it in a browser and leave pinned comments, which come back into Photoshop's Comments panel. Needs an open document (disabled with none open).",
+   "how": "Set the link name and who can access it, create the link, then copy and send it. After edits, update the shared version from the same dialog so reviewers see the latest; read and resolve feedback in the Comments panel.",
+   "use_for": [
+    "getting client sign-off on a poster or banner comp without emailing exports",
+    "collecting art-director comments pinned to exact spots of a layout"
+   ],
+   "avoid": [
+    "files under NDA or client contracts that forbid cloud uploads: export a proof and share it through the approved channel",
+    "final print hand-off: reviewers see a web preview, not a press-ready PDF; use File > Save a Copy as Photoshop PDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Share for Review..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: share). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5966}); ExtendScript app.runMenuItem(5966) is not expected to work: the harvest audit found runMenuItem refuses menuBarInfo command ids (it tried 1017, 1192, 1135, not this one).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'command id 5966 is not runnable through app.runMenuItem' overstated the audit (it tried 1017/1192/1135 only); added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Version History",
+   "id": "20006",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Version History",
+   "status": "current",
+   "summary": "Opens the Version History panel, which lists the saved versions of the current cloud document with their times; a version can be previewed, bookmarked (kept permanently) or reverted to / opened as a copy. Enabled even with no document open, in which case the panel has nothing to list; whether local PSD files get versions in this release was not checked by the harvest.",
+   "use_for": [
+    "going back to the layout the client approved two rounds ago",
+    "bookmarking the approved version of a campaign file before more edits"
+   ],
+   "avoid": [
+    "undoing recent steps within a session: use the History panel or Undo",
+    "local PSD files as a backup strategy: keep dated copies or version control; unbookmarked cloud versions are only kept for a limited time"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Version History"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches this command and no DOM/AM equivalent is known). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 20006}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "About Photoshop",
+   "id": "1",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/About Photoshop",
+   "status": "current",
+   "summary": "Shows the About Photoshop screen: the release splash artwork with the exact version and build number, credits and legal notices. Click it to close. Changes nothing in the document.",
+   "use_for": [
+    "checking the exact Photoshop version and build before reporting a bug or matching a client's setup",
+    "confirming which release a scripted pipeline is running against"
+   ],
+   "avoid": [
+    "reading the version from a script: use app.version instead of opening the screen",
+    "full hardware and plug-in details: use Help > System Info"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "about"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID(\"aboutApp\")) is the hand-mapped candidate (not confirmed: not run in the harvest). Without the screen (unverified): app.version (ExtendScript) or require(\"photoshop\").app.version (UXP). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 1}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Adobe generative AI user guidelines",
+   "id": "15020",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Adobe generative AI user guidelines",
+   "status": "current",
+   "summary": "Opens Adobe's Generative AI User Guidelines web page: the usage rules for Firefly-powered features such as Generative Fill, Generative Expand and Generate Image (what prompts and content are not allowed, and how outputs may be used). Changes nothing in the document.",
+   "use_for": [
+    "checking whether a planned generative edit (a real person, a brand, a political subject) is allowed before building a campaign on it",
+    "pointing a client or teammate to Adobe's own rules on generative content"
+   ],
+   "avoid": [
+    "questions about credit cost: use Help > Learn more about generative credits",
+    "treating it as legal clearance for commercial use: check the licence terms and the client's own policy"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Help/Generative AI User Guidelines"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15020}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "GPU Compatibility",
+   "id": "15009",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/GPU Compatibility",
+   "status": "current",
+   "summary": "Opens Photoshop's GPU compatibility report: whether the detected graphics card and driver passed Photoshop's GPU check, and which GPU-accelerated features are available on this machine. Read-only; it changes no preferences.",
+   "use_for": [
+    "finding out why GPU features (Smart Sharpen preview, Blur Gallery, Neural Filters, smooth zoom) are greyed out or slow on a workstation",
+    "checking a new render or design machine before relying on GPU-heavy Photoshop work"
+   ],
+   "avoid": [
+    "turning GPU use on or off: that is in Preferences > Performance (Use Graphics Processor)",
+    "a full machine report for support: use Help > System Info"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/System Compatibility Report..."
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15009}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Hands-on Tutorials",
+   "id": "15203",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Hands-on Tutorials",
+   "status": "current",
+   "summary": "Opens Photoshop's in-app hands-on tutorials (the learning section of the Discover panel), which open sample files and walk through a technique step by step inside Photoshop. Changes nothing in the current document.",
+   "use_for": [
+    "teaching a junior designer a basic technique (selections, masks, adjustment layers) on Adobe's sample files",
+    "a quick refresher on a feature before using it on client work"
+   ],
+   "avoid": [
+    "looking up a specific command or setting: use Help > Photoshop Help",
+    "automated pipelines: tutorials are interactive and open their own sample files"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/Tutorials...",
+    "CDR": "Window/Dockers/Learn"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15203}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Home",
+   "id": "1990",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Home",
+   "status": "hidden",
+   "summary": "Would show Photoshop's Home screen (recent files, create new, learning content). In the harvested Photoshop 2026 this Help menu entry is hidden and was disabled in every state tried, with and without documents, so its behaviour was not observed; the Home screen is normally reached with the Home button in the options bar.",
+   "use_for": [
+    "getting back to recent files and the new-document start screen while documents are open"
+   ],
+   "avoid": [
+    "relying on this menu entry: it is hidden and disabled here; use the Home button or File > Open Recent"
+   ],
+   "confidence": "low",
+   "equivalents": {
+    "CDR": "Help/Welcome Screen"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "app.runMenuItem(stringIDToTypeID(\"home\")) is the label-matched candidate from the terminology (not run, and the command was disabled in every harvested state).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Learn more about generative credits",
+   "id": "15019",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Learn more about generative credits",
+   "status": "current",
+   "summary": "Opens Adobe's web page about generative credits: how many credits each plan includes, which Firefly-powered features (Generative Fill, Generative Expand, Generate Image and others) consume them, and what happens when they run out. It does not show the account's live balance in Photoshop.",
+   "use_for": [
+    "estimating the credit cost of a batch of generative edits before starting a campaign",
+    "explaining credit limits to a client or team on a shared plan"
+   ],
+   "avoid": [
+    "checking the remaining balance: look in the Adobe account page or the Creative Cloud app",
+    "usage rules on content: use Help > Adobe generative AI user guidelines"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Help/About Generative Credits"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15019}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Photoshop Help",
+   "id": "5956",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Photoshop Help",
+   "status": "current",
+   "summary": "Opens the Photoshop User Guide (Adobe's help content) to look up how a tool, command or panel works. Changes nothing in the document.",
+   "use_for": [
+    "checking what a dialog option does before using it on a client file",
+    "looking up file-format or colour-management details for print hand-off"
+   ],
+   "avoid": [
+    "step-by-step learning on sample files: use Help > Hands-on Tutorials",
+    "offline or unattended machines: the content is online"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "helpcontent",
+    "CDR": "Help/Product Help"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 5956}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "System Info",
+   "id": "15004",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/System Info",
+   "status": "current",
+   "summary": "Opens a read-only text report of the Photoshop version and build, operating system, CPU, RAM, GPU and driver, scratch disks, memory settings and installed plug-ins and extensions, with a Copy button for pasting into a support ticket.",
+   "use_for": [
+    "attaching exact version, GPU and plug-in details to a bug report or support request",
+    "checking how much RAM Photoshop may use and which scratch disk is active before a huge print file"
+   ],
+   "avoid": [
+    "just the version number: Help > About Photoshop or app.version is quicker",
+    "GPU feature availability: Help > GPU Compatibility explains which features are on"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "systemInfo"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID(\"systemInfo\")) is the label-matched candidate from the terminology (not confirmed: not run in the harvest). Without the dialog (unverified): app.systemInformation returns the same report as a string. UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15004}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Updates",
+   "id": "4002",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/Updates",
+   "status": "unusable",
+   "summary": "Meant to check for Photoshop updates through the Creative Cloud desktop app. In the harvested install it was visible but disabled in every state tried, with and without documents, so it cannot be used here; why it is disabled was not established.",
+   "use_for": [
+    "checking whether a newer Photoshop release is available before a project"
+   ],
+   "avoid": [
+    "updating from this menu here: it is disabled; open the Creative Cloud desktop app > Apps > Updates instead",
+    "updating mid-project: a new release can change filter and font rendering; finish or freeze the job first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Updates...",
+    "CDR": "Help/Updates"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content); the command was disabled in every harvested state.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "What's New",
+   "id": "15204",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Help/What's New",
+   "status": "current",
+   "summary": "Opens the What's New content (in the Discover panel) that introduces the features added in the installed Photoshop release, with short descriptions and links to try them. Changes nothing in the document.",
+   "use_for": [
+    "catching up on new tools after an update before planning a project around them",
+    "checking whether a feature a client mentions exists in this release"
+   ],
+   "avoid": [
+    "learning a technique in depth: use Help > Hands-on Tutorials or Help > Photoshop Help"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/What's New...",
+    "CDR": "Help/What's New?"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (not run: opens a web page / help content). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 15204}).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  }
+ ]
+}

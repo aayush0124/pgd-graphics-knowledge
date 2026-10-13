@@ -1,0 +1,1506 @@
+{
+ "cards": [
+  {
+   "name": "IPrnVBAPrintPages",
+   "id": "class:IPrnVBAPrintPages",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintPages",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind the PrintPages collection: the pages queued in the application-wide multi-document print job (Application.PrintJob.Pages). It only reports how many pages are queued (Count) and returns one queued page by index (Item); pages are added through the print job, not here.",
+   "use_for": [
+    "checking how many pages a batch print job will output before sending it",
+    "walking the queued pages of a multi-document proof run"
+   ],
+   "avoid": [
+    "printing a single document: use Document.PrintSettings and PrintSettings.PrintOut; this collection belongs to the multi-document PrintJob",
+    "adding or removing pages here: no such members; use the print job's AddPage / AddDocument / Clear"
+   ],
+   "how": "Reached as Application.PrintJob.Pages (the Pages property of the print job); the visible VBA class name is PrintPages. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of pages currently queued in the print job"
+    },
+    {
+     "name": "Item",
+     "use": "one queued page (IPrnVBAPrintPage) by index; hidden but the default member (dispid 0), so Pages(i) and Pages.Item(i) are the same call"
+    }
+   ],
+   "gotchas": [
+    "no _NewEnum member is harvested, so For Each over the collection is not available; loop For i = 1 To Count",
+    "index base is 1 like the other CorelDRAW collections (unverified)",
+    "this is the application-wide PrintJob, not a document's PrintSettings; queued pages stay until the job's Clear is called (unverified)"
+   ],
+   "example": "Set job = Application.PrintJob\nDebug.Print job.Pages.Count & \" pages queued\"\nFor i = 1 To job.Pages.Count\n    Set pg = job.Pages.Item(i)\nNext i",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintPostScript",
+   "id": "class:IPrnVBAPrintPostScript",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintPostScript",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind PrintSettings.PostScript: the PostScript tab of CorelDRAW's Print dialog. It sets the PostScript level, DSC conformance, JPEG compression of bitmaps, font download (Type 1, TrueType to Type 1), OPI / DCS link handling, curve complexity (max nodes per curve, flatness), fountain-fill step tuning, screen frequency, and the PDF options used if the PostScript is distilled later.",
+   "use_for": [
+    "preparing a .prn / .ps file for an imagesetter or RIP",
+    "PostScript Level 3 output for a print shop that distills to PDF",
+    "getting past RIP limitcheck errors on very complex curves (MaxPointsPerCurve, AutoIncreaseFlatness)",
+    "smoother gradients in print (AutoIncreaseFountainSteps)",
+    "keeping OPI links for a prepress workflow that swaps in high-res images"
+   ],
+   "avoid": [
+    "making a PDF directly: use Document.PublishToPDF with Document.PDFSettings; the PDF* switches here only matter when the PostScript is distilled afterwards",
+    "JPEGCompression on high-end proofs or fine line art in bitmaps: lossy; leave it off",
+    "non-PostScript printers: these settings only apply to PostScript output"
+   ],
+   "how": "Document.PrintSettings.PostScript (or Application.PrintJob.Settings.PostScript): a read-only reference to the settings object whose properties you set. Visible VBA class name: PrintPostScript. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Level",
+     "use": "PrnPostScriptLevel: prnPSLevel1, prnPSLevel2 or prnPSLevel3"
+    },
+    {
+     "name": "ConformToDSC",
+     "use": "generate DSC-compliant PostScript only (needed by many imposition / RIP tools)"
+    },
+    {
+     "name": "JPEGCompression",
+     "use": "JPEG-compress bitmaps in the stream (smaller, lossy)"
+    },
+    {
+     "name": "JPEGQuality",
+     "use": "JPEG quality factor used when JPEGCompression is on"
+    },
+    {
+     "name": "DownloadType1",
+     "use": "download Type 1 fonts to the device"
+    },
+    {
+     "name": "TrueTypeToType1",
+     "use": "convert TrueType fonts to Type 1 before downloading"
+    },
+    {
+     "name": "MaintainOPILinks",
+     "use": "keep OPI links so the RIP / OPI server substitutes high-res images"
+    },
+    {
+     "name": "ResolveDCSLinks",
+     "use": "resolve DCS links into the output"
+    },
+    {
+     "name": "MaxPointsPerCurve",
+     "use": "maximum nodes per curve; complex curves are split above it"
+    },
+    {
+     "name": "Flatness",
+     "use": "curve flatness (higher = fewer segments, coarser curves)"
+    },
+    {
+     "name": "AutoIncreaseFlatness",
+     "use": "raise flatness automatically when a curve is too complex for the device"
+    },
+    {
+     "name": "AutoIncreaseFountainSteps",
+     "use": "add fountain steps for long colour transitions (less banding)"
+    },
+    {
+     "name": "OptimizeFountainFills",
+     "use": "drop fountain steps for short transitions (faster output)"
+    },
+    {
+     "name": "ScreenFrequency",
+     "use": "printer halftone screen frequency"
+    },
+    {
+     "name": "PDFStartup",
+     "use": "PrnPDFStartup: how a PDF distilled from this PostScript opens"
+    },
+    {
+     "name": "PDFHyperlinks",
+     "use": "include hyperlinks for a PDF distilled from this PostScript"
+    },
+    {
+     "name": "pdfBookmarks",
+     "use": "include bookmarks for a PDF distilled from this PostScript"
+    }
+   ],
+   "gotchas": [
+    "the typelib spells pdfBookmarks in lower camel case while its siblings are PascalCase; VBA ignores case, case-sensitive early-bound wrappers (Python makepy) do not (unverified)",
+    "JPEGQuality has no harvested range; check in the Print dialog which end means best quality before scripting it (unverified)",
+    "with a non-PostScript (GDI) printer selected and no PPD, these settings are ignored (unverified)",
+    "a high Flatness visibly facets large curves on big output (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings.PostScript\n    .Level = prnPSLevel3\n    .ConformToDSC = True\n    .JPEGCompression = False\n    .DownloadType1 = True\n    .AutoIncreaseFountainSteps = True\nEnd With",
+   "equivalents": {
+    "AI": "class:PrintPostScriptOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintPrepress",
+   "id": "class:IPrnVBAPrintPrepress",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintPrepress",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind PrintSettings.Prepress: the Prepress tab of the Print dialog. It controls film output (Invert for a negative, Mirror for emulsion side), printer's marks (crop / fold marks, exterior-only crop marks, registration marks and their style, colour calibration bar, densitometer scale and its density steps) and the slug line (file info, job name, page numbers, inside or outside the page), optionally placed around the objects instead of the page.",
+   "use_for": [
+    "print-ready proofs with crop and registration marks",
+    "film or plate output that needs a negative or mirrored (emulsion-down) image",
+    "press checks with a colour bar and a densitometer scale",
+    "a slug line with job name and page numbers on every sheet"
+   ],
+   "avoid": [
+    "marks on paper the same size as the page: they fall outside the printable area; print on larger paper",
+    "Invert / Mirror for an ordinary paper proof: you get a negative, mirrored print",
+    "adding bleed: not here; set PrintSettings.Layout.UseBleedLimit and BleedLimit"
+   ],
+   "how": "Document.PrintSettings.Prepress: a read-only reference to the settings object; set its properties. Visible VBA class name: PrintPrepress. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "CropMarks",
+     "use": "print crop / fold marks"
+    },
+    {
+     "name": "ExteriorCropMarks",
+     "use": "only the exterior crop marks"
+    },
+    {
+     "name": "RegistrationMarks",
+     "use": "print registration marks"
+    },
+    {
+     "name": "RegistrationStyle",
+     "use": "PrnRegistrationStyle: prnStandard, prnLong, prnSquare, prnHalfInverted, prnCorel"
+    },
+    {
+     "name": "ColorCalibrationBar",
+     "use": "print the colour calibration bar"
+    },
+    {
+     "name": "DensitometerScale",
+     "use": "print the densitometer scale"
+    },
+    {
+     "name": "Densities",
+     "use": "indexed: density value of each densitometer step"
+    },
+    {
+     "name": "FileInfo",
+     "use": "print file information (slug line)"
+    },
+    {
+     "name": "JobName",
+     "use": "job name / slug line text"
+    },
+    {
+     "name": "PageNumbers",
+     "use": "print page numbers"
+    },
+    {
+     "name": "InfoWithinPage",
+     "use": "put file info and page numbers inside the page area"
+    },
+    {
+     "name": "Invert",
+     "use": "output a negative image (film)"
+    },
+    {
+     "name": "Mirror",
+     "use": "flip the image horizontally (emulsion side)"
+    },
+    {
+     "name": "MarksToObjects",
+     "use": "place prepress marks around the objects instead of the page"
+    }
+   ],
+   "gotchas": [
+    "Densities is an indexed property (Densities(i)); the number of steps and the index base are not in the harvest (unverified)",
+    "JobName only appears on the sheet when FileInfo is on (unverified)",
+    "MarksToObjects moves crop marks to the objects' bounds, which is wrong for a page with intentional empty margins (unverified)",
+    "marks that do not fit the paper are clipped without an error (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings.Prepress\n    .CropMarks = True\n    .RegistrationMarks = True\n    .RegistrationStyle = prnStandard\n    .ColorCalibrationBar = True\n    .FileInfo = True\n    .JobName = \"Poster A2 v3\"\nEnd With",
+   "equivalents": {
+    "AI": "class:PrintPageMarksOptions",
+    "PS": "class:DocumentPrintSettings"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: bleed now points at the real members PrintSettings.Layout.UseBleedLimit / BleedLimit instead of vague \"layout settings\""
+   }
+  },
+  {
+   "name": "IPrnVBAPrintSeparations",
+   "id": "class:IPrnVBAPrintSeparations",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintSeparations",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind PrintSettings.Separations: the separation settings of the Print dialog. It turns colour separation on (one plate per ink), prints plates in colour, chooses hexachrome, converts spot colours to process, prints or skips empty plates, preserves document overprints and always overprints black, runs CorelDRAW's own auto-spread trapping (amount, fixed width, minimum text size), sets the advanced screening (imaging resolution, basic screen, halftone dot, screening technology) and returns the plate list.",
+   "use_for": [
+    "film or plate separations for offset or screen printing",
+    "converting spot colours to CMYK for a process-only job (SpotToCMYK)",
+    "black text overprinting to hide misregistration halos (AlwaysOverprintBlack)",
+    "checking or switching off individual ink plates through Plates"
+   ],
+   "avoid": [
+    "separations for a modern PDF workflow: send a composite PDF and let the RIP separate",
+    "Hexachrome on current presses: a legacy six-colour system; use CMYK",
+    "in-RIP trapping: that lives in PrintSettings.Trapping; AutoSpreading here is CorelDRAW's own trapping"
+   ],
+   "how": "Document.PrintSettings.Separations: a read-only reference to the settings object. Visible VBA class name: PrintSeparations. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Enabled",
+     "use": "turn colour separation on"
+    },
+    {
+     "name": "InColor",
+     "use": "print each plate in its ink colour instead of black"
+    },
+    {
+     "name": "SpotToCMYK",
+     "use": "convert spot colours to process plates"
+    },
+    {
+     "name": "EmptyPlates",
+     "use": "print plates that carry nothing"
+    },
+    {
+     "name": "PreserveOverprints",
+     "use": "keep the overprints set in the document"
+    },
+    {
+     "name": "AlwaysOverprintBlack",
+     "use": "overprint all black objects"
+    },
+    {
+     "name": "AutoSpreading",
+     "use": "CorelDRAW's automatic trapping (spread objects)"
+    },
+    {
+     "name": "AutoSpreadAmount",
+     "use": "spread amount for automatic trapping"
+    },
+    {
+     "name": "AutoSpreadFixed",
+     "use": "spread by a fixed amount"
+    },
+    {
+     "name": "AutoSpreadTextAbove",
+     "use": "smallest text point size that is still trapped"
+    },
+    {
+     "name": "AdvancedSettings",
+     "use": "use the advanced separation (screening) settings"
+    },
+    {
+     "name": "Resolution",
+     "use": "printer imaging resolution"
+    },
+    {
+     "name": "BasicScreen",
+     "use": "basic screen frequency (string)"
+    },
+    {
+     "name": "HalftoneType",
+     "use": "halftone dot name (string)"
+    },
+    {
+     "name": "ScreenTechnology",
+     "use": "screening technology name (string)"
+    },
+    {
+     "name": "Plates",
+     "use": "the SeparationPlates collection (one per ink)"
+    },
+    {
+     "name": "Hexachrome",
+     "use": "separate in hexachrome (legacy)"
+    }
+   ],
+   "gotchas": [
+    "BasicScreen, HalftoneType and ScreenTechnology are free strings: the value must match an entry the dialog offers for the selected printer / PPD (unverified)",
+    "Resolution and the screening strings are only used with AdvancedSettings = True (unverified)",
+    "the Plates list follows the inks used in the document and the SpotToCMYK / Hexachrome switches; re-read Plates after changing them (unverified)",
+    "AutoSpreading plus in-RIP trapping (PrintSettings.Trapping) can trap twice (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings.Separations\n    .Enabled = True\n    .SpotToCMYK = False\n    .EmptyPlates = False\n    .PreserveOverprints = True\n    .AlwaysOverprintBlack = True\nEnd With",
+   "equivalents": {
+    "AI": "class:PrintColorSeparationOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintSettings",
+   "id": "class:IPrnVBAPrintSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintSettings",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind a document's PrintSettings object: the whole Print dialog as an object. It picks the printer (or a PPD), print-to-file with file name and file mode (single file, one per page, one per plate), what to print (whole document, current page, selection, page range), copies and collation, paper size and orientation, and holds the Separations, Prepress, PostScript, Trapping, Options and Layout sub-settings; it loads and saves print styles, resets, shows the dialog, and prints without the dialog.",
+   "use_for": [
+    "unattended printing of proofs or production sheets from a script",
+    "writing PostScript / PRN files to disk for a RIP (PrintToFile)",
+    "applying one saved print style to many documents (Load)",
+    "one output file per plate for film (FileMode = prnSeparatePlates)"
+   ],
+   "avoid": [
+    "Document.PrintOut in unattended runs: the typelib says it opens the Print dialog; call PrintSettings.PrintOut",
+    "ShowDialog in a COM pipeline: modal, the call blocks until a person closes it",
+    "making PDFs: use Document.PublishToPDF, not a PDF printer driver"
+   ],
+   "how": "Document.PrintSettings (one per document; set properties on it), or Application.PrintJob.Settings for a multi-document job. Visible VBA class name: PrintSettings. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Reset",
+     "use": "back to default settings; do this first for repeatable jobs"
+    },
+    {
+     "name": "SelectPrinter",
+     "use": "choose the destination printer by its installed name"
+    },
+    {
+     "name": "Printer",
+     "use": "the destination printer object (putref; one of Application.Printers)"
+    },
+    {
+     "name": "UsePPD",
+     "use": "use a PPD file instead of the driver's description"
+    },
+    {
+     "name": "PPDFile",
+     "use": "the PPD file name"
+    },
+    {
+     "name": "PrintToFile",
+     "use": "write the job to a file instead of the device"
+    },
+    {
+     "name": "FileName",
+     "use": "destination file for PrintToFile"
+    },
+    {
+     "name": "FileMode",
+     "use": "PrnFileMode: prnSingleFile, prnSeparatePages, prnSeparatePlates"
+    },
+    {
+     "name": "PrintRange",
+     "use": "PrnPrintRange: prnWholeDocument, prnCurrentPage, prnSelection, prnPageRange"
+    },
+    {
+     "name": "PageRange",
+     "use": "page range string used with prnPageRange"
+    },
+    {
+     "name": "Copies",
+     "use": "number of copies"
+    },
+    {
+     "name": "SetPaperSize",
+     "use": "preset paper size plus orientation"
+    },
+    {
+     "name": "SetCustomPaperSize",
+     "use": "custom paper width, height and orientation"
+    },
+    {
+     "name": "Separations",
+     "use": "separation settings (PrintSeparations)"
+    },
+    {
+     "name": "Prepress",
+     "use": "printer's marks and film settings (PrintPrepress)"
+    },
+    {
+     "name": "PostScript",
+     "use": "PostScript settings (PrintPostScript)"
+    },
+    {
+     "name": "Trapping",
+     "use": "in-RIP trapping settings (PrintTrapping)"
+    },
+    {
+     "name": "Load",
+     "use": "load a saved print style; returns True on success"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the Print settings dialog (modal)"
+    },
+    {
+     "name": "PrintOut",
+     "use": "print with the current settings, no dialog"
+    }
+   ],
+   "gotchas": [
+    "PageRange is only used when PrintRange = prnPageRange (unverified)",
+    "Printer is a putref object property: in VBA write Set .Printer = ..., or just call SelectPrinter with the exact installed name",
+    "settings stay on the document between jobs; call Reset first so an earlier job's separations or marks do not leak in (unverified)",
+    "the PrintToFile format follows the selected driver: pick a PostScript printer or UsePPD for a real .prn / .ps file (unverified)",
+    "PaperWidth and PaperHeight are read-only; change the size with SetPaperSize or SetCustomPaperSize",
+    "Load and Save return a Boolean instead of raising; check the result (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings\n    .Reset\n    .SelectPrinter \"My PostScript Printer\"  ' exact installed name\n    .PrintToFile = True\n    .FileName = \"E:\\out\\poster.prn\"\n    .PrintRange = prnPageRange: .PageRange = \"1-2\"\n    .PrintOut\nEnd With",
+   "equivalents": {
+    "AI": "class:PrintOptions",
+    "PS": "class:DocumentPrintSettings"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintTrapping",
+   "id": "class:IPrnVBAPrintTrapping",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintTrapping",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind PrintSettings.Trapping: in-RIP trapping settings written into the PostScript for a PostScript device whose RIP does the trapping. It turns in-RIP trapping on, sets trap width and black trap width, trap colour scaling, step limit, black colour and density limits, sliding trap limit, how traps meet bitmaps (ImageTrap), object-to-image, internal image and mono bitmap trapping, and holds the per-ink trap layers.",
+   "use_for": [
+    "offset jobs where the print shop's RIP does in-RIP trapping and wants it requested in the file",
+    "hiding misregistration gaps between adjoining spot and process colours",
+    "per-ink neutral density and trap order through Layers"
+   ],
+   "avoid": [
+    "devices without in-RIP trapping: use Separations.AutoSpreading or let the print shop trap",
+    "when the print shop already traps in its own workflow: double trapping shows as dark outlines"
+   ],
+   "how": "Document.PrintSettings.Trapping: a read-only reference to the settings object. Visible VBA class name: PrintTrapping. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Enabled",
+     "use": "turn in-RIP trapping on"
+    },
+    {
+     "name": "Width",
+     "use": "how far one colour spreads into another"
+    },
+    {
+     "name": "BlackWidth",
+     "use": "how far black spreads into other colours"
+    },
+    {
+     "name": "ColorScaling",
+     "use": "trap colour reduction percentage"
+    },
+    {
+     "name": "StepLimit",
+     "use": "step limit threshold for creating a trap"
+    },
+    {
+     "name": "BlackColorLimit",
+     "use": "black ink density at which a colour counts as pure black for trapping"
+    },
+    {
+     "name": "BlackDensityLimit",
+     "use": "neutral density treated as black"
+    },
+    {
+     "name": "SlidingTrapLimit",
+     "use": "density difference at which the trap slides toward the centreline"
+    },
+    {
+     "name": "ImageTrap",
+     "use": "PrnImageTrap: prnTrapNormal, prnTrapSpread, prnTrapChoke, prnTrapCenter"
+    },
+    {
+     "name": "ObjectsToImage",
+     "use": "trap vector objects to bitmaps"
+    },
+    {
+     "name": "InternalImageTrapping",
+     "use": "trap inside bitmaps"
+    },
+    {
+     "name": "TrapMonoBitmaps",
+     "use": "trap black-and-white bitmaps"
+    },
+    {
+     "name": "Layers",
+     "use": "per-ink trap layers (TrapLayers)"
+    }
+   ],
+   "gotchas": [
+    "units of Width / BlackWidth are not in the harvest; read the dialog's units before scripting values (unverified)",
+    "Layers.Item has dispid 2, not the default dispid 0, so write Layers.Item(i) rather than Layers(i)",
+    "in-RIP trapping only exists in the PostScript stream; it has no effect on non-PostScript output (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings.Trapping\n    .Enabled = True\n    .ImageTrap = prnTrapSpread\n    .ObjectsToImage = True\n    .TrapMonoBitmaps = False\n    Debug.Print .Width, .BlackWidth, .Layers.Count\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unharvested \"PostScript 3\" claim; BlackColorLimit use says density (batch wording) instead of percentage"
+   }
+  },
+  {
+   "name": "IPrnVBASeparationPlate",
+   "id": "class:IPrnVBASeparationPlate",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBASeparationPlate",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind one SeparationPlate of PrintSettings.Separations.Plates: a single ink plate of a separated print job. It reports the plate's colour name and lets a script switch the plate on or off, set its halftone screen frequency and angle, and choose whether text and graphics overprint on that plate.",
+   "use_for": [
+    "skipping a plate when only one ink needs new film",
+    "custom screen angles / frequencies per ink to avoid moire",
+    "overprinting text or graphics on a spot plate such as a varnish or white underprint"
+   ],
+   "avoid": [
+    "Type: the typelib calls it reserved for future use; identify plates by Color",
+    "plate edits while separations are off: set Separations.Enabled first (unverified)"
+   ],
+   "how": "Document.PrintSettings.Separations.Plates(i) (Plates.Item(i)). Visible VBA class name: SeparationPlate. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "read-only colour (ink) name of the plate"
+    },
+    {
+     "name": "Enabled",
+     "use": "output this plate or not"
+    },
+    {
+     "name": "Frequency",
+     "use": "screen frequency for this plate"
+    },
+    {
+     "name": "Angle",
+     "use": "screen angle for this plate"
+    },
+    {
+     "name": "OverprintText",
+     "use": "overprint text on this plate"
+    },
+    {
+     "name": "OverprintGraphic",
+     "use": "overprint graphics on this plate"
+    },
+    {
+     "name": "Type",
+     "use": "PrnPlateType, read-only; reserved for future use"
+    }
+   ],
+   "gotchas": [
+    "Type is documented as reserved; do not branch on it",
+    "per-plate Frequency / Angle may only be used with Separations.AdvancedSettings = True (unverified)",
+    "Color is the ink name as the dialog shows it (a Pantone name for spot plates); match it exactly (unverified)"
+   ],
+   "example": "Set seps = ActiveDocument.PrintSettings.Separations\nseps.Enabled = True\nFor i = 1 To seps.Plates.Count\n    With seps.Plates.Item(i)\n        Debug.Print .Color, .Frequency, .Angle, .Enabled\n    End With\nNext i",
+   "equivalents": {
+    "AI": "class:Ink"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBASeparationPlates",
+   "id": "class:IPrnVBASeparationPlates",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBASeparationPlates",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind the SeparationPlates collection (PrintSettings.Separations.Plates): the ink plates available for the document's separations. Count gives the number of plates and Item(i) returns one plate.",
+   "use_for": [
+    "listing the inks a job will separate into before sending it to film",
+    "a pre-press check that a job carries only the expected spot plates"
+   ],
+   "avoid": [
+    "adding or removing inks: no such members; the plates come from the colours used in the document"
+   ],
+   "how": "Document.PrintSettings.Separations.Plates (read-only). Visible VBA class name: SeparationPlates. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of separation plates for this document"
+    },
+    {
+     "name": "Item",
+     "use": "one plate (SeparationPlate) by index; default member (dispid 0), so Plates(i) works"
+    }
+   ],
+   "gotchas": [
+    "no _NewEnum member is harvested, so For Each is not available; loop For i = 1 To Count",
+    "index base is 1 (unverified)",
+    "the list changes with Separations.SpotToCMYK / Hexachrome; re-read it after switching (unverified)"
+   ],
+   "example": "Set plates = ActiveDocument.PrintSettings.Separations.Plates\nFor i = 1 To plates.Count\n    Debug.Print i, plates.Item(i).Color\nNext i",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBATrapLayer",
+   "id": "class:IPrnVBATrapLayer",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBATrapLayer",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind one TrapLayer of PrintSettings.Trapping.Layers: the in-RIP trapping settings of one ink, i.e. its colour name, neutral density, trap type (normal, transparent, opaque, opaque-ignore) and its place in the trapping order.",
+   "use_for": [
+    "metallic or opaque spot inks that other colours should not trap into (prnLayerOpaque / prnLayerOpaqueIgnore)",
+    "transparent varnish inks (prnLayerTransparent)",
+    "setting the trap order and neutral density of spot inks"
+   ],
+   "avoid": [
+    "Type: reserved for future use; identify the ink by Color",
+    "edits while PrintSettings.Trapping.Enabled is off: nothing is trapped"
+   ],
+   "how": "Document.PrintSettings.Trapping.Layers.Item(i). Visible VBA class name: TrapLayer. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "read-only ink name of this trap layer"
+    },
+    {
+     "name": "Density",
+     "use": "neutral density of the ink (decides which colour spreads into which)"
+    },
+    {
+     "name": "TrapType",
+     "use": "PrnTrapType: prnLayerNormal, prnLayerTransparent, prnLayerOpaque, prnLayerOpaqueIgnore"
+    },
+    {
+     "name": "Order",
+     "use": "position of this ink in the trapping order"
+    },
+    {
+     "name": "Type",
+     "use": "PrnPlateType, read-only; reserved for future use"
+    }
+   ],
+   "gotchas": [
+    "a wrong Density flips which colour spreads into which; use the ink maker's neutral density values (unverified)",
+    "whether Order values must be unique is not in the harvest (unverified)"
+   ],
+   "example": "Set tr = ActiveDocument.PrintSettings.Trapping\nFor i = 1 To tr.Layers.Count\n    With tr.Layers.Item(i)\n        Debug.Print .Color, .Density, .Order\n        .TrapType = prnLayerNormal\n    End With\nNext i",
+   "equivalents": {
+    "AI": "class:InkInfo"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBATrapLayers",
+   "id": "class:IPrnVBATrapLayers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBATrapLayers",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface behind the TrapLayers collection (PrintSettings.Trapping.Layers): one in-RIP trap layer per ink. Count gives the number of layers and Item(i) returns one.",
+   "use_for": [
+    "walking all inks to set trap type and order before in-RIP trapped output"
+   ],
+   "avoid": [
+    "adding or removing layers: no such members; the layers follow the document's inks"
+   ],
+   "how": "Document.PrintSettings.Trapping.Layers (read-only). Visible VBA class name: TrapLayers. The IPrnVBA interface is flagged hidden in VGCoreAuto.tlb (also in the CdrPrn library); object browsers show the visible coclass name instead, and the members work as listed.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of in-RIP trapping layers"
+    },
+    {
+     "name": "Item",
+     "use": "one TrapLayer by index (dispid 2, not the default member)"
+    }
+   ],
+   "gotchas": [
+    "Item has dispid 2 instead of the default dispid 0, so Layers(i) may fail; write Layers.Item(i)",
+    "no _NewEnum member is harvested, so For Each is not available; loop For i = 1 To Count",
+    "index base is 1 (unverified)"
+   ],
+   "example": "Set trapLayers = ActiveDocument.PrintSettings.Trapping.Layers\nFor i = 1 To trapLayers.Count\n    Debug.Print i, trapLayers.Item(i).Color\nNext i",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IStructImportCropOptions",
+   "id": "class:IStructImportCropOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IStructImportCropOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Options object CorelDRAW hands to an import crop handler (IImportCropHandler.Crop) when a bitmap is imported in crop mode: read-only facts about the source file (FileName, FilterID, CustomData, ImageWidth, ImageHeight, DpiX, DpiY) and the writable crop rectangle (Left, Top, Width, Height) the handler fills in. The typelib gives no member descriptions, so the roles follow the names and read-only flags.",
+   "use_for": [
+    "batch-importing photos cropped per file by a rule (square product shots, fixed aspect banners)",
+    "cropping scans on import based on each image's pixel size or DPI"
+   ],
+   "avoid": [
+    "the same crop for every file: set StructImportOptions.Mode = cdrImportCrop and its CropLeft / CropTop / CropWidth / CropHeight instead of writing a handler",
+    "when the full image must stay in the file: import whole and crop with a PowerClip"
+   ],
+   "how": "Not created by scripts: an object implementing IImportCropHandler is set as StructImportOptions.CropHandler, Mode is cdrImportCrop, and CorelDRAW passes this object to its Crop method during Layer.ImportEx (flow unverified).",
+   "key_members": [
+    {
+     "name": "FileName",
+     "use": "read-only: the file being imported"
+    },
+    {
+     "name": "FilterID",
+     "use": "read-only: import filter id"
+    },
+    {
+     "name": "CustomData",
+     "use": "read-only: caller data passed through to the handler"
+    },
+    {
+     "name": "ImageWidth",
+     "use": "read-only: source image width"
+    },
+    {
+     "name": "ImageHeight",
+     "use": "read-only: source image height"
+    },
+    {
+     "name": "DpiX",
+     "use": "read-only: source horizontal resolution"
+    },
+    {
+     "name": "DpiY",
+     "use": "read-only: source vertical resolution"
+    },
+    {
+     "name": "Left",
+     "use": "crop rectangle left edge"
+    },
+    {
+     "name": "Top",
+     "use": "crop rectangle top edge"
+    },
+    {
+     "name": "Width",
+     "use": "crop rectangle width"
+    },
+    {
+     "name": "Height",
+     "use": "crop rectangle height"
+    }
+   ],
+   "gotchas": [
+    "every member is a long integer: crop values are most likely source pixels, not document units (unverified)",
+    "CustomData is presumably StructImportOptions.CustomData passed through so one handler can serve several imports (unverified)",
+    "Crop returns a Boolean; what returning False does (skip the crop or cancel the import) is not in the harvest (unverified)",
+    "implementing IImportCropHandler needs Implements in a VBA class module or a registered COM object from outside (unverified)"
+   ],
+   "example": "' VBA class module, set as StructImportOptions.CropHandler (unverified)\nImplements IImportCropHandler\nPrivate Function IImportCropHandler_Crop(ByVal Options As IStructImportCropOptions) As Boolean\n    Options.Left = 0: Options.Top = 0\n    Options.Width = Options.ImageWidth \\ 2   ' left half\n    Options.Height = Options.ImageHeight\n    IImportCropHandler_Crop = True\nEnd Function",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IStructImportResampleOptions",
+   "id": "class:IStructImportResampleOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IStructImportResampleOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Options object CorelDRAW hands to an import resample handler (IImportResampleHandler.Resample) when a bitmap is imported in resample mode: read-only FileName, FilterID and CustomData, and the writable target Width, Height, DpiX and DpiY the handler sets. The typelib gives no member descriptions, so the roles follow the names and read-only flags.",
+   "use_for": [
+    "downsampling oversized photos to a print resolution while importing a batch",
+    "per-file resample rules (e.g. cap every image at 300 dpi at its placed size)"
+   ],
+   "avoid": [
+    "the same resample for every file: set StructImportOptions.Mode = cdrImportResample and its ResampleWidth / ResampleHeight / ResampleDpiX / ResampleDpiY instead of writing a handler",
+    "upsampling to 'improve' quality: resampling up adds no detail"
+   ],
+   "how": "Not created by scripts: an object implementing IImportResampleHandler is set as StructImportOptions.ResampleHandler, Mode is cdrImportResample, and CorelDRAW passes this object to its Resample method during Layer.ImportEx (flow unverified).",
+   "key_members": [
+    {
+     "name": "FileName",
+     "use": "read-only: the file being imported"
+    },
+    {
+     "name": "FilterID",
+     "use": "read-only: import filter id"
+    },
+    {
+     "name": "CustomData",
+     "use": "read-only: caller data passed through to the handler"
+    },
+    {
+     "name": "Width",
+     "use": "target width"
+    },
+    {
+     "name": "Height",
+     "use": "target height"
+    },
+    {
+     "name": "DpiX",
+     "use": "target horizontal resolution"
+    },
+    {
+     "name": "DpiY",
+     "use": "target vertical resolution"
+    }
+   ],
+   "gotchas": [
+    "there is no ImageWidth / ImageHeight here; Width / Height presumably arrive filled with the source size (unverified)",
+    "Width / Height are long integers, most likely pixels (unverified)",
+    "Resample returns a Boolean; the effect of returning False is not in the harvest (unverified)"
+   ],
+   "example": "' VBA class module, set as StructImportOptions.ResampleHandler (unverified)\nImplements IImportResampleHandler\nPrivate Function IImportResampleHandler_Resample(ByVal Options As IStructImportResampleOptions) As Boolean\n    Options.Width = Options.Width \\ 2\n    Options.Height = Options.Height \\ 2\n    Options.DpiX = 300: Options.DpiY = 300\n    IImportResampleHandler_Resample = True\nEnd Function",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGActiveView",
+   "id": "class:IVGActiveView",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGActiveView",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The live view of a CorelDRAW document window: which part of the page is on screen and how it is drawn. It sets zoom and origin, fits the view to the page, page width or height, a shape, a shape range, the selection, all objects, all pages or an area, zooms in and out, sets 1:1, switches the view type (wireframe, draft, normal, enhanced, pixel, enhanced with overprints), overprint simulation and on-screen colour proofing, and handles Multipage view (page at a point, page origins, page bounds).",
+   "use_for": [
+    "framing the page before a screenshot for a contact sheet or QC frame",
+    "Pixel view checks of web and social graphics at actual size",
+    "on-screen soft proof with a press profile before printing",
+    "checking spot and black overprints with SimulateOverprints"
+   ],
+   "avoid": [
+    "controlling export output: the view does not change exports; use Document.Export / ExportBitmap",
+    "screenshots of a minimized CorelDRAW window: nothing is drawn; restore AppWindow first"
+   ],
+   "how": "Application.ActiveWindow.ActiveView (the ActiveView of any Window). One per document window; changes are visual only and are not stored as artwork. Named saved views are a different object (Document.CreateView / Views).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrViewType: cdrSimpleWireframeView, cdrWireframeView, cdrDraftView, cdrNormalView, cdrEnhancedView, cdrEnhancedViewWithOverprints, cdrPixelView"
+    },
+    {
+     "name": "Zoom",
+     "use": "zoom level of the view"
+    },
+    {
+     "name": "OriginX",
+     "use": "x of the view origin (document units)"
+    },
+    {
+     "name": "OriginY",
+     "use": "y of the view origin (document units)"
+    },
+    {
+     "name": "SetViewPoint",
+     "use": "centre the view on x, y with an optional zoom"
+    },
+    {
+     "name": "ToFitPage",
+     "use": "fit the whole page"
+    },
+    {
+     "name": "ToFitPageWidth",
+     "use": "fit the page width"
+    },
+    {
+     "name": "ToFitSelection",
+     "use": "fit the selected objects"
+    },
+    {
+     "name": "ToFitShape",
+     "use": "fit one shape"
+    },
+    {
+     "name": "ToFitShapeRange",
+     "use": "fit a ShapeRange"
+    },
+    {
+     "name": "ToFitAllObjects",
+     "use": "fit everything on the page"
+    },
+    {
+     "name": "ToFitArea",
+     "use": "fit a Left / Top / Right / Bottom rectangle"
+    },
+    {
+     "name": "SetActualSize",
+     "use": "zoom 1:1"
+    },
+    {
+     "name": "GetViewArea",
+     "use": "read the visible document rectangle"
+    },
+    {
+     "name": "SetViewArea",
+     "use": "show a given document rectangle"
+    },
+    {
+     "name": "ShowProofColors",
+     "use": "display colour proofing in this window"
+    },
+    {
+     "name": "ProofColorSettings",
+     "use": "the proofing profile settings used for this window"
+    },
+    {
+     "name": "SimulateOverprints",
+     "use": "simulate overprints on screen"
+    },
+    {
+     "name": "UseMultipageView",
+     "use": "switch the window to Multipage view"
+    },
+    {
+     "name": "FindPageAtPoint",
+     "use": "the page under a point in Multipage view"
+    }
+   ],
+   "gotchas": [
+    "the Zoom scale is not in the harvest; call SetActualSize and read Zoom to learn the 1:1 value before setting Zoom directly",
+    "GetViewArea returns its four values through ByRef arguments; from Python win32com they may come back as a tuple or not at all, depending on the typelib's out flags (unverified)",
+    "OriginX / OriginY and area coordinates follow the document's Unit setting",
+    "FindPageAtPoint, GetPageOrigin and SetPageOrigin are Multipage view features; with UseMultipageView off they may fail or only see the active page (unverified)",
+    "ToFitShape / ToFitSelection with nothing selected raises an error; check the selection first (unverified)"
+   ],
+   "example": "With ActiveWindow.ActiveView\n    .Type = cdrEnhancedView\n    .ToFitPage\n    Debug.Print .Zoom, .OriginX, .OriginY\n    .SimulateOverprints = True\nEnd With",
+   "equivalents": {
+    "AI": "class:View"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha: replaced the invented \"Zoom 100 = actual size\" with reading Zoom after SetActualSize (scale not in the harvest)"
+   }
+  },
+  {
+   "name": "IVGApplication",
+   "id": "class:IVGApplication",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGApplication",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The CorelDRAW application object, root of the whole object model: documents (open, create, from template, open as copy), the active document, page, layer, window, selection and tool, colour factories (RGB, CMYK, Lab, HSB, spot, palette), option-struct factories for open / save / export / import / paste, unit conversion, fonts, palettes, printers and the multi-document print job, workspaces, command bars and the UI FrameWork, version and folder paths, event hookup and the speed switches Optimization and EventsEnabled.",
+   "use_for": [
+    "entry point of every CorelDRAW automation: open a template, fill it, export",
+    "batch processing a folder of .cdr files",
+    "making brand colours (CMYK values, spot colours by name) for scripted artwork",
+    "version and install-path checks in a pipeline preflight",
+    "speeding up long macros with Optimization"
+   ],
+   "avoid": [
+    "Quit while a person may be using CorelDRAW: closes it for everyone, and save prompts can block the COM call",
+    "ActiveDocument / ActiveSelection in unattended pipelines: they follow whatever the user focused; keep the Document returned by OpenDocument / CreateDocument"
+   ],
+   "how": "Inside CorelDRAW VBA: the global Application object (its members also work as globals: ActiveDocument, ActiveLayer ...). From outside: COM, e.g. Python win32com.client.Dispatch(\"CorelDRAW.Application.25\") for CorelDRAW 2024 (the harvest finds this ProgID registered to the 25 install), or C# through the VGCore interop. Never the bare \"CorelDRAW.Application\": its CurVer on this machine is CorelDRAW.Application.23 (CorelDRAW 2021).",
+   "key_members": [
+    {
+     "name": "ActiveDocument",
+     "use": "the document in the active window (Nothing when none is open)"
+    },
+    {
+     "name": "Documents",
+     "use": "all open documents"
+    },
+    {
+     "name": "OpenDocument",
+     "use": "open a file; returns the Document"
+    },
+    {
+     "name": "CreateDocument",
+     "use": "new document from the default template"
+    },
+    {
+     "name": "CreateDocumentEx",
+     "use": "new document with StructCreateOptions (Name, PageWidth, PageHeight, Units, Resolution, Bleed, ColorContext)"
+    },
+    {
+     "name": "CreateDocumentFromTemplate",
+     "use": "new document from a .cdt template, optionally with its graphics"
+    },
+    {
+     "name": "ActivePage",
+     "use": "the active page"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "the active layer (where new shapes go)"
+    },
+    {
+     "name": "ActiveSelectionRange",
+     "use": "the selection as a ShapeRange"
+    },
+    {
+     "name": "ActiveWindow",
+     "use": "active document window (its ActiveView controls zoom)"
+    },
+    {
+     "name": "CreateCMYKColor",
+     "use": "a CMYK Color object"
+    },
+    {
+     "name": "CreateRGBColor",
+     "use": "an RGB Color object"
+    },
+    {
+     "name": "CreateSpotColorByName",
+     "use": "a spot colour from a palette by name, with optional tint"
+    },
+    {
+     "name": "CreateShapeRange",
+     "use": "an empty ShapeRange to collect shapes"
+    },
+    {
+     "name": "CreateStructExportOptions",
+     "use": "options object for Document.Export"
+    },
+    {
+     "name": "ConvertUnits",
+     "use": "convert a value between cdrUnit units"
+    },
+    {
+     "name": "Optimization",
+     "use": "suspend screen updates for speed during long macros"
+    },
+    {
+     "name": "EventsEnabled",
+     "use": "switch event handlers on or off"
+    },
+    {
+     "name": "Visible",
+     "use": "show or hide the application window"
+    },
+    {
+     "name": "VersionMajor",
+     "use": "major version (25 = CorelDRAW 2024)"
+    }
+   ],
+   "gotchas": [
+    "Optimization = True stops screen updates for speed; always set it back to False (also in the error handler) and refresh the window (ActiveWindow.Refresh), or the UI looks stale",
+    "EventsEnabled = False keeps event macros from firing during batch work; restore it afterwards",
+    "ActiveSelection returns one Shape wrapping the selection; ActiveSelectionRange returns a ShapeRange snapshot that does not follow later selection changes (unverified)",
+    "Unit only applies when there is no document context; shape coordinates follow Document.Unit",
+    "started through COM the app may come up hidden; set Visible = True before relying on windows or views (unverified)",
+    "modal dialogs (missing fonts on OpenDocument, save prompts on Quit) block the COM call; give every call a timeout",
+    "the unversioned ProgID \"CorelDRAW.Application\" resolves (CurVer) to CorelDRAW.Application.23, the CorelDRAW 2021 install also registered on this machine; always dispatch \"CorelDRAW.Application.25\" and check VersionMajor = 25"
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch(\"CorelDRAW.Application.25\")  # not the bare ProgID (= v23)\napp.Visible = True\ndoc = app.OpenDocument(r\"E:\\in\\poster.cdr\")\napp.Optimization = True; app.EventsEnabled = False\n# ... edit doc ...\napp.Optimization = False; app.EventsEnabled = True\napp.ActiveWindow.Refresh()",
+   "equivalents": {
+    "PS": "class:Application",
+    "AI": "class:Application"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how/example: ProgID CorelDRAW.Application.25 is in the harvest (HKCR), no longer \"unverified\"; added gotcha that the bare CorelDRAW.Application CurVer is .23 (CorelDRAW 2021); CreateDocumentEx use now lists the real StructCreateOptions fields instead of \"colour mode\""
+   }
+  },
+  {
+   "name": "IVGApplicationEvents",
+   "id": "class:IVGApplicationEvents",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGApplicationEvents",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden dual twin of the CorelDRAW application event interface (the Application and GlobalMacroStorage coclasses declare DIVGApplicationEvents, with the same 22 events and dispids, as their source): callbacks a handler receives for document open, new and close, before / after save, print and export, the Query* events that let the handler cancel a close, save, print, export or quit, window activate / deactivate, selection change, application start and quit, plug-in command execution and enable / check state updates, and a generic OnApplicationEvent.",
+   "use_for": [
+    "running a preflight automatically before every export or save",
+    "blocking a close or quit while a job is unsaved on a shared workstation",
+    "logging which files were exported and where",
+    "handling plug-in commands registered with Application.AddPluginCommand"
+   ],
+   "avoid": [
+    "heavy work in SelectionChange: it fires on every selection change and slows the UI; keep handlers short",
+    "relying on events while Application.EventsEnabled is False: nothing fires"
+   ],
+   "how": "Implemented, not called. The connection point CorelDRAW fires is DIVGApplicationEvents; this dual IVGApplicationEvents carries the same members for sinks that implement the dual interface (unverified). VBA: a class module with Public WithEvents app As CorelDRAW.Application, then Set app = Application, or handlers in a GMS ThisMacroStorage module named GlobalMacroStorage_<Event>. External COM clients: Application.AdviseEvents(sink) returns a cookie and Application.UnadviseEvents(cookie) stops delivery. Flagged hidden in the typelib.",
+   "key_members": [
+    {
+     "name": "QueryDocumentClose",
+     "use": "before a close; set Cancel = True to keep the document open"
+    },
+    {
+     "name": "QueryDocumentSave",
+     "use": "before a save; Cancel stops it"
+    },
+    {
+     "name": "QueryDocumentPrint",
+     "use": "before printing; Cancel stops it"
+    },
+    {
+     "name": "QueryDocumentExport",
+     "use": "before an export; Cancel stops it"
+    },
+    {
+     "name": "QueryQuit",
+     "use": "before the app quits; Cancel stops it"
+    },
+    {
+     "name": "DocumentOpen",
+     "use": "a document was opened (with its file name)"
+    },
+    {
+     "name": "DocumentNew",
+     "use": "a document was created (template info included)"
+    },
+    {
+     "name": "DocumentClose",
+     "use": "a document was closed"
+    },
+    {
+     "name": "DocumentBeforeSave",
+     "use": "about to save (SaveAs flag, file name)"
+    },
+    {
+     "name": "DocumentAfterSave",
+     "use": "saved (SaveAs flag, file name)"
+    },
+    {
+     "name": "DocumentBeforeExport",
+     "use": "about to export (file name, filter, bitmap flag)"
+    },
+    {
+     "name": "DocumentAfterExport",
+     "use": "exported (file name, filter, bitmap flag)"
+    },
+    {
+     "name": "DocumentBeforePrint",
+     "use": "about to print"
+    },
+    {
+     "name": "WindowActivate",
+     "use": "a document window became active"
+    },
+    {
+     "name": "SelectionChange",
+     "use": "the selection changed"
+    },
+    {
+     "name": "Start",
+     "use": "application started"
+    },
+    {
+     "name": "Quit",
+     "use": "application is quitting"
+    },
+    {
+     "name": "OnPluginCommand",
+     "use": "a registered plug-in command was run (CommandID)"
+    },
+    {
+     "name": "OnUpdatePluginCommand",
+     "use": "CorelDRAW asks for a plug-in command's Enabled / Checked state"
+    },
+    {
+     "name": "OnApplicationEvent",
+     "use": "generic event: name plus a SAFEARRAY of parameters"
+    }
+   ],
+   "gotchas": [
+    "Cancel in the Query* events is a ByRef Boolean: set it True to stop the action (unverified)",
+    "the Query* events are described as fired when the user responds to a request, so a script-driven save or close may not raise them (unverified)",
+    "event procedure signatures must match the typelib exactly; let the VBA editor's event dropdown generate them",
+    "a sink registered with AdviseEvents must be removed with UnadviseEvents before the client exits (unverified)",
+    "which names OnApplicationEvent delivers is not in the harvest (unverified)",
+    "WithEvents and DispatchWithEvents bind to the coclass source DIVGApplicationEvents, not to this interface; the event names and parameters are identical"
+   ],
+   "example": "' VBA class module; elsewhere: Set obj.app = Application\nPublic WithEvents app As CorelDRAW.Application\nPrivate Sub app_QueryDocumentClose(ByVal Doc As Document, Cancel As Boolean)\n    If Doc.Dirty Then Cancel = True   ' keep unsaved work open\nEnd Sub\nPrivate Sub app_DocumentAfterExport(ByVal Doc As Document, ByVal FileName As String, ByVal Filter As cdrFilter, ByVal SaveBitmap As Boolean)\n    Debug.Print \"exported \" & FileName\nEnd Sub",
+   "equivalents": {
+    "PS": "class:Notifier"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/how: it is not the Application source interface; the Application and GlobalMacroStorage coclasses source DIVGApplicationEvents (identical 22 events/dispids), this is its dual twin; added the GMS ThisMacroStorage route and a gotcha"
+   }
+  },
+  {
+   "name": "IVGAppPlugin",
+   "id": "class:IVGAppPlugin",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGAppPlugin",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Hidden interface a compiled CorelDRAW plug-in implements so the application can load it: OnLoad receives the Application object, StartSession and StopSession bracket the working session, and OnUnload is the last call before the plug-in is released. The typelib gives no descriptions; the roles follow the names.",
+   "use_for": [
+    "building a compiled (C++) CorelDRAW plug-in that adds commands to the UI",
+    "a studio tool that keeps a live connection to CorelDRAW instead of relaunching scripts"
+   ],
+   "avoid": [
+    "one-off automation: a VBA / GMS macro or an external COM script is far simpler",
+    "calling these members from a script: they are callbacks CorelDRAW makes, not methods to run"
+   ],
+   "how": "Implemented, not called. Native .cpg plug-ins in CorelDRAW's Plugins folder export an AttachPlugin function that hands CorelDRAW an IVGAppPlugin pointer (unverified); commands are then registered with Application.AddPluginCommand and arrive through the OnPluginCommand event.",
+   "key_members": [
+    {
+     "name": "OnLoad",
+     "use": "first call; receives the IVGApplication to keep"
+    },
+    {
+     "name": "StartSession",
+     "use": "the session starts: register commands, hook events"
+    },
+    {
+     "name": "StopSession",
+     "use": "the session ends: remove commands, unhook events"
+    },
+    {
+     "name": "OnUnload",
+     "use": "last call before release: drop the Application reference"
+    }
+   ],
+   "gotchas": [
+    "keep the Application reference from OnLoad and release it in OnUnload, or CorelDRAW may not shut down cleanly (unverified)",
+    "register commands in StartSession and remove them in StopSession (Application.AddPluginCommand / RemovePluginCommand) (unverified)",
+    "a plug-in built against another major version's type library may need a rebuild for version 25 (unverified)"
+   ],
+   "example": "// C++ .cpg plug-in class implementing VGCore::IVGAppPlugin; m_pApp is a VGCore::IVGApplicationPtr (unverified)\nHRESULT OnLoad(VGCore::IVGApplication *pApp) { m_pApp = pApp; return S_OK; }\nHRESULT StartSession() { m_pApp->AddPluginCommand(L\"MyTool.Run\", L\"Run My Tool\", L\"Runs my tool\"); return S_OK; }\nHRESULT StopSession() { m_pApp->RemovePluginCommand(L\"MyTool.Run\"); return S_OK; }\nHRESULT OnUnload() { m_pApp = NULL; return S_OK; }",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGAppStatus",
+   "id": "class:IVGAppStatus",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGAppStatus",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The status-bar progress meter of CorelDRAW (Application.Status): a script shows it with an optional message and an Esc-to-abort option, moves it (Progress or UpdateProgress), changes its message, reads Aborted to see whether the user pressed Esc, and hides it with EndProgress.",
+   "use_for": [
+    "feedback during a long macro (recolouring hundreds of shapes, exporting many pages)",
+    "letting the designer cancel a long batch with Esc"
+   ],
+   "avoid": [
+    "unattended COM pipelines with nobody watching: log to a file instead",
+    "updating on every item of a very tight loop: update every N items to keep redraw cost down (unverified)"
+   ],
+   "how": "Application.Status (read-only reference to the AppStatus object).",
+   "key_members": [
+    {
+     "name": "BeginProgress",
+     "use": "show the meter, optional message and CanAbort (Esc) flag"
+    },
+    {
+     "name": "Progress",
+     "use": "get / set the meter position"
+    },
+    {
+     "name": "UpdateProgress",
+     "use": "update the meter position (optional Step)"
+    },
+    {
+     "name": "SetProgressMessage",
+     "use": "change the message shown with the meter"
+    },
+    {
+     "name": "Aborted",
+     "use": "True once the user pressed Esc"
+    },
+    {
+     "name": "EndProgress",
+     "use": "hide the meter"
+    }
+   ],
+   "gotchas": [
+    "always call EndProgress, including in the error handler, or the meter stays on the status bar (unverified)",
+    "Aborted presumably only turns True when BeginProgress was called with CanAbort = True (unverified)",
+    "the Progress scale (0-100?) and what UpdateProgress's Step does are not in the harvest (unverified)"
+   ],
+   "example": "Set st = Application.Status\nn = ActivePage.Shapes.Count\nst.BeginProgress \"Recolouring shapes...\", True\nFor i = 1 To n\n    st.Progress = Int(i * 100 / n)   ' 0-100 scale assumed (unverified)\n    If st.Aborted Then Exit For\nNext i\nst.EndProgress",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGAppWindow",
+   "id": "class:IVGAppWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGAppWindow",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The CorelDRAW main application window (Application.AppWindow): its caption, position and size, client area size, window state (normal, minimized, maximized, restore), whether it is active, its native window handle, and Activate to bring it to the front.",
+   "use_for": [
+    "maximizing and activating CorelDRAW before screenshots",
+    "getting the window handle for PostMessage / UI Automation aimed at CorelDRAW instead of global keystrokes",
+    "a fixed window size so view-based screenshots are repeatable",
+    "putting a job name in the window caption on a shared machine"
+   ],
+   "avoid": [
+    "document windows: those are Window objects (Application.ActiveWindow / Windows)",
+    "Activate while a person is working on the machine: it steals focus"
+   ],
+   "how": "Application.AppWindow (read-only reference to the AppWindow object).",
+   "key_members": [
+    {
+     "name": "Handle",
+     "use": "native window handle (HWND) of the main window"
+    },
+    {
+     "name": "WindowState",
+     "use": "cdrWindowState: cdrWindowNormal, cdrWindowMinimized, cdrWindowMaximized, cdrWindowRestore"
+    },
+    {
+     "name": "Activate",
+     "use": "bring the main window to the front"
+    },
+    {
+     "name": "Active",
+     "use": "read-only: is the main window active"
+    },
+    {
+     "name": "Caption",
+     "use": "get / set the window caption"
+    },
+    {
+     "name": "Left",
+     "use": "window left position"
+    },
+    {
+     "name": "Top",
+     "use": "window top position"
+    },
+    {
+     "name": "Width",
+     "use": "window width"
+    },
+    {
+     "name": "Height",
+     "use": "window height"
+    },
+    {
+     "name": "ClientWidth",
+     "use": "read-only: client area width"
+    },
+    {
+     "name": "ClientHeight",
+     "use": "read-only: client area height"
+    }
+   ],
+   "gotchas": [
+    "Handle is a 32-bit long; on 64-bit Windows it can be used as the HWND as is (window handles fit in 32 bits) (unverified)",
+    "a minimized window draws nothing, so screen captures come back blank: set WindowState to cdrWindowNormal or cdrWindowMaximized first",
+    "Left / Top / Width / Height are screen pixels and may be ignored while the window is maximized (unverified)",
+    "CorelDRAW may rewrite Caption when the active document changes (unverified)"
+   ],
+   "example": "w = app.AppWindow\nw.WindowState = 3          # cdrWindowMaximized\nw.Activate()\nprint(w.Caption, w.ClientWidth, w.ClientHeight)\nhwnd = w.Handle            # for PostMessage / UI Automation targeting",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGArrowHead",
+   "id": "class:IVGArrowHead",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGArrowHead",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One arrowhead definition (the shape drawn at a line end), from the application's arrowhead list or made from a curve: its index in the list, the curve that draws it, outline-width scale, centre point and line offset (how far the line is shortened to meet the arrow), name and display name, a copy bound to a document, and a sameness test.",
+   "use_for": [
+    "arrows on callout and leader lines",
+    "technical drawings and dimension lines",
+    "flowcharts and infographics built by script",
+    "checking that all connectors in a diagram use the same arrow style"
+   ],
+   "avoid": [
+    "sizing, offsetting or flipping an arrow: not here; use Outline.StartArrowOptions / EndArrowOptions",
+    "choosing arrows by index across machines or versions: the list can differ; match by Name / DisplayName or CompareWith"
+   ],
+   "how": "Application.ArrowHeads(i) (the installed arrowhead list), Outline.StartArrow / EndArrow of a shape, or Document.CreateArrowHead / CreateArrowHeadEx for a custom one from a curve. Apply it with Outline.StartArrow / EndArrow or Outline.SetProperties.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "read-only position in the arrowhead list"
+    },
+    {
+     "name": "Name",
+     "use": "custom name (the only writable property)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "read-only name; generated when no custom name is set"
+    },
+    {
+     "name": "Curve",
+     "use": "read-only Curve that draws the arrowhead"
+    },
+    {
+     "name": "CenterX",
+     "use": "relative horizontal centre of the arrowhead"
+    },
+    {
+     "name": "CenterY",
+     "use": "relative vertical centre of the arrowhead"
+    },
+    {
+     "name": "BaseOutlineScale",
+     "use": "outline width relative to the arrowhead curve"
+    },
+    {
+     "name": "LineOffset",
+     "use": "relative amount the line is shortened to fit the arrow"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "copy that reports coordinates in a given document's system"
+    },
+    {
+     "name": "CompareWith",
+     "use": "True when two arrowheads are the same"
+    }
+   ],
+   "gotchas": [
+    "almost everything is read-only; to change the shape create a new arrowhead from a curve (Document.CreateArrowHead)",
+    "CenterX / CenterY / BaseOutlineScale / LineOffset are relative values; call BindToDocument to read them in a document's coordinates",
+    "Name may be empty for built-in arrowheads; DisplayName then returns a generated name",
+    "compare arrowheads with CompareWith, not by object identity (unverified)"
+   ],
+   "example": "Set ah = Application.ArrowHeads(5)\nDebug.Print ah.Index, ah.DisplayName\nActiveShape.Outline.SetProperties EndArrow:=ah\nIf ActiveShape.Outline.EndArrow.CompareWith(ah) Then Debug.Print \"arrow set\"",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

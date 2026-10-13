@@ -1,0 +1,452 @@
+{
+ "cards": [
+  {
+   "name": "Clouds",
+   "id": "clouds",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Clouds",
+   "status": "current",
+   "summary": "Replaces the layer (or the selection) with a soft, random cloud-noise texture made only from the current foreground and background colours; the original pixels are discarded, so on the test plate the whole photo turns into smoky clouds in those two colours. Each run gives a new random pattern; there is no dialog and no harvested parameter.",
+   "use_for": [
+    "a fog, smoke or haze layer set to Screen / Soft Light over a photo for mood",
+    "a quick sky or atmospheric background behind a headline or product",
+    "a grayscale source for Displace or for the texture channel of Lighting Effects",
+    "a grunge / mottled overlay for posters once coloured with a Gradient Map"
+   ],
+   "avoid": [
+    "running it on the photo layer itself: it overwrites every pixel; render it on a new layer and blend that layer instead",
+    "expecting a pattern you can dial in: it has no settings; contrast comes from how far apart the foreground and background colours are, so reset them to the default black / white first for neutral grey clouds and shape density and contrast afterwards with Levels / Curves",
+    "an exact repeatable texture across scripted runs: the harvest found no seed or other key, so every run differs; save the result if it must match"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "clouds",
+    "smoke",
+    "fog",
+    "haze",
+    "perlin noise",
+    "mottled texture",
+    "sky",
+    "atmosphere"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Difference Clouds (run after Clouds, repeat for marble or lightning veins)",
+    "Gradient Map or Hue/Saturation Colorize (gives the grey clouds colour)",
+    "Screen / Soft Light / Overlay blend mode on its own layer (fog over the photo)",
+    "Displace and Lighting Effects (use the clouds as a map or texture channel)",
+    "Levels / Curves (tightens the clouds into wisps or patches)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"clouds\"), new ActionDescriptor(), DialogModes.NO);  // no keys harvested (declared_params 0); set app.foregroundColor / app.backgroundColor first to choose the two colours",
+   "scriptable": "yes",
+   "non_destructive": "yes as a Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, harvest extra.smart_filter true) applied it to a Smart Object and it was stored as a Smart Filter, keeping the foreground / background colours it used; on a plain pixel layer the scripted call overwrites the pixels",
+   "cost": "light: 207 ms on the harvest's 480x270 test layer; no dialog",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the harvest DID probe it as a Smart Filter (probe_smart.json, smart_filter true, colours stored), was wrongly 'not probed'; avoid: dropped the unharvested 'D' shortcut and the wrong claim that scale comes from the foreground / background colours; summary: 'grey' only holds for default colours, now 'in those two colours'. Event, no params, Lab support, 207 ms and empty equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/9fdffc929231.png",
+    "note": "Whole frame replaced by soft grey cloud noise (black / white swatches), no trace of the photo, as the card says.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Difference Clouds",
+   "id": "differenceClouds",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Difference Clouds",
+   "status": "current",
+   "summary": "Generates the same random foreground/background cloud noise as Clouds but blends it into the existing pixels with the Difference mode instead of replacing them, so the photo stays visible with cloudy patches inverted into negative, complementary colours. Applied again and again it builds marbled, veined or lightning-like patterns.",
+   "use_for": [
+    "a psychedelic or solarised negative-patch treatment of a photo for an edgy poster",
+    "marble, veined stone or plasma textures (Clouds, then Difference Clouds repeated several times)",
+    "lightning or electric-arc textures (Difference Clouds, Invert, then a steep Levels)",
+    "a varied grunge layer for distressed graphics"
+   ],
+   "avoid": [
+    "subtle grading: the inverted patches are strong and unpredictable; for gentle texture use Clouds on its own layer at low opacity",
+    "Lab colour documents: the harvest shows it is not enabled in Lab mode (unlike Clouds); convert to RGB first",
+    "skin and faces you need to keep natural: parts of them turn negative; mask it to the background",
+    "repeatable results: each run uses a new random pattern and no seed key was harvested"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "difference clouds",
+    "negative patches",
+    "inverted",
+    "solarized",
+    "marble",
+    "veins",
+    "lightning",
+    "plasma",
+    "psychedelic"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Clouds (run first, then Difference Clouds repeatedly for marble)",
+    "Invert + Levels (turns the dark veins into bright lightning)",
+    "Gradient Map / Hue/Saturation Colorize (colours the marble or plasma)",
+    "Fade (Edit > Fade) or layer opacity (tones the inversion down)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"differenceClouds\"), new ActionDescriptor(), DialogModes.NO);  // no keys harvested; uses the current foreground / background colours",
+   "scriptable": "yes",
+   "non_destructive": "yes as a Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, harvest extra.smart_filter true) applied it to a Smart Object and it was stored as a Smart Filter, keeping the foreground / background colours it used; on a plain pixel layer the scripted call rewrites the pixels",
+   "cost": "light: 252 ms on the harvest's 480x270 test layer; no dialog",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: the harvest DID probe it as a Smart Filter (probe_smart.json, smart_filter true), was wrongly 'not probed'. Difference-mode description, no-Lab support (enable_info has no LabMode), event, 252 ms and empty equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/a8f6c500c7bc.png",
+    "note": "The photo stays recognisable but is inverted into blue / orange negative colours through cloudy grey patches, and the frame is darker overall (mean 64 vs 104).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Fibers",
+   "id": "'Fbrs'",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Fibers",
+   "status": "current",
+   "summary": "Replaces the layer with a woven-fibre texture built from the foreground and background colours: vertical streaks like raw silk, brushed fabric, paper pulp or wood grain. Variance sets how the colours alternate (low = long streaks, high = short fibres with more colour change) and Strength how the fibres look (low = loose weave, high = short, stringy fibres); Random Seed picks the pattern.",
+   "use_for": [
+    "a fabric, linen or handmade-paper background for invitations and packaging",
+    "a wood-grain base (brown colours, then Motion Blur and Liquify / Twirl for knots)",
+    "a texture overlay in Overlay / Soft Light for a tactile print feel",
+    "a streaky displacement or bump source for Lighting Effects"
+   ],
+   "avoid": [
+    "the photo layer itself: it discards the photo completely; render on a new layer and blend it",
+    "scripts sending extreme values: the harvest saw no clamp (1e6 and -1e6 were stored as sent) and no range was harvested, so stay near the read-back values (Variance 16, Strength 4) and check the result",
+    "omitting a key in a script: the harvest shows Photoshop then reuses this filter's last-used value; send all three keys for a repeatable result",
+    "horizontal grain: the fibres always run vertically; rotate the layer 90 degrees afterwards"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "fibers",
+    "fabric",
+    "silk",
+    "linen",
+    "paper texture",
+    "wood grain",
+    "streaks",
+    "woven",
+    "brushed texture"
+   ],
+   "params": [
+    {
+     "name": "Variance",
+     "does": "how the two colours vary along the fibres: low gives long streaks of colour, high gives very short fibres with more varied colour",
+     "typical": "10-20 for fabric or wood, around 30 or more for a busy speckled weave (read-back value 16)"
+    },
+    {
+     "name": "Strength",
+     "does": "how each fibre looks: low gives a loose, soft weave, high gives short, stringy, crisp fibres",
+     "typical": "3-8 for fabric, 10 or more for a stringy paper-pulp look (read-back value 4)"
+    },
+    {
+     "name": "Random Seed",
+     "does": "picks the random pattern; same seed + same values = same texture",
+     "typical": "any whole number; change it (the dialog's Randomize) for a different pattern"
+    }
+   ],
+   "demo_settings": {
+    "Variance": 24,
+    "Strength": 6,
+    "Random Seed": 12345
+   },
+   "pairs_with": [
+    "Motion Blur (smooths the fibres into silk or brushed metal)",
+    "Gradient Map or Color Overlay (colours the texture)",
+    "Overlay / Soft Light / Multiply blend mode on its own layer",
+    "Lighting Effects or Bevel & Emboss texture (gives the fibres relief)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(charIDToTypeID(\"Vrnc\"), 24); d.putInteger(stringIDToTypeID(\"strengthPlugin\"), 6); d.putInteger(stringIDToTypeID(\"randomSeed\"), 12345); executeAction(charIDToTypeID(\"Fbrs\"), d, DialogModes.NO);  // the harvest: no stringID is registered for 'Fbrs' (and the Variance key is the charID 'Vrnc'), so use charIDToTypeID; no clamp and no range harvested, keep values moderate",
+   "scriptable": "yes",
+   "non_destructive": "yes as a Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, harvest extra.smart_filter true) applied it to a Smart Object and it was stored as a Smart Filter (stores 'Vrnc', strengthPlugin, randomSeed); on a Smart Object send all three keys, because with an empty descriptor it opened its own dialog there even under DialogModes.NO; on a plain pixel layer the scripted call replaces the pixels",
+   "cost": "light: 262 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 'dialog's 1-64' range from avoid, params typical and the scripting comment (the batch has no min/max, only an unclamped probe); non_destructive: the harvest DID probe it as a Smart Filter (stored keys + the empty-descriptor dialog note), was wrongly 'not probed'. charID event 'Fbrs', 'Vrnc' / strengthPlugin / randomSeed int keys, demo 24 / 6 / 12345 and empty equivalents checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/f27dde7fb5c9.png",
+    "note": "Whole frame replaced by grey vertical fibre streaks from the black / white swatches, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Flame",
+   "id": "decoRenderFlame",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Flame",
+   "status": "needs_input",
+   "summary": "Scripted (Deco) render filter that paints flames along a path onto the current layer; its dialog (shipped Presets/Deco/Flame.jsx) offers six flame types (one flame along the path, several along it, in one direction, path-directed, at various angles, or a candle light) with length, width, angle, interval, turbulence, jag, flame style and shape, quality and a custom colour. The harvest could not run it: on a plain layer with no path Photoshop answered that the command is not currently available, and the harvest's menu walk (work/ps/menu_states.json) found Flame, Picture Frame and Tree greyed out in all seven document states it tried (empty layer, filled pixel layer, select-all selection, text, smart object, group, several layers), so a path alone may not be what enables it.",
+   "use_for": [
+    "a flaming headline: make a work path from the type outline and render flames on a new layer above it",
+    "a fire trail or burning edge along a curve for action or sports posters",
+    "a candle or diya flame for festive greeting cards",
+    "flames along a shape's outline for a hot-sale or 'on fire' graphic"
+   ],
+   "avoid": [
+    "running it with no path: the harvest got 'The command \"Flame\" is not currently available'; draw or create a work path first (the harvest never tested a run with a path, so that alone may not be enough)",
+    "headless pipelines: the event only declares the generic Fill keys (from, using, opacity, mode, decoScriptFile, decoScriptParameters ...), not the flame settings, and the harvest could not run it, so set it up by hand in the dialog",
+    "rendering onto the photo layer: it paints pixels directly; use a new empty layer so the flames can be moved, masked and blended",
+    "highest quality settings on big documents: the dialog itself warns the top quality levels are very slow; preview at Draft or Low",
+    "photoreal fire composites at large print sizes: the rendered flames read as CG; real fire footage on Screen looks better"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "fire",
+    "flames",
+    "burning",
+    "flaming text",
+    "fire trail",
+    "candle flame",
+    "blaze"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Type > Create Work Path or the Pen tool (the path the flames follow)",
+    "a new empty layer (keeps the flames separate)",
+    "Outer Glow or a Screen-mode orange glow layer (heat around the flames)",
+    "Gaussian Blur on a duplicate (soft fire bloom)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"decoRenderFlame\"), new ActionDescriptor(), DialogModes.NO);  // harvest: failed with no selection and no path ('not currently available'), also with one value per declared key; with a work path present it was not tested (the menu walk had it greyed out in every state tried, none with a path), and the flame settings (type, length, width ...) are not in the declared descriptor",
+   "scriptable": "no",
+   "non_destructive": "no: it renders pixels onto the layer; whether it can run as a Smart Filter was not probed by the harvest (a separate layer is the safe route)",
+   "cost": "not timed (the harvest never ran it); the dialog's own Quality labels mark High as slow and Fine as very slow; interactive dialog",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable partial -> no: both scripted runs failed and the declared descriptor holds only the generic Fill keys, so no scripted route is evidenced; summary/avoid/scripting: 'it needs a path' was stated as the proven cause, but the harvest's menu walk shows Flame, Picture Frame and Tree all greyed out in every document state tried, so the path is now the likely, untested input; cost: was an untimed 'medium to heavy' estimate, now cites the dialog's Quality labels. Dialog controls checked against the shipped Flame.jsx; status needs_input, no demo, empty equivalents kept."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: the harvest's menu walk found it greyed out in all seven document states it tried, and a call on a plain layer is refused as not available (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "name": "Lens Flare",
+   "id": "lensFlare",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Lens Flare",
+   "status": "current",
+   "summary": "Paints a simulated camera lens flare onto the image: a bright glowing hotspot at the Flare Center with a halo and a chain of reflection rings running through the frame centre. Lens picks one of four simulated lenses (50-300mm Zoom, 35mm Prime, 105mm Prime, Movie Prime), each with its own flare shape and ring pattern, and Brightness sets its strength.",
+   "use_for": [
+    "a sunlit, backlit or cinematic glow on a poster, thumbnail or event banner",
+    "a sparkle or hotspot behind a logo or headline reveal",
+    "adding drama to a dull, flat photo such as a soft video frame",
+    "a flare on a black layer set to Screen, so it can be moved, recoloured and faded"
+   ],
+   "avoid": [
+    "putting the hotspot on faces or text: it blows them out to white; place it in the background or sky",
+    "applying it straight on the photo when you may want to move it later: it is baked into the pixels; fill a new layer with black, flare that, set it to Screen",
+    "CMYK, Lab or Grayscale documents: the harvest shows it is enabled only in RGB",
+    "overuse: a bright flare on every image looks dated; keep Brightness near 100-130 for realism"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Flare Tool",
+    "CDR": "Effects/Camera/Lens Flare"
+   },
+   "look": [
+    "lens flare",
+    "sun flare",
+    "glow",
+    "cinematic",
+    "hotspot",
+    "sparkle",
+    "backlit",
+    "reflection rings"
+   ],
+   "params": [
+    {
+     "name": "Brightness",
+     "does": "strength and size of the flare; high values blow the hotspot out into a large white area",
+     "typical": "100-130 for a natural flare, 150-200 for a dramatic blown-out burst (harvest range 10-300)"
+    },
+    {
+     "name": "Flare Center",
+     "does": "where the hotspot sits; the harvest read the default back as unitless 0.4 / 0.4 on a 480x270 layer, so the values are almost certainly fractions of the image width / height (inferred, not probed); the reflection rings run from it through the image centre",
+     "typical": "a corner or the sky, e.g. [0.75, 0.15]; keep it off faces"
+    },
+    {
+     "name": "Lens",
+     "does": "which simulated lens the flare imitates: 50-300mm Zoom, 35mm Prime, 105mm Prime or Movie Prime; each gives a different hotspot size, halo and ring pattern (the harvest has only the labels)",
+     "typical": "zoom (the read-back default) for a classic ring chain; try the primes for a different shape"
+    }
+   ],
+   "demo_settings": {
+    "Brightness": 150,
+    "Flare Center": [
+     0.6,
+     0.15
+    ],
+    "Lens": "zoom"
+   },
+   "enum_labels": {
+    "zoom": "50-300mm Zoom",
+    "panaVision": "Movie Prime",
+    "nikon": "35mm Prime",
+    "nikon105": "105mm Prime"
+   },
+   "pairs_with": [
+    "a black-filled layer in Screen mode (keeps the flare movable and editable)",
+    "Hue/Saturation or Color Balance on that layer (warm or teal flares)",
+    "Gaussian Blur on the flare layer (softer, dreamier glow)",
+    "Curves or a Gradient Map grade (matches the scene to the light)"
+   ],
+   "scripting": "var c = new ActionDescriptor(); c.putDouble(stringIDToTypeID(\"horizontal\"), 0.6); c.putDouble(stringIDToTypeID(\"vertical\"), 0.15); var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"brightness\"), 150); d.putObject(stringIDToTypeID(\"flareCenter\"), stringIDToTypeID(\"paint\"), c); d.putEnumerated(stringIDToTypeID(\"lens\"), stringIDToTypeID(\"lens\"), stringIDToTypeID(\"zoom\")); executeAction(stringIDToTypeID(\"lensFlare\"), d, DialogModes.NO);  // keys from the harvest: brightness clamps to 10-300, flareCenter is a point object (class 'paint', unitless horizontal / vertical), lens enum type 'lens'",
+   "scriptable": "yes",
+   "non_destructive": "yes as a Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, harvest extra.smart_filter true) applied it to a Smart Object and it was stored as a Smart Filter (stores brightness, flareCenter, lens); on a Smart Object send all three keys, because with an empty descriptor it opened its own dialog there even under DialogModes.NO; on a plain pixel layer the scripted call paints into the pixels",
+   "cost": "light: 222 ms on the harvest's 480x270 test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/params/look: removed the unharvested lens looks (Movie Prime as a 'horizontal anamorphic streak', 105mm 'big soft bloom', 'the zooms' when there is one zoom) and the 'anamorphic streak' / 'light leak' keywords; Brightness: dropped the invented 'above about 150' threshold and the unharvested percent unit; Flare Center: the fraction-of-image reading is now marked as inferred; non_destructive: the harvest DID probe it as a Smart Filter (stored keys + empty-descriptor dialog note), was wrongly 'not probed'. Keys, 10-300 clamp, paint point class, lens enum + labels, demo 150 / [0.6, 0.15] (upper wall, clear of the mid-frame detail) / zoom, AI Flare Tool and CDR Effects/Camera/Lens Flare checked and kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/ef432de4c3f1.png",
+    "note": "A bright hotspot sits at 60 % across / 15 % down with halo and reflection rings running toward the lower left through the centre; the whole frame is also washed lighter (mean 145 vs 104).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Picture Frame",
+   "id": "decoRenderPictureFrame",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Picture Frame",
+   "status": "needs_input",
+   "summary": "Scripted (Deco) render filter that draws a decorative border around the edges of the layer or of a selection: its dialog (shipped Presets/Deco/Picture Frame.jsx) has 47 frame designs (vines, lace, smoke, snowflakes, focused speed lines, rounded art frames ...) with optional flowers and leaves, and controls for margin, size, number of lines, thickness, angle, fade and colours. The frame is painted as pixels on the current layer. The harvest could not run it: on a plain layer Photoshop answered that the command is not currently available, and the harvest's menu walk (work/ps/menu_states.json) found Flame, Picture Frame and Tree greyed out in all seven document states it tried (empty layer, filled pixel layer, select-all selection, text, smart object, group, several layers); what enables it was not found.",
+   "use_for": [
+    "a vine or floral border for invitations, greeting cards and certificates",
+    "a playful ornamental frame around a photo for a social post",
+    "manga-style focused speed lines framing a subject (the Focused Lines frame designs)",
+    "a quick decorative edge for a quote card"
+   ],
+   "avoid": [
+    "headless pipelines: the harvest's executeAction failed ('not currently available'), even with one value per declared key, and the frame settings are not in the declared descriptor; apply it by hand",
+    "rendering onto the photo layer: it paints straight into the pixels; use a new empty layer so the frame can be recoloured or removed",
+    "small selections: the shipped script refuses a selection narrower or shorter than 32 px ('The selection area must be more than 32 x 32 pixels')",
+    "clean, corporate borders: the ornaments read as clip art; a stroked rectangle or a layer style Stroke is crisper"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Creative/Frame",
+    "AI": "Window/Brush Libraries/Borders/Borders_Decorative"
+   },
+   "look": [
+    "picture frame",
+    "decorative border",
+    "vine frame",
+    "floral border",
+    "ornament",
+    "lace",
+    "speed lines frame",
+    "clip-art frame"
+   ],
+   "params": [],
+   "pairs_with": [
+    "a new empty layer (keeps the frame separate)",
+    "Color Overlay or Hue/Saturation on the frame layer (recolours it)",
+    "Drop Shadow (lifts the frame off the photo)",
+    "a layer mask (trims the frame where it covers a face)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"decoRenderPictureFrame\"), new ActionDescriptor(), DialogModes.NO);  // harvest: failed on a plain 480x270 RGB layer with no selection or path ('not currently available'), also with one value per declared key; the declared descriptor is the generic Edit > Fill set (from, using, opacity, mode ... decoScriptFile, decoScriptParameters), none of it tested; the harvested menu id 2232 (app.runMenuItem) is the interactive route, also untested and greyed out in the menu walk",
+   "scriptable": "no",
+   "non_destructive": "no: it renders pixels onto the layer; Smart Filter use was not probed by the harvest",
+   "cost": "not timed (the harvest never ran it); the ornament is rendered by a script engine (the shipped script turns on OpenGL); interactive dialog",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> needs_input and demo_settings {Opacity 100, Mode normal} removed: those generic Fill keys would not make a frame appear (the writer expected the render to fail) and the filter never ran headless; params: dropped the two 'probably / untested' Fill keys (scripting comment lists the declared set instead); summary: added the menu walk (greyed out in all seven states) and the verified dialog controls; avoid: the 32 x 32 rule worded as the shipped script's own message; cost: untimed 'medium' removed. 47 designs, 32 px rule and OpenGL checked in Picture Frame.jsx; CDR Effects/Creative/Frame (points back here) and AI Borders_Decorative library kept."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: the harvest's menu walk found it greyed out in all seven document states it tried, and a call on a plain layer is refused as not available (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "name": "Tree",
+   "id": "decoRenderTree",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Render/Tree",
+   "status": "needs_input",
+   "summary": "Scripted (Deco) render filter that draws a complete, shaded tree as pixels on the current layer; its dialog (shipped Presets/Deco/Tree.jsx) offers 34 base tree types (oak, maple, pine, palm, bamboo, sakura cherry blossom, stylised trees ...) with light direction, leaves amount and size, branches height and thickness, camera tilt, leaves type and custom leaf / branch colours. The harvest could not run it: on a plain layer Photoshop answered that the command is not currently available, and the harvest's menu walk (work/ps/menu_states.json) found Flame, Picture Frame and Tree greyed out in all seven document states it tried (empty layer, filled pixel layer, select-all selection, text, smart object, group, several layers); what enables it was not found.",
+   "use_for": [
+    "set-dressing a poster, banner or mock landscape with a tree on its own layer",
+    "environment-day, festival or nature-themed social graphics",
+    "black tree silhouettes against a sunset (custom leaf and branch colours set to black)",
+    "stylised trees for flat illustration-style layouts"
+   ],
+   "avoid": [
+    "headless pipelines: the harvest's executeAction failed ('not currently available'), even with one value per declared key, and the tree settings are not in the declared descriptor; apply it by hand",
+    "rendering onto the photo layer: it paints straight into the pixels; use a new empty layer so the tree can be scaled, moved and shadowed",
+    "photoreal composites: the trees read as rendered CG next to real photography; use a cut-out photo of a real tree",
+    "matching scene lighting automatically: set Light Direction in the dialog to match the photo's light"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "tree",
+    "foliage",
+    "nature",
+    "silhouette tree",
+    "cherry blossom",
+    "palm tree",
+    "illustrated tree"
+   ],
+   "params": [],
+   "pairs_with": [
+    "a new empty layer (keeps the tree separate)",
+    "Drop Shadow or a skewed, blurred shadow layer (grounds the tree)",
+    "Hue/Saturation (autumn or seasonal leaf colours)",
+    "Gaussian Blur (pushes a background tree out of focus)"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"decoRenderTree\"), new ActionDescriptor(), DialogModes.NO);  // harvest: failed on a plain 480x270 RGB layer with no selection or path ('not currently available'), also with one value per declared key; the declared descriptor is the generic Edit > Fill set (from, using, opacity, mode ... decoScriptFile, decoScriptParameters), none of it tested; the harvested menu id 2233 (app.runMenuItem) is the interactive route, also untested and greyed out in the menu walk",
+   "scriptable": "no",
+   "non_destructive": "no: it renders pixels onto the layer; Smart Filter use was not probed by the harvest",
+   "cost": "not timed (the harvest never ran it); rendered by a script engine; interactive dialog",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> needs_input and demo_settings {Opacity 100, Mode normal} removed: those generic Fill keys would not make a tree appear and the filter never ran headless; params: dropped the two 'probably / untested' Fill keys; summary: added the menu walk (greyed out in all seven states); 'stem' colour -> 'branch' (the dialog's label); cost: untimed 'medium, heavier with many leaves' removed. 34 types and dialog controls checked in Tree.jsx; empty equivalents kept (AI / CDR only have fixed tree symbols / sprays)."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: the harvest's menu walk found it greyed out in all seven document states it tried, and a call on a plain layer is refused as not available (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  }
+ ]
+}

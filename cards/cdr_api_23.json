@@ -1,0 +1,3135 @@
+{
+ "cards": [
+  {
+   "name": "SegmentRange",
+   "id": "class:SegmentRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SegmentRange",
+   "status": "current",
+   "summary": "A list of curve segments from one curve that you treat as a unit: read their combined Length and common Type, turn them all into straight lines or Bezier curves with SetType, split each one with a midpoint node (AddNode), or select the nodes that control them for the Shape tool.",
+   "use_for": [
+    "turning a straight-edged polyline trace into curves before smoothing it into an organic logo outline",
+    "doubling the node count of a path before a hand-drawn wobble or distortion script",
+    "measuring the cut length of selected edges for a vinyl, laser or embroidery quote",
+    "selecting a set of segments' nodes so the user can keep editing them with the Shape tool"
+   ],
+   "avoid": [
+    "moving or editing individual nodes: use the Nodes collection / NodeRange (NodeRange gives back a SegmentRange when you need both)",
+    "combining segments from different curves: the range has a single Parent curve"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Members live on IVGSegmentRange. Get one from a curve's segment collection (ActiveShape.Curve.Segments.All, .Range(Array(1, 3)), .AllExcluding(...)), from NodeRange.SegmentRange, or make an empty one with Application.CreateSegmentRange and fill it with Add / AddRange. Iterate with Count / Item (base 1) or For Each, then apply a bulk change (SetType, AddNode) or selection call.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of segments in the range"
+    },
+    {
+     "name": "Item",
+     "use": "one Segment by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the range"
+    },
+    {
+     "name": "Type",
+     "use": "cdrSegmentType common to all segments (cdrLineSegment / cdrCurveSegment), presumably cdrMixedSegments (2) when they differ"
+    },
+    {
+     "name": "Length",
+     "use": "total length of the segments, in document units"
+    },
+    {
+     "name": "SetType",
+     "use": "make every segment a line or a curve in one call"
+    },
+    {
+     "name": "AddNode",
+     "use": "insert a node in the middle of each segment"
+    },
+    {
+     "name": "Add",
+     "use": "append a Segment to the range"
+    },
+    {
+     "name": "AddRange",
+     "use": "append all segments of another SegmentRange"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the segment at an index from the range"
+    },
+    {
+     "name": "RemoveRange",
+     "use": "drop the segments of another range"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "empty the range"
+    },
+    {
+     "name": "FirstSegment",
+     "use": "first segment in the range"
+    },
+    {
+     "name": "LastSegment",
+     "use": "last segment in the range"
+    },
+    {
+     "name": "NodeRange",
+     "use": "the NodeRange for the nodes behind these segments"
+    },
+    {
+     "name": "Parent",
+     "use": "the Curve the segments belong to"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "select the controlling nodes (replacing the node selection)"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add the controlling nodes to the node selection"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1 (the typelib says so); Item(0) fails.",
+    "Remove / RemoveAll only edit the list; nothing is deleted from the curve. To delete geometry work on the nodes or the SubPath.",
+    "AddNode and SetType change the curve, so segment indexes and Segments.Count shift afterwards; rebuild the range from Curve.Segments before a second pass (unverified whether the old range stays valid).",
+    "Parent is a Curve, not a Shape: segments from another curve cannot join this range (unverified whether Add raises an error or silently ignores them).",
+    "Length is in ActiveDocument.Unit; set the document unit first if you need millimetres."
+   ],
+   "example": "Dim sr As SegmentRange\nSet sr = ActiveShape.Curve.Segments.All\nDebug.Print sr.Count & \" segments, length \" & sr.Length\nIf sr.Type <> cdrCurveSegment Then sr.SetType cdrCurveSegment\nsr.AddNode",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Segments",
+   "id": "class:Segments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Segments",
+   "status": "current",
+   "summary": "The collection of all segments of a curve (Curve.Segments) or of one subpath (SubPath.Segments): count them, walk them one by one, or cut out a SegmentRange of chosen, all, or all-but-some segments for a bulk edit.",
+   "use_for": [
+    "counting straight vs curved edges of a traced logo to decide whether it needs smoothing",
+    "walking every edge of a path to measure or label it (dieline, cut path)",
+    "building a SegmentRange of all segments to convert them to curves in one go"
+   ],
+   "avoid": [
+    "node-level edits (move, cusp/smooth): use Curve.Nodes",
+    "bulk changes: take a SegmentRange with All / Range rather than looping Item calls"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Members live on IVGSegments. Reach it from a curve shape: ActiveShape.Curve.Segments (every segment of every subpath) or ActiveShape.Curve.SubPaths(1).Segments (one subpath). Read Count / Item (base 1) / First / Last, loop with For Each, or call All / Range(Array(...)) / AllExcluding(Array(...)) to get a SegmentRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of segments"
+    },
+    {
+     "name": "Item",
+     "use": "one Segment by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the segments"
+    },
+    {
+     "name": "First",
+     "use": "first segment"
+    },
+    {
+     "name": "Last",
+     "use": "last segment"
+    },
+    {
+     "name": "All",
+     "use": "SegmentRange with every segment"
+    },
+    {
+     "name": "Range",
+     "use": "SegmentRange from an array of indexes"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "SegmentRange of every segment except the listed indexes"
+    },
+    {
+     "name": "Parent",
+     "use": "the Curve the collection belongs to"
+    }
+   ],
+   "gotchas": [
+    "Only curve shapes have it: ActiveShape.Curve is Nothing / fails for a rectangle, ellipse or text until ConvertToCurves (unverified which of the two).",
+    "Item is base 1.",
+    "The collection is live: adding nodes or breaking segments while looping changes Count, so collect a SegmentRange first or loop backwards (unverified for For Each).",
+    "Parent is typed as Curve even when the collection came from a SubPath (the typelib text says 'parent subpath')."
+   ],
+   "example": "Dim seg As Segment, nLines As Long\nFor Each seg In ActiveShape.Curve.Segments\n    If seg.Type = cdrLineSegment Then nLines = nLines + 1\nNext seg\nDebug.Print nLines & \" of \" & ActiveShape.Curve.Segments.Count & \" are straight\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SelectionInfo",
+   "id": "class:SelectionInfo",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SelectionInfo",
+   "status": "current",
+   "summary": "A read-only report on the document's current selection: how many objects and which (FirstShape, SecondShape), what they are (group, text, bitmap, blend / contour / drop shadow / extrude parts, guideline, connector) and what can be done to them (CanApplyFill, CanCreateBlend, CanApplyContour, CanUngroup ...). It is the information CorelDRAW uses to enable menu commands.",
+   "use_for": [
+    "guarding a macro so it only runs when the selection makes sense (two shapes for a blend, text for a type fix)",
+    "finding the control object behind a drop shadow, contour or blend group the user clicked",
+    "enabling or greying out buttons in a custom docker based on the selection",
+    "skipping a batch step when the selection holds locked objects (CanUnlockShapes) or the document cannot print (CanPrint)"
+   ],
+   "avoid": [
+    "working on objects you collected yourself: test the ShapeRange / Shape directly (Type, CanHaveFill, IsSimpleShape)",
+    "changing anything: every member is read-only; act through the Shape / ShapeRange"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGSelectionInformation. ActiveDocument.SelectionInfo returns it for the document's live selection. Is* members without 'Selected' / 'Present' test the first selected shape; *Selected / *Present test whether any selected shape matches; Can* tell whether a command would work; the shape-valued members (BlendTopShape, ContourGroup, DropShadowControlShape ...) hand back the parts of a selected effect.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of selected objects"
+    },
+    {
+     "name": "FirstShape",
+     "use": "first selected shape"
+    },
+    {
+     "name": "SecondShape",
+     "use": "second selected shape (blend / contour pairs)"
+    },
+    {
+     "name": "IsGroup",
+     "use": "the selected shape is a group"
+    },
+    {
+     "name": "IsGroupSelected",
+     "use": "any selected shape is a group"
+    },
+    {
+     "name": "IsTextSelected",
+     "use": "a selected shape is text"
+    },
+    {
+     "name": "IsArtisticTextSelected",
+     "use": "selection is artistic text"
+    },
+    {
+     "name": "IsParagraphTextSelected",
+     "use": "selection is paragraph text"
+    },
+    {
+     "name": "IsEditingText",
+     "use": "the user is inside a text edit"
+    },
+    {
+     "name": "IsBitmapSelected",
+     "use": "a selected shape is a bitmap"
+    },
+    {
+     "name": "CanApplyFill",
+     "use": "a fill can be applied"
+    },
+    {
+     "name": "CanApplyOutline",
+     "use": "an outline can be applied"
+    },
+    {
+     "name": "CanApplyTransparency",
+     "use": "a transparency can be applied"
+    },
+    {
+     "name": "CanCreateBlend",
+     "use": "the selected shapes can form a blend"
+    },
+    {
+     "name": "CanApplyContour",
+     "use": "a contour can be applied"
+    },
+    {
+     "name": "CanApplyEnvelope",
+     "use": "an envelope can be applied"
+    },
+    {
+     "name": "CanUngroup",
+     "use": "something in the selection can be ungrouped"
+    },
+    {
+     "name": "IsDropShadowGroup",
+     "use": "the selected shape is a drop shadow group"
+    },
+    {
+     "name": "DropShadowControlShape",
+     "use": "the object casting the selected drop shadow"
+    },
+    {
+     "name": "BlendTopShape",
+     "use": "top control shape of the selected blend"
+    }
+   ],
+   "gotchas": [
+    "It always describes the current document selection, not a range a script built: call ShapeRange.CreateSelection first if you want to query your own objects.",
+    "Several typelib descriptions are shifted by one line (IsConnector reads 'fitted text', IsFittedTextControl reads 'natural media control', IsNaturalMediaGroup reads 'envelope', CanCloneDropShadow reads 'blend'): trust the member name, not the description (unverified that the names are the correct ones).",
+    "Shape-valued members return Nothing when the selection has no such part (unverified; test with Is Nothing before use).",
+    "Is* (first selected shape) and Is*Selected / Is*Present (any selected shape) give different answers for mixed selections (unverified that the plain Is* members read the first shape; the typelib says only 'the selected shape')."
+   ],
+   "example": "Dim si As SelectionInfo\nSet si = ActiveDocument.SelectionInfo\nIf si.Count = 2 And si.CanCreateBlend Then\n    si.FirstShape.CreateBlend si.SecondShape, 12\nElseIf si.IsDropShadowGroup Then\n    Debug.Print \"shadow of: \" & si.DropShadowControlShape.Name\nEnd If",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for 'skipping locked or unprintable cases' implied per-object printability; CanPrint is document-level, so it now names CanUnlockShapes / CanPrint; the first-shape reading of plain Is* members is marked unverified"
+   }
+  },
+  {
+   "name": "SeparationPlate",
+   "id": "class:SeparationPlate",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SeparationPlate",
+   "status": "current",
+   "summary": "One ink plate of a separated print job (cyan, magenta, yellow, black or a spot colour): switch the plate on or off, set its halftone screen frequency and angle, and choose whether text and graphics overprint on it.",
+   "use_for": [
+    "printing only the plate that changed when one ink needs new film or a new plate",
+    "custom screen angles / frequencies per ink to avoid moire on a spot-colour job",
+    "overprinting black text or a varnish / white underbase plate"
+   ],
+   "avoid": [
+    "identifying a plate by Type: the typelib says Type is reserved; use Color",
+    "colour-managed proofing on screen: that is a view / proof setting, not separations"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Ink"
+   },
+   "how": "Members live on IPrnVBASeparationPlate (flagged hidden in VGCoreAuto.tlb and also in the CdrPrn library), so object browsers show this visible SeparationPlate class instead. Reach it from the document's print settings: ActiveDocument.PrintSettings.Separations.Plates(i) / .Plates.Item(i).",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "read-only ink name of the plate"
+    },
+    {
+     "name": "Enabled",
+     "use": "output this plate or not"
+    },
+    {
+     "name": "Frequency",
+     "use": "screen frequency (lpi) for the plate"
+    },
+    {
+     "name": "Angle",
+     "use": "screen angle in degrees for the plate"
+    },
+    {
+     "name": "OverprintText",
+     "use": "overprint text on this plate"
+    },
+    {
+     "name": "OverprintGraphic",
+     "use": "overprint graphics on this plate"
+    },
+    {
+     "name": "Type",
+     "use": "PrnPlateType, read-only and documented as reserved"
+    }
+   ],
+   "gotchas": [
+    "Plates only matter when PrintSettings.Separations.Enabled is True; set it first.",
+    "Per-plate Frequency / Angle are likely ignored unless the advanced screening settings (Separations.AdvancedSettings) are on (unverified).",
+    "The plate list is built from the inks the document uses; a spot colour that is not used anywhere has no plate (unverified).",
+    "Color is the display name of the ink (a Pantone name for spot plates); compare it exactly (unverified case sensitivity)."
+   ],
+   "example": "Dim i As Long\nWith ActiveDocument.PrintSettings.Separations\n    .Enabled = True\n    For i = 1 To .Plates.Count\n        If .Plates.Item(i).Color = \"Black\" Then .Plates.Item(i).OverprintText = True\n        Debug.Print .Plates.Item(i).Color, .Plates.Item(i).Angle\n    Next i\nEnd With",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SeparationPlates",
+   "id": "class:SeparationPlates",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SeparationPlates",
+   "status": "current",
+   "summary": "The list of colour separation plates the document's print job will produce, one SeparationPlate per ink; it only offers Count and Item.",
+   "use_for": [
+    "looping over every ink plate to report or switch plates before printing separations",
+    "checking how many inks (process + spot) a job will need before sending it to press"
+   ],
+   "avoid": [
+    "finding which spot colours a design uses: read the document's colours / palette instead, the plate list depends on print settings",
+    "For Each loops: no enumerator is harvested, use For i = 1 To Count"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IPrnVBASeparationPlates (hidden interface, also in CdrPrn). Reach it as ActiveDocument.PrintSettings.Separations.Plates; take one plate with Item(i).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of separation plates available for the document"
+    },
+    {
+     "name": "Item",
+     "use": "one SeparationPlate by index"
+    }
+   ],
+   "gotchas": [
+    "No _NewEnum member is harvested, so For Each over Plates may fail; use an index loop.",
+    "Item index base is not stated; treat it as base 1 like the rest of the object model (unverified).",
+    "Count reflects the current print settings (separations on, colours converted to process or not), so read it after changing those settings (unverified)."
+   ],
+   "example": "Dim seps As Object, i As Long\nSet seps = ActiveDocument.PrintSettings.Separations\nseps.Enabled = True\nFor i = 1 To seps.Plates.Count\n    Debug.Print i, seps.Plates.Item(i).Color, seps.Plates.Item(i).Enabled\nNext i",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Shape",
+   "id": "class:Shape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Shape",
+   "status": "current",
+   "summary": "Any object in a CorelDRAW document (rectangle, ellipse, curve, text, bitmap, group, effect group, guideline, symbol instance, or the selection itself): it carries position and size, fill / outline / transparency, stacking and layer, shaping (weld, trim, intersect), live effects (drop shadow, contour, blend, envelope, extrude, lens) and conversions (to curves, to bitmap).",
+   "use_for": [
+    "placing a logo, badge or price tag at exact page coordinates in a layout template",
+    "restyling an object's fill and outline and naming it so later scripts can find it",
+    "boolean shaping of icons and logo marks (weld, trim, intersect, fillet corners)",
+    "adding a drop shadow, inner shadow or contour to a headline or product card",
+    "converting text to curves or rasterising an object before a print-ready export",
+    "PowerClipping a photo inside a frame shape for a poster or social post"
+   ],
+   "avoid": [
+    "looping over many objects one by one when a ShapeRange call (ApplyUniformFill, AlignAndDistribute, Group) does it in one step",
+    "Shape.Group / Shape.Combine on one object: they act on the selection; build a ShapeRange and call its Group / Combine",
+    "ConvertToCurves on text that still needs editing: it is one-way, keep a hidden duplicate"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "PageItem",
+    "PS": "ArtLayer"
+   },
+   "how": "Members live on IVGShape. A script never creates a Shape with New: it comes back from Layer.CreateRectangle2 / CreateEllipse2 / CreateArtisticText, ActiveShape, Shapes.Item(i) / FindShape, ShapeRange.Item(i), or from methods that return a new shape (Duplicate, Clone, Weld, Trim, ConvertToBitmapEx, Group). Check Type (cdrShapeType) before touching the type-specific sub-objects (Curve, Text, Bitmap, Rectangle, Symbol).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrShapeType: which kind of object this is"
+    },
+    {
+     "name": "Name",
+     "use": "object name; set it so FindShape can find it later"
+    },
+    {
+     "name": "LeftX",
+     "use": "left edge in document units (with RightX / TopY / BottomY)"
+    },
+    {
+     "name": "TopY",
+     "use": "top edge in document units"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "width on the page"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "height on the page"
+    },
+    {
+     "name": "SetPositionEx",
+     "use": "move a chosen reference point (cdrCenter, cdrTopLeft ...) to x, y"
+    },
+    {
+     "name": "SetSize",
+     "use": "stretch to a width and / or height"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "absolute rotation in degrees"
+    },
+    {
+     "name": "Fill",
+     "use": "the Fill object: uniform, fountain, pattern, texture"
+    },
+    {
+     "name": "Outline",
+     "use": "the Outline object: width, colour, style, arrows"
+    },
+    {
+     "name": "Transparency",
+     "use": "the Transparency object"
+    },
+    {
+     "name": "Duplicate",
+     "use": "copy offset by OffsetX, OffsetY (default 0, 0)"
+    },
+    {
+     "name": "Weld",
+     "use": "union with a target shape; returns the new shape"
+    },
+    {
+     "name": "Trim",
+     "use": "cut this shape out of a target shape"
+    },
+    {
+     "name": "AddToPowerClip",
+     "use": "put this shape inside a container shape"
+    },
+    {
+     "name": "CreateDropShadow",
+     "use": "live drop shadow (Opacity 50, Feather 15, offset 0, 0 by default)"
+    },
+    {
+     "name": "ConvertToCurves",
+     "use": "turn text / primitives into editable curves (one-way)"
+    },
+    {
+     "name": "ConvertToBitmapEx",
+     "use": "rasterise to a bitmap shape (Resolution defaults to 72)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the shape from the document"
+    }
+   ],
+   "gotchas": [
+    "Coordinates are in ActiveDocument.Unit and Y grows upward from the page's lower edge, unlike Photoshop / Illustrator's top-down Y; set the unit at the start of a script.",
+    "PositionX / PositionY / SetPosition use the document's ReferencePoint, which a user or another script may have changed; LeftX / TopY / SetPositionEx are unambiguous.",
+    "Group and Combine work on the current selection, not on this shape alone (the typelib says 'group of selected objects' and 'must be part of the same selection').",
+    "AddToSelection / RemoveFromSelection do nothing on the selection shape itself (ActiveSelection, Type cdrSelectionShape).",
+    "Weld, Trim, Intersect, ConvertToBitmapEx and Group return a new Shape; keep that reference, the old one may be dead (unverified for every case).",
+    "ConvertToBitmapEx and ConvertToBitmap default to 72 dpi; pass 300 or more for print.",
+    "GetPosition, GetSize, GetBoundingBox and GetMatrix return values through ByRef arguments, which late-bound callers (Python win32com) may not receive; read LeftX / SizeWidth / BoundingBox instead (unverified per binding)."
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveLayer.CreateRectangle2(0, 0, 4, 2)\ns.Name = \"badge\"\ns.Fill.ApplyUniformFill CreateRGBColor(255, 200, 0)\ns.SetPositionEx cdrCenter, ActivePage.CenterX, ActivePage.CenterY\ns.CreateDropShadow Opacity:=40, Feather:=12, OffsetX:=0.05, OffsetY:=-0.05",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ShapeRange",
+   "id": "class:ShapeRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ShapeRange",
+   "status": "current",
+   "summary": "A script-held list of shapes that you edit in one call: fill, outline, align and distribute, group, combine, duplicate, step-and-repeat, sort, convert or delete every member together. It is what the selection, FindShapes and Shapes.All give back, and it only holds references, so building or trimming the list never changes the drawing.",
+   "use_for": [
+    "recolouring every object of one type or name on a page in one call (rebrand a template)",
+    "aligning and distributing cards, icons or price tags across a layout",
+    "grouping the parts of a logo lock-up or combining letters into one curve",
+    "step-and-repeat for labels, tickets or tiling patterns",
+    "exporting only a chosen set of objects (select the range, export with cdrSelection)"
+   ],
+   "avoid": [
+    "a single object: use the Shape directly",
+    "a permanent named set of objects: group them or put them on their own layer; a ShapeRange lives only while the script runs"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Members live on IVGShapeRange. Get one from ActiveSelectionRange / ActiveDocument.SelectionRange, Shapes.All / Range / FindShapes, Page.FindShapes, Document.CreateShapeRangeFromArray, or start empty with Application.CreateShapeRange and Add / AddRange shapes. Item takes a 1-based index or a shape name.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of shapes in the range"
+    },
+    {
+     "name": "Item",
+     "use": "one Shape by 1-based index or by name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the shapes"
+    },
+    {
+     "name": "Add",
+     "use": "append a Shape"
+    },
+    {
+     "name": "AddRange",
+     "use": "append another ShapeRange"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the shape at an index from the list (it stays in the document)"
+    },
+    {
+     "name": "Exists",
+     "use": "True if a shape is already in the range"
+    },
+    {
+     "name": "FindAnyOfType",
+     "use": "sub-range of the shapes of given cdrShapeType values"
+    },
+    {
+     "name": "Sort",
+     "use": "reorder the list by a CQL comparison expression"
+    },
+    {
+     "name": "ApplyUniformFill",
+     "use": "one flat colour on every shape"
+    },
+    {
+     "name": "ApplyFountainFill",
+     "use": "one gradient on every shape"
+    },
+    {
+     "name": "SetOutlineProperties",
+     "use": "width, colour, caps, joins ... on every shape; untouched arguments keep their values"
+    },
+    {
+     "name": "AlignAndDistribute",
+     "use": "align / distribute the shapes like the Align and Distribute docker"
+    },
+    {
+     "name": "Group",
+     "use": "group all shapes; returns the group Shape"
+    },
+    {
+     "name": "Combine",
+     "use": "combine all shapes into one curve"
+    },
+    {
+     "name": "Duplicate",
+     "use": "copy every shape, returns the copies as a ShapeRange"
+    },
+    {
+     "name": "StepAndRepeat",
+     "use": "make NumCopies offset copies"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "make these shapes the document selection"
+    },
+    {
+     "name": "Delete",
+     "use": "delete every shape in the range from the document"
+    }
+   ],
+   "gotchas": [
+    "Remove / RemoveAll / RemoveRange only edit the list; Delete and DeleteItem delete shapes from the document.",
+    "ActiveSelectionRange is a snapshot of the selection at the moment you read it; selecting other objects later does not change it (unverified).",
+    "SetOutlineProperties / SetOutlinePropertiesEx use sentinel defaults (Width -1, NibAngle -9999, cdrTriState -2) meaning 'leave as is': pass only what you want to change.",
+    "Group and Combine return a new Shape; the range still lists the old members, which are now children of the group (or gone, after Combine) (unverified for Combine).",
+    "Sort and FindShapes queries are CQL strings (for example comparing @shape1.left with @shape2.left); the syntax is not in the harvest (unverified).",
+    "Parent is the Application, not a page or layer: a range can mix shapes from several layers or pages, and page-relative calls such as AlignToPage use the active page (unverified)."
+   ],
+   "example": "Dim sr As ShapeRange, g As Shape\nSet sr = ActivePage.Shapes.FindShapes(Type:=cdrRectangleShape)\nIf sr.Count > 0 Then\n    sr.ApplyUniformFill CreateRGBColor(20, 90, 200)\n    sr.SetOutlineProperties Width:=0.01\n    Set g = sr.Group\n    g.Name = \"cards\"\nEnd If",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Shapes",
+   "id": "class:Shapes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Shapes",
+   "status": "current",
+   "summary": "The live collection of shapes on a layer, page, spread, group or PowerClip: look objects up by index or name, search them with FindShape / FindShapes (by name, type or CQL query, optionally inside groups), or take all or part of them as a ShapeRange.",
+   "use_for": [
+    "finding a named placeholder (logo, price, photo frame) in a template to fill it",
+    "walking every object on a layer to audit fonts, colours or bitmap resolution",
+    "collecting all text or all bitmaps on a page for a batch fix"
+   ],
+   "avoid": [
+    "deleting while looping forward: the collection shrinks under you; take Shapes.All first or loop backwards",
+    "the user's selection: use ActiveSelectionRange"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "PageItems",
+    "PS": "Layers"
+   },
+   "how": "Members live on IVGShapes. Every container has one: ActiveLayer.Shapes, ActivePage.Shapes (all layers of the page), Spread.Shapes, a group's Shape.Shapes, PowerClip.Shapes; SelectableShapes variants on Document / Page / Layer / Spread return only the selectable shapes (presumably skipping locked and hidden objects; the typelib says only 'selectable'). Item accepts a 1-based index or a name.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of shapes in the collection"
+    },
+    {
+     "name": "Item",
+     "use": "one Shape by 1-based index or by name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the shapes"
+    },
+    {
+     "name": "First",
+     "use": "first shape in the collection"
+    },
+    {
+     "name": "Last",
+     "use": "last shape in the collection"
+    },
+    {
+     "name": "FindShape",
+     "use": "first shape matching Name / Type / StaticID / CQL Query; Recursive enters groups"
+    },
+    {
+     "name": "FindShapes",
+     "use": "ShapeRange of every match (Name, Type, Recursive, Query)"
+    },
+    {
+     "name": "All",
+     "use": "ShapeRange with every shape"
+    },
+    {
+     "name": "Range",
+     "use": "ShapeRange from an array of indexes"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "ShapeRange of everything except the listed indexes"
+    },
+    {
+     "name": "Parent",
+     "use": "the container (layer, page, shape ...) that owns the collection"
+    }
+   ],
+   "gotchas": [
+    "Index order follows the stacking order; Item(1) is believed to be the frontmost object (unverified).",
+    "FindShape returns Nothing when nothing matches; test with Is Nothing before using the result (unverified that it does not raise).",
+    "FindShape / FindShapes default Recursive:=True, so they also return shapes inside groups; pass False for top-level objects only.",
+    "Page.Shapes spans the page's layers but not the master layers' objects on every page (unverified); Layer.Shapes is limited to one layer."
+   ],
+   "example": "Dim s As Shape, logo As Shape\nFor Each s In ActiveLayer.Shapes\n    If s.Type = cdrTextShape Then Debug.Print s.Name\nNext s\nSet logo = ActivePage.Shapes.FindShape(Name:=\"logo\")\nIf Not logo Is Nothing Then logo.Selected = True",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "SelectableShapes 'skip locked and hidden objects' was stated as fact; the typelib only says 'selectable', now marked presumed"
+   }
+  },
+  {
+   "name": "SnapPoint",
+   "id": "class:SnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SnapPoint",
+   "status": "current",
+   "summary": "One snap point on a shape (a user point you placed, an object point such as a node or centre, a bounding-box point, an edge point or the auto point) or a free point in the document: its position, type, connector direction and stable reference id; user points can be moved and deleted.",
+   "use_for": [
+    "anchoring connector lines to fixed points on flowchart or org-chart boxes",
+    "adding named attachment points to a reusable symbol (a pin, a socket, a port)",
+    "reading the exact position of a bounding-box corner or centre for precise placement"
+   ],
+   "avoid": [
+    "moving the shape: move the Shape, not its bounding-box or object snap points",
+    "plain coordinates you only need once: read LeftX / CenterX on the Shape"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGSnapPoint. Get it from a shape's SnapPoints collection (User(\"id\"), BBox(cdrTopMiddle), Object(...), Edge(...), Auto, FindClosest, AddUserSnapPoint / AddUserSnapPointEx), from Shape.FindSnapPoint(ReferenceData), or create a free point with Application.CreateSnapPoint / Document.CreateFreeSnapPoint. Layer.CreateConnector takes two snap points as its ends.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrPointType: user, object, bounding box, edge, free, auto"
+    },
+    {
+     "name": "PositionX",
+     "use": "x position (read / write)"
+    },
+    {
+     "name": "PositionY",
+     "use": "y position (read / write)"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move to x, y"
+    },
+    {
+     "name": "Move",
+     "use": "shift by OffsetX, OffsetY"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the snap point"
+    },
+    {
+     "name": "IsMovable",
+     "use": "True when the point may be moved"
+    },
+    {
+     "name": "IsDeletable",
+     "use": "True when the point may be deleted"
+    },
+    {
+     "name": "Direction",
+     "use": "default connector direction (an angle; degrees presumed, the typelib gives no unit)"
+    },
+    {
+     "name": "UsesDirection",
+     "use": "whether connectors honour Direction"
+    },
+    {
+     "name": "CanChangeDirection",
+     "use": "True when Direction can be changed"
+    },
+    {
+     "name": "ReferenceData",
+     "use": "unique id string; find the point again with Shape.FindSnapPoint"
+    },
+    {
+     "name": "Shape",
+     "use": "the shape the point belongs to"
+    },
+    {
+     "name": "User",
+     "use": "user-snap-point specific properties"
+    },
+    {
+     "name": "BBox",
+     "use": "bounding-box-snap-point specific properties"
+    },
+    {
+     "name": "Edge",
+     "use": "edge-snap-point specific properties"
+    },
+    {
+     "name": "Selected",
+     "use": "selection state for the Shape tool"
+    },
+    {
+     "name": "Node",
+     "use": "the node behind an object snap point"
+    }
+   ],
+   "gotchas": [
+    "Only user snap points are meant to be moved or deleted; check IsMovable / IsDeletable before Move / Delete.",
+    "cdrPointType values are bit flags (cdrSnapPointUser 1, Object 2, BBox 4, Edge 8, Free 16, Auto 32) and the legacy cdrFreePoint shares value 1 with cdrSnapPointUser: compare Type with the cdrSnapPoint* names.",
+    "Keep ReferenceData, not the object, when you need the point later; references to snap points of a shape that was edited may go stale (unverified).",
+    "A free snap point has no owning shape; Shape is presumably Nothing for it (unverified)."
+   ],
+   "example": "Dim sp As SnapPoint, u As SnapPoint\nSet sp = ActiveShape.SnapPoints.BBox(cdrTopMiddle)\nDebug.Print sp.PositionX, sp.PositionY, sp.ReferenceData\nSet u = ActiveShape.SnapPoints.AddUserSnapPointEx(\"out\", ActiveShape.RightX, ActiveShape.CenterY, 0, True)\nIf u.IsMovable Then u.Move 0.1, 0",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Direction key member stated 'in degrees'; the typelib gives no unit, now marked presumed"
+   }
+  },
+  {
+   "name": "SnapPointRange",
+   "id": "class:SnapPointRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SnapPointRange",
+   "status": "current",
+   "summary": "A list of snap points you change together: move or delete them all, set one connector direction or the auto-snap state on every point, or make them the snap-point selection. It is what SnapPoints.All, .Selection and .Range(...) return and only holds references.",
+   "use_for": [
+    "shifting all user anchor points of a template box together so connectors re-route",
+    "giving every anchor of a flowchart shape the same outgoing direction",
+    "clearing old user snap points from a reused symbol before adding new ones",
+    "selecting a set of snap points for the Shape tool from a script"
+   ],
+   "avoid": [
+    "moving the shape: use the Shape's own position members",
+    "Remove when you mean Delete: Remove only takes the point out of the list"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGSnapPointRange. Get one from a shape: ActiveShape.SnapPoints.All (every snap point), .Selection (points selected with the Shape tool) or .Range(Array(p1.ReferenceData, p2.ReferenceData)) (points by reference id; whether a user ID string works there too is unverified). Grow it with Add, shrink it with Remove / RemoveByReference, then call a bulk method.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of snap points in the list"
+    },
+    {
+     "name": "Item",
+     "use": "one SnapPoint by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the list"
+    },
+    {
+     "name": "Add",
+     "use": "add a SnapPoint; returns True on success"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the point at an index from the list (point is kept)"
+    },
+    {
+     "name": "RemoveByReference",
+     "use": "drop a point by its ReferenceData id"
+    },
+    {
+     "name": "Find",
+     "use": "look a point up by ReferenceData"
+    },
+    {
+     "name": "Move",
+     "use": "shift every point by OffsetX, OffsetY"
+    },
+    {
+     "name": "Delete",
+     "use": "delete every listed snap point from its shape"
+    },
+    {
+     "name": "ChangeDirection",
+     "use": "set the connector direction and its use on every point"
+    },
+    {
+     "name": "SetAutoSnap",
+     "use": "turn auto snapping on / off for every point"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "make these points the snap-point selection"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add these points to the snap-point selection"
+    },
+    {
+     "name": "RemoveFromSelection",
+     "use": "take these points out of the snap-point selection"
+    }
+   ],
+   "gotchas": [
+    "Remove / RemoveByReference edit the list only; Delete removes the actual snap points, after which the list is stale: re-read SnapPoints.All.",
+    "ChangeDirection's defaults (Direction -9999, UsesDirection cdrTriState -2) look like 'keep current' sentinels; pass both arguments to force a direction (unverified).",
+    "Item index base is not stated for this list; SnapPoints.Item is base 1, assume the same (unverified).",
+    "Move / Delete on bounding-box, object or edge points are probably ignored or rejected; filter to user points first (unverified)."
+   ],
+   "example": "Dim a As SnapPoint, b As SnapPoint, r As SnapPointRange\nWith ActiveShape.SnapPoints\n    Set a = .AddUserSnapPointEx(\"in\", ActiveShape.LeftX, ActiveShape.CenterY, 180, True)\n    Set b = .AddUserSnapPointEx(\"out\", ActiveShape.RightX, ActiveShape.CenterY, 0, True)\n    Set r = .Range(Array(a.ReferenceData, b.ReferenceData))\nEnd With\nr.Move 0, 0.25\nr.SetAutoSnap True",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example built the range with .Range(Array(\"in\", \"out\")), the user IDs, but SnapPoints.Range takes 'References' (ReferenceData ids); it now passes a.ReferenceData / b.ReferenceData of the points AddUserSnapPointEx returned, and how says the user-ID form is unverified"
+   }
+  },
+  {
+   "name": "SnapPoints",
+   "id": "class:SnapPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SnapPoints",
+   "status": "current",
+   "summary": "A shape's snap points: find a specific one (user point by id, bounding-box point by position, object point by kind, edge point, auto point, or the closest of given types), add user snap points, and get all or the selected ones as a SnapPointRange.",
+   "use_for": [
+    "adding named connection points to flowchart, wiring or org-chart symbols",
+    "finding the bounding-box corner or centre point to snap a connector or another object to",
+    "listing the snap points a user selected with the Shape tool"
+   ],
+   "avoid": [
+    "plain geometry (edges, centre) for placement: Shape.LeftX / CenterX are simpler",
+    "points not tied to a shape: Application.CreateSnapPoint makes a free point"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGSnapPoints. Reach it from a shape: ActiveShape.SnapPoints (all kinds) or ActiveShape.SnapPointsOfType(cdrSnapPointUser) (filtered). Look points up with User / BBox / Object / Edge / Auto / FindClosest, add with AddUserSnapPoint(Ex), and take ranges with All / Selection / Range.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of snap points"
+    },
+    {
+     "name": "Item",
+     "use": "one SnapPoint by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the points"
+    },
+    {
+     "name": "User",
+     "use": "user snap point by its ID string"
+    },
+    {
+     "name": "BBox",
+     "use": "bounding-box snap point at a cdrReferencePoint"
+    },
+    {
+     "name": "Object",
+     "use": "object snap point of a cdrObjectSnapPointType"
+    },
+    {
+     "name": "Edge",
+     "use": "edge snap point at a segment index and offset"
+    },
+    {
+     "name": "Auto",
+     "use": "the shape's auto snap point"
+    },
+    {
+     "name": "FindClosest",
+     "use": "nearest point of the given cdrPointType set to x, y"
+    },
+    {
+     "name": "AddUserSnapPoint",
+     "use": "add a user point at x, y with optional direction"
+    },
+    {
+     "name": "AddUserSnapPointEx",
+     "use": "same, with your own ID for later lookup"
+    },
+    {
+     "name": "All",
+     "use": "SnapPointRange of every point"
+    },
+    {
+     "name": "Selection",
+     "use": "SnapPointRange of the selected points"
+    },
+    {
+     "name": "Range",
+     "use": "SnapPointRange of points named by reference ids"
+    },
+    {
+     "name": "ClearSelection",
+     "use": "deselect all snap points"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning Shape"
+    }
+   ],
+   "gotchas": [
+    "Give user points an ID with AddUserSnapPointEx; AddUserSnapPoint makes an anonymous point you can only find again by position or ReferenceData.",
+    "User(\"id\") returns Nothing or fails for an unknown ID (unverified which); check before use.",
+    "Item is base 1; the order mixes point types, so do not rely on an index meaning a particular corner.",
+    "Positions are in document units and absolute page coordinates, not relative to the shape (unverified)."
+   ],
+   "example": "Dim pts As SnapPoints, a As SnapPoint, b As SnapPoint\nSet pts = ActiveShape.SnapPoints\nSet a = pts.AddUserSnapPointEx(\"port_out\", ActiveShape.RightX, ActiveShape.CenterY, 0, True)\nSet b = ActivePage.Shapes.FindShape(Name:=\"box2\").SnapPoints.BBox(cdrTopMiddle)\nActiveLayer.CreateConnector a, b\nDebug.Print pts.Count",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Spread",
+   "id": "class:Spread",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Spread",
+   "status": "current",
+   "summary": "A page spread: the page or the pair of facing pages shown side by side, with its own size and edges, its pages, its layers (including the guides, desktop and grid layers), its shapes and guidelines.",
+   "use_for": [
+    "laying out a double-page magazine or brochure spread where artwork crosses the gutter",
+    "placing a background image that must cover both facing pages",
+    "adding a layer or guides to a spread from a book / booklet script"
+   ],
+   "avoid": [
+    "single-page work: use the Page object (ActivePage), which is simpler",
+    "changing the spread size: size is read-only here; resize the pages"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGSpread. Reach it from ActiveDocument.ActiveSpread, ActiveDocument.Spreads(i), a page's Page.Spread or a shape's Shape.Spread; step with Next / Previous. With facing pages off, each page is its own spread (unverified).",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "position of the spread in the document"
+    },
+    {
+     "name": "Pages",
+     "use": "the pages in this spread"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "spread width"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "spread height"
+    },
+    {
+     "name": "LeftX",
+     "use": "left edge x"
+    },
+    {
+     "name": "RightX",
+     "use": "right edge x"
+    },
+    {
+     "name": "TopY",
+     "use": "top edge y"
+    },
+    {
+     "name": "BottomY",
+     "use": "bottom edge y"
+    },
+    {
+     "name": "CenterX",
+     "use": "centre x of the spread"
+    },
+    {
+     "name": "CenterY",
+     "use": "centre y of the spread"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "the spread rectangle as a Rect"
+    },
+    {
+     "name": "Shapes",
+     "use": "shapes on the spread"
+    },
+    {
+     "name": "SelectableShapes",
+     "use": "selectable shapes on the spread (presumably the visible, unlocked ones)"
+    },
+    {
+     "name": "Layers",
+     "use": "non-master layers of the spread"
+    },
+    {
+     "name": "AllLayers",
+     "use": "all layers including master ones"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "the active layer of the spread"
+    },
+    {
+     "name": "CreateLayer",
+     "use": "add a layer to the spread"
+    },
+    {
+     "name": "Guides",
+     "use": "guidelines on the spread, filtered by cdrGuideType"
+    },
+    {
+     "name": "Next",
+     "use": "next spread"
+    },
+    {
+     "name": "Previous",
+     "use": "previous spread"
+    }
+   ],
+   "gotchas": [
+    "Every size and edge member is read-only; change the pages' size instead.",
+    "Layers skips master layers; use AllLayers when you need the master / guides / desktop layers too.",
+    "Coordinates are in document units with Y up; on a two-page spread the second page's area continues to the right of the first (unverified exact origin).",
+    "GetBoundingBox returns through ByRef arguments; late-bound callers should read BoundingBox or LeftX / TopY instead (unverified per binding)."
+   ],
+   "example": "Dim sp As Spread\nFor Each sp In ActiveDocument.Spreads\n    Debug.Print sp.Index, sp.Pages.Count, sp.SizeWidth, sp.Shapes.Count\nNext sp\nSet sp = ActiveDocument.ActiveSpread\nsp.CreateLayer \"Bleed art\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "SelectableShapes key member 'visible and unlocked' now marked presumed (the typelib says only 'selectable')"
+   }
+  },
+  {
+   "name": "Spreads",
+   "id": "class:Spreads",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Spreads",
+   "status": "current",
+   "summary": "The document's page spreads in order, each a Spread (one page or a pair of facing pages).",
+   "use_for": [
+    "walking a brochure or booklet spread by spread to place cross-gutter art or check content",
+    "counting spreads to plan an imposition or page-flip export"
+   ],
+   "avoid": [
+    "page-by-page work: use ActiveDocument.Pages"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Members live on IVGSpreads. Reach it as ActiveDocument.Spreads; take one with Item(i), First or Last, or loop with For Each.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of spreads in the document"
+    },
+    {
+     "name": "Item",
+     "use": "one Spread by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the spreads"
+    },
+    {
+     "name": "First",
+     "use": "first spread"
+    },
+    {
+     "name": "Last",
+     "use": "last spread"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated; Spread.Index and the rest of the model use base 1 (unverified here).",
+    "The number of spreads changes with the facing-pages setting and with pages added or deleted; read Count after such changes."
+   ],
+   "example": "Dim i As Long\nWith ActiveDocument.Spreads\n    For i = 1 To .Count\n        Debug.Print i, .Item(i).Pages.Count, .Item(i).SizeWidth\n    Next i\n    Debug.Print \"last spread starts at x=\" & .Last.LeftX\nEnd With",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StatusText",
+   "id": "class:StatusText",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StatusText",
+   "status": "current",
+   "summary": "A Corel UI-framework static control that shows a caption or a small image in a custom user interface (an add-in docker, dialog or status area): the script can only set its text or its bitmap.",
+   "use_for": [
+    "showing a status line inside an add-in docker while a batch script runs",
+    "putting an icon next to a label in a custom framework UI"
+   ],
+   "avoid": [
+    "messages to the user from a plain macro: use a VBA MsgBox, or Application.Status (BeginProgress / SetProgressMessage / EndProgress) for a progress meter in the status bar",
+    "drawing text on the page: create an artistic text shape"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on ICUIStatusText (CrlFrmWkOM framework type library). It is created by the framework, not by the drawing model: Application.FrameWork.Application.CreateStatusText. SetBitmap wants an ICUIBitmapImage, which the same framework application creates (CreateBitmapImage).",
+   "key_members": [
+    {
+     "name": "SetCaptionText",
+     "use": "set the text the control shows"
+    },
+    {
+     "name": "SetBitmap",
+     "use": "set an ICUIBitmapImage for the control to show"
+    }
+   ],
+   "gotchas": [
+    "A StatusText only shows up when it is bound to a control in workspace / add-in UI XML; creating one in a plain macro does nothing visible (unverified).",
+    "It belongs to the framework library (also_in CrlFrmWkOM), so nothing in the VGCore drawing model returns it.",
+    "There are no getters: keep your own copy of the caption if you need to read it back."
+   ],
+   "example": "Dim st As Object\nSet st = Application.FrameWork.Application.CreateStatusText\nst.SetCaptionText \"Exporting page 3 of 12...\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid entry now names Application.Status.BeginProgress / SetProgressMessage (IVGAppStatus) instead of a vague 'Application status bar'; use_for no longer offers this control for progress, which IVGAppStatus covers"
+   }
+  },
+  {
+   "name": "StructAlignProperties",
+   "id": "class:StructAlignProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructAlignProperties",
+   "status": "hidden",
+   "summary": "Legacy holder for paragraph alignment settings of the classic Text object: alignment (left, centre, full / force justify), first-line, left and right indents, minimum / maximum word and character spacing, and character shift / rotation. The typelib gives no member descriptions; meanings follow the names.",
+   "use_for": [
+    "batch-setting justification and indents on paragraph text in an older macro",
+    "copying the alignment of one text block to another by reading and writing the struct"
+   ],
+   "avoid": [
+    "new scripts: set Alignment, indents and spacing on Text.Story (TextRange) instead (documented, visible members; this struct route is hidden)",
+    "per-character edits: TextRange members handle ranges more precisely"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ParagraphAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Members live on IVGStructAlignProperties. Every route to it is a hidden member in VGCoreAuto.tlb (FUNCFLAG_FHIDDEN): Shape.Text.AlignProperties(Frames) (Frames is cdrTextFrames, default cdrAllFrames = 2), Text.AlignPropertiesInRange(StartIndex, Count, IndexingType) and Application.CreateStructAlignProperties. Read a filled struct, change its fields, then write it back with a plain assignment, Text.AlignProperties(cdrAllFrames) = ap: the typelib declares the property as propput with no propputref, so it does not take Set.",
+   "key_members": [
+    {
+     "name": "Alignment",
+     "use": "cdrAlignment: left, right, centre, full justify, force justify"
+    },
+    {
+     "name": "FirstLineIndent",
+     "use": "first-line indent"
+    },
+    {
+     "name": "LeftIndent",
+     "use": "left indent of the paragraph"
+    },
+    {
+     "name": "RightIndent",
+     "use": "right indent of the paragraph"
+    },
+    {
+     "name": "MinWordSpacing",
+     "use": "minimum word spacing for justified text"
+    },
+    {
+     "name": "MaxWordSpacing",
+     "use": "maximum word spacing for justified text"
+    },
+    {
+     "name": "MaxCharacterSpacing",
+     "use": "maximum character spacing for justified text"
+    },
+    {
+     "name": "HorizontalCharacterShift",
+     "use": "horizontal shift of characters"
+    },
+    {
+     "name": "VerticalCharacterShift",
+     "use": "vertical shift of characters"
+    },
+    {
+     "name": "CharacterRotation",
+     "use": "character rotation angle"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct (Text.AlignProperties, Text.AlignPropertiesInRange, Application.CreateStructAlignProperties) is flagged hidden in the 25.1 typelib, so it is a legacy text model kept for compatibility: the VBA Object Browser does not list those routes and a later version may drop them.",
+    "Write-back: Text.AlignProperties and AlignPropertiesInRange are propput, not propputref, in VGCoreAuto.tlb, so assign without Set (ActiveShape.Text.AlignProperties(cdrAllFrames) = ap); 'Set ... = ap' is likely to fail (unverified at run time). Editing the struct alone does not change the text until it is written back (unverified).",
+    "Text.AlignProperties defaults to Frames:=cdrAllFrames (2); pass cdrThisFrameOnly for one frame of linked paragraph text.",
+    "Units are not documented: indents probably follow the document unit and spacing values are percentages (unverified).",
+    "Reading a range with mixed settings may give cdrMixedAlignment (6) and arbitrary numbers for the mixed fields (unverified)."
+   ],
+   "example": "Dim ap As StructAlignProperties\nSet ap = ActiveShape.Text.AlignProperties(cdrAllFrames)\nap.Alignment = cdrCenterAlignment\nap.FirstLineIndent = 0\nActiveShape.Text.AlignProperties(cdrAllFrames) = ap   ' propput in the typelib: no Set",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> hidden: the class is visible but Text.AlignProperties, AlignPropertiesInRange and Application.CreateStructAlignProperties all carry FUNCFLAG_FHIDDEN (checked with pythoncom on VGCoreAuto.tlb), matching the reviewed IVGStructAlignProperties card; summary / how / gotchas now say the route is hidden and legacy instead of 'unverified'. Fixed the write-back: the typelib declares Text.AlignProperties as propput (invkind 4) with no propputref, so the example's 'Set ActiveShape.Text.AlignProperties = ap' became 'ActiveShape.Text.AlignProperties(cdrAllFrames) = ap'"
+   }
+  },
+  {
+   "name": "StructColorConversionOptions",
+   "id": "class:StructColorConversionOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructColorConversionOptions",
+   "status": "current",
+   "summary": "Colour-management choices for opening, importing or pasting: which colour policy to apply, which source profile(s) to assume for untagged content, which profile(s) to convert the document to, and an optional callback for missing or mismatched profiles.",
+   "use_for": [
+    "importing untagged RGB photos with a known source profile so colours match the brand proof",
+    "converting pasted or imported artwork into the print document's CMYK profile automatically",
+    "running a batch import without the missing-profile dialog stopping the script"
+   ],
+   "avoid": [
+    "changing the profile of an already open document: that is the document's colour context, not this struct",
+    "converting one object's colours: use the colour conversion on the object / colour itself"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStructColorConversionOptions. You never create it on its own: it is the ColorConversionOptions property of a StructImportOptions, StructOpenOptions or StructPasteOptions object (made with Application.CreateStructImportOptions / CreateStructOpenOptions / CreateStructPasteOptions). Edit it in place, then pass the parent struct to Layer.Import / Application.OpenDocumentEx / Layer.PasteEx.",
+   "key_members": [
+    {
+     "name": "ColorPolicy",
+     "use": "read-only ColorManagementPolicy: what to do with RGB, CMYK and grayscale content and whether to warn"
+    },
+    {
+     "name": "SourceColorProfileList",
+     "use": "profile name(s) to treat incoming content as"
+    },
+    {
+     "name": "TargetColorProfileList",
+     "use": "profile name(s) to convert the document to after the operation"
+    },
+    {
+     "name": "ColorConversionHandler",
+     "use": "callback object for missing / mismatched profiles"
+    }
+   ],
+   "gotchas": [
+    "TargetColorProfileList changes the colour context of the whole document, not just the incoming objects (the typelib says so).",
+    "Profile lists are strings of profile names; the separator between several names is not documented here; the harvest documents a comma-separated profile-name list for Application.CreateColorContext2, so a comma is the likely separator (unverified), and whether file names also work is unverified.",
+    "ColorPolicy is read-only as a property, but its own fields (ActionForRGB, WarnOnMissingProfiles ...) can presumably be set in place (unverified).",
+    "ColorConversionHandler needs a COM object implementing IColorConversionHandler, which plain VBA modules cannot easily provide (unverified)."
+   ],
+   "example": "Dim opt As StructImportOptions\nSet opt = CreateStructImportOptions\nopt.ColorConversionOptions.SourceColorProfileList = \"sRGB IEC61966-2.1\"   ' profile name as installed\nopt.ColorConversionOptions.ColorPolicy.WarnOnMissingProfiles = False\nActiveLayer.Import \"C:\\in\\photo.jpg\", cdrJPEG, opt",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "profile-list gotcha now points to the comma-separated list documented for CreateColorContext2"
+   }
+  },
+  {
+   "name": "StructCreateOptions",
+   "id": "class:StructCreateOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructCreateOptions",
+   "status": "current",
+   "summary": "Settings for a new document made by script: name, page width and height, units, rendering resolution, bleed and colour context, used by Application.CreateDocumentEx.",
+   "use_for": [
+    "creating print-ready A4 / letter flyers or business-card files with bleed from a script",
+    "starting social-media canvases in pixels at a fixed resolution",
+    "making documents in the client's CMYK colour context for a print job"
+   ],
+   "avoid": [
+    "changing an open document's page size later: use Page.SetSize or the document's page settings",
+    "quick throwaway documents: Application.CreateDocument is enough"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "DocumentPreset"
+   },
+   "how": "Members live on IVGStructCreateOptions. Make one with Application.CreateStructCreateOptions, set its fields and pass it to Application.CreateDocumentEx(Options), which returns the new Document.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "name of the new document"
+    },
+    {
+     "name": "Units",
+     "use": "cdrUnit for the page size and the document's default unit"
+    },
+    {
+     "name": "PageWidth",
+     "use": "page width in Units"
+    },
+    {
+     "name": "PageHeight",
+     "use": "page height in Units"
+    },
+    {
+     "name": "Bleed",
+     "use": "page bleed for the new document"
+    },
+    {
+     "name": "Resolution",
+     "use": "rendering resolution (dpi) of the document"
+    },
+    {
+     "name": "ColorContext",
+     "use": "ColorContext (profiles, rendering intent, blend colour model) of the document"
+    }
+   ],
+   "gotchas": [
+    "Set Units before reading PageWidth / PageHeight / Bleed back: the numbers are interpreted in Units (unverified whether the order of assignment matters).",
+    "Resolution is the document rendering resolution (effects, rasterising), not a page size; it does not turn the page into pixels.",
+    "Build a ColorContext with Application.CreateColorContext2(ColorProfileList, ...) when the document must start in a specific CMYK profile; leaving it unset uses the default colour settings (unverified).",
+    "Name is the document title; it is not saved until you call SaveAs with a path."
+   ],
+   "example": "Dim o As StructCreateOptions, doc As Document\nSet o = CreateStructCreateOptions\no.Name = \"A4 flyer\"\no.Units = cdrMillimeter\no.PageWidth = 210: o.PageHeight = 297\no.Bleed = 3: o.Resolution = 300\nSet doc = CreateDocumentEx(o)",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructExportOptions",
+   "id": "class:StructExportOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructExportOptions",
+   "status": "current",
+   "summary": "Settings for exporting a document, page or selection to another format (mostly bitmaps): pixel size, resolution, colour mode, anti-aliasing, transparency and matte, compression, layers, the export area and overwrite behaviour. The typelib gives no member descriptions; meanings follow the names.",
+   "use_for": [
+    "exporting a logo selection as a transparent 300 dpi PNG without the export dialog",
+    "batch-exporting every page of a social carousel as fixed-size RGB JPEGs",
+    "exporting print artwork as a CMYK TIFF with LZW compression"
+   ],
+   "avoid": [
+    "saving to CorelDRAW's own format: use Document.SaveAs with StructSaveAsOptions",
+    "quick one-off bitmap exports with all settings as arguments: Document.ExportBitmap"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "ExportOptionsPNG24",
+    "PS": "ExportOptionsSaveForWeb"
+   },
+   "how": "Members live on IVGStructExportOptions. Make one with Application.CreateStructExportOptions, set its fields and pass it as the Options argument of Document.Export(FileName, Filter, Range, Options, PaletteOptions) or Document.ExportEx (which returns an export filter object). Add a StructPaletteOptions for paletted formats.",
+   "key_members": [
+    {
+     "name": "ImageType",
+     "use": "cdrImageType: RGB, CMYK, grayscale, paletted, black and white ..."
+    },
+    {
+     "name": "ResolutionX",
+     "use": "horizontal dpi"
+    },
+    {
+     "name": "ResolutionY",
+     "use": "vertical dpi"
+    },
+    {
+     "name": "SizeX",
+     "use": "output width in pixels"
+    },
+    {
+     "name": "SizeY",
+     "use": "output height in pixels"
+    },
+    {
+     "name": "MaintainAspect",
+     "use": "keep the aspect ratio when only one size is set"
+    },
+    {
+     "name": "AntiAliasingType",
+     "use": "cdrNoAntiAliasing / cdrNormalAntiAliasing / cdrSupersampling"
+    },
+    {
+     "name": "Transparent",
+     "use": "transparent background where the format allows it"
+    },
+    {
+     "name": "Matted",
+     "use": "flatten transparency onto a matte colour"
+    },
+    {
+     "name": "MatteColor",
+     "use": "the matte Color"
+    },
+    {
+     "name": "Dithered",
+     "use": "dither when reducing colours"
+    },
+    {
+     "name": "Compression",
+     "use": "cdrCompressionType for formats that support it (TIFF ...)"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "apply / embed colour management on export"
+    },
+    {
+     "name": "MaintainLayers",
+     "use": "keep layers in layered formats"
+    },
+    {
+     "name": "ExportArea",
+     "use": "Rect limiting the exported area"
+    },
+    {
+     "name": "Overwrite",
+     "use": "replace an existing file without asking"
+    },
+    {
+     "name": "AlwaysOverprintBlack",
+     "use": "keep black overprinting in the export"
+    },
+    {
+     "name": "ProofColorSettings",
+     "use": "colour-proofing settings used for the export"
+    }
+   ],
+   "gotchas": [
+    "Pass Range:=cdrSelection to export only selected objects; with nothing selected the export is empty or fails (unverified which).",
+    "SizeX / SizeY and ResolutionX / ResolutionY interact: leave the size at 0 to derive it from the artwork size and resolution (unverified).",
+    "Transparent only takes effect for formats and colour modes that carry alpha (PNG, TIFF in RGB / CMYK); JPEG ignores it (unverified; the typelib gives no member descriptions).",
+    "Without Overwrite = True an existing file may stop the script with a prompt or an error (unverified).",
+    "ExportEx returns an export filter; its dialog-free completion goes through that object's Finish (unverified that Finish is required for every filter)."
+   ],
+   "example": "Dim o As StructExportOptions\nSet o = CreateStructExportOptions\no.ImageType = cdrRGBColorImage\no.ResolutionX = 300: o.ResolutionY = 300\no.AntiAliasingType = cdrSupersampling\no.Transparent = True: o.Overwrite = True\nActiveDocument.Export \"C:\\out\\logo.png\", cdrPNG, cdrSelection, o",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Transparent per-format gotcha (PNG / TIFF honour it, JPEG ignores it) is not in the harvest; marked unverified"
+   }
+  },
+  {
+   "name": "StructFontProperties",
+   "id": "class:StructFontProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructFontProperties",
+   "status": "hidden",
+   "summary": "Legacy holder for character formatting of the classic Text object: font name, style (bold, italic, weights), size, underline / overscore / strikethrough lines, case (small caps, all caps), sub- / superscript position, range kerning, and the character fill and outline. The typelib gives no member descriptions; meanings follow the names.",
+   "use_for": [
+    "setting font, size and weight on a whole artistic or paragraph text object in an older macro",
+    "copying character formatting from one text object to another"
+   ],
+   "avoid": [
+    "new scripts: format text through Text.Story (TextRange: Font, Size, Bold ...) (documented, visible members; this struct route is hidden)",
+    "applying a reusable look: create a character style in the StyleSheet and ApplyStyle"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "CharacterAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Members live on IVGStructFontProperties. Every route to it is a hidden member in VGCoreAuto.tlb (FUNCFLAG_FHIDDEN): Shape.Text.FontProperties(Frames) (Frames is cdrTextFrames, default cdrAllFrames = 2), Text.FontPropertiesInRange(StartIndex, Count, IndexingType) and Application.CreateStructFontProperties. Read a filled struct, change its fields, then write it back with a plain assignment, Text.FontProperties(cdrAllFrames) = fp: the typelib declares the property as propput with no propputref, so it does not take Set.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "font family name"
+    },
+    {
+     "name": "Style",
+     "use": "cdrFontStyle: normal, bold, italic, light, semibold, heavy ..."
+    },
+    {
+     "name": "Size",
+     "use": "font size (presumably points)"
+    },
+    {
+     "name": "Underline",
+     "use": "cdrFontLine for underline"
+    },
+    {
+     "name": "Overscore",
+     "use": "cdrFontLine for overscore"
+    },
+    {
+     "name": "Strikethru",
+     "use": "cdrFontLine for strikethrough"
+    },
+    {
+     "name": "Uppercase",
+     "use": "cdrFontCase: normal, small caps, all caps"
+    },
+    {
+     "name": "Position",
+     "use": "cdrFontPosition: normal, subscript, superscript"
+    },
+    {
+     "name": "RangeKerning",
+     "use": "range kerning (tracking) value"
+    },
+    {
+     "name": "Fill",
+     "use": "character Fill"
+    },
+    {
+     "name": "Outline",
+     "use": "character Outline"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct (Text.FontProperties, Text.FontPropertiesInRange, Application.CreateStructFontProperties) is flagged hidden in the 25.1 typelib, so it is a legacy text model kept for compatibility: the VBA Object Browser does not list those routes and a later version may drop them.",
+    "Write-back: Text.FontProperties and FontPropertiesInRange are propput, not propputref, in VGCoreAuto.tlb, so assign without Set (ActiveShape.Text.FontProperties(cdrAllFrames) = fp); 'Set ... = fp' is likely to fail (unverified at run time). Editing the struct alone does not change the text until it is written back (unverified).",
+    "A font Name that is not installed is substituted silently at render time (unverified whether the struct keeps the requested name).",
+    "Mixed ranges report the cdrMixed* enum values (cdrMixedFontStyle 16, cdrMixedFontLine 7, cdrMixedFontCase 3, cdrMixedFontPosition 3); do not write those back.",
+    "Size is believed to be in points regardless of the document unit (unverified); RangeKerning units are not documented (unverified)."
+   ],
+   "example": "Dim fp As StructFontProperties\nSet fp = ActiveShape.Text.FontProperties(cdrAllFrames)\nfp.Name = \"Arial\"\nfp.Size = 36\nfp.Style = cdrBoldFontStyle\nfp.Uppercase = cdrAllCapsFontCase\nActiveShape.Text.FontProperties(cdrAllFrames) = fp   ' propput in the typelib: no Set",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> hidden: the class is visible but Text.FontProperties, FontPropertiesInRange and Application.CreateStructFontProperties all carry FUNCFLAG_FHIDDEN (checked with pythoncom on VGCoreAuto.tlb), matching the reviewed IVGStructFontProperties card; summary / how / gotchas now say the route is hidden and legacy instead of 'unverified'. Fixed the write-back: the typelib declares Text.FontProperties as propput (invkind 4) with no propputref, so the example's 'Set ActiveShape.Text.FontProperties = fp' became 'ActiveShape.Text.FontProperties(cdrAllFrames) = fp'; Size key member no longer states points as fact (the gotcha already marks it unverified)"
+   }
+  },
+  {
+   "name": "StructHyphenationSettings",
+   "id": "class:StructHyphenationSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructHyphenationSettings",
+   "status": "hidden",
+   "summary": "Legacy holder for automatic hyphenation of the classic Text object: hyphenation on or off, whether capitalised and all-caps words may break, the hot zone, the minimum word length and the minimum characters before and after the hyphen. The typelib gives no member descriptions; meanings follow the names.",
+   "use_for": [
+    "switching on hyphenation for narrow justified newspaper or brochure columns",
+    "stopping brand names (capitalised words) from being hyphenated in body copy"
+   ],
+   "avoid": [
+    "headlines and short artistic text: leave hyphenation off",
+    "manual line breaks at a specific place: insert a discretionary hyphen in the text instead",
+    "new scripts: this struct is only reachable through hidden members; prefer the visible text-range formatting where it exposes hyphenation (unverified which member does)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ParagraphAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Members live on IVGStructHyphenationSettings. Every route to it is a hidden member in VGCoreAuto.tlb (FUNCFLAG_FHIDDEN): Shape.Text.HyphenationSettings(Frames) (Frames is cdrTextFrames, default cdrAllFrames = 2), Text.HyphenationSettingsInRange(StartIndex, Count, IndexingType) and Application.CreateStructHyphenationSettings. Read a filled struct, change its fields, then write it back with a plain assignment, Text.HyphenationSettings(cdrAllFrames) = hs: the typelib declares the property as propput with no propputref, so it does not take Set.",
+   "key_members": [
+    {
+     "name": "UseAutomaticHyphenation",
+     "use": "turn automatic hyphenation on or off"
+    },
+    {
+     "name": "BreakCapitalized",
+     "use": "allow hyphenating words that start with a capital"
+    },
+    {
+     "name": "BreakAllCapWords",
+     "use": "allow hyphenating words in all caps"
+    },
+    {
+     "name": "HotZone",
+     "use": "distance from the right margin in which hyphenation is considered"
+    },
+    {
+     "name": "MinWordLength",
+     "use": "shortest word that may be hyphenated"
+    },
+    {
+     "name": "MinCharactersBefore",
+     "use": "minimum characters before the hyphen"
+    },
+    {
+     "name": "MinCharactersAfter",
+     "use": "minimum characters after the hyphen"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct (Text.HyphenationSettings, Text.HyphenationSettingsInRange, Application.CreateStructHyphenationSettings) is flagged hidden in the 25.1 typelib, so it is a legacy text model kept for compatibility: the VBA Object Browser does not list those routes and a later version may drop them.",
+    "Applies to paragraph text; artistic text has no line wrapping to hyphenate (unverified whether setting it raises an error).",
+    "Write-back: Text.HyphenationSettings and HyphenationSettingsInRange are propput, not propputref, in VGCoreAuto.tlb, so assign without Set (ActiveShape.Text.HyphenationSettings(cdrAllFrames) = hs); 'Set ... = hs' is likely to fail (unverified at run time). Editing the struct alone does not change the text until it is written back (unverified).",
+    "HotZone units are not documented; probably document units (unverified).",
+    "Hyphenation uses the language of the text; text tagged with the wrong language hyphenates badly or not at all (unverified)."
+   ],
+   "example": "Dim hs As StructHyphenationSettings\nSet hs = ActiveShape.Text.HyphenationSettings(cdrAllFrames)\nhs.UseAutomaticHyphenation = True\nhs.BreakCapitalized = False\nhs.MinWordLength = 6\nhs.MinCharactersBefore = 3: hs.MinCharactersAfter = 3\nActiveShape.Text.HyphenationSettings(cdrAllFrames) = hs   ' propput in the typelib: no Set",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> hidden: the class is visible but Text.HyphenationSettings, HyphenationSettingsInRange and Application.CreateStructHyphenationSettings all carry FUNCFLAG_FHIDDEN (checked with pythoncom on VGCoreAuto.tlb), matching the reviewed IVGStructHyphenationSettings card; summary / how / gotchas now say the route is hidden and legacy instead of 'unverified'. Fixed the write-back: the typelib declares Text.HyphenationSettings as propput (invkind 4) with no propputref, so the example's 'Set ActiveShape.Text.HyphenationSettings = hs' became 'ActiveShape.Text.HyphenationSettings(cdrAllFrames) = hs'; added an avoid entry for new scripts (hidden route)"
+   }
+  },
+  {
+   "name": "StructImportCropOptions",
+   "id": "class:StructImportCropOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructImportCropOptions",
+   "status": "current",
+   "summary": "Data CorelDRAW hands to a script-supplied crop handler while importing a bitmap in crop mode: read-only facts about the source (file name, filter id, custom data, pixel size, dpi) and the writable crop rectangle (Left, Top, Width, Height) the handler fills in. The typelib gives no member descriptions; roles follow the names and read-only flags.",
+   "use_for": [
+    "cropping every imported product photo to a centred square by rule during a batch import",
+    "trimming scan margins on import based on each file's pixel size or dpi"
+   ],
+   "avoid": [
+    "the same crop for every file: set StructImportOptions.Mode = cdrImportCrop and CropLeft / CropTop / CropWidth / CropHeight instead of writing a handler",
+    "keeping the whole image editable: import it whole and PowerClip it into a frame"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IStructImportCropOptions. Scripts do not create it: assign an object implementing IImportCropHandler to StructImportOptions.CropHandler, set Mode = cdrImportCrop, and CorelDRAW passes this object to the handler's Crop method during Layer.Import / ImportEx (flow unverified).",
+   "key_members": [
+    {
+     "name": "FileName",
+     "use": "read-only: file being imported"
+    },
+    {
+     "name": "FilterID",
+     "use": "read-only: import filter id"
+    },
+    {
+     "name": "CustomData",
+     "use": "read-only: value passed through from StructImportOptions.CustomData"
+    },
+    {
+     "name": "ImageWidth",
+     "use": "read-only: source width"
+    },
+    {
+     "name": "ImageHeight",
+     "use": "read-only: source height"
+    },
+    {
+     "name": "DpiX",
+     "use": "read-only: source horizontal resolution"
+    },
+    {
+     "name": "DpiY",
+     "use": "read-only: source vertical resolution"
+    },
+    {
+     "name": "Left",
+     "use": "crop rectangle left"
+    },
+    {
+     "name": "Top",
+     "use": "crop rectangle top"
+    },
+    {
+     "name": "Width",
+     "use": "crop rectangle width"
+    },
+    {
+     "name": "Height",
+     "use": "crop rectangle height"
+    }
+   ],
+   "gotchas": [
+    "All members are long integers, so the crop rectangle is most likely in source pixels, measured from the top-left (unverified).",
+    "The handler's Crop returns a Boolean; what False does (skip cropping or cancel the import) is not documented (unverified).",
+    "Writing a handler needs a COM-visible class implementing IImportCropHandler; a VBA class module with Implements may work (unverified)."
+   ],
+   "example": "' inside a class that Implements IImportCropHandler (unverified pattern)\nPrivate Function IImportCropHandler_Crop(ByVal o As StructImportCropOptions) As Boolean\n    Dim side As Long: side = IIf(o.ImageWidth < o.ImageHeight, o.ImageWidth, o.ImageHeight)\n    o.Width = side: o.Height = side\n    o.Left = (o.ImageWidth - side) \\ 2: o.Top = (o.ImageHeight - side) \\ 2\n    IImportCropHandler_Crop = True\nEnd Function",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructImportOptions",
+   "id": "class:StructImportOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructImportOptions",
+   "status": "current",
+   "summary": "Settings for importing a file onto a layer: full, cropped or resampled import (with crop rectangle, resample size and dpi or script handlers), external linking of bitmaps, layer and multi-layer handling, ICC profile extraction, text formatting and table options, code page, which image of a multi-image file, and colour conversion. Most members have no typelib description; meanings follow the names.",
+   "use_for": [
+    "batch-placing product photos resampled to 300 dpi into a catalogue layout",
+    "importing large photos as external links to keep the .cdr file small",
+    "bringing in a Word / text file without its formatting so the template styles apply",
+    "importing a layered file with its layers kept"
+   ],
+   "avoid": [
+    "opening a file as its own document: use Application.OpenDocumentEx with StructOpenOptions",
+    "pasting from the clipboard: Layer.PasteEx with StructPasteOptions"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStructImportOptions. Make one with Application.CreateStructImportOptions, set its fields and pass it to Layer.Import(FileName, Filter, Options) or Layer.ImportEx (returns an import filter object).",
+   "key_members": [
+    {
+     "name": "Mode",
+     "use": "cdrImportMode: cdrImportFull, cdrImportCrop, cdrImportResample"
+    },
+    {
+     "name": "CropLeft",
+     "use": "crop rectangle left (crop mode)"
+    },
+    {
+     "name": "CropTop",
+     "use": "crop rectangle top"
+    },
+    {
+     "name": "CropWidth",
+     "use": "crop rectangle width"
+    },
+    {
+     "name": "CropHeight",
+     "use": "crop rectangle height"
+    },
+    {
+     "name": "ResampleWidth",
+     "use": "target width (resample mode)"
+    },
+    {
+     "name": "ResampleHeight",
+     "use": "target height"
+    },
+    {
+     "name": "ResampleDpiX",
+     "use": "target horizontal dpi"
+    },
+    {
+     "name": "ResampleDpiY",
+     "use": "target vertical dpi"
+    },
+    {
+     "name": "CropHandler",
+     "use": "script object deciding the crop per file"
+    },
+    {
+     "name": "ResampleHandler",
+     "use": "script object deciding the resample per file"
+    },
+    {
+     "name": "LinkBitmapExternally",
+     "use": "link instead of embedding the bitmap"
+    },
+    {
+     "name": "MaintainLayers",
+     "use": "keep the source file's layers"
+    },
+    {
+     "name": "CombineMultilayerBitmaps",
+     "use": "flatten multi-layer bitmaps into one"
+    },
+    {
+     "name": "ExtractICCProfile",
+     "use": "pull out the embedded ICC profile"
+    },
+    {
+     "name": "TextFormatting",
+     "use": "cdrImportTextFormatting: keep fonts and formatting, none, formatting only"
+    },
+    {
+     "name": "ConvertTablesToText",
+     "use": "turn imported tables into text"
+    },
+    {
+     "name": "ImageIndex",
+     "use": "which image / page of a multi-image file to import"
+    },
+    {
+     "name": "CustomData",
+     "use": "value passed through to crop / resample handlers"
+    },
+    {
+     "name": "ColorConversionOptions",
+     "use": "read-only StructColorConversionOptions for this import"
+    }
+   ],
+   "gotchas": [
+    "Crop / resample fields only apply when Mode is cdrImportCrop / cdrImportResample.",
+    "Crop and resample values are long integers, most likely pixels (unverified); give both width / height or both dpi values, partial settings may be ignored (unverified).",
+    "Import places the result on the given layer, usually as the new selection; grab it with ActiveSelectionRange straight after the call (unverified placement position).",
+    "Linked bitmaps (LinkBitmapExternally) break when the source moves; embed for files you send out.",
+    "ImageIndex base (0 or 1) is not documented (unverified)."
+   ],
+   "example": "Dim o As StructImportOptions, placed As ShapeRange\nSet o = CreateStructImportOptions\no.Mode = cdrImportResample\no.ResampleDpiX = 300: o.ResampleDpiY = 300\no.LinkBitmapExternally = False\nActiveLayer.Import \"C:\\in\\product.tif\", cdrTIFF, o\nSet placed = ActiveSelectionRange\nplaced.SetPositionEx cdrCenter, ActivePage.CenterX, ActivePage.CenterY",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructImportResampleOptions",
+   "id": "class:StructImportResampleOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructImportResampleOptions",
+   "status": "current",
+   "summary": "Data CorelDRAW hands to a script-supplied resample handler while importing a bitmap in resample mode: read-only source facts (file name, filter id, custom data) and the writable target Width, Height, DpiX and DpiY the handler sets. The typelib gives no member descriptions; roles follow the names and read-only flags.",
+   "use_for": [
+    "downsampling every imported photo to a size that fits the layout frame at 300 dpi",
+    "normalising mixed-resolution scans to one dpi on import"
+   ],
+   "avoid": [
+    "the same target for every file: set StructImportOptions.Mode = cdrImportResample and ResampleWidth / ResampleDpiX ... directly",
+    "resampling an already placed bitmap: use the Bitmap's own resample call"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IStructImportResampleOptions. Scripts do not create it: assign an object implementing IImportResampleHandler to StructImportOptions.ResampleHandler, set Mode = cdrImportResample, and CorelDRAW passes this object to the handler's Resample method during Layer.Import / ImportEx (flow unverified).",
+   "key_members": [
+    {
+     "name": "FileName",
+     "use": "read-only: file being imported"
+    },
+    {
+     "name": "FilterID",
+     "use": "read-only: import filter id"
+    },
+    {
+     "name": "CustomData",
+     "use": "read-only: value passed through from StructImportOptions.CustomData"
+    },
+    {
+     "name": "Width",
+     "use": "target width"
+    },
+    {
+     "name": "Height",
+     "use": "target height"
+    },
+    {
+     "name": "DpiX",
+     "use": "target horizontal resolution"
+    },
+    {
+     "name": "DpiY",
+     "use": "target vertical resolution"
+    }
+   ],
+   "gotchas": [
+    "Width / Height / DpiX / DpiY probably arrive pre-filled with the source values, so the handler can read them before changing them (unverified).",
+    "Values are long integers: pixels and dots per inch (unverified for Width / Height).",
+    "The Resample handler returns a Boolean; the effect of returning False is not documented (unverified)."
+   ],
+   "example": "' inside a class that Implements IImportResampleHandler (unverified pattern)\nPrivate Function IImportResampleHandler_Resample(ByVal o As StructImportResampleOptions) As Boolean\n    If o.DpiX > 300 Then\n        o.Width = o.Width * 300 / o.DpiX: o.Height = o.Height * 300 / o.DpiY\n        o.DpiX = 300: o.DpiY = 300\n    End If\n    IImportResampleHandler_Resample = True\nEnd Function",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructOpenOptions",
+   "id": "class:StructOpenOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructOpenOptions",
+   "status": "current",
+   "summary": "Extra settings for opening a document by script: the code page for text in files from older CorelDRAW versions and the colour-conversion options (policy, source and target profiles).",
+   "use_for": [
+    "batch-opening archived client files from old CorelDRAW versions with the right code page so accented or non-Latin text survives",
+    "opening files into a fixed colour profile without the profile-mismatch dialog"
+   ],
+   "avoid": [
+    "importing a file into an existing document: use Layer.Import with StructImportOptions",
+    "files from the current version without colour issues: Application.OpenDocument is enough"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "OpenOptions",
+    "PS": "OpenOptions"
+   },
+   "how": "Members live on IVGStructOpenOptions. Make one with Application.CreateStructOpenOptions, set it up and pass it to Application.OpenDocumentEx(FileName, Options) or Application.OpenDocumentAsCopy(FileName, Options).",
+   "key_members": [
+    {
+     "name": "CodePage",
+     "use": "Windows code page for text in documents from earlier versions"
+    },
+    {
+     "name": "ColorConversionOptions",
+     "use": "read-only StructColorConversionOptions; edit its fields in place"
+    }
+   ],
+   "gotchas": [
+    "CodePage only matters for older files whose text was not stored as Unicode; for current files it is ignored (unverified exact version cut-off).",
+    "ColorConversionOptions is read-only: change ColorConversionOptions.SourceColorProfileList etc. on the existing object, do not assign a new one.",
+    "OpenDocumentAsCopy opens without keeping the link to the original file name, so Save asks for a new path (from the typelib description)."
+   ],
+   "example": "Dim o As StructOpenOptions, doc As Document\nSet o = CreateStructOpenOptions\no.CodePage = 1251   ' Cyrillic text in an old file\no.ColorConversionOptions.ColorPolicy.WarnOnMismatchedProfiles = False\nSet doc = OpenDocumentEx(\"C:\\archive\\old_logo.cdr\", o)",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructPaletteOptions",
+   "id": "class:StructPaletteOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructPaletteOptions",
+   "status": "current",
+   "summary": "Settings for reducing an image to a palette (indexed colour): palette type (adaptive, optimized, uniform, web, grayscale, custom ...), number of colours, dithering type and intensity, smoothing, and the colour-range sensitivity options. Most members have no typelib description; meanings follow the names.",
+   "use_for": [
+    "exporting a flat-colour logo or icon as a small GIF / 8-bit PNG with an adaptive palette",
+    "converting a placed bitmap to a limited palette for screen printing or embroidery separations",
+    "web graphics that must use a fixed custom palette"
+   ],
+   "avoid": [
+    "photos for print: keep them RGB / CMYK, palettes band gradients",
+    "full-colour PNG with transparency: export RGB with Transparent = True instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "IndexedConversionOptions",
+    "AI": "ExportOptionsGIF"
+   },
+   "how": "Members live on IVGStructPaletteOptions. Make one with Application.CreateStructPaletteOptions and pass it as the PaletteOptions argument of Document.Export / ExportEx / ExportBitmap (with ImageType cdrPalettedImage) or to Bitmap.ConvertToPaletted2(Options).",
+   "key_members": [
+    {
+     "name": "PaletteType",
+     "use": "cdrImagePaletteType: uniform, standard VGA, adaptive, optimized, black body, grayscale, system, web (IE / Netscape), custom"
+    },
+    {
+     "name": "NumColors",
+     "use": "number of colours in the palette"
+    },
+    {
+     "name": "DitherType",
+     "use": "cdrDitherType: none, ordered, Jarvis, Stucki, Floyd-Steinberg"
+    },
+    {
+     "name": "DitherIntensity",
+     "use": "strength of the dithering"
+    },
+    {
+     "name": "Smoothing",
+     "use": "smoothing applied before reduction"
+    },
+    {
+     "name": "Palette",
+     "use": "the custom palette when PaletteType is cdrPaletteCustom"
+    },
+    {
+     "name": "ColorSensitive",
+     "use": "favour a colour range around TargetColor"
+    },
+    {
+     "name": "TargetColor",
+     "use": "colour the range sensitivity centres on"
+    },
+    {
+     "name": "Importance",
+     "use": "weight of the sensitive range"
+    },
+    {
+     "name": "Lightness",
+     "use": "lightness setting of the range sensitivity"
+    },
+    {
+     "name": "ToleranceA",
+     "use": "range tolerance (first axis)"
+    },
+    {
+     "name": "ToleranceB",
+     "use": "range tolerance (second axis)"
+    }
+   ],
+   "gotchas": [
+    "Only used when the export ImageType is cdrPalettedImage (or by ConvertToPaletted2); otherwise it is ignored (unverified).",
+    "Palette is a Variant; its expected layout for a custom palette (array of colours or RGB longs) is not documented (unverified).",
+    "TargetColor is a long, probably a packed RGB value (unverified).",
+    "The ColorSensitive / Importance / Lightness / ToleranceA / ToleranceB mapping to the Convert to Paletted dialog's range-sensitivity controls is inferred from the names (unverified)."
+   ],
+   "example": "Dim po As StructPaletteOptions, eo As StructExportOptions\nSet po = CreateStructPaletteOptions\npo.PaletteType = cdrPaletteAdaptive: po.NumColors = 64\npo.DitherType = cdrDitherFloyd: po.DitherIntensity = 80\nSet eo = CreateStructExportOptions\neo.ImageType = cdrPalettedImage: eo.Overwrite = True\nActiveDocument.Export \"C:\\out\\icon.gif\", cdrGIF, cdrSelection, eo, po",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructPasteOptions",
+   "id": "class:StructPasteOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructPasteOptions",
+   "status": "current",
+   "summary": "Extra settings for pasting from the clipboard by script; it only carries the colour-conversion options (policy, source and target profiles) applied to the pasted objects.",
+   "use_for": [
+    "pasting artwork from another application into a CMYK print document with a known source profile",
+    "pasting in a script without the colour-profile mismatch dialog"
+   ],
+   "avoid": [
+    "plain pastes: Layer.Paste / ActiveLayer.PasteEx without options is enough",
+    "copying objects between CorelDRAW documents: Shape.CopyToLayer avoids the clipboard"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStructPasteOptions. Make one with Application.CreateStructPasteOptions, adjust its ColorConversionOptions and pass it to Layer.PasteEx(Options), which returns the pasted objects as a ShapeRange.",
+   "key_members": [
+    {
+     "name": "ColorConversionOptions",
+     "use": "read-only StructColorConversionOptions to edit in place"
+    }
+   ],
+   "gotchas": [
+    "ColorConversionOptions is read-only: change its fields, do not assign a new object.",
+    "PasteEx returns the pasted ShapeRange; use it instead of relying on the selection.",
+    "Clipboard content from other applications may arrive as a bitmap or metafile depending on what the source app put there (unverified)."
+   ],
+   "example": "Dim o As StructPasteOptions, pasted As ShapeRange\nSet o = CreateStructPasteOptions\no.ColorConversionOptions.SourceColorProfileList = \"Adobe RGB (1998)\"   ' installed profile name\nSet pasted = ActiveLayer.PasteEx(o)\nDebug.Print pasted.Count & \" objects pasted\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StructSaveAsOptions",
+   "id": "class:StructSaveAsOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructSaveAsOptions",
+   "status": "current",
+   "summary": "Settings for Document.SaveAs / SaveAsCopy: file format filter (CDR or template), target CorelDRAW version, thumbnail size, which part to save (all pages, current page, selection), overwrite, and whether to embed the ICC profile and the VBA project, include CMX data and keep the appearance of newer effects. Most members have no typelib description; meanings follow the names.",
+   "use_for": [
+    "saving a copy down to an older CDR version for a printer or client on an older release",
+    "saving the selection as a separate CDR asset file",
+    "saving a template (.cdt) with embedded colour profile from a script"
+   ],
+   "avoid": [
+    "exporting to PDF / PNG / SVG: use Document.Export or the PDF settings, not SaveAs",
+    "regular saves of an already named file: Document.Save"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "IllustratorSaveOptions",
+    "PS": "PhotoshopSaveOptions"
+   },
+   "how": "Members live on IVGStructSaveAsOptions. Make one with Application.CreateStructSaveAsOptions, set the fields and pass it to Document.SaveAs(FileName, Options) (the document now points at the new file) or Document.SaveAsCopy(FileName, Options) (the document keeps its current file).",
+   "key_members": [
+    {
+     "name": "Filter",
+     "use": "cdrFilter: cdrCDR for a drawing, cdrCDT for a template"
+    },
+    {
+     "name": "Version",
+     "use": "cdrFileVersion to save as (cdrCurrentVersion, or an older one from cdrVersion5 to cdrVersion24)"
+    },
+    {
+     "name": "Range",
+     "use": "cdrExportRange: all pages, current page or selection"
+    },
+    {
+     "name": "ThumbnailSize",
+     "use": "cdrThumbnailSize of the preview stored in the file"
+    },
+    {
+     "name": "Overwrite",
+     "use": "replace an existing file"
+    },
+    {
+     "name": "EmbedICCProfile",
+     "use": "embed the document colour profile"
+    },
+    {
+     "name": "EmbedVBAProject",
+     "use": "store the document's VBA project in the file"
+    },
+    {
+     "name": "IncludeCMXData",
+     "use": "include CMX presentation data"
+    },
+    {
+     "name": "KeepAppearance",
+     "use": "keep the look of features the older version lacks"
+    }
+   ],
+   "gotchas": [
+    "Saving down to an older Version can drop or alter newer features; KeepAppearance presumably converts them (to curves / bitmaps) so they look the same but are no longer editable (unverified).",
+    "SaveAs re-points the open document at the new file; use SaveAsCopy when the working file must stay the same.",
+    "Range = cdrSelection with nothing selected saves an empty or unchanged document (unverified).",
+    "Without Overwrite = True an existing target file may raise an error in an unattended script (unverified)."
+   ],
+   "example": "Dim o As StructSaveAsOptions\nSet o = CreateStructSaveAsOptions\no.Filter = cdrCDR\no.Version = cdrVersion19   ' an older CDR version for the client\no.EmbedICCProfile = True\no.Overwrite = True\nActiveDocument.SaveAsCopy \"C:\\out\\client_copy.cdr\", o",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Version key member used the placeholder 'cdrVersionNN'; now names the real enum range (cdrVersion5 to cdrVersion24)"
+   }
+  },
+  {
+   "name": "StructSpaceProperties",
+   "id": "class:StructSpaceProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StructSpaceProperties",
+   "status": "hidden",
+   "summary": "Legacy holder for spacing settings of the classic Text object: character and word spacing, line spacing with its type (percent of character height, points, percent of point size) and space before and after paragraphs. The typelib gives no member descriptions; meanings follow the names.",
+   "use_for": [
+    "tightening the leading and letter spacing of a headline block in an older macro",
+    "setting consistent paragraph spacing on body copy across many text frames"
+   ],
+   "avoid": [
+    "new scripts: set spacing on Text.Story (TextRange) (documented, visible members; this struct route is hidden)",
+    "kerning one character pair: edit the TextRange of those characters"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:TextItem",
+    "AI": "class:ParagraphAttributes"
+   },
+   "how": "Members live on IVGStructSpaceProperties. Every route to it is a hidden member in VGCoreAuto.tlb (FUNCFLAG_FHIDDEN): Shape.Text.SpaceProperties(Frames) (Frames is cdrTextFrames, default cdrAllFrames = 2), Text.SpacePropertiesInRange(StartIndex, Count, IndexingType) and Application.CreateStructSpaceProperties. Read a filled struct, change its fields, then write it back with a plain assignment, Text.SpaceProperties(cdrAllFrames) = sp: the typelib declares the property as propput with no propputref, so it does not take Set.",
+   "key_members": [
+    {
+     "name": "CharacterSpacing",
+     "use": "spacing between characters"
+    },
+    {
+     "name": "WordSpacing",
+     "use": "spacing between words"
+    },
+    {
+     "name": "LineSpacing",
+     "use": "line spacing (leading) value"
+    },
+    {
+     "name": "LineSpacingType",
+     "use": "cdrLineSpacingType: percent of character height, points, percent of point size"
+    },
+    {
+     "name": "BeforeParagraphSpacing",
+     "use": "space before each paragraph"
+    },
+    {
+     "name": "AfterParagraphSpacing",
+     "use": "space after each paragraph"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct (Text.SpaceProperties, Text.SpacePropertiesInRange, Application.CreateStructSpaceProperties) is flagged hidden in the 25.1 typelib, so it is a legacy text model kept for compatibility: the VBA Object Browser does not list those routes and a later version may drop them.",
+    "LineSpacing is read in the unit given by LineSpacingType; set the type first, then the value (unverified whether order matters).",
+    "Spacing values are percentages in CorelDRAW's text dialogs; the struct presumably uses the same convention (unverified).",
+    "Write-back: Text.SpaceProperties and SpacePropertiesInRange are propput, not propputref, in VGCoreAuto.tlb, so assign without Set (ActiveShape.Text.SpaceProperties(cdrAllFrames) = sp); 'Set ... = sp' is likely to fail (unverified at run time). Editing the struct alone does not change the text until it is written back (unverified).",
+    "A mixed range reports cdrMixedLineSpacing (3) for LineSpacingType."
+   ],
+   "example": "Dim sp As StructSpaceProperties\nSet sp = ActiveShape.Text.SpaceProperties(cdrAllFrames)\nsp.LineSpacingType = cdrPercentOfPointSizeLineSpacing\nsp.LineSpacing = 110\nsp.AfterParagraphSpacing = 50\nActiveShape.Text.SpaceProperties(cdrAllFrames) = sp   ' propput in the typelib: no Set",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> hidden: the class is visible but Text.SpaceProperties, SpacePropertiesInRange and Application.CreateStructSpaceProperties all carry FUNCFLAG_FHIDDEN (checked with pythoncom on VGCoreAuto.tlb), matching the reviewed IVGStructSpaceProperties card; summary / how / gotchas now say the route is hidden and legacy instead of 'unverified'. Fixed the write-back: the typelib declares Text.SpaceProperties as propput (invkind 4) with no propputref, so the example's 'Set ActiveShape.Text.SpaceProperties = sp' became 'ActiveShape.Text.SpaceProperties(cdrAllFrames) = sp'"
+   }
+  },
+  {
+   "name": "Style",
+   "id": "class:Style",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Style",
+   "status": "current",
+   "summary": "One style or style set of the document's style sheet (the Object Styles docker): a named, inheritable bundle of fill, outline, character, paragraph, frame or transparency properties. Scripts read and change its properties by name, rename or re-parent it, copy it, serialise it to a string, or delete it; objects using it update with it.",
+   "use_for": [
+    "building a brand style sheet (headline, body, accent fill) that every template object follows",
+    "changing a brand colour or outline once and having every object using the style update",
+    "auditing which properties a style overrides versus inherits from its parent"
+   ],
+   "avoid": [
+    "one-off formatting of a single object: set Fill / Outline on the Shape",
+    "colour swatches shared across objects: use colour styles (StyleSheet.CreateColorStyle)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "GraphicStyle"
+   },
+   "how": "Members live on IVGStyle. Get it from ActiveDocument.StyleSheet (FindStyle, CreateStyle, CreateStyleSet, Styles.Find, AllStyles.Item), from Shape.Style (the style set applied to a shape) or TextRange.ObjectStyle. Apply it to objects with Shape.ApplyStyle(Name). Category-specific views come from Fill / Outline / Character / Paragraph / Frame / Transparency.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "internal style name (used by ApplyStyle and FindStyle)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "name as the docker shows it"
+    },
+    {
+     "name": "CategoryName",
+     "use": "category name, for example fill, outline, character, paragraph, frame, transparency (exact strings unverified)"
+    },
+    {
+     "name": "IsStyleSet",
+     "use": "True for a style set (bundle of several categories)"
+    },
+    {
+     "name": "IsObjectDefaults",
+     "use": "True for the default style set of an object type"
+    },
+    {
+     "name": "GetAllPropertyNames",
+     "use": "names of every property of the style's category"
+    },
+    {
+     "name": "GetOverridePropertyNames",
+     "use": "names of properties set locally, not inherited"
+    },
+    {
+     "name": "GetProperty",
+     "use": "read a property by name"
+    },
+    {
+     "name": "SetProperty",
+     "use": "write a property by name"
+    },
+    {
+     "name": "GetPropertyAsString",
+     "use": "read a property as text"
+    },
+    {
+     "name": "SetPropertyAsString",
+     "use": "write a property from text"
+    },
+    {
+     "name": "IsPropertyInherited",
+     "use": "True when the value comes from the parent"
+    },
+    {
+     "name": "ClearProperty",
+     "use": "remove a local override so the parent value applies"
+    },
+    {
+     "name": "BasedOn",
+     "use": "parent style"
+    },
+    {
+     "name": "SetBasedOn",
+     "use": "re-parent the style by name"
+    },
+    {
+     "name": "Fill",
+     "use": "fill-category view (StyleFill)"
+    },
+    {
+     "name": "Outline",
+     "use": "outline-category view (StyleOutline)"
+    },
+    {
+     "name": "Rename",
+     "use": "rename the style"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached copy of the style"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the style"
+    }
+   ],
+   "gotchas": [
+    "Property names are strings defined by CorelDRAW, not by the typelib; call GetAllPropertyNames first instead of guessing (example names like 'fill.type' are unverified).",
+    "Category view members (Fill, Outline, Character ...) only make sense for a style of that category or a style set containing it; for others they probably return Nothing (unverified).",
+    "Editing a style changes every object that uses it and every derived style; use GetCopy or a new style for a variant.",
+    "Shape.Style returns the style set applied to that shape; edits to it may affect only that shape's local style or all users (unverified).",
+    "Category name strings ('fill', 'outline', 'character', 'paragraph', 'frame', 'transparency') are believed to be the internal names used by CreateStyle (unverified)."
+   ],
+   "example": "Dim st As Style, n As Variant\nSet st = ActiveDocument.StyleSheet.FindStyle(\"Headline\")\nIf Not st Is Nothing Then\n    For Each n In st.GetOverridePropertyNames\n        Debug.Print n, st.GetPropertyAsString(n)\n    Next n\n    ActiveShape.ApplyStyle \"Headline\"\nEnd If",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "CategoryName key member stated the category strings as fact while the gotcha marks them unverified; now consistent"
+   }
+  },
+  {
+   "name": "StyleCharacter",
+   "id": "class:StyleCharacter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleCharacter",
+   "status": "current",
+   "summary": "The character-category view of a style (presumably font, size, weight and character fill / outline settings; the typelib lists none): this interface only hands back the generic Style object, through which the character properties are read and written by name.",
+   "use_for": [
+    "reaching the character part of a text style set to inspect or change its font settings",
+    "telling whether a style set carries character formatting at all"
+   ],
+   "avoid": [
+    "typed character properties: there are none here, use Style.GetProperty / SetProperty or TextRange members"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "CharacterStyle"
+   },
+   "how": "Members live on IVGStyleCharacter. Reach it from a Style or style set: Style.Character. Its only member, Style, returns the generic Style object to use with GetAllPropertyNames / GetProperty / SetProperty.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "the generic Style object for the character style"
+    }
+   ],
+   "gotchas": [
+    "It exposes no typed properties; everything goes through property-name strings on Style (names unverified, list them with GetAllPropertyNames).",
+    "Style.Character on a style without a character part probably returns Nothing (unverified)."
+   ],
+   "example": "Dim st As Style, cs As StyleCharacter\nSet st = ActiveDocument.StyleSheet.FindStyle(\"Body text\")\nSet cs = st.Character\nIf Not cs Is Nothing Then Debug.Print Join(cs.Style.GetAllPropertyNames, \", \")",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary listed the property families of this category as fact; the interface has only .Style, so they are now marked presumed"
+   }
+  },
+  {
+   "name": "StyleFill",
+   "id": "class:StyleFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleFill",
+   "status": "current",
+   "summary": "Fill settings stored in a fill style or the fill part of a style set: fill type (uniform, fountain, pattern, texture, PostScript, hatch), fountain settings (type, steps, blend, midpoint, centre offset, scale, spread, first and last stop colours and opacities), tile and transform settings, merge mode and overprint; it can also save the fill to a file or load one.",
+   "use_for": [
+    "defining a brand gradient once as a style and reusing it on buttons, banners and backgrounds",
+    "switching every object's fill from flat to a gradient by editing one style",
+    "saving a fill design to a file to share across documents"
+   ],
+   "avoid": [
+    "filling one object: use Shape.Fill (Fill object) directly",
+    "multi-stop gradients: StyleFill only exposes the first and last stop; edit the Fill object's colour list"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStyleFill. Reach it from a style: Style.Fill (fill style or style set) or StyleTransparency.Fill (the transparency's fill). The typed members read and write the style's fill properties; Style returns the generic Style for name-based access.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrFillStyleType: none, uniform, fountain, PostScript, pattern, texture, hatch"
+    },
+    {
+     "name": "PrimaryColor",
+     "use": "first colour (uniform colour or first fountain stop), read-only object"
+    },
+    {
+     "name": "SecondaryColor",
+     "use": "last fountain stop colour, read-only object"
+    },
+    {
+     "name": "FountainFillType",
+     "use": "cdrFountainFillType: linear, radial, conical, square ..."
+    },
+    {
+     "name": "FountainSteps",
+     "use": "fountain steps, 0 for unlimited"
+    },
+    {
+     "name": "FountainBlendType",
+     "use": "blend type of the first colour pair"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint of the first colour pair"
+    },
+    {
+     "name": "FlipColors",
+     "use": "reverse the fountain colours"
+    },
+    {
+     "name": "FountainCenterXOffset",
+     "use": "horizontal centre offset of the fountain"
+    },
+    {
+     "name": "FountainCenterYOffset",
+     "use": "vertical centre offset of the fountain"
+    },
+    {
+     "name": "FountainScaleX",
+     "use": "horizontal scale of the fountain"
+    },
+    {
+     "name": "FountainScaleY",
+     "use": "vertical scale of the fountain"
+    },
+    {
+     "name": "FountainSpreadMethod",
+     "use": "cdrFountainFillSpreadMethod for areas outside the fountain"
+    },
+    {
+     "name": "PrimaryOpacity",
+     "use": "opacity of the first stop"
+    },
+    {
+     "name": "SecondaryOpacity",
+     "use": "opacity of the last stop"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "fill rotation angle"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "fill transforms with the object"
+    },
+    {
+     "name": "MergeMode",
+     "use": "cdrMergeMode of the fill"
+    },
+    {
+     "name": "SaveFill",
+     "use": "save the fill to a file"
+    },
+    {
+     "name": "LoadFill",
+     "use": "load a fill from a file into the style"
+    }
+   ],
+   "gotchas": [
+    "EdgePad, FountainCenterOffsetX / FountainCenterOffsetY and MirrorFill are marked obsolete in the typelib; use FountainCenterXOffset / FountainCenterYOffset and MirrorFillX / MirrorFillY.",
+    "PrimaryColor and SecondaryColor are read-only references; change the colour on the returned object (for example .RGBAssign) rather than assigning a new Color (unverified that the change is written back).",
+    "PrimaryOpacity / SecondaryOpacity are bytes; whether the scale is 0-100 or 0-255 is not documented (unverified).",
+    "Fountain members do nothing unless Type is cdrFountainFillStyle; set the type first (unverified).",
+    "The file extension SaveFill / LoadFill expect is not in the harvest (unverified)."
+   ],
+   "example": "Dim f As StyleFill\nSet f = ActiveDocument.StyleSheet.FindStyle(\"Brand gradient\").Fill\nf.Type = cdrFountainFillStyle\nf.PrimaryColor.RGBAssign 0, 82, 165\nf.SecondaryColor.RGBAssign 0, 180, 220\nf.FountainSteps = 0\nf.RotationAngle = 90",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StyleFrame",
+   "id": "class:StyleFrame",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleFrame",
+   "status": "current",
+   "summary": "The frame-category view of a style (paragraph text frame settings, presumably columns, vertical alignment and frame background; the typelib lists none): this interface only hands back the generic Style object, through which the frame properties are read and written by name.",
+   "use_for": [
+    "reaching the frame part of a paragraph-text style set to check or change its frame settings"
+   ],
+   "avoid": [
+    "typed frame properties: there are none here, use Style.GetProperty / SetProperty or the text frame object of the shape"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on IVGStyleFrame. Reach it from a style or style set: Style.Frame. Its only member, Style, returns the generic Style object for name-based property access.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "the generic Style object for the frame style"
+    }
+   ],
+   "gotchas": [
+    "No typed properties; list the available names with Style.GetAllPropertyNames (which frame settings exist is unverified).",
+    "Style.Frame on a style without a frame part probably returns Nothing (unverified).",
+    "Frame settings only affect paragraph text; artistic text has no frame."
+   ],
+   "example": "Dim st As Style\nSet st = ActiveDocument.StyleSheet.FindStyle(\"Body text\")\nIf Not st.Frame Is Nothing Then Debug.Print Join(st.Frame.Style.GetAllPropertyNames, \", \")",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary listed the property families of this category as fact; the interface has only .Style, so they are now marked presumed"
+   }
+  },
+  {
+   "name": "StyleOutline",
+   "id": "class:StyleOutline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleOutline",
+   "status": "current",
+   "summary": "Outline settings stored in an outline style or the outline part of a style set: outline type, width, colour, line caps and joins, miter limit, calligraphic nib stretch and angle, behind-fill, scale-with-object, justification (inside / centre / outside), dash adjustment, arrow overlap and sharing, and overprint.",
+   "use_for": [
+    "a brand hairline or keyline style applied to every frame and divider in a layout",
+    "switching all outlines in a template to 'behind fill' and 'scale with object' at once",
+    "standard cut-line / bleed-line styles for print production"
+   ],
+   "avoid": [
+    "one object's outline: set Shape.Outline directly",
+    "dash patterns and arrowheads in detail: not exposed here (only arrow overlap / sharing flags); use the Outline object (unverified)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStyleOutline. Reach it from a style: Style.Outline (outline style or style set). Set the typed members; Style returns the generic Style for name-based access.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrOutlineType: none, outline, enhanced outline"
+    },
+    {
+     "name": "Width",
+     "use": "outline width"
+    },
+    {
+     "name": "Color",
+     "use": "outline Color"
+    },
+    {
+     "name": "LineCaps",
+     "use": "cdrOutlineLineCaps for line ends"
+    },
+    {
+     "name": "LineJoin",
+     "use": "cdrOutlineLineJoin for corners"
+    },
+    {
+     "name": "MiterLimit",
+     "use": "miter limit for sharp joins"
+    },
+    {
+     "name": "Justification",
+     "use": "cdrOutlineJustification: inside, centre or outside the path"
+    },
+    {
+     "name": "BehindFill",
+     "use": "draw the outline behind the fill"
+    },
+    {
+     "name": "ScaleWithShape",
+     "use": "scale the outline width with the object"
+    },
+    {
+     "name": "NibStretch",
+     "use": "calligraphic nib stretch ratio"
+    },
+    {
+     "name": "NibAngle",
+     "use": "calligraphic nib angle"
+    },
+    {
+     "name": "AdjustDashes",
+     "use": "cdrOutlineDashAdjust setting"
+    },
+    {
+     "name": "Overprint",
+     "use": "overprint the outline colour"
+    },
+    {
+     "name": "OverlapArrow",
+     "use": "arrowhead overlaps the end of the segment"
+    },
+    {
+     "name": "ShareArrow",
+     "use": "both arrowheads share their properties"
+    },
+    {
+     "name": "WidelineWidth",
+     "use": "width of a wide-line outline"
+    }
+   ],
+   "gotchas": [
+    "Width is in document units (unverified); a 0.25 pt hairline is about 0.0035 inch, so convert or set the document unit first.",
+    "Type cdrNoOutline removes the outline regardless of Width.",
+    "WidelineWidth and cdrEnhancedOutline are not explained in the typelib; their exact meaning is unverified.",
+    "Changing the style updates every object that uses it, including derived styles."
+   ],
+   "example": "Dim st As Style\nSet st = ActiveDocument.StyleSheet.CreateStyle(\"outline\", , \"Keyline 0.5pt\")   ' category name unverified\nWith st.Outline\n    .Width = 0.5 / 72        ' points to inches (document unit inches)\n    .ScaleWithShape = False\n    .BehindFill = True\nEnd With\nActiveShape.ApplyStyle \"Keyline 0.5pt\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StyleParagraph",
+   "id": "class:StyleParagraph",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleParagraph",
+   "status": "current",
+   "summary": "The paragraph-category view of a style (presumably alignment, indents, spacing and similar paragraph settings; the typelib lists none): this interface only hands back the generic Style object, through which the paragraph properties are read and written by name.",
+   "use_for": [
+    "reaching the paragraph part of a body-text style set to inspect or adjust it"
+   ],
+   "avoid": [
+    "typed paragraph properties: there are none here, use Style.GetProperty / SetProperty or TextRange members"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "ParagraphStyle"
+   },
+   "how": "Members live on IVGStyleParagraph. Reach it from a style or style set: Style.Paragraph. Its only member, Style, returns the generic Style object for name-based property access.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "the generic Style object for the paragraph style"
+    }
+   ],
+   "gotchas": [
+    "No typed properties; list the names with Style.GetAllPropertyNames (names unverified).",
+    "Style.Paragraph on a style without a paragraph part probably returns Nothing (unverified)."
+   ],
+   "example": "Dim st As Style\nSet st = ActiveDocument.StyleSheet.FindStyle(\"Body text\")\nIf Not st.Paragraph Is Nothing Then\n    Debug.Print Join(st.Paragraph.Style.GetOverridePropertyNames, \", \")\nEnd If",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary listed the property families of this category as fact; the interface has only .Style, so they are now marked presumed"
+   }
+  },
+  {
+   "name": "Styles",
+   "id": "class:Styles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Styles",
+   "status": "current",
+   "summary": "A list of styles or style sets from the document's style sheet (top-level styles, style sets, object defaults, all styles, derived styles, or the styles just created from a shape): count them, walk them, or find one by name.",
+   "use_for": [
+    "listing every style in a template to document or audit the brand style sheet",
+    "finding a style by name before applying or editing it"
+   ],
+   "avoid": [
+    "finding across nested styles with Styles.Find on a top-level list: use StyleSheet.AllStyles or StyleSheet.FindStyle"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "GraphicStyles"
+   },
+   "how": "Members live on IVGStyles. Returned by StyleSheet.Styles / StyleSets / ObjectDefaults / AllStyles / AllStyleSets, Style.DerivedStyles and the StyleSheet.CreateStyleFrom... / CreateStyleSetFrom... methods.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of styles in the list"
+    },
+    {
+     "name": "Item",
+     "use": "one Style by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the styles"
+    },
+    {
+     "name": "Find",
+     "use": "a Style by name"
+    },
+    {
+     "name": "First",
+     "use": "first style"
+    },
+    {
+     "name": "Last",
+     "use": "last style"
+    }
+   ],
+   "gotchas": [
+    "Item takes a numeric index only (Long); use Find for names.",
+    "StyleSheet.Styles and .StyleSets hold top-level entries only; derived styles appear in AllStyles / AllStyleSets or under each parent's DerivedStyles.",
+    "Find probably returns Nothing for an unknown name (unverified)."
+   ],
+   "example": "Dim st As Style\nFor Each st In ActiveDocument.StyleSheet.AllStyles\n    Debug.Print st.CategoryName, st.DisplayName\nNext st\nDebug.Print ActiveDocument.StyleSheet.AllStyleSets.Count & \" style sets\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StyleSheet",
+   "id": "class:StyleSheet",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleSheet",
+   "status": "current",
+   "summary": "A document's style sheet: all its styles, style sets, object default style sets and colour styles. Scripts find styles, create them from scratch or from a shape, shape range or text range, manage colour styles, and import or export the style sheet to a file to share it between documents.",
+   "use_for": [
+    "building a brand kit (text styles, fill / outline styles, colour styles) into a template by script",
+    "copying the house style sheet into incoming client files with Import",
+    "creating a style set from a designed sample object and applying it across a layout",
+    "renaming or cleaning up colour styles before handing over a file"
+   ],
+   "avoid": [
+    "formatting a single object once: set its Fill / Outline / text properties directly",
+    "palettes for picking colours: palettes are separate from colour styles"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Members live on IVGStyleSheet. Reach it as ActiveDocument.StyleSheet. Lists come back as Styles; single styles as Style; colour styles as Color objects (AllColorStyles is a Colors collection).",
+   "key_members": [
+    {
+     "name": "Styles",
+     "use": "top-level styles"
+    },
+    {
+     "name": "StyleSets",
+     "use": "top-level style sets"
+    },
+    {
+     "name": "ObjectDefaults",
+     "use": "default style sets per object type"
+    },
+    {
+     "name": "AllStyles",
+     "use": "every style, including derived ones"
+    },
+    {
+     "name": "AllStyleSets",
+     "use": "every style set"
+    },
+    {
+     "name": "FindStyle",
+     "use": "a style or style set by name"
+    },
+    {
+     "name": "CreateStyle",
+     "use": "new style of a category, optionally based on another"
+    },
+    {
+     "name": "CreateStyleSet",
+     "use": "new style set"
+    },
+    {
+     "name": "CreateStyleFromShape",
+     "use": "styles of a category taken from a shape"
+    },
+    {
+     "name": "CreateStyleSetFromShape",
+     "use": "style set taken from a shape"
+    },
+    {
+     "name": "CreateStyleFromTextRange",
+     "use": "styles taken from a text range"
+    },
+    {
+     "name": "AllColorStyles",
+     "use": "the document's colour styles"
+    },
+    {
+     "name": "CreateColorStyle",
+     "use": "new colour style, optionally in a harmony"
+    },
+    {
+     "name": "RenameColorStyle",
+     "use": "rename a colour style"
+    },
+    {
+     "name": "DeleteColorStyle",
+     "use": "delete one colour style"
+    },
+    {
+     "name": "Export",
+     "use": "write styles / style sets / defaults / colour styles to a file"
+    },
+    {
+     "name": "Import",
+     "use": "read them from a file, optionally merging"
+    }
+   ],
+   "gotchas": [
+    "Export and Import flags (Styles, StyleSets, ObjectDefaults, ColorStyles) all default to False: pass True for the parts you want or the call has nothing to do (unverified whether it fails or writes an empty file).",
+    "ReplaceExisting defaults to False; a name clash then probably fails or renames the new style (unverified which).",
+    "CreateStyleFrom... methods return a Styles list (one per category created), not a single Style.",
+    "Category strings for CreateStyle and CreateStyleFromShape ('fill', 'outline', 'character', 'paragraph', 'frame', 'transparency') are not in the typelib (unverified).",
+    "The style sheet file extension used by Export / Import is not in the harvest (unverified)."
+   ],
+   "example": "Dim ss As StyleSheet\nSet ss = ActiveDocument.StyleSheet\nss.CreateColorStyle \"Brand Blue\", CreateRGBColor(0, 82, 165)\nss.CreateStyleSetFromShape ActiveShape, \"Card\", True\nss.Export \"C:\\styles\\brand_kit.cdss\", True, True, False, True   ' extension unverified\nDebug.Print ss.AllStyles.Count, ss.AllColorStyles.Count",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "StyleTransparency",
+   "id": "class:StyleTransparency",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/StyleTransparency",
+   "status": "current",
+   "summary": "Transparency settings stored in a transparency style or the transparency part of a style set: the transparency fill (uniform, fountain, pattern ...), merge mode, uniform level, the transparency of white and black areas of a pattern / texture transparency, and whether it applies to fill, outline or both.",
+   "use_for": [
+    "a reusable 'soft overlay' style (multiply at 30 %) for image captions and photo tints",
+    "applying the same gradient fade to many banner backgrounds through one style"
+   ],
+   "avoid": [
+    "one object's transparency: set Shape.Transparency directly",
+    "masking a photo to a shape: PowerClip it"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGStyleTransparency. Reach it from a style: Style.Transparency. Fill returns a StyleFill describing the transparency's own fill (uniform level, fountain ramp, pattern).",
+   "key_members": [
+    {
+     "name": "Fill",
+     "use": "StyleFill of the transparency (type, fountain, pattern)"
+    },
+    {
+     "name": "Mode",
+     "use": "cdrMergeMode: normal, multiply, screen, overlay ..."
+    },
+    {
+     "name": "UniformTransparency",
+     "use": "uniform transparency level"
+    },
+    {
+     "name": "WhiteTransparency",
+     "use": "transparency of white areas in a pattern / texture transparency"
+    },
+    {
+     "name": "BlackTransparency",
+     "use": "transparency of black areas in a pattern / texture transparency"
+    },
+    {
+     "name": "AppliesTo",
+     "use": "cdrTransparencyAppliedTo: fill, outline, fill and outline"
+    },
+    {
+     "name": "Style",
+     "use": "the generic Style object"
+    }
+   ],
+   "gotchas": [
+    "The typelib description of UniformTransparency ('winding rule') and of the interface ('StyleFill class') are copy-paste errors; the member name is the reliable guide (unverified that it holds the uniform level).",
+    "The value scale of UniformTransparency / WhiteTransparency / BlackTransparency (0-100 or 0-1) is not documented (unverified).",
+    "Mode is a merge (blend) mode; Multiply / Screen results depend on what is underneath, so check the look on the real background."
+   ],
+   "example": "Dim t As StyleTransparency\nSet t = ActiveDocument.StyleSheet.FindStyle(\"Soft overlay\").Transparency\nt.Mode = cdrMergeMultiply\nt.UniformTransparency = 70   ' scale unverified\nt.AppliesTo = cdrApplyToFill\nActiveShape.ApplyStyle \"Soft overlay\"",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SubPath",
+   "id": "class:SubPath",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SubPath",
+   "status": "current",
+   "summary": "One continuous path inside a curve (a curve has several subpaths when it is combined, like the outer and inner contour of the letter O): its nodes and segments, whether it is closed, its length, area, direction and bounds; it can be reversed, extracted as its own curve, extended with line or Bezier segments, and sampled for points, tangents, perpendiculars, curvature and intersections.",
+   "use_for": [
+    "placing objects at even intervals along a path (dots, stitches, text markers)",
+    "finding where two outlines cross for a precise trim or a die-line check",
+    "fixing path direction (counter-shapes, compound path winding) before export",
+    "pulling the inner contour out of a combined logo shape"
+   ],
+   "avoid": [
+    "moving or styling the whole object: use the Shape",
+    "node-by-node editing of the full curve: Curve.Nodes covers every subpath"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "SubPathItem",
+    "AI": "PathItem"
+   },
+   "how": "Members live on IVGSubPath. Reach it from a curve shape: ActiveShape.Curve.SubPaths(i) (base 1), SubPaths.First / Last, or Next / Previous from another subpath. Offsets along the path take an OffsetType (cdrAbsoluteSegmentOffset in document units, cdrRelativeSegmentOffset, presumably 0..1, cdrParamSegmentOffset).",
+   "key_members": [
+    {
+     "name": "Nodes",
+     "use": "nodes of this subpath"
+    },
+    {
+     "name": "Segments",
+     "use": "segments of this subpath"
+    },
+    {
+     "name": "Closed",
+     "use": "open or closed (read / write)"
+    },
+    {
+     "name": "Length",
+     "use": "length in document units"
+    },
+    {
+     "name": "Area",
+     "use": "area of a closed subpath"
+    },
+    {
+     "name": "IsClockwise",
+     "use": "True when the path runs mostly clockwise"
+    },
+    {
+     "name": "StartNode",
+     "use": "first node"
+    },
+    {
+     "name": "EndNode",
+     "use": "last node"
+    },
+    {
+     "name": "ReverseDirection",
+     "use": "reverse the node order"
+    },
+    {
+     "name": "Extract",
+     "use": "move the subpath out into a new curve shape"
+    },
+    {
+     "name": "AppendLineSegment",
+     "use": "add a straight segment to x, y"
+    },
+    {
+     "name": "AppendCurveSegment2",
+     "use": "add a Bezier segment with explicit control points"
+    },
+    {
+     "name": "GetPointAt",
+     "use": "Point at an offset along the subpath"
+    },
+    {
+     "name": "GetTangentAt",
+     "use": "tangent angle at an offset"
+    },
+    {
+     "name": "GetPerpendicularAt",
+     "use": "perpendicular angle at an offset"
+    },
+    {
+     "name": "GetEvenlySpacedPoints",
+     "use": "PointRange of points spaced evenly along the path"
+    },
+    {
+     "name": "GetIntersections",
+     "use": "CrossPoints with another subpath"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "True when x, y lies inside the closed path"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "bounding Rect of the subpath"
+    },
+    {
+     "name": "Move",
+     "use": "shift the subpath by DeltaX, DeltaY"
+    }
+   ],
+   "gotchas": [
+    "Default OffsetType is cdrRelativeSegmentOffset (1) with Offset 0.5; relative offsets are presumably fractions of the subpath length, so 0.5 is halfway (unverified); pass cdrAbsoluteSegmentOffset to measure in document units.",
+    "Area is only meaningful for closed subpaths; check Closed first (unverified what an open path returns).",
+    "Extract changes the original curve and returns the new shape; indexes of the remaining subpaths shift.",
+    "Tangent / perpendicular results are angles, presumably in degrees (unverified); use GetTangentVectorAt for a direction vector.",
+    "GetBoundingBox returns through ByRef arguments; late-bound callers should read BoundingBox."
+   ],
+   "example": "Dim sp As SubPath, pt As Point\nSet sp = ActiveShape.Curve.SubPaths(1)\nIf Not sp.Closed Then sp.Closed = True\nDebug.Print sp.Length, sp.Area, sp.IsClockwise\nSet pt = sp.GetPointAt(0.5)\nActiveLayer.CreateEllipse2 pt.x, pt.y, 0.05",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how stated cdrRelativeSegmentOffset as 0..1; the gotcha marks that unverified, now consistent"
+   }
+  },
+  {
+   "name": "SubPaths",
+   "id": "class:SubPaths",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SubPaths",
+   "status": "current",
+   "summary": "The subpaths of one curve: one entry per continuous path, so a simple shape has one and a combined shape (a letter with a counter, a logo of several parts) has several; count them, loop over them or take one by index.",
+   "use_for": [
+    "finding the inner and outer contours of combined letters or logo marks",
+    "checking whether a traced shape is one piece or many before cutting / plotting",
+    "looping over every part of a combined curve to measure or fix each one"
+   ],
+   "avoid": [
+    "breaking the parts into separate objects: Shape.BreakApart does it in one call"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "SubPathItems",
+    "AI": "PathItems"
+   },
+   "how": "Members live on IVGSubPaths. Reach it from a curve shape as ActiveShape.Curve.SubPaths; take one with Item(i) (base 1), First or Last, or loop with For Each.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of subpaths in the curve"
+    },
+    {
+     "name": "Item",
+     "use": "one SubPath by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the subpaths"
+    },
+    {
+     "name": "First",
+     "use": "first subpath"
+    },
+    {
+     "name": "Last",
+     "use": "last subpath"
+    },
+    {
+     "name": "Parent",
+     "use": "the Curve the subpaths belong to"
+    }
+   ],
+   "gotchas": [
+    "Only curves have subpaths: convert rectangles, ellipses and text to curves first (or read their DisplayCurve for a read-only copy).",
+    "The typelib describes Item as returning 'the specified node'; it returns a SubPath.",
+    "Extract, BreakApart or combining changes Count; re-read the collection afterwards."
+   ],
+   "example": "Dim sp As SubPath\nDebug.Print ActiveShape.Curve.SubPaths.Count & \" parts\"\nFor Each sp In ActiveShape.Curve.SubPaths\n    Debug.Print sp.Index, sp.Closed, sp.Length, sp.IsClockwise\nNext sp",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Symbol",
+   "id": "class:Symbol",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Symbol",
+   "status": "current",
+   "summary": "The symbol part of a symbol instance (a shape whose Type is cdrSymbolShape): it points to the shared symbol definition that every instance draws, and can turn this instance back into ordinary shapes.",
+   "use_for": [
+    "reusing one logo, icon or badge many times in a layout so a single edit updates every copy",
+    "breaking one instance free to customise it while the others stay linked",
+    "listing which symbol each instance on a page uses"
+   ],
+   "avoid": [
+    "one-off copies you will edit individually: Duplicate the shapes instead",
+    "data-driven variations (names, prices): use separate objects or text, symbols are identical copies"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "SymbolItem"
+   },
+   "how": "Members live on IVGSymbol. Reach it through a symbol instance's Shape.Symbol (check Shape.Type = cdrSymbolShape). Create instances by converting artwork with Shape.ConvertToSymbol(Name), which returns the instance shape; copies made with Duplicate stay linked to the same definition (unverified).",
+   "key_members": [
+    {
+     "name": "Definition",
+     "use": "the shared SymbolDefinition this instance shows"
+    },
+    {
+     "name": "RevertToShapes",
+     "use": "unlink this instance and return its content as a ShapeRange"
+    }
+   ],
+   "gotchas": [
+    "Editing the Definition changes every instance in the document; revert an instance first if only one should change.",
+    "Shape.Symbol on a shape that is not a symbol instance returns Nothing or fails (unverified which); test Type first.",
+    "RevertToShapes replaces the instance; the old instance reference is no longer valid (unverified).",
+    "Symbols defined in an external linked library update from that library, not from this document (unverified)."
+   ],
+   "example": "Dim inst As Shape, cp As Shape, parts As ShapeRange\nSet inst = ActiveShape.ConvertToSymbol(\"Logo mark\")\nSet cp = inst.Duplicate(2, 0)\nDebug.Print cp.Type = cdrSymbolShape, cp.Symbol.Definition.Name\nSet parts = cp.Symbol.RevertToShapes",
+   "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,616 @@
+{
+ "cards": [
+  {
+   "name": "Bit Planes",
+   "id": "d4bc6924-c483-45b4-8a91-323e3e425eeb",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Color Transform/Bit Planes",
+   "status": "current",
+   "summary": "Reduces the image to its basic RGB colour components and turns gradual tonal changes into stark ones: each channel is cut down to a single bit plane, so the result is built from flat red / green / blue / cyan / magenta / yellow / black / white areas with hard banding where the original had smooth gradients. The Red, Green and Blue sliders pick which plane (0-7) of each channel is shown; which end of the slider gives broad posterized blocks and which gives fine, noisy banding was not verified in the harvest.",
+   "use_for": [
+    "analysing gradients and banding in a bitmap",
+    "loud 8-colour retro / glitch-poster treatment of a photo",
+    "abstract colour-band backgrounds made from a soft photo or a gradient"
+   ],
+   "avoid": [
+    "you want a controlled number of tones: Effects/Transform/Posterize gives even, predictable bands instead",
+    "faces you need to keep recognisable: the colours become pure primaries and skin turns into blocks of red / yellow / magenta",
+    "scripting a vector object: Shape.Bitmap.ApplyBitmapEffect needs a bitmap shape; run Object/Convert to Bitmap first or apply from the Effects menu",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Posterize"
+   },
+   "look": [
+    "bit planes",
+    "posterized",
+    "colour banding",
+    "8-colour",
+    "retro computer",
+    "glitch",
+    "stark tones",
+    "primary colours"
+   ],
+   "params": [
+    {
+     "name": "Red",
+     "does": "which bit plane (0-7) of the red channel is shown",
+     "typical": "0-7, default 0; which end gives broad blocks and which fine banding is unverified, so 4 is the safe first try"
+    },
+    {
+     "name": "Green",
+     "does": "which bit plane (0-7) of the green channel is shown",
+     "typical": "same value as Red unless you want colour-shifted bands"
+    },
+    {
+     "name": "Blue",
+     "does": "which bit plane (0-7) of the blue channel is shown",
+     "typical": "same value as Red unless you want colour-shifted bands"
+    },
+    {
+     "name": "Apply to all planes",
+     "does": "links the three channel sliders so one value drives all of them (from its caption; not verified)",
+     "typical": "on (harvested default) for an even look; off to set channels separately"
+    }
+   ],
+   "demo_settings": {
+    "Red": 4,
+    "Green": 4,
+    "Blue": 4,
+    "Apply to all planes": true
+   },
+   "pairs_with": [
+    "Effects/Blur/Gaussian Blur before it, to smooth noisy banding into broad shapes",
+    "Effects/Transform/Posterize as the tamer alternative",
+    "a Transparency on the effected copy over the original photo to tone the colours down"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Bit Planes\", \"BitPlanesEffect Red=4,Green=4,Blue=4,AllPlanes=1\") on a bitmap Shape s (template from the harvest: BitPlanesEffect Red=<number>,Green=<number>,Blue=<number>,AllPlanes=<bool>; the bool is written 1/0 like the harvested default, and this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"d4bc6924-c483-45b4-8a91-323e3e425eeb\") opens the effect with its dialog. A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "light: a per-pixel colour operation, near-instant on a 1920x1080 bitmap (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: dropped the 'CorelDRAW's own stated purpose' attribution (no such source in the harvest); Red typical: 'mid values (3-5) give clear banding' was an untested claim; now states the harvested range and default 0 and the unverified direction; avoid: names the harvested Object/Convert to Bitmap command; scripting: added that a wrong key is not rejected (batch audit BADKEY); cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/2b6570154df9.png",
+    "note": "Stark 8-colour result: the photo is rebuilt from flat red, green, blue, cyan, magenta, yellow, black and white areas with fine, noisy contour banding where the original had smooth tones (plane 4 on each channel); 'Apply to all planes' was ignored (dropped).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Halftone",
+   "id": "4a0eca0b-519f-48da-8599-1053461413b6",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Color Transform/Halftone",
+   "status": "current",
+   "summary": "Gives the image the look of a colour halftone: the continuous-tone photo is broken into separate cyan, magenta, yellow and black dot screens whose dots grow with the ink amount, each screen at its own angle, so the picture reads as an enlarged print rosette. Max dot radius sets how big the largest dots get.",
+   "use_for": [
+    "pop-art / comic-print treatment of a photo for a poster or social graphic",
+    "retro newspaper or screen-print texture on a background image",
+    "large-dot rosette pattern as a texture layer under type"
+   ],
+   "avoid": [
+    "real print screening for a press: this is a picture of dots baked into the bitmap's pixels, not an output screen; set screening in the print / PDF settings instead",
+    "small or low-resolution bitmaps: at the top Max dot radius (10) the dots swallow detail; enlarge or resample the bitmap first",
+    "a one-ink dot look: it screens four inks (Cyan, Magenta, Yellow and Black angles); for single-colour dots convert a copy with Bitmaps/Mode/Black and White (1-bit) and pick a halftone conversion in its dialog",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Pixelate/Color Halftone",
+    "AI": "Effect/Pixelate/Color Halftone"
+   },
+   "look": [
+    "halftone",
+    "colour halftone",
+    "CMYK dots",
+    "rosette",
+    "pop art",
+    "comic print",
+    "newsprint",
+    "screen print"
+   ],
+   "params": [
+    {
+     "name": "Cyan",
+     "does": "screen angle of the cyan dot grid",
+     "typical": "15 deg (harvested default, classic CMYK angle)"
+    },
+    {
+     "name": "Magenta",
+     "does": "screen angle of the magenta dot grid",
+     "typical": "75 deg (harvested default)"
+    },
+    {
+     "name": "Yellow",
+     "does": "screen angle of the yellow dot grid",
+     "typical": "0 deg (harvested default)"
+    },
+    {
+     "name": "Black",
+     "does": "screen angle of the black dot grid",
+     "typical": "45 deg (harvested default); set all four equal for aligned, non-rosette dots"
+    },
+    {
+     "name": "Max dot radius",
+     "does": "radius of the largest dot; bigger = coarser, more graphic halftone",
+     "typical": "5 default; 8-10 for an obvious pop-art dot"
+    }
+   ],
+   "demo_settings": {
+    "Cyan": 15,
+    "Magenta": 75,
+    "Yellow": 0,
+    "Black": 45,
+    "Max dot radius": 10
+   },
+   "pairs_with": [
+    "Effects/Transform/Posterize before it, for flatter comic colour under the dots",
+    "a bold vector outline / title on top for a comic-panel layout",
+    "Bitmaps/Quick Trace afterwards to turn coarse dots into vector circles"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Halftone\", \"HalftoneEffect CAngle=15,MAngle=75,YAngle=0,KAngle=45,MaxRadius=10\") on a bitmap Shape s (template from the harvest: HalftoneEffect CAngle=<int>,MAngle=<int>,YAngle=<int>,KAngle=<int>,MaxRadius=<number>; this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"4a0eca0b-519f-48da-8599-1053461413b6\"). A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "light to moderate: four screen passes, quick on a 1920x1080 bitmap (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the invented 'px' unit for Max dot radius; 'RGB pixels' -> the bitmap's pixels; one-ink alternative was Effects/Transform/Threshold, which makes no dots: now Bitmaps/Mode/Black and White (1-bit); scripting: added that a wrong key is not rejected (batch audit BADKEY); cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/fd8b1706d665.png",
+    "note": "The whole plate is broken into a coarse CMYK dot screen with visible rosettes: dots grow in the dark areas and shrink in the light walls, and the colour swatches read as dot fields; the Black angle key was ignored (dropped).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Psychedelic",
+   "id": "9aa863e1-ad6a-4f11-9903-aa116c236252",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Color Transform/Psychedelic",
+   "status": "current",
+   "summary": "Remaps the image's colours to bright, electric, unnatural hues (hot orange, hot pink, acid yellow, lime green) while keeping the shapes, for a trippy 60s / acid-poster look. Level sets how far the colours are pushed: the harvest audit measured a mean pixel change of about 47 at Level 39 and about 121 at Level 255, so higher is much stronger; the exact colours each tone lands on vary with Level.",
+   "use_for": [
+    "acid / psychedelic gig and festival poster backgrounds",
+    "surreal colour treatment of a photo for an album cover or meme graphic",
+    "loud colour variants of one image for a pop-art grid"
+   ],
+   "avoid": [
+    "any natural or brand-accurate colour: the hue mapping is not controllable beyond Level; use Effects/Adjust/Hue/Saturation/Lightness or a duotone for designed colour",
+    "skin tones and faces you need to look human: they turn neon",
+    "values past the dialog maximum in a script: the audit showed Level 1030 renders the same as 255 (clamped), so stay in 1-255"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "psychedelic",
+    "acid colours",
+    "neon",
+    "trippy",
+    "60s poster",
+    "electric colours",
+    "false colour",
+    "pop art"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "strength of the colour remap: the measured change from the original grows with Level (mean about 47 at 39, about 121 at 255), so even low values are clearly visible",
+     "typical": "127 default; 180-230 for an obvious acid look"
+    }
+   ],
+   "demo_settings": {
+    "Level": 200
+   },
+   "pairs_with": [
+    "Effects/Transform/Posterize after it, for flat screen-print style colour areas",
+    "Effects/Color Transform/Halftone after it, for a psychedelic comic print",
+    "a Transparency on the effected copy over the original to keep some natural colour"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Psychedelic\", \"PsychedelicEffect Level=200\") on a bitmap Shape s; proven by the harvest audit (Level 39.1 vs 216.9 gave different, repeatable pixels, undo worked; harvested example 'PsychedelicEffect Level=39.1'). Interactive route: Application.FrameWork.Automation.InvokeItem(\"9aa863e1-ad6a-4f11-9903-aa116c236252\"). A misspelt key is silently ignored: the audit's 'NoSuchKeyLevel=216.9' still changed the image (about 81) but not to the Level=216.9 result (about 69 apart), so check keys with two values.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the scripted ApplyBitmapEffect path is undoable (audit undo_ok), the harvest does not say whether it stacks or bakes the pixels",
+   "cost": "light: a per-pixel colour remap, near-instant (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Level 'low = slight shift' contradicted the audit (mean change about 47 already at Level 39); rewritten from the audit numbers; scripting: added the audit's bad-key behaviour; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/204f85b42f8f.png",
+    "note": "The plate is remapped to electric false colours (aqua and cyan walls, salmon-orange mid-tones and dark areas, lime and green patches, magenta accents, swatches turned into unrelated flat colours), a trippy acid-poster look, while the shapes stay readable.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Solarize",
+   "id": "386fd07b-1476-4891-ad86-755c06c322f5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Color Transform/Solarize",
+   "status": "current",
+   "summary": "Folds the tonal range of each colour channel, a darkroom 'Sabattier'-style partial negative: every channel value v comes out as about Level x (1 - |2v/255 - 1|), measured on two renders (Level 40 and Level 200, within a few levels at every sampled point). Mid tones become the brightest part (mid grey 128 -> Level), both pure black and pure white go dark, and hues flip where a channel crosses the middle (orange 255,138,0 -> 0,184,0 at Level 200; the beige wall turns green). Level 200 gives a bright, psychedelic negative-colour picture, Level 40 a near-black one with faint glowing edges. By the same fit the default Level 127 keeps tones below mid grey and mirrors those above it, the classic solarize (inferred, not rendered).",
+   "use_for": [
+    "surreal, Man Ray-style darkroom look on portraits or event photos",
+    "metallic / X-ray style backgrounds for music and tech posters",
+    "eye-catching negative-tone variants of a photo for a social carousel"
+   ],
+   "avoid": [
+    "a clean full negative: use Effects/Transform/Invert Colors",
+    "colour-critical work: solarizing reverses hues in the flipped tones",
+    "values past the dialog maximum in a script: the audit showed Level 1030 renders the same as 255 (clamped), so stay in 0-255",
+    "low Levels: Level 40 gave a near-black image (mean 22 of 255) on the render; start from the 127 default or higher"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Stylize/Solarize"
+   },
+   "look": [
+    "solarize",
+    "tone fold",
+    "partial negative",
+    "Sabattier",
+    "psychedelic colour",
+    "glowing edges",
+    "x-ray",
+    "surreal"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "the output brightness the mid tones fold to (Level 40 gave mid grey 40, Level 200 gave 200; black and white both go dark), a fold height rather than a flip point",
+     "typical": "127-255 (default 127); low values darken the whole image"
+    }
+   ],
+   "demo_settings": {
+    "Level": 200
+   },
+   "pairs_with": [
+    "Effects/Adjust/Brightness/Contrast/Intensity afterwards, to restore punch to the flattened mid-tones",
+    "Effects/Adjust/Desaturate first, for the classic silver solarized print",
+    "Effects/Contour/Find Edges as a second layer to sharpen the solarized outlines"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Solarize\", \"SolarizeEffect Level=200\") on a bitmap Shape s; proven by the harvest (apply test 'Level=64' vs 'Level=230', audit 'Level=38.25' vs 'Level=216.75' gave different, repeatable pixels, undo worked; harvested example 'SolarizeEffect Level=38.25'). Interactive route: Application.FrameWork.Automation.InvokeItem(\"386fd07b-1476-4891-ad86-755c06c322f5\"). A misspelt key is silently ignored: the audit's 'NoSuchKeyLevel=216.75' still changed the image (about 26) but not to the Level=216.75 result (about 52 apart), so check keys with two values.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the scripted ApplyBitmapEffect path is undoable (audit undo_ok), the harvest does not say whether it stacks or bakes the pixels",
+   "cost": "light: a per-pixel tone curve, near-instant (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'no Level returns the original' generalised from 4 tested values (Level 0 never tried); now lists the measured changes and notes they are not monotonic in Level; scripting: added the audit's bad-key behaviour; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/dd52647bc0d1.png",
+    "note": "Level 200: a bright, psychedelic tone-folded picture: mid tones are the lightest (ramp 128 -> 200), black and white both go dark (ramp 3 -> 4, 252 -> 4) and colours flip (orange 255,138,0 -> 0,184,0, wall 161,126,74 -> 148,196,115); all 16 sampled points fit Level x (1 - |2v/255 - 1|) within 1-2 levels, as the rewritten card says; summary and look updated for the bright end.",
+    "rerender": false,
+    "previous": {
+     "verdict": "wrong",
+     "frame": "gallery/cdr_effect/dd52647bc0d1.png",
+     "note": "Not a partial negative with the image kept: at Level 40 every channel came out as about Level x (1 - |2v/255 - 1|), so mid grey 128 -> 40, both black (8 -> 2) and white (247 -> 2) went dark and the whole frame is near black (mean 22) with faint glowing edges; Level is the brightness the mid tones fold to, not a flip point; summary, look and the Level note rewritten and the demo raised to Level 200.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-sampled 19 points: all fit out = Level x (1 - |2v/255 - 1|) within a few levels (grey ramp 8/64/128/191/247 -> 2/20/40/20/2), so the near-black frame is the effect at Level 40, not an export or plate fault (the strip and type render at the right places); the new demo Level 200 is inside 0-255 and should give the bright folded look."
+     }
+    }
+   }
+  },
+  {
+   "name": "Edge Detect",
+   "id": "c3458bb0-838c-47a4-adc9-f67b1a68d7dc",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Contour/Edge Detect",
+   "status": "current",
+   "summary": "Finds the edges in the image and redraws them as lines on a flat single-colour background (white, black or another colour you pick), throwing away the fill tones: the photo becomes an outline sketch. Sensitivity sets how strongly edges are picked up; on soft, low-contrast images a higher value is needed for lines to show.",
+   "use_for": [
+    "quick line-sketch version of a photo for an illustration base or colouring page",
+    "outline art on black for a neon / chalkboard style graphic (Black background)",
+    "a clean edge map to trace into vectors (Bitmaps/Quick Trace) for a logo or icon"
+   ],
+   "avoid": [
+    "blurry, low-contrast photos at low Sensitivity: few edges register and the frame goes almost blank",
+    "you want the photo kept under the outlines: Edge Detect replaces it (Find Edges and Trace Contour replace it too); apply it to a copy and lay that over the original with a Transparency merge mode",
+    "scripting a custom background colour: the harvested command template carries only ColorMode and Sensitivity, so the 'Other' colour (BackgroundColorItem) has to be set in the dialog",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Stylize/Find Edges"
+   },
+   "look": [
+    "edge detect",
+    "outline",
+    "line art",
+    "sketch",
+    "contour lines",
+    "neon outline",
+    "chalkboard",
+    "edge map"
+   ],
+   "params": [
+    {
+     "name": "ColorMode",
+     "does": "background colour behind the detected edge lines",
+     "typical": "White (default) for a pencil-sketch look; Black for glowing lines; Other with a picked colour"
+    },
+    {
+     "name": "BackgroundColorItem",
+     "does": "the custom background colour used when ColorMode is Other",
+     "typical": "only with ColorMode Other; a brand colour or dark navy"
+    },
+    {
+     "name": "Sensitivity",
+     "does": "how strongly edges are detected and drawn",
+     "typical": "1 default; 6-10 on soft or low-contrast photos"
+    }
+   ],
+   "demo_settings": {
+    "ColorMode": "Black",
+    "Sensitivity": 9
+   },
+   "pairs_with": [
+    "Bitmaps/Quick Trace afterwards, to turn the edge lines into vector paths",
+    "Effects/Transform/Invert Colors to swap the line / background tones",
+    "a Transparency or merge mode over the original photo for an inked-photo look"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Edge Detect\", \"EdgeDetectEffect ColorMode=Black,Sensitivity=9\") on a bitmap Shape s (template from the harvest: EdgeDetectEffect ColorMode=<enum>,Sensitivity=<number>; the background colour for ColorMode=Other is not in the template; this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"c3458bb0-838c-47a4-adc9-f67b1a68d7dc\"). The enum is written as its harvested value ('Black'); that form was not applied for this effect. A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "light: a small convolution, quick on a 1920x1080 bitmap (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: said Find Edges / Trace Contour keep the original colours, but both replace the fill tones (per their own cards); now points to a copy over the original; scripting: enum written as its value is unproven; added that a wrong key is not rejected; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d6d753117d80.png",
+    "crop": "gallery/cdr_effect/d6d753117d80_1to1.png",
+    "note": "1:1 crop: the picture is replaced by a black ground with thin light edge lines (dark-red panel outlines, the edges of each hairline, faint coloured lines along the colour-bar borders): the outline sketch on black described (ColorMode Black).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/d6d753117d80.png",
+     "note": "The photo became thin light edge lines on a black ground: outlines of the large shapes, radial detail, stripes and dark-red blocks are drawn in faint white with red and blue tints, the fill tones are gone (ColorMode Black).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Find Edges",
+   "id": "481e887a-d9e6-4864-8e28-8f27ab23baff",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Contour/Find Edges",
+   "status": "current",
+   "summary": "Detects the edges of objects in the image and converts them into lines, Soft (smooth, blurred, pencil-like) or Solid (crisp, hard-edged), while flattening the areas between them toward a light background, so the photo reads as a coloured outline drawing. Level sets the intensity of the effect (how much edge is kept).",
+   "use_for": [
+    "coloured-pencil / ink drawing look from a photo for an editorial illustration",
+    "graphic outline treatment of a product or portrait for a poster",
+    "a line layer to blend over the original photo for a comic or sketched look"
+   ],
+   "avoid": [
+    "you want the lines on a flat chosen background (white / black / custom): use Effects/Contour/Edge Detect",
+    "very soft photos at low Level: the result washes out to a near-blank frame; raise Level or sharpen first",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Stylize/Find Edges"
+   },
+   "look": [
+    "find edges",
+    "outline drawing",
+    "coloured pencil",
+    "line art",
+    "sketch",
+    "ink lines",
+    "soft edges",
+    "solid edges"
+   ],
+   "params": [
+    {
+     "name": "EdgeType",
+     "does": "line character: Soft = smooth, blurred lines; Solid = crisp, hard lines",
+     "typical": "Soft (default) for a pencil feel; Solid for a graphic ink look"
+    },
+    {
+     "name": "Level",
+     "does": "intensity of the edge effect",
+     "typical": "50 default; 70-90 on soft photos so the lines read"
+    }
+   ],
+   "demo_settings": {
+    "EdgeType": "Solid",
+    "Level": 80
+   },
+   "pairs_with": [
+    "Effects/Transform/Posterize afterwards for a flat, printed-illustration look",
+    "a Transparency on the effected copy over the original photo for an inked-photo blend",
+    "Bitmaps/Quick Trace to vectorise the result"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Find Edges\", \"FindEdgesEffect EdgeType=Solid,Level=80\") on a bitmap Shape s (template from the harvest: FindEdgesEffect EdgeType=<enum>,Level=<number>; this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"481e887a-d9e6-4864-8e28-8f27ab23baff\"). The enum is written as its harvested value ('Solid'); that form was not applied for this effect. A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "light: a small convolution, quick on a 1920x1080 bitmap (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: enum written as its value is unproven; added that a wrong key is not rejected; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/2dcb193c758b.png",
+    "crop": "gallery/cdr_effect/2dcb193c758b_1to1.png",
+    "note": "1:1 crop: a white sheet with bold dark solid outlines round the dark-red panel, the hairlines redrawn as dark lines and the swatches flattened to white with dark borders and small coloured fringes: the Solid outline drawing described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/2dcb193c758b.png",
+     "note": "The photo became a white sheet with bold dark solid outlines around the large shapes, radial detail, stripes and dark-red blocks, with red, cyan and yellow fringes on some edges, an outline drawing as the card says for Solid / Level 80.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Local Equalization",
+   "id": "635a4ec8-4b4d-4e41-b1f4-5b5918b86746",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Contour/Local Equalization",
+   "status": "current",
+   "summary": "Enhances contrast near edges by equalizing tones inside a small neighbourhood around each pixel, revealing detail in both light and dark regions; the result looks flattened and gritty, with exaggerated local texture and halos, like an overcooked HDR or a relief map. Width and Height set the neighbourhood size; smaller areas give a stronger, grainier effect.",
+   "use_for": [
+    "pulling detail out of murky shadows and blown highlights in a dull photo (applied with a Transparency to tone it down)",
+    "gritty, grunge / HDR look for sports or action posters",
+    "texture maps and relief-like backgrounds from a photo"
+   ],
+   "avoid": [
+    "subtle tonal correction: at full strength it flattens the overall light and adds halos; use Effects/Adjust/Levels or Effects/Adjust/Tone Curve instead, or Effects/Adjust/Equalize for an even whole-image tonal spread",
+    "noisy or JPEG-compressed images: it amplifies noise and block artefacts",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "local equalization",
+    "local contrast",
+    "HDR",
+    "gritty",
+    "grunge",
+    "detail boost",
+    "halo",
+    "relief"
+   ],
+   "params": [
+    {
+     "name": "Width",
+     "does": "width of the pixel area around each pixel used for equalizing; smaller = more local, grittier",
+     "typical": "50 default; 20-40 for an obvious gritty look, 100+ for a gentler one"
+    },
+    {
+     "name": "Height",
+     "does": "height of that pixel area",
+     "typical": "same as Width (tied when Square is on)"
+    },
+    {
+     "name": "Square",
+     "does": "keeps Height equal to Width (inferred from the key; the control has no caption, not verified)",
+     "typical": "on (harvested default)"
+    }
+   ],
+   "demo_settings": {
+    "Width": 25,
+    "Height": 25,
+    "Square": true
+   },
+   "pairs_with": [
+    "a Transparency on the effected copy over the original photo, to dial in just the detail boost",
+    "Effects/Blur/Gaussian Blur at a small radius afterwards to calm the grain",
+    "Effects/Color Transform/Solarize or Psychedelic for a stylised grunge poster"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Local Equalization\", \"LocalEqualizeEffect Width=25,Height=25,Square=1\") on a bitmap Shape s (note the effect id is LocalEqualizeEffect, not the menu name; template from the harvest: LocalEqualizeEffect Width=<number>,Height=<number>,Square=<bool>; the bool is written 1/0 like the harvested default; this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"635a4ec8-4b4d-4e41-b1f4-5b5918b86746\"). A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "moderate: a neighbourhood histogram per pixel; larger Width / Height take longer on big bitmaps (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Square description marked as inferred from the key; scripting: added that a wrong key is not rejected; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/f883f46277d9.png",
+    "crop": "gallery/cdr_effect/f883f46277d9_1to1.png",
+    "note": "1:1 crop: a gritty embossed relief: the dark-red wood panel turns into crunchy haloed texture, the swatches go pastel, the smooth grey ramp breaks into vertical stripes and the crop gets much lighter (mean 160 vs 113): the overcooked local-contrast look described; Square was ignored (dropped).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/f883f46277d9.png",
+     "note": "Gritty over-processed relief: every edge gets light and dark halos, the wall moulding and dark areas turn into a crunchy embossed texture, the colour swatches go pastel and the frame gets lighter overall (mean 178 vs 133), the HDR-like local contrast described; Square was ignored (dropped).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Trace Contour",
+   "id": "884cea77-64cd-48c5-b9c5-c9cbfc512d8b",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Contour/Trace Contour",
+   "status": "current",
+   "summary": "Draws thin coloured contour lines where the image's brightness crosses one threshold Level and turns everything else white, like a topographic map of the picture. EdgeType picks whether the line follows the side below (Lower) or above (Upper) that level.",
+   "use_for": [
+    "topographic / contour-map line art from a photo or gradient",
+    "minimal line portrait for a poster or editorial spot",
+    "a clean threshold outline to vectorise with Bitmaps/Quick Trace"
+   ],
+   "avoid": [
+    "shapes whose brightness never crosses Level: nothing is traced and the frame goes white; move Level into the subject's tonal range",
+    "multiple contour levels: it traces one threshold only; duplicate the bitmap and stack results at different Levels",
+    "relying on the command string blindly: the harvest proved the command format on other effects but did not apply this effect's string in a test"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Stylize/Trace Contour"
+   },
+   "look": [
+    "trace contour",
+    "contour lines",
+    "topographic",
+    "isoline",
+    "thin outline",
+    "line art",
+    "threshold outline",
+    "white background"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "brightness threshold (1-255) the contour lines follow",
+     "typical": "127 default; set it to a tone between the subject and the background"
+    },
+    {
+     "name": "EdgeType",
+     "does": "which side of the threshold the line marks: Lower (pixels below Level) or Upper (pixels above)",
+     "typical": "Lower (default); try Upper if lines land on the wrong side"
+    }
+   ],
+   "demo_settings": {
+    "Level": 120,
+    "EdgeType": "Upper"
+   },
+   "pairs_with": [
+    "Bitmaps/Quick Trace afterwards to turn the contour into vector paths",
+    "Effects/Blur/Gaussian Blur before it, for smoother, cleaner contour lines",
+    "a Transparency or merge mode over the original photo to overlay the lines"
+   ],
+   "scripting": "s.Bitmap.ApplyBitmapEffect(\"Trace Contour\", \"TraceContourEffect Level=120,EdgeType=Upper\") on a bitmap Shape s (template from the harvest: TraceContourEffect Level=<number>,EdgeType=<enum>; this effect's string was not applied in a harvest test). Interactive route: Application.FrameWork.Automation.InvokeItem(\"884cea77-64cd-48c5-b9c5-c9cbfc512d8b\"). The enum is written as its harvested value ('Upper'); that form was not applied for this effect. A wrong key is not rejected: ApplyBitmapEffect returns without error and the effect runs at its stored value (the Psychedelic and Solarize audits in this batch applied a misspelt key that way), so confirm two different values give different pixels before trusting this string.",
+   "scriptable": "yes",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 keeps bitmap effects on any bitmap or vector object as an editable, removable entry in the object's effects (Properties docker); the harvest does not say whether the scripted ApplyBitmapEffect path stacks or bakes the pixels",
+   "cost": "light: a threshold pass, near-instant (estimate; not timed in the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: enum written as its value is unproven; added that a wrong key is not rejected; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/b391b3cc327a.png",
+    "crop": "gallery/cdr_effect/b391b3cc327a_1to1.png",
+    "note": "1:1 crop: everything turns white except thin cyan, magenta and yellow contour lines round the dark-red panel shapes, the swatch borders and each hairline: the one-level topographic outline described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/b391b3cc327a.png",
+     "note": "Everything turned white except thin cyan, magenta and yellow contour lines tracing one brightness level round the radial detail, mid-tones, stripes and dark-red blocks, the topographic outline the card describes.",
+     "rerender": false
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,843 @@
+{
+ "cards": [
+  {
+   "name": "Batch",
+   "id": "1180",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Batch",
+   "status": "needs_input",
+   "summary": "Plays one recorded action on every file in a folder (or on imported, opened or Bridge-selected files) and can save the results to another folder with a naming scheme. Nothing happens to the current document unless it is one of the sources.",
+   "use_for": [
+    "resizing, watermarking or recoloring a whole folder of product photos with one recorded action",
+    "converting a folder of PSDs to flattened JPEGs for a client handoff",
+    "applying the same social-crop action to every image of a campaign"
+   ],
+   "avoid": [
+    "an action that contains its own Open / Save As steps without ticking the Override options: files open or save in the wrong place",
+    "unattended runs where an action step shows a dialog: the batch stops and waits; record the action without modal steps or log errors to a file"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Actions Batch"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "executeAction(stringIDToTypeID('batch'), undefined, DialogModes.ALL) opens the Batch dialog (run live 2026-10-04). Without UI: app.batch(inputFiles, action, from, options) with a BatchOptions (destination, destinationFolder, overrideOpen, overrideSave, fileNaming, startingSerial, errorFile ...) (harvested Application.batch and BatchOptions; behaviour unverified).",
+   "how": "Play: pick the action Set and Action. Source: Folder (Choose), Import, Opened Files or Bridge; Override Action \"Open\" Commands, Include All Subfolders, Suppress File Open Options Dialogs, Suppress Color Profile Warnings. Destination: None, Save and Close, or Folder; Override Action \"Save As\" Commands; File Naming from up to six elements (document name, serial number, date, extension ...), Starting serial #, Windows / Mac OS / Unix compatibility. Errors: Stop for Errors or Log Errors to File.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Conditional Mode Change",
+   "id": "File/Automate/Conditional Mode Change",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Conditional Mode Change",
+   "status": "current",
+   "summary": "Converts the open document to a chosen color mode only if its current mode is one of the ticked source modes, so an action can force e.g. RGB without failing on files that are already RGB or in another mode. The pixels change only by the mode conversion itself.",
+   "use_for": [
+    "the first step of a batch action that must work on a mixed folder of CMYK, grayscale and RGB files",
+    "forcing every web-bound image to RGB before Save for Web"
+   ],
+   "avoid": [
+    "one-off conversions of a single known file: Image > Mode is quicker",
+    "print-critical CMYK conversion: the conversion uses the current color settings, so check the profile with Edit > Convert to Profile instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Conditional Mode Change.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. Same job in the object model (unverified): if (doc.mode != DocumentMode.RGB) doc.changeMode(ChangeMode.RGB) (harvested Document.changeMode, ChangeMode GRAYSCALE / RGB / CMYK / LAB / BITMAP / INDEXEDCOLOR / MULTICHANNEL).",
+   "how": "Source Mode: tick the modes to convert from (Bitmap, Grayscale, Duotone, Indexed Color, RGB Color, CMYK Color, Lab Color, Multichannel), with All / None buttons. Target Mode: the mode to convert to. Usually recorded into an action that will be batched.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Contact Sheet II",
+   "id": "File/Automate/Contact Sheet II",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Contact Sheet II",
+   "status": "needs_input",
+   "summary": "Builds a new document that lays out thumbnails of many images in a grid, optionally with each file name as a caption, adding pages as needed. The result is a proof sheet of the source images, not an edit of any of them.",
+   "use_for": [
+    "a client proof sheet of a photo shoot or of all mockup variants",
+    "an overview print of a folder of textures or stock picks"
+   ],
+   "avoid": [
+    "a designed layout or moodboard: build it by placing linked images on a grid by hand or with artboards",
+    "very large folders: one sheet per page of thumbnails can produce many heavy documents"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/ContactSheetII.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The harvested object model has no contact-sheet call.",
+   "how": "Source Images: Use Folder, Files, Open Documents or Bridge; Include Subfolders; Group Images by Folder. Document: units, width, height, resolution, mode, bit depth, color profile, Flatten All Layers. Thumbnails: place across or down first, columns, rows, Use Auto-Spacing or vertical / horizontal gaps, Rotate For Best Fit. Use Filename As Caption with font and size.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Create Droplet",
+   "id": "1169",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Create Droplet",
+   "status": "needs_input",
+   "summary": "Saves a recorded action as a droplet, a small Windows program file: dragging image files or a folder onto it launches Photoshop and runs the action on them with the batch options set here. Nothing changes in the open document.",
+   "use_for": [
+    "giving a teammate a drag-and-drop tool that applies the house resize / sharpen / export action",
+    "a desktop shortcut that converts dropped images for a recurring delivery"
+   ],
+   "avoid": [
+    "pipelines driven by scripts: call app.batch or play the action directly instead of shelling out to a droplet",
+    "sharing across machines whose Photoshop lacks the action set or plug-ins the action uses"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None harvested (the harvest skipped it because it saves a file). The same processing without a droplet: app.batch(inputFiles, action, from, options) (harvested Application.batch; behaviour unverified).",
+   "how": "Save Droplet In: Choose the location of the droplet file. Play: action Set and Action. Same source switches as Batch (Override Action \"Open\" Commands, Include All Subfolders, Suppress File Open Options Dialogs, Suppress Color Profile Warnings), Destination None / Save and Close / Folder with file naming and compatibility, and Errors (stop or log to file).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Crop and Straighten Photos",
+   "id": "File/Automate/Crop and Straighten Photos",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Crop and Straighten Photos",
+   "status": "current",
+   "summary": "Finds each separate photo in a scan that holds several prints on a plain background, then straightens and crops each one into its own new document. The scan is kept (the harvest saw one history state added to it); the outcome depends on clear gaps and contrast around each photo.",
+   "use_for": [
+    "splitting a flatbed scan of several old family prints into separate straight photos",
+    "pulling straight crops of business cards or receipts scanned together"
+   ],
+   "avoid": [
+    "photos that touch or overlap, or a background close to the photo edges: detection fails or merges them; crop by hand with the Crop tool's Straighten option",
+    "a single tilted photo where you need exact framing: use the Crop tool with Straighten instead",
+    "a layer group as the active layer: the command is disabled in that state (harvest); select the scan's pixel layer first"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('CropPhotos0001'), new ActionDescriptor(), DialogModes.NO) (run live 2026-10-04 on a scratch document: one history state 'Crop and Straighten Photos Filter' added).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: added that it is disabled with a layer group active (batch enabled_in_state.group = false)"
+   }
+  },
+  {
+   "name": "Fit Image",
+   "id": "File/Automate/Fit Image",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Fit Image",
+   "status": "current",
+   "summary": "Resizes the open image so it fits inside a given width and height in pixels while keeping its proportions: whichever side reaches the box first lands on the limit and the other ends up smaller. Only the image size changes, the canvas is not padded.",
+   "use_for": [
+    "shrinking a mixed folder of portrait and landscape photos to a 2048 px bounding box for web",
+    "fitting product shots inside a marketplace's maximum pixel size"
+   ],
+   "avoid": [
+    "an exact output size such as 1080x1350: Fit Image keeps the aspect ratio, so crop with the Crop tool or Canvas Size afterwards",
+    "print work measured in cm or inches: use Image > Image Size"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Resample"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Fit Image.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The script itself (read from the installed file, not run) sets ruler units to pixels, computes the fitted width and height and calls app.activeDocument.resizeImage(newWidth, newHeight, doc.resolution, ResampleMethod.BICUBIC) (harvested Document.resizeImage, ResampleMethod.BICUBIC).",
+   "how": "Constrain Within: Width and Height in pixels. Don't Enlarge keeps images that are already smaller untouched. Usually recorded into an action for Batch, since it handles portrait and landscape files with one setting.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary said the longer side lands on the limit; Fit Image.jsx fits whichever side binds first (a landscape image in a wide, short box is limited by its height). script_api now quotes the resize call the installed script makes"
+   }
+  },
+  {
+   "name": "Lens Correction",
+   "id": "File/Automate/Lens Correction",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Lens Correction",
+   "status": "needs_input",
+   "summary": "Batch version of lens-profile correction: fixes barrel / pincushion distortion, chromatic aberration and vignetting for a set of files using matching camera and lens profiles, and saves the corrected copies to a destination folder.",
+   "use_for": [
+    "removing wide-angle barrel distortion from a folder of architecture or interior shots",
+    "clearing vignetting and color fringing from a product shoot before retouching"
+   ],
+   "avoid": [
+    "files without EXIF camera / lens data: no profile matches; correct one image at a time with the Lens Correction filter's Custom tab",
+    "creative vignettes or distortion you want to keep",
+    "open documents that were never saved: the script will not add them ('Documents must be saved before they can be corrected')",
+    "32-bit files: the script skips them with a warning; layered files are flattened in the saved copies"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Lens Correct.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. No harvested object-model call does profile-based lens correction in batch.",
+   "how": "Source Files: Use Files, Folder or Open Files; Browse, Remove, Add Open Files. Destination Folder: Choose, and File Type (JPEG, PNG, PSD or TIFF) for the corrected copies. Lens Correction Profile: Match Best Profile, or Choose a profile (.lcp) to apply. Correction Options: Geometric Distortion with Auto Scale Image and Edge (Transparency, Edge Extension, Black Color or White Color), Chromatic Aberration, Vignette.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: profile group is one Lens Correction Profile (Match Best Profile or Choose an .lcp), Edge choices and the JPEG / PNG / PSD / TIFF file types named from the installed dialog; avoid: unsaved documents refused, 32-bit skipped, outputs flattened (Lens Correct.jsx); confidence medium -> high"
+   }
+  },
+  {
+   "name": "Merge to HDR Pro",
+   "id": "File/Automate/Merge to HDR Pro",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Merge to HDR Pro",
+   "status": "needs_input",
+   "summary": "Merges a set of bracketed exposures of the same scene into one high-dynamic-range image and tone-maps it to 8 or 16 bits per channel (or keeps 32-bit), with ghost removal for moving subjects. The result ranges from natural to strongly stylised HDR, depending on the tone-mapping settings.",
+   "use_for": [
+    "interior or real-estate shots where windows and room both need detail",
+    "a dramatic high-detail landscape or car poster background from bracketed frames"
+   ],
+   "avoid": [
+    "a single exposure: use Image > Adjustments > HDR Toning or Camera Raw instead",
+    "handheld brackets with large motion: alignment and ghost removal leave smears; shoot on a tripod or merge in Camera Raw"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Merge To HDR.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. Without the file dialog: set runMergeToHDRFromScript = true before evaluating the script, then call mergeToHDR.mergeFilesToHDR(fileList, alignFlag, deghostFlag) (both defined in the installed script; not run, and the HDR Pro tone-mapping dialog may still appear).",
+   "how": "First choose the files (Use Files or Folder, Browse, Add Open Files) and whether to Attempt to Automatically Align Source Images. In the Merge to HDR Pro dialog: Preset, Remove Ghosts, Mode (32 / 16 / 8 Bit) and method (Local Adaptation, Equalize Histogram, Exposure and Gamma, Highlight Compression); for Local Adaptation: Edge Glow radius and strength, Gamma, Exposure, Detail, Shadow, Highlight, Vibrance, Saturation and a toning Curve.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: runMergeToHDRFromScript and mergeFilesToHDR(filelist, alignFlag, deghostFlag) found in the installed Merge To HDR.jsx, so 'commonly done ... (unverified)' replaced with the real signature"
+   }
+  },
+  {
+   "name": "PDF Presentation",
+   "id": "1696",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/PDF Presentation",
+   "status": "needs_input",
+   "summary": "Combines several images into one PDF, either a multi-page document (one image per page) or a full-screen slideshow presentation with auto-advance and transitions. The open documents are not changed; a new PDF file is written.",
+   "use_for": [
+    "sending a client one PDF of all poster or social-post variants",
+    "a quick self-running slideshow PDF of a portfolio set"
+   ],
+   "avoid": [
+    "a multi-page designed document with text flow and vector pages: lay it out with artboards and Artboards to PDF, or in Illustrator / InDesign",
+    "layered or artboard documents where each artboard should be its own page: each file becomes one flattened page"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('PDFExport')) is the label-matched candidate (not confirmed; not run by the harvest). Object model: app.makePDFPresentation(inputFiles, outputFile, options) with PresentationOptions (presentation, autoAdvance, interval, loop, transition, magnification, includeFilename, PDFFileOptions) (harvested; behaviour unverified).",
+   "how": "Source Files: Add Open Files, Browse, Duplicate, Remove. Output Options: Multi-Page Document or Presentation; background color; include Filename, Extension, Title, Description, Author, Copyright, EXIF info, Notes with a font size. Presentation Options: Advance Every N seconds, Loop after Last Page, Transition. Save then opens the Save Adobe PDF options (preset, compression, compatibility).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed a 'sort by name' control nothing in the harvest supports"
+   }
+  },
+  {
+   "name": "Photomerge",
+   "id": "File/Automate/Photomerge",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Automate/Photomerge",
+   "status": "needs_input",
+   "summary": "Stitches overlapping photos into one panorama or composite: aligns and warps them, then (optionally) blends them with layer masks in a new layered document. Edges are usually uneven unless the transparent areas are filled.",
+   "use_for": [
+    "a wide panorama banner or hero background from several overlapping shots",
+    "stitching a large flat artwork or document photographed in sections"
+   ],
+   "avoid": [
+    "shots with too little overlap or with moving subjects: alignment fails or ghosts; reshoot with more overlap or align the layers by hand with Edit > Auto-Align Layers",
+    "combining unrelated images into a collage design: place them as layers instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Photomerge.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. Without the dialog: set runphotomergeFromScript = true before evaluating the script, then call photomerge.createPanorama(fileList, false) (createPanorama(filelist, displayDialog) is defined in the installed script; not run).",
+   "how": "Layout: Auto, Perspective, Cylindrical, Spherical, Collage or Reposition. Source Files: Use Files or Folder, Browse, Add Open Files. Options: Blend Images Together, Vignette Removal, Geometric Distortion Correction, Content-Aware Fill Transparent Areas.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the invented 'under about a quarter' overlap figure; script_api: runphotomergeFromScript and createPanorama(filelist, displayDialog) confirmed in the installed Photomerge.jsx"
+   }
+  },
+  {
+   "name": "Browse in Bridge",
+   "id": "1520",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Browse in Bridge",
+   "status": "current",
+   "summary": "Launches Adobe Bridge (or brings it to the front) to browse, rate and open files. It does nothing to the open document, and depends on Bridge being installed.",
+   "use_for": [
+    "picking and rating shots from a shoot folder before opening them",
+    "starting a Batch or Contact Sheet II run with Bridge as the source"
+   ],
+   "avoid": [
+    "automated pipelines: it starts a second application and changes no document",
+    "machines without Bridge installed"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Browse in Bridge..."
+   },
+   "shortcut": "Ctrl+Alt+O",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleFileBrowserPalette')) is the label-matched candidate (not confirmed; the harvest skipped it because it launches another app). A script gains nothing from it; to open files call app.open(File(path)) (harvested Application.open).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is a terminology label match the harvest never ran, and other Photoshop label matches (toggleGuides, importDataSets) failed live, so the route is a candidate, not a confirmed one; use_for: Photomerge has no Bridge source in its dialog (Use: Files / Folder / Open Files); now Batch or Contact Sheet II"
+   }
+  },
+  {
+   "name": "Close",
+   "id": "31",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Close",
+   "status": "current",
+   "summary": "Closes the active document window, asking whether to save it first if it has unsaved changes. The file on disk is untouched unless you choose to save.",
+   "use_for": [
+    "finishing work on one design and freeing its memory",
+    "the last step of a script that opened a file for export"
+   ],
+   "avoid": [
+    "scripts: closing without a SaveOptions argument prompts and blocks; pass DONOTSAVECHANGES or SAVECHANGES",
+    "documents you did not open in a shared session: closing them loses someone else's work"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Close",
+    "CDR": "File/Close"
+   },
+   "shortcut": "Ctrl+W",
+   "scriptable": "no",
+   "script_api": "No menu route harvested. Same job in the object model: app.activeDocument.close(SaveOptions.DONOTSAVECHANGES | SAVECHANGES | PROMPTTOSAVECHANGES) (harvested Document.close; the default PROMPTTOSAVECHANGES shows a dialog).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Close All",
+   "id": "37",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Close All",
+   "status": "current",
+   "summary": "Closes every open document, asking about each one with unsaved changes (the prompt offers Apply to All). The files on disk are untouched unless you save.",
+   "use_for": [
+    "clearing the workspace after an export run",
+    "freeing memory before opening a heavy project"
+   ],
+   "avoid": [
+    "shared or automated sessions: it also closes documents other jobs or people opened; close only the documents your script opened"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Close All",
+    "CDR": "File/Close All"
+   },
+   "shortcut": "Ctrl+Alt+W",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('closeAll')) is the label-matched candidate (not confirmed; the harvest skipped closing commands). Object model (unverified): while (app.documents.length) app.documents[0].close(SaveOptions.DONOTSAVECHANGES).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is a terminology label match the harvest never ran, and other Photoshop label matches (toggleGuides, importDataSets) failed live, so the route is a candidate, not a confirmed one"
+   }
+  },
+  {
+   "name": "Close and Go to Bridge",
+   "id": "1530",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Close and Go to Bridge",
+   "status": "current",
+   "summary": "Closes the active document (asking to save unsaved changes) and switches to Adobe Bridge so you can pick the next file. Requires Bridge to be installed; the document itself is not altered.",
+   "use_for": [
+    "culling or retouching a shoot one file at a time with Bridge as the file picker"
+   ],
+   "avoid": [
+    "automated runs: it launches another application; close with Document.close instead",
+    "machines without Bridge installed"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": "Ctrl+Shift+W",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('browseAndClose')) is the label-matched candidate (not confirmed; the harvest skipped closing commands). Scripts should use app.activeDocument.close(SaveOptions...) instead (harvested Document.close).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is a terminology label match the harvest never ran, and other Photoshop label matches (toggleGuides, importDataSets) failed live, so the route is a candidate, not a confirmed one"
+   }
+  },
+  {
+   "name": "Close Others",
+   "id": "46",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Close Others",
+   "status": "needs_input",
+   "summary": "Closes every open document except the active one, asking about unsaved changes. It needs at least one other open document; the harvest found it disabled in every single-document state it tried.",
+   "use_for": [
+    "decluttering after opening many reference images, keeping the one design being worked on"
+   ],
+   "avoid": [
+    "shared sessions: it closes documents opened by other jobs or people"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": "Ctrl+Alt+P",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('closeOthers')) is the label-matched candidate (not confirmed; the harvest skipped closing commands). Object model (unverified): loop app.documents and close every document that is not app.activeDocument with an explicit SaveOptions.",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial: the runMenuItem id is a terminology label match the harvest never ran, and other Photoshop label matches (toggleGuides, importDataSets) failed live, so the route is a candidate, not a confirmed one"
+   }
+  },
+  {
+   "name": "Exit",
+   "id": "36",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Exit",
+   "status": "current",
+   "summary": "Quits Photoshop, asking to save any document with unsaved changes first.",
+   "use_for": [
+    "ending a session or restarting Photoshop after a preference or plug-in change"
+   ],
+   "avoid": [
+    "shared machines or pipelines where other jobs drive the same Photoshop: quitting kills their work",
+    "unsaved documents in an unattended run: the save prompt blocks the quit"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Exit",
+    "CDR": "File/Exit"
+   },
+   "shortcut": "Ctrl+Q",
+   "scriptable": "no",
+   "script_api": "No menu route harvested. From outside Photoshop the COM type library's IPhotoshopApplication.Quit (harvested) closes the app; inside ExtendScript executeAction(charIDToTypeID('quit'), undefined, DialogModes.NO) is the usual call (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Artboards to Files",
+   "id": "File/Export/Artboards to Files",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Artboards to Files",
+   "status": "needs_input",
+   "summary": "Exports every artboard (or only the selected ones) of the document as a separate image file in the chosen format, optionally with the artboard name printed on an extended canvas. Needs a document with artboards; the harvest found it disabled in every artboard-less state.",
+   "use_for": [
+    "exporting a set of social posts or ad sizes laid out as artboards in one PSD",
+    "handing app-screen artboards to developers as separate PNGs"
+   ],
+   "avoid": [
+    "documents without artboards: use Layers to Files or Export As",
+    "multiple scales per artboard (1x / 2x / 3x): use Export As, which handles scale suffixes"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Export/Export for Screens...",
+    "CDR": "File/Export Docker/Add All Pages"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/ArtBoards To Files.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The harvested object model has no per-artboard export call.",
+   "how": "Destination folder and File Name Prefix. Export: Selected Artboards only, Include Overlapping Areas or Artboard Content Only, Include Background in Export. File Type (BMP, JPEG, PDF, PSD, Targa, TIFF, PNG-8, PNG-24) with its options and Include ICC Profile. Optional Artboard Name label with font, size, color and canvas extension.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Artboards to PDF",
+   "id": "File/Export/Artboards to PDF",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Artboards to PDF",
+   "status": "needs_input",
+   "summary": "Writes the document's artboards to PDF, either as one multi-page PDF with a page per artboard or as one PDF per artboard. Needs a document with artboards; the harvest found it disabled in every artboard-less state.",
+   "use_for": [
+    "sending a client a single PDF of all artboard variations of a campaign",
+    "a print proof of every page of a multi-artboard flyer set"
+   ],
+   "avoid": [
+    "press-ready print PDFs with vector text and bleed: the pages are raster images from Photoshop; lay out final print files in Illustrator, InDesign or CorelDRAW",
+    "documents without artboards: use PDF Presentation or Save As Photoshop PDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Save As...",
+    "CDR": "File/Publish to PDF"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/ArtBoards To PDF.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The harvested object model has no per-artboard PDF call.",
+   "how": "Destination and File Name Prefix. Export Selected Artboards, Include Overlapping Areas or Artboard Content Only, Include Background in Export. Multi-Page Document or Document Per Artboard; Encoding ZIP or JPEG with Quality; Include ICC Profile; Reverse Page Order; optional Include Artboard Name with font, text color and canvas extension.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: added Reverse Page Order and used the dialog's own labels (Document Per Artboard, Export Selected Artboards) from the installed ArtboardExport.inc"
+   }
+  },
+  {
+   "name": "Color Lookup Tables",
+   "id": "File/Export/Color Lookup Tables",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Color Lookup Tables",
+   "status": "current",
+   "summary": "Bakes the color adjustments stacked in the document (adjustment layers such as Curves, Hue/Saturation, Color Balance) into lookup-table files, so the same grade can be loaded in video editors or Photoshop's Color Lookup adjustment. The document itself is not changed.",
+   "use_for": [
+    "turning a Photoshop color grade into a .cube LUT for Premiere, Resolve or After Effects",
+    "sharing one brand grade across a photo team as a Color Lookup preset"
+   ],
+   "avoid": [
+    "grades that rely on masks, pixel edits, blur or local adjustments: a LUT only stores a global color mapping",
+    "documents without adjustment layers or without a Background layer: the script refuses to export",
+    "Bitmap, Grayscale, Indexed or Multichannel documents: only RGB, Lab and CMYK are supported"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/ExportColorLookupTables.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The harvested object model has no LUT export call.",
+   "how": "Description and Copyright text stored in the files, Use lowercase file extensions, Quality (Poor, Low, Medium, High, Maximum) with its Grid Points, and the Formats to write: 3DL, CUBE, CSP and ICC Profile.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid said a document without adjustments exports a no-op LUT; ExportColorLookupTables.jsx refuses (no adjustment layers / no background) and supports only RGB, Lab, CMYK; summary: dropped Camera Raw as a LUT consumer; how: quality levels from the dialog; confidence medium -> high"
+   }
+  },
+  {
+   "name": "Data Sets as Files",
+   "id": "7806",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Data Sets as Files",
+   "status": "needs_input",
+   "summary": "Writes one PSD file per data set defined under Image > Variables, each with that record's text, image and visibility variables applied. Needs a template with defined variables and imported data sets; the harvest found it disabled in every state it tried.",
+   "use_for": [
+    "name badges, certificates or price cards generated from a spreadsheet of names and photos",
+    "localized banner variants from a CSV of headlines"
+   ],
+   "avoid": [
+    "deliverables needed as JPEG or PNG: the output is PSD; run an export action over the folder with Batch afterwards",
+    "long text in fixed text boxes: overflow is not flagged; check each output"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "File/Print Merge/Create Merged Document"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('exportDataSet')) is the label-matched candidate for the dialog (not confirmed; the harvest skipped exports).",
+   "how": "Select Folder for the output, Data Set (all data sets or one), and File Naming built from the document name, data set name, serial number and similar parts.",
+   "review": {
+    "by": "adversarial",
+    "changes": "confidence high -> medium: the dialog was disabled in every state and nothing harvested checks the PSD-only output or the naming options"
+   }
+  },
+  {
+   "name": "Export As",
+   "id": "3443",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Export As",
+   "status": "current",
+   "summary": "Opens the Export As dialog to write the document, its artboards or selected layers as web-ready image files with size, scale and quality settings and a live preview. The source PSD is not changed.",
+   "use_for": [
+    "exporting a social post or banner as PNG / JPG at 1x and 2x",
+    "exporting app icons or UI artboards at several scales in one go"
+   ],
+   "avoid": [
+    "print output: use Save As (TIFF / PDF) at full resolution with CMYK profiles",
+    "fine GIF color-table control: use Save for Web"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Export/Export As...",
+    "CDR": "File/Export"
+   },
+   "shortcut": "Ctrl+Alt+Shift+W",
+   "scriptable": "no",
+   "script_api": "No menu route harvested. Object model for the same output (unverified): doc.exportDocument(File(path), ExportType.SAVEFORWEB, opts) with a new ExportOptionsSaveForWeb (format, quality, transparency, includeProfile) (harvested Document.exportDocument, ExportType SAVEFORWEB, ExportOptionsSaveForWeb).",
+   "how": "File Settings: format (PNG, JPG, GIF and others offered by the installed version; not probed) with transparency / smaller-file for PNG or quality for JPG. Image Size: width, height, scale and resample method; Canvas Size; Metadata (none or copyright and contact info); Color Space: Convert to sRGB and Embed Color Profile. Scales: add 1x, 2x, 3x outputs with suffixes. Export All writes the files.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Export Preferences",
+   "id": "File/Export/Export Preferences",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Export Preferences",
+   "status": "current",
+   "summary": "Opens Preferences on the Export page, where the format, location, metadata and color-space defaults used by Quick Export are set. It changes app preferences, not the document.",
+   "use_for": [
+    "setting Quick Export to PNG with transparency before a run of icon exports",
+    "making quick exports land in a folder next to the PSD"
+   ],
+   "avoid": [
+    "one-off export settings: set them in Export As for that export instead of changing the global defaults"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None harvested; preferences pages are not exposed as a scriptable call in the harvest.",
+   "how": "Quick Export Format (and its options, e.g. PNG transparency or JPG quality), Quick Export Location (ask each time or save to an assets folder next to the document), Quick Export Metadata, Color Space (Convert to sRGB). The same page is reached from Edit > Preferences > Export (the harvest shows a shared command).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layer Comps to Files",
+   "id": "File/Export/Layer Comps to Files",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Layer Comps to Files",
+   "status": "needs_input",
+   "summary": "Exports each layer comp (saved combination of layer visibility, position and style) as a separate file in the chosen format. Needs a document with layer comps; the harvest found it disabled in every state it tried.",
+   "use_for": [
+    "exporting colorway or copy variants of one design that are stored as layer comps",
+    "client options A / B / C from a single PSD"
+   ],
+   "avoid": [
+    "documents with artboards for the variants: use Artboards to Files",
+    "variants that differ in pixel edits rather than layer state: layer comps cannot capture them"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Layer Comps To Files.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. Object model for the same job (unverified): for each doc.layerComps[i] call .apply() then doc.saveAs(...) or doc.exportDocument(...) (harvested Document.layerComps).",
+   "how": "Destination and File Name Prefix, Selected Layer Comps Only, File Type (BMP, JPEG, PDF, PSD, Targa, TIFF, PNG-8, PNG-24) with its options and Include ICC Profile.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layer Comps to PDF",
+   "id": "File/Export/Layer Comps to PDF",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Layer Comps to PDF",
+   "status": "needs_input",
+   "summary": "Writes all layer comps (or the selected ones) of the document into one PDF, one page per comp, optionally set up as a self-advancing slideshow. Needs a document with layer comps; the harvest found it disabled in every state it tried.",
+   "use_for": [
+    "one PDF presenting design options stored as layer comps",
+    "a client review deck of variants without building separate files"
+   ],
+   "avoid": [
+    "vector-quality print proofs: pages are raster images",
+    "documents without layer comps: use Artboards to PDF or PDF Presentation",
+    "an unsaved document: the script stops ('Active document has not been saved. Please save before exporting to PDF')"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Layer Comps To PDF.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. The harvested object model has no direct layer-comps-to-PDF call.",
+   "how": "Destination PDF file, Selected Layer Comps Only, Slideshow Options: Advance Every N seconds and Loop after Last Page.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: added the saved-document requirement from the installed script"
+   }
+  },
+  {
+   "name": "Layers to Files",
+   "id": "File/Export/Layers to Files",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Layers to Files",
+   "status": "current",
+   "summary": "Saves each layer of the document as a separate file in the chosen format, named from a prefix and the layer name. The PSD is not changed; each file holds one layer (PNG output can be trimmed to the layer's content).",
+   "use_for": [
+    "exporting the cut-out elements of a composite as separate transparent PNGs for animation",
+    "handing a developer each UI element of a mockup"
+   ],
+   "avoid": [
+    "a few assets at several scales: select the layers and use Export As instead",
+    "layers whose look depends on clipping masks or blend modes with layers below: exported alone they look different",
+    "a single-layer document: the script stops ('You need a document with multiple layers to export!')"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "$.evalFile(File(\"C:/Program Files/Adobe/Adobe Photoshop 2026/Presets/Scripts/Export Layers To Files.jsx\")) runs the installed script (invoke.file), which opens its dialog; the harvest did not run it. Object model for the same job (unverified): hide all layers, show one at a time and doc.saveAs(File(path), options, true) or duplicate each layer into a new document and export it.",
+   "how": "Destination and File Name Prefix, Visible Layers Only, File Type (BMP, JPEG, PDF, PSD, Targa, TIFF, PNG-8, PNG-24) with its options (JPEG quality, TIFF / PDF encoding, PSD Maximize Compatibility; PNG-8 / PNG-24 Transparency, Interlaced and Trim Layers) and Include ICC Profile.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how/summary: Trim Layers is only offered under PNG-8 / PNG-24 options in Export Layers To Files.jsx; avoid: added the multiple-layers requirement from the script"
+   }
+  },
+  {
+   "name": "Paths to Illustrator",
+   "id": "File/Export/Paths to Illustrator",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Paths to Illustrator",
+   "status": "current",
+   "summary": "Writes the document's vector paths (work path, saved paths, or only the document bounds) to an Illustrator .ai file as plain unstroked, unfilled paths, so shapes can be reused in Illustrator. No pixels are exported.",
+   "use_for": [
+    "moving a Pen-tool cut-out path of a product into Illustrator for a die-cut or sticker outline",
+    "reusing a selection converted to a path as a vector logo trace start"
+   ],
+   "avoid": [
+    "shape layers with fills and strokes you want to keep: copy and paste them into Illustrator instead, or export as SVG",
+    "raster artwork: convert it with Image Trace in Illustrator"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route harvested. Object model: doc.exportDocument(File(path), ExportType.ILLUSTRATORPATHS, opts) with opts = new ExportOptionsIllustrator() and opts.path = IllustratorPathType.ALLPATHS / DOCUMENTBOUNDS / NAMEDPATH (for NAMEDPATH also set opts.pathName) (harvested Document.exportDocument, ExportOptionsIllustrator path / pathName, IllustratorPathType; behaviour unverified).",
+   "how": "Write: Document Bounds, All Paths or one named path, then choose the file name and folder in the save dialog. Open the .ai in Illustrator and apply fills and strokes there.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added opts.pathName, which NAMEDPATH needs (harvested ExportOptionsIllustrator member)"
+   }
+  },
+  {
+   "name": "Quick Export as PNG",
+   "id": "3444",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Quick Export as PNG",
+   "status": "current",
+   "summary": "Exports the document (or each artboard) immediately as a PNG using the Export Preferences defaults, without the Export As dialog; the menu label follows the Quick Export format set in those preferences. The PSD is not changed.",
+   "use_for": [
+    "one-click PNG of a social post or icon while iterating",
+    "fast transparent PNG exports of artboards into an assets folder"
+   ],
+   "avoid": [
+    "exports needing a specific size, scale or JPG quality: use Export As",
+    "unattended runs when the preference is set to ask for a location: a save dialog appears"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Export/Export As...",
+    "CDR": "File/Export"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route harvested. Object model for a similar PNG output (unverified): doc.exportDocument(File(path), ExportType.SAVEFORWEB, opts) with ExportOptionsSaveForWeb set to PNG (harvested classes); the Action Manager event recorded for quick export is believed to be exportDocumentAsFileTypePressed (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Render Video",
+   "id": "File/Export/Render Video",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Render Video",
+   "status": "current",
+   "summary": "Renders the document's Timeline (a video timeline or a frame animation) to a video file or an image sequence. The document is not changed; output quality depends on the chosen encoder settings.",
+   "use_for": [
+    "exporting an animated banner or social loop built on the Photoshop timeline as MP4",
+    "rendering a frame animation to a PNG sequence for an editor"
+   ],
+   "avoid": [
+    "animated GIFs for web: use Save for Web with GIF",
+    "longer edits with audio and transitions: build them in Premiere Pro or After Effects"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No menu route harvested; no harvested object-model call renders video.",
+   "how": "Name and folder (optionally a new subfolder). Adobe Media Encoder output: format (H.264, QuickTime, DPX) with preset, size, frame rate, field order, aspect, color management; or Photoshop Image Sequence with format, starting number and digits. Range: all frames, a frame range or the work area. Render Options: alpha channel.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the '3D quality' render option (3D features are gone from current Photoshop and nothing in the harvest shows the option)"
+   }
+  },
+  {
+   "name": "Save for Web",
+   "id": "1695",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/Export/Save for Web",
+   "status": "current",
+   "summary": "Opens the classic Save for Web dialog: optimizes and previews the document as GIF, JPEG, PNG-8, PNG-24 or WBMP with side-by-side quality / file-size comparisons, then saves the optimized file. The PSD is not changed.",
+   "use_for": [
+    "animated GIF export of a timeline animation",
+    "squeezing a banner JPEG under a size limit while comparing quality settings",
+    "indexed PNG-8 or GIF with a limited palette"
+   ],
+   "avoid": [
+    "multi-scale exports for apps and responsive web: use Export As",
+    "very large images: the dialog warns and gets slow; export with Export As or Save As"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Export/Save for Web (Legacy)...",
+    "CDR": "File/Export For/Web"
+   },
+   "shortcut": "Ctrl+Alt+Shift+S",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('saveForWeb')) is the label-matched candidate that opens the dialog (not confirmed; the harvest skipped exports). Object model: doc.exportDocument(File(path), ExportType.SAVEFORWEB, opts) with new ExportOptionsSaveForWeb() (format, quality, colors, dither, transparency ...) (harvested classes; behaviour unverified).",
+   "how": "2-Up / 4-Up previews with file size and download time. Preset or format; JPEG: quality, progressive, blur, matte; GIF / PNG-8: color reduction, number of colors, dither, transparency and matte, lossy (GIF); Convert to sRGB and metadata; Image Size and animation looping for GIF. Save writes images (and HTML when slices are used).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "File Info",
+   "id": "1137",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "File/File Info",
+   "status": "current",
+   "summary": "Opens the File Info dialog to view and edit the document's metadata (title, author, description, keywords, copyright, IPTC, camera and GPS data, raw XMP). Pixels are not changed; the metadata is written when the file is saved.",
+   "use_for": [
+    "stamping copyright and creator details into client deliverables",
+    "adding keywords and descriptions for stock submissions"
+   ],
+   "avoid": [
+    "exports that strip metadata (Export As or Save for Web set to none): check the export's metadata option",
+    "batch metadata stamping: set DocumentInfo fields by script instead of the dialog"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/File Info...",
+    "CDR": "File/Document Properties"
+   },
+   "shortcut": "Ctrl+Alt+Shift+I",
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('fileInfo')) opens the dialog (run live 2026-10-04). Without UI: app.activeDocument.info.title / author / caption / keywords / copyrighted / copyrightNotice / ownerUrl (harvested DocumentInfo) or app.activeDocument.xmpMetadata (harvested XMPMetadata; editing behaviour unverified).",
+   "how": "Basic: Document Title, Author, Author Title, Description, Rating, Keywords, Copyright Status, Copyright Notice and Copyright Info URL. Other sections: Camera Data, Origin, IPTC, IPTC Extension, GPS Data, Audio / Video data, Photoshop, DICOM and Raw Data. Metadata templates can be saved and imported.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

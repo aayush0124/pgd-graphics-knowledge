@@ -1,0 +1,458 @@
+{
+ "cards": [
+  {
+   "name": "Stone",
+   "id": "cf70adb0-b20e-4850-a038-97047635dd0e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Texture/Stone",
+   "status": "current",
+   "summary": "Texture effect that lays a lit stone-grain relief over the image so it looks carved or printed on rough stone. Roughness and Detail (1-100 each) set how coarse and how finely grained the surface is, Light Direction (0-360 deg) sets where the relief is lit from, and Invert swaps raised and sunken areas. The 2026-10 render (Roughness / Detail 100) kept the image's own colours under a fine, lit, pitted stone grain that reads at full size; the stone types behind the Presets list and what each setting does on its own are from general knowledge of CorelDRAW's Texture family, not tested (the effect is random, so single renders cannot prove a key), and the harvest read no defaults.",
+   "use_for": [
+    "carved-in-stone or engraved-monument look for a headline graphic or memorial plaque",
+    "rough, tactile stone surface behind a poster photo or game / fantasy title card",
+    "aged, weathered texture on a product label or packaging mock-up"
+   ],
+   "avoid": [
+    "faces and fine detail: the grain breaks up skin and small type; apply it to a background or mask the subject",
+    "you want a regular masonry pattern rather than raw stone grain: use Effects > Texture > Cobblestone or Brick Wall",
+    "Presets has no harvested values: leave it out of scripts and set Roughness / Detail / LightDirection directly",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu",
+    "no defaults were read (the data source only exists while the dialog is open): always pass every number explicitly"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Texture/Texturizer",
+    "AI": "Effect/Texture/Texturizer"
+   },
+   "look": [
+    "stone texture",
+    "carved stone",
+    "granite",
+    "rough surface",
+    "embossed grain",
+    "weathered",
+    "relief texture",
+    "tactile"
+   ],
+   "params": [
+    {
+     "name": "Roughness",
+     "does": "how coarse and bumpy the stone surface is; higher values give deeper, more broken relief",
+     "typical": "40-70"
+    },
+    {
+     "name": "Detail",
+     "does": "amount of fine grain inside the stone; higher values add smaller speckles and pits",
+     "typical": "40-70"
+    },
+    {
+     "name": "Light Direction",
+     "does": "angle (0-360 deg, 5 deg steps on the compass wheel) the relief is lit from, which sets where the highlights and shadows of the grain fall",
+     "typical": "any angle, e.g. 135; which side of the compass 0 deg points to was not harvested"
+    },
+    {
+     "name": "Invert",
+     "does": "swaps raised and sunken areas of the relief (bumps become pits)",
+     "typical": "off"
+    },
+    {
+     "name": "Presets",
+     "does": "picks a stored stone setting from the dialog's list (values not harvested)",
+     "typical": "leave unset in scripts"
+    }
+   ],
+   "demo_settings": {
+    "Roughness": 100,
+    "Detail": 100,
+    "LightDirection": 135,
+    "Invert": false
+   },
+   "pairs_with": [
+    "Effects > Adjust > Brightness/Contrast/Intensity afterwards to lift a texture that went too dark",
+    "Transparency over the untouched photo to dial the stone back in",
+    "a bevelled or Block Shadow headline set over the stone for an engraved-sign look"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Stone\", \"StoneEffect Roughness=70,Detail=60,LightDirection=135,Invert=0\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'StoneEffect Roughness=<number>,Detail=<number>,LightDirection=<int>,Invert=<bool>,Preset=<enum>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test, and how a bool is spelled in the string was not established (0/1 follows how this batch's Threshold data source stores its AutoClip bool default, 1; unproven). ApplyBitmapEffect returns OK even when it applies nothing (the harvest's InvertEffect test did exactly that), and the live audit of other effects (work/cdr/audit_live.json, BADKEY) shows a misspelled key is silently ignored, so compare pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"cf70adb0-b20e-4850-a038-97047635dd0e\" opens the modal dialog (live caption 'S&tone...'), so it needs a person or UI automation to press OK; it is not a silent apply with the current values.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it in the Properties docker Effects stack (ApplyOrDeleteEffect:StoneEffect); whether the scripted Bitmap.ApplyBitmapEffect path adds a stack entry or bakes pixels was not checked",
+   "cost": "moderate: a per-pixel texture and lighting pass at the bitmap's resolution; seconds on a 1920x1080 plate (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'keeps its own colours' was stated as fact, now in the untested general-knowledge part, harvested ranges added; Light Direction typical no longer asserts 135 = top-left (the angle convention is not harvested); scripting: Invert=False -> Invert=0 (data-source bool spelling, unproven), menu route corrected: InvokeItem opens the modal dialog ('S&tone...'), not a silent apply; added that ApplyBitmapEffect returns OK without applying and a bad key is silently ignored; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/5401d33065d5.png",
+    "note": "Roughness / Detail 100: a lit, pitted stone-grain relief now covers the whole picture and reads at full size (swatches, wall and grey ramp all carry the grain) while the image keeps its own colours; stronger than the 70 / 60 render (diff vs plate 8.7 vs 3.8), but Stone is random (repeat noise 11.5), so neither that nor the dropped list proves the keys are read.",
+    "rerender": false,
+    "previous": {
+     "verdict": "weak",
+     "frame": "gallery/cdr_effect/5401d33065d5.png",
+     "note": "Only a faint speckle of dark pits over the photo is visible (mean diff 3.8, about the effect's own repeat-render noise 5.6): no carved-stone relief reads at full size; Stone is random, so the 'dropped' list is not evidence; demo raised to Roughness 100 / Detail 100 (the maximum).",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Re-opened at 2x: a fine pitted stone grain is visible on the flat swatches and the mid-tones, invisible at full size; harness check: Stone is random (repeat noise 5.6 equals every probe), so 'dropped' says nothing about the keys and the Roughness / Detail raise to 100 may or may not be read."
+     }
+    }
+   }
+  },
+  {
+   "name": "Underpainting",
+   "id": "b2b0cbf3-dda5-4669-ad93-a72505901f6f",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Texture/Underpainting",
+   "status": "current",
+   "summary": "Texture effect that makes the image look like an early-stage painting: shapes are softened into a muted, slightly washed-out paint layer with brush and canvas texture showing through. Amount sets how strongly the painting texture replaces detail (1-20, default 10). Brightness sets how light the painted result is (1-100, default 50). These roles are from general knowledge of the effect; the harvest did not test them.",
+   "use_for": [
+    "soft painted-on-canvas version of a photo for an invitation, menu or greeting card",
+    "muted painterly background behind headline type on a poster",
+    "turning an ordinary event photo into a gallery-print style illustration"
+   ],
+   "avoid": [
+    "crisp product or document shots where detail must survive: high Amount smears edges and small text",
+    "you want strong, visible brush strokes or bold colour: Effects > Art Strokes (e.g. Impressionist or Palette Knife) fits better",
+    "Brightness is a 1-100 control with default 50; how far it can move before the result washes out or muddies was not tested, so adjust in small steps",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Artistic/Underpainting",
+    "AI": "Effect/Artistic/Underpainting"
+   },
+   "look": [
+    "underpainting",
+    "painterly",
+    "canvas texture",
+    "muted",
+    "washed out",
+    "soft paint",
+    "fine-art print",
+    "brushed"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "strength of the underpainting: how much detail is replaced by soft paint and canvas texture",
+     "typical": "10-18 (default 10)"
+    },
+    {
+     "name": "Brightness",
+     "does": "overall lightness of the painted result; lower is darker and richer, higher is paler and more washed out",
+     "typical": "45-60 (default 50)"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 18,
+    "Brightness": 55
+   },
+   "pairs_with": [
+    "Effects > Adjust > Brightness/Contrast/Intensity beforehand, since the effect mutes contrast",
+    "Effects > Texture > Canvas for a stronger fine-art canvas surface",
+    "Transparency over the original photo to keep faces readable"
+   ],
+   "scripting": "On a bitmap shape s: s.Bitmap.ApplyBitmapEffect \"Underpainting\", \"UnderpaintingEffect Amount=18,Brightness=55\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'UnderpaintingEffect Amount=<number>,Brightness=<number>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even when it applies nothing (the harvest's InvertEffect test did exactly that), and the live audit of other effects (work/cdr/audit_live.json, BADKEY) shows a misspelled key is silently ignored, so compare pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"b2b0cbf3-dda5-4669-ad93-a72505901f6f\" opens the modal dialog (live caption '&Underpainting...'), so it needs a person or UI automation to press OK; it is not a silent apply with the current values.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:UnderpaintingEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "moderate: a per-pixel painting and texture pass; seconds on a 1920x1080 plate (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'Effects > Artistic style' is not a CorelDRAW item, now names the harvested Effects > Art Strokes items; avoid: the untested 'Brightness far from 50 washes out / muddies' claim hedged; pairs_with: vague 'canvas or paper bitmap fill' -> harvested Effects > Texture > Canvas; scripting: menu route corrected (InvokeItem opens the modal dialog '&Underpainting...'), added the OK-without-applying / bad-key warning; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/3e7e6059456c.png",
+    "note": "The photo is softened into a slightly lighter, smeared paint layer with a fine regular canvas-like weave visible at 2x zoom and the type ghosted, an early-stage painting look; colours are not noticeably muted on this plate.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "DeInterlace",
+   "id": "78913f86-7fdd-4fff-a915-735d2f14177b",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Transform/DeInterlace",
+   "status": "current",
+   "summary": "Repair effect for frames grabbed from interlaced video: it throws away every even or every odd scan line and rebuilds the missing rows by copying the neighbouring line (Duplication) or averaging the lines around it (Interpolation). It removes the comb-like tearing on moving edges. On an image that was never interlaced, it only softens or stair-steps fine horizontal detail.",
+   "use_for": [
+    "cleaning a still captured from interlaced broadcast, DV or camcorder footage before using it in a layout",
+    "removing comb / feathered edges on a fast-moving subject in a video screenshot",
+    "deliberately chunky, line-doubled retro-video look on a graphic"
+   ],
+   "avoid": [
+    "progressive photos or digital-camera stills: there is nothing to fix, and you lose half the vertical resolution",
+    "the change is subtle at full view on the soft test plate; judge it on a zoomed crop of the 1-6 px hairlines and diagonal edges",
+    "Duplication gives jagged stair-steps on diagonals; use Interpolation for a smoother repair",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Video/De-Interlace",
+    "AI": "Effect/Video/De-Interlace"
+   },
+   "look": [
+    "de-interlace",
+    "scan lines",
+    "video frame fix",
+    "line doubling",
+    "comb artefacts removed",
+    "video still cleanup"
+   ],
+   "params": [
+    {
+     "name": "ScanLine",
+     "does": "which field of scan lines is discarded and rebuilt: Even Lines or Odd Lines",
+     "typical": "Even Lines (default); try Odd Lines if the frame still tears"
+    },
+    {
+     "name": "Replacement",
+     "does": "how the removed rows are filled: Duplication copies the adjacent line (sharper, jaggier), Interpolation averages the neighbours (smoother, softer)",
+     "typical": "Interpolation (default) for repair, Duplication for a visible line-doubled look"
+    }
+   ],
+   "demo_settings": {
+    "ScanLine": "Odd Lines",
+    "Replacement": "Duplication"
+   },
+   "pairs_with": [
+    "Effects > Sharpen afterwards to recover crispness lost to interpolation",
+    "Effects > Noise > Remove Noise on noisy video grabs",
+    "resampling the still down to the final size after the repair"
+   ],
+   "scripting": "On a bitmap shape s: s.Bitmap.ApplyBitmapEffect \"DeInterlace\", \"DeInterlaceEffect ScanLine=Odd Lines,Replacement=Duplication\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'DeInterlaceEffect ScanLine=<enum>,Replacement=<enum>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test, and whether the enum values with a space ('Even Lines' / 'Odd Lines') need quoting was not established; the harvested enum values are identical to the radio-button captions, so they may be captions rather than data-source values. ApplyBitmapEffect returns OK even when it applies nothing (the harvest's InvertEffect test did exactly that), and the live audit of other effects (work/cdr/audit_live.json, BADKEY) shows a misspelled key is silently ignored, so compare pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"78913f86-7fdd-4fff-a915-735d2f14177b\" opens the modal dialog (live caption '&DeInterlace...'), so it needs a person or UI automation to press OK; it is not a silent apply with the current values.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:DeInterlaceEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "cheap: a single pass over the rows (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: menu route corrected (InvokeItem opens the modal dialog '&DeInterlace...', not a silent apply), added the OK-without-applying / bad-key warning and that the harvested enum values equal the captions; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/577a9b2e7b04.png",
+    "crop": "gallery/cdr_effect/577a9b2e7b04_1to1.png",
+    "note": "1:1 crop: scan lines are rebuilt in pairs: the 1-px hairline vanishes, the 3- and 5-px lines become 4 px, and fine panel detail shows horizontal line doubling, while the photo stays unchanged to the eye (Odd Lines, Duplication), as the card says for a non-interlaced image.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/577a9b2e7b04.png",
+     "note": "As the card says for a non-interlaced image, the photo is unchanged to the eye (body diff 0.6) while the fine horizontal hairlines at the bottom right are rebuilt as evenly doubled lines (Odd Lines, Duplication).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Invert Colors",
+   "id": "072684d2-fbeb-440e-9747-875fa76a4eea",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Transform/Invert Colors",
+   "status": "current",
+   "summary": "Turns the image into its photographic negative: every colour is replaced by its opposite (white to black, blue to yellow, magenta to green). It has no settings. From the menu it applies to the selected bitmap or vector object as a non-destructive effect.",
+   "use_for": [
+    "negative-film or X-ray look on a photo for a poster or album cover",
+    "flipping a dark logo or line art to a light version for a dark background",
+    "a quick base for duotone / glitch treatments together with Posterize or Threshold"
+   ],
+   "avoid": [
+    "scripting it through Bitmap.ApplyBitmapEffect('InvertEffect'): the harvest shows the call returns OK but changes no pixels; use the menu route (InvokeItem) and check the result, or for a scripted negative put an Effects > Lens > Invert lens object over the image (Shape.CreateLens type 5, applied in the harvest test)",
+    "skin tones and brand colours become alien; invert a single channel with Effects > Adjust > Tone Curve if you only want part of the effect",
+    "for print, inverting a light image makes large dark areas that eat ink; check total ink coverage"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Invert",
+    "AI": "Edit/Edit Colors/Invert Colors"
+   },
+   "look": [
+    "negative",
+    "inverted colors",
+    "photo negative",
+    "x-ray",
+    "complementary colours",
+    "reversed"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Effects > Transform > Threshold or Posterize for stark graphic negatives",
+    "Effects > Adjust > Desaturate first for a black-and-white negative",
+    "Transparency with a blend mode over the original for partial inversion"
+   ],
+   "scripting": "No working command string: s.Bitmap.ApplyBitmapEffect \"Invert Colors\", \"InvertEffect\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command)) returned OK in the harvest test but changed no pixels. Menu route on the selected object (no dialog, no settings): Application.FrameWork.Automation.InvokeItem \"072684d2-fbeb-440e-9747-875fa76a4eea\". This route was not tested headless; read the pixels back to confirm it applied. Scripted alternative: a closed vector shape over the image with shape.CreateLens(5) (cdrLensInvert, Effects > Lens > Invert) inverts what lies under it; the harvest test created that lens effect but did not read the pixels.",
+   "scriptable": "partial",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:InvertEffect)",
+   "cost": "cheap: one arithmetic pass per pixel (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid / scripting: added the harvested, scriptable Effects > Lens > Invert (Shape.CreateLens type 5) as the scripted alternative to the non-working InvertEffect string; ink avoid line reworded (it said inverted black areas eat ink, the problem is light areas that turn dark); cost marked as an untimed estimate. Live menu caption '&Invert Colors' has no '...', so the card's InvokeItem route applying without a dialog stays"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/085e17581644.png",
+    "note": "A full photographic negative: whites to black, the red swatch to cyan, yellow to blue, blue to yellow, the grey ramp reversed, mid-tones and dark areas inverted.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Posterize",
+   "id": "e0065483-23c2-4a45-a57d-20888827a5f3",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Transform/Posterize",
+   "status": "current",
+   "summary": "Cuts the number of tone levels in each colour channel down to Level (2-32, default 4), so smooth gradients break into flat bands of solid colour. The result looks like a screen print or poster. At low levels it is a hard, graphic, limited-palette image; at high levels it shows only slight banding.",
+   "use_for": [
+    "screen-print / pop-art poster treatment of a portrait or event photo",
+    "flat-colour base before tracing a photo into vector shapes",
+    "retro limited-palette look for social graphics and merch artwork"
+   ],
+   "avoid": [
+    "soft, noisy photos give ragged, blotchy band edges; blur or denoise slightly first",
+    "smooth sky or skin gradients at Level 2-3 turn harsh; use 5-8 for a gentler look",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Adjustments/Posterize"
+   },
+   "look": [
+    "posterize",
+    "banding",
+    "flat colour",
+    "screen print",
+    "pop art",
+    "limited palette",
+    "cel shaded"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "number of tone levels kept per colour channel; fewer levels give bigger, flatter colour areas",
+     "typical": "3-6 for a strong poster look, 8-16 for subtle banding (default 4)"
+    }
+   ],
+   "demo_settings": {
+    "Level": 3
+   },
+   "pairs_with": [
+    "Effects > Blur > Gaussian Blur at a small radius first for cleaner band edges",
+    "Bitmaps > Outline Trace afterwards to turn the bands into vector shapes",
+    "Effects > Adjust > Hue/Saturation/Lightness to recolour the bands"
+   ],
+   "scripting": "On a bitmap shape s: s.Bitmap.ApplyBitmapEffect \"Posterize\", \"PosterizeEffect Level=3\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); harvest-tested string 'PosterizeEffect Level=2' APPLIED, and Level=2 vs Level=16 gave different pixels). ApplyBitmapEffect returns OK even when it applies nothing (the harvest's InvertEffect test did exactly that), and the live audit of other effects (work/cdr/audit_live.json, BADKEY) shows a misspelled key is silently ignored, so compare pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"e0065483-23c2-4a45-a57d-20888827a5f3\" opens the modal dialog (live caption '&Posterize...'), so it needs a person or UI automation to press OK; it is not a silent apply with the current values.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:PosterizeEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "cheap: a per-channel lookup, instant on a 1920x1080 plate (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings / scripting Level 4 -> 3 (4 is the harvested default, so a demo at it cannot show the command string was read; 3 is still a clear screen-print look); scripting: menu route corrected (InvokeItem opens the modal dialog '&Posterize...'), added the OK-without-applying / bad-key warning; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d87551abae9c.png",
+    "note": "Level 3 cuts each channel to three tones: the photo breaks into flat bands of maroon, olive, salmon, grey and black, a hard screen-print look; the swatches become pure flat primaries.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Threshold",
+   "id": "c9693b18-8fac-4e90-bcd6-8b2820be67d5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Transform/Threshold",
+   "status": "current",
+   "summary": "Splits the image at a brightness level, but in the default To Black mode it does not make a black-and-white image: the 2026-10 gallery render (Level To Black, Low 130) replaced every pixel darker than the Low level with one flat neutral grey at that level (130,130,130) and left every lighter pixel in its original colour, so the dark areas, black band and the darker swatches (red, green, cyan, blue, violet, magenta) became one flat grey while the walls, warm mid-tones and the orange and yellow swatches kept their colours. Low sets the cut and the fill level (Low 0 and Low 130 differ strongly); High was ignored in this mode (High 102 gave the same pixels as 255); To White changes the result strongly (80 levels from To Black) but was not inspected, nor was Bi-Level, and the role of the Threshold (Mid) value was not tested.",
+   "use_for": [
+    "knocking every shadow of a photo down to one flat grey so the light parts read as a cut-out (poster background, duotone or screen-print prep)",
+    "a quick brightness split: everything darker than Low becomes one flat tone that is easy to select or recolour afterwards",
+    "previewing where a brightness cut falls before tracing (Bitmaps/Outline Trace)"
+   ],
+   "avoid": [
+    "a pure black-and-white stencil: To Black did not give one on the render (the darks went flat grey at the Low level, the lights kept their colour); try Bi-Level (not render-checked) or Bitmaps/Mode/Black and White (1-bit)",
+    "soft, low-contrast photos: faces and suits fall below the cut together and merge into one flat grey; raise contrast first",
+    "you want several tones rather than two zones: use Posterize",
+    "Histogram Display Clipping (ClipPercent) and its Auto box (AutoClip) are, by their captions, histogram display settings, and ImageNode is a caption-less list with no harvested values: leave all three out of scripts",
+    "Channel has no harvested values or default: leave it out of scripts",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Image/Adjustments/Threshold"
+   },
+   "enum_labels": {
+    "Level": {
+     "ToBlack": "To Black",
+     "ToWhite": "To White",
+     "Bi": "Bi-Level"
+    }
+   },
+   "look": [
+    "threshold",
+    "shadow clip",
+    "flat grey shadows",
+    "tone floor",
+    "cut-out highlights",
+    "two-zone split",
+    "posterised shadows",
+    "graphic"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "threshold mode: To Black, To White or Bi-Level; on the render To Black (sent as list index 0; the caption 'ToBlack' changed no pixel) filled every pixel darker than Low with a flat grey at the Low level and kept the lighter pixels; To White and Bi-Level were not inspected",
+     "typical": "ToBlack for crushed shadows, Bi for a pure two-tone stencil"
+    },
+    {
+     "name": "Low",
+     "does": "Low-level (0-255): in To Black mode both the cut and the fill value: pixels darker than it became a flat grey of that level (Low 130 gave 130,130,130); Low 0 and 130 differ strongly",
+     "typical": "60-140 (default 0)"
+    },
+    {
+     "name": "Mid",
+     "does": "the Threshold value (0-255) shown in the dialog, the cut-off point between black and white (assumed to drive Bi-Level; not tested)",
+     "typical": "100-160 (default 127)"
+    },
+    {
+     "name": "High",
+     "does": "High-level (0-255): ignored in To Black mode on the render (High 102 and 255 gave the same pixels); presumably used by To White",
+     "typical": "255 for To Black (default 255)"
+    },
+    {
+     "name": "Channel",
+     "does": "which channel the threshold reads (values and default not harvested)",
+     "typical": "leave unset"
+    }
+   ],
+   "demo_settings": {
+    "Level": "ToBlack",
+    "Low": 130,
+    "High": 255
+   },
+   "pairs_with": [
+    "Effects > Adjust > Brightness/Contrast/Intensity before it to place faces on the right side of the cut",
+    "Effects > Transform > Invert Colors for white-on-black artwork",
+    "Bitmaps > Outline Trace afterwards for a vector stencil"
+   ],
+   "scripting": "On a bitmap shape s: s.Bitmap.ApplyBitmapEffect \"Threshold\", \"ThresholdEffect Level=0,Low=130,High=255\" (the 2026-10 gallery render: Level=ToBlack, the caption, changed no pixel, the list index 0 applied; signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); harvest-tested string 'ThresholdEffect Low=60,High=255' APPLIED, and Low=60 vs Low=200 gave different pixels; the Level and Mid keys of the template 'ThresholdEffect Channel=<enum>,Level=<enum>,Low=<number>,Mid=<number>,High=<number>,ClipPercent=<number>,AutoClip=<bool>,ImageNode=<enum>' were not exercised). ApplyBitmapEffect returns OK even when it applies nothing (the harvest's InvertEffect test did exactly that), and the live audit of other effects (work/cdr/audit_live.json, BADKEY) shows a misspelled key is silently ignored, so compare pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"c9693b18-8fac-4e90-bcd6-8b2820be67d5\" opens the modal dialog (live caption '&Threshold...'), so it needs a person or UI automation to press OK; it is not a silent apply with the current values.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:ThresholdEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "cheap: a per-pixel comparison, instant on a 1920x1080 plate (untimed estimate)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the apply test only measured pixel differences, so 'turns more darker tones solid black' and 'Low=200 changed most of it' are now the measured numbers plus a marked inference; Level / Low / High descriptions hedged the same way; Channel: removed the invented 'composite by default'; avoid: ImageNode was asserted to drive the histogram view (not harvested), now just 'no values, leave out'; scripting: menu route corrected (InvokeItem opens the modal dialog '&Threshold...'), added the OK-without-applying / bad-key warning; cost marked as an untimed estimate"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/cdr_effect/4e7e00d15c98.png",
+    "note": "The frame is not black and white: every pixel darker than Low 130 (dark areas, dark-red panels, black band, and the red, green, cyan, blue, violet and magenta swatches) became one flat neutral grey (130,130,130), while every lighter pixel (walls, warm mid-tones, orange and yellow swatches, light greys) kept its own colour; summary, look, use_for, avoid and the Level / Low notes rewritten to that.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Re-sampled: every pixel darker than 130 is exactly (130,130,130), every lighter one keeps its RGB (38 % of non-grey pixels unchanged to within 6 levels), so the frame is a real mode result, not a renderer flattening. Harness check: Level went as list index 0 (the caption changed nothing), so '= To Black' rests on the harvested list order; the rewrite says so."
+    }
+   }
+  }
+ ]
+}

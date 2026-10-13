@@ -1,0 +1,2667 @@
+{
+ "cards": [
+  {
+   "name": "ExportFilter",
+   "id": "class:ExportFilter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ExportFilter",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The pending-export object CorelDRAW returns from Document.ExportEx, Document.ExportBitmap and Bitmap.SaveAs: the file is not written until Finish is called, and in between the filter's own options dialog can be shown or reset. All its members live on the default interface ICorelExportFilter.",
+   "use_for": [
+    "batch-export a logo selection to PNG at print resolution",
+    "export a page to SVG / AI / EPS from a pipeline and confirm the file was written",
+    "open the format's options dialog once while setting up an export preset by hand"
+   ],
+   "avoid": [
+    "saving the native .cdr: use Document.Save / SaveAs instead",
+    "one-shot exports with no need to touch the filter: Document.Export writes immediately and returns nothing",
+    "unattended runs with ShowDialog: it is modal and blocks the COM call"
+   ],
+   "how": "Coclass whose default interface is ICorelExportFilter (members_on). A script never creates it directly; it gets one back from ActiveDocument.ExportEx(FileName, Filter, Range, Options), ActiveDocument.ExportBitmap(...) or Bitmap.SaveAs(...), then calls Finish to write the file.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "performs the export and writes the file; without it nothing reaches disk"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the filter's own options dialog (modal); returns False when the user cancels"
+    },
+    {
+     "name": "HasDialog",
+     "use": "True when this format has an options dialog worth showing"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the filter's settings back to their defaults (unverified: exact scope)"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "hidden read-only string of the filter's settings, useful only for debugging"
+    }
+   ],
+   "gotchas": [
+    "Forgetting Finish is the classic bug: ExportEx / ExportBitmap return without error and no file appears.",
+    "Range cdrSelection with an empty selection fails or exports nothing (unverified: which).",
+    "Members sit on ICorelExportFilter, which the typelib flags hidden, so the VBA object browser does not list them; late binding and early binding both work.",
+    "ExportBitmap Width/Height 0 means the size follows from the resolution and the exported area (unverified)."
+   ],
+   "example": "Dim f As ExportFilter\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\logo.png\", cdrPNG, cdrSelection, cdrRGBColorImage, 0, 0, 300, 300)\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExtrudeVanishingPoint",
+   "id": "class:ExtrudeVanishingPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ExtrudeVanishingPoint",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The vanishing point of an Extrude effect: the point the extruded sides run toward, whether it is locked to the object, locked to the page or shared with other extrusions, and its X/Y position. Moving it swings the direction of the fake-3D depth.",
+   "use_for": [
+    "aim several extruded headline letters at one common vanishing point",
+    "nudge the perspective of an extruded logo from a script",
+    "lock the vanishing point to the page so moving the object changes its perspective"
+   ],
+   "avoid": [
+    "parallel extrusions (cdrExtrudeBackParallel / FrontParallel) have no real convergence: change the depth or direction instead",
+    "true 3D lighting / rotation: the extrude's other properties (shading, bevel) live on the Extrude effect object, not here"
+   ],
+   "how": "Coclass with default interface IVGExtrudeVanishingPoint. Reached from an extrude effect: Shape.CreateExtrude(...) returns an Effect, and Effect.Extrude.VanishingPoint (IVGEffectExtrude.VanishingPoint) is this object; Shape.Effects.ExtrudeEffect finds an existing one.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrVPLockedToShape, cdrVPLockedToPage or cdrVPShared"
+    },
+    {
+     "name": "PositionX",
+     "use": "horizontal position of the vanishing point"
+    },
+    {
+     "name": "PositionY",
+     "use": "vertical position of the vanishing point"
+    },
+    {
+     "name": "Share",
+     "use": "makes this extrusion use the vanishing point of another extrude effect (Source)"
+    },
+    {
+     "name": "Effects",
+     "use": "the extrude effects that share this vanishing point"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning extrude effect (IVGEffectExtrude)"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Positions are in document units (ActiveDocument.Unit); whether they are page- or object-relative when locked to the shape is not confirmed (unverified).",
+    "After Share, Type reads cdrVPShared and moving one point moves all sharing extrusions (unverified)."
+   ],
+   "example": "Dim e As Effect\nSet e = ActiveShape.CreateExtrude(cdrExtrudeSmallBack, cdrVPLockedToShape, 0, 0, 20)\nWith e.Extrude.VanishingPoint\n  .Type = cdrVPLockedToPage\n  .PositionX = 4: .PositionY = 8\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Fill",
+   "id": "class:Fill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Fill",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The fill of a shape (or a free-standing fill made by Document.CreateFill): tells which fill type is active and applies uniform, fountain (gradient), pattern, texture, PostScript or hatch fills, or no fill. The sub-objects (Fountain, Pattern, Hatch ...) hold the type-specific settings.",
+   "use_for": [
+    "paint generated shapes in exact CMYK brand colours",
+    "apply a gradient background to a poster panel",
+    "copy one object's fill onto many objects in a batch",
+    "preflight: find objects with no fill or with PostScript fills"
+   ],
+   "avoid": [
+    "outline colour: that is Shape.Outline, not Fill",
+    "partial text colouring: use TextRange.Fill on the character range instead of the text shape's Fill",
+    "unattended scripts with UserAssign: it opens a modal fill dialog"
+   ],
+   "how": "Coclass with default interface IVGFill. Reached as Shape.Fill, TextRange.Fill, TextFrame.Fill, TableCell.Fill, or created unattached with ActiveDocument.CreateFill / CreateUniformFill and then copied with CopyAssign.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrFillType: cdrNoFill, cdrUniformFill, cdrFountainFill, cdrPatternFill, cdrTextureFill, cdrPostscriptFill, cdrHatchFill"
+    },
+    {
+     "name": "ApplyUniformFill",
+     "use": "solid fill from a Color (CreateCMYKColor / CreateRGBColor ...)"
+    },
+    {
+     "name": "UniformColor",
+     "use": "get or set the solid colour of a uniform fill"
+    },
+    {
+     "name": "ApplyFountainFill",
+     "use": "gradient fill: start/end colour, type, angle, steps, midpoint, centre offset; returns the FountainFill"
+    },
+    {
+     "name": "Fountain",
+     "use": "the FountainFill settings of a fountain-filled shape"
+    },
+    {
+     "name": "ApplyNoFill",
+     "use": "removes the fill (shape becomes see-through inside)"
+    },
+    {
+     "name": "ApplyPatternFill",
+     "use": "two-colour, vector or bitmap pattern fill"
+    },
+    {
+     "name": "ApplyTextureFill",
+     "use": "texture fill by texture name and library"
+    },
+    {
+     "name": "ApplyHatchFill",
+     "use": "hatch fill from a hatch library by name or index"
+    },
+    {
+     "name": "ApplyCustomHatchFill",
+     "use": "hatch fill from angle and spacing; returns the HatchFill"
+    },
+    {
+     "name": "Hatch",
+     "use": "the HatchFill settings of a hatch-filled shape"
+    },
+    {
+     "name": "Pattern",
+     "use": "the PatternFill settings"
+    },
+    {
+     "name": "Texture",
+     "use": "the TextureFill settings"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copies all properties of another Fill into this one"
+    },
+    {
+     "name": "GetCopy",
+     "use": "an unattached copy of this fill"
+    },
+    {
+     "name": "CompareWith",
+     "use": "True when two fills have the same properties"
+    },
+    {
+     "name": "UserAssign",
+     "use": "shows the fill dialog for the user (modal)"
+    }
+   ],
+   "gotchas": [
+    "Type is read-only: change the fill type with an Apply* method, never by assigning Type.",
+    "Reading Fountain / Pattern / Hatch on a shape whose Type is different does not give usable settings (error or empty object; unverified which).",
+    "CreateCMYKColor / CreateRGBColor take Long components; the usual 0-100 (CMYK) and 0-255 (RGB) ranges are not stated in the harvest (unverified).",
+    "UserAssign blocks the COM call until the dialog closes."
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveLayer.CreateRectangle2(1, 1, 4, 3)\ns.Fill.ApplyUniformFill CreateCMYKColor(0, 100, 100, 0)\nIf s.Fill.Type = cdrUniformFill Then s.Fill.UniformColor = CreateRGBColor(30, 30, 30)",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "marked the CMYK 0-100 / RGB 0-255 range gotcha unverified (not in batch or harvest)"
+   }
+  },
+  {
+   "name": "FillMetadata",
+   "id": "class:FillMetadata",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FillMetadata",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Descriptive metadata for a fill saved to or loaded from a fill file: multilingual Title, Description, Keywords, Subject, Copyright and Category, plus read-only creator tool, creation / modification dates and document IDs.",
+   "use_for": [
+    "tag brand pattern fills with title, keywords and copyright when saving them for a shared library",
+    "read who made a fill file and when before reusing it"
+   ],
+   "avoid": [
+    "document-level metadata (title, keywords of the .cdr): that is the document's Metadata object, not this"
+   ],
+   "how": "Coclass with default interface IVGFillMetadata. Created with Application.CreateFillMetadata and passed as the optional Metadata argument of StyleFill.SaveFill(FileName, Metadata) or StyleFill.LoadFill(FileName, Metadata); StyleFill comes from Shape.Style.Fill.",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "LocalizableString: set with DefaultLangString or SetLangString"
+    },
+    {
+     "name": "Description",
+     "use": "LocalizableString description"
+    },
+    {
+     "name": "Keywords",
+     "use": "LocalizableString keywords used for search in content libraries"
+    },
+    {
+     "name": "Subject",
+     "use": "LocalizableString subject"
+    },
+    {
+     "name": "Copyright",
+     "use": "LocalizableString copyright notice"
+    },
+    {
+     "name": "Category",
+     "use": "LocalizableString category"
+    },
+    {
+     "name": "CreatorTool",
+     "use": "read-only: application that created the fill file"
+    },
+    {
+     "name": "CreationDate",
+     "use": "read-only creation date and time"
+    },
+    {
+     "name": "ModificationDate",
+     "use": "read-only last modification date and time"
+    },
+    {
+     "name": "DocumentID",
+     "use": "read-only ID shared by the fill and its derivatives"
+    },
+    {
+     "name": "InstanceID",
+     "use": "read-only ID of this fill file instance"
+    },
+    {
+     "name": "DerivedFrom",
+     "use": "read-only array of file IDs this fill is based on"
+    }
+   ],
+   "gotchas": [
+    "All properties are read-only references; the text ones are LocalizableString objects whose contents you change (DefaultLangString / SetLangString), not strings you assign.",
+    "The file format and extension SaveFill writes are not recorded in the harvest (unverified)."
+   ],
+   "example": "Dim md As FillMetadata\nSet md = CreateFillMetadata\nmd.Title.DefaultLangString = \"Brand stripes\"\nmd.Keywords.DefaultLangString = \"stripes, brand\"\nActiveShape.Style.Fill.SaveFill \"C:\\fills\\brand_stripes.fill\", md",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FontList",
+   "id": "class:FontList",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FontList",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Read-only list of the names of all fonts installed and available to CorelDRAW, as plain strings (base-1 index).",
+   "use_for": [
+    "check that a brand font is installed before building a template",
+    "pick a fallback font in a batch job when the design font is missing",
+    "list installed fonts for a font-picker in a macro dialog"
+   ],
+   "avoid": [
+    "applying a font: set the text range's Font property instead",
+    "font styles and files: this is only names"
+   ],
+   "how": "Coclass with default interface IVGFontList, reached as Application.FontList (global FontList in VBA). Item is the default member, so FontList(i) works.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of fonts"
+    },
+    {
+     "name": "Item",
+     "use": "font name at Index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the names"
+    },
+    {
+     "name": "Application",
+     "use": "owning application"
+    },
+    {
+     "name": "Parent",
+     "use": "parent object"
+    }
+   ],
+   "gotchas": [
+    "Fonts installed while CorelDRAW is running may be missing until Application.ForceUpdateFontTable is called.",
+    "Names are family names as CorelDRAW shows them; weights / styles may not appear as separate entries (unverified)."
+   ],
+   "example": "Dim i As Long, found As Boolean\nFor i = 1 To FontList.Count\n  If FontList.Item(i) = \"Arial\" Then found = True\nNext i",
+   "equivalents": {
+    "AI": "TextFonts",
+    "PS": "TextFonts"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FountainColor",
+   "id": "class:FountainColor",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FountainColor",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One colour stop of a fountain (gradient) fill or fountain transparency: its position along the gradient, colour, opacity, and the midpoint and blend type of the run to the next stop.",
+   "use_for": [
+    "recolour the middle stop of a brand gradient",
+    "fade a gradient stop to transparent for a glow",
+    "shift a stop to tighten a highlight band on a metallic gradient"
+   ],
+   "avoid": [
+    "adding stops: use FountainColors.Add",
+    "changing the whole gradient type or angle: that is FountainFill"
+   ],
+   "how": "Coclass with default interface IVGFountainColor. Reached through a FountainFill's Colors collection: Fill.Fountain.Colors.Item(i), .First (start colour) or .Last (end colour).",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "get or set the stop colour"
+    },
+    {
+     "name": "Position",
+     "use": "read-only position along the gradient"
+    },
+    {
+     "name": "Move",
+     "use": "moves the stop to NewPosition"
+    },
+    {
+     "name": "Opacity",
+     "use": "stop opacity (byte; range not confirmed)"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint of the transition to the next stop"
+    },
+    {
+     "name": "BlendType",
+     "use": "cdrFountainFillBlendType: direct, rainbow clockwise / counter-clockwise, custom"
+    },
+    {
+     "name": "Delete",
+     "use": "removes the stop from the collection"
+    }
+   ],
+   "gotchas": [
+    "Position is read-only: use Move.",
+    "The start and end stops (First / Last) are fixed at the ends and cannot be moved or deleted (unverified).",
+    "Opacity is a byte; whether 0 means opaque or transparent is not confirmed (unverified)."
+   ],
+   "example": "Dim i As Long\nWith ActiveShape.Fill.Fountain.Colors\n  For i = 2 To .Count - 1\n    .Item(i).MidPoint = 30\n  Next i\n  .First.Color = CreateRGBColor(255, 200, 0)\nEnd With",
+   "equivalents": {
+    "AI": "GradientStop"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "dropped the invented 0-100 position range from summary; example now walks the inner stops by index instead of assuming Position 0 and 100"
+   }
+  },
+  {
+   "name": "FountainColors",
+   "id": "class:FountainColors",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FountainColors",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The ordered collection of colour stops of a fountain fill or fountain transparency, with the start (First) and end (Last) stops and methods to add stops by colour or grey level.",
+   "use_for": [
+    "build multi-stop gradients (sunset, chrome, rainbow) from a script",
+    "copy a gradient's stops into a palette report",
+    "set transparency ramps by grey level"
+   ],
+   "avoid": [
+    "two-colour gradients: ApplyFountainFill's StartColor / EndColor is enough"
+   ],
+   "how": "Coclass with default interface IVGFountainColors, reached as FountainFill.Colors (e.g. ActiveShape.Fill.Fountain.Colors). Item is the default member and is base 1.",
+   "key_members": [
+    {
+     "name": "Add",
+     "use": "adds a stop: Color, Position"
+    },
+    {
+     "name": "Count",
+     "use": "number of stops"
+    },
+    {
+     "name": "Item",
+     "use": "stop by index, base 1"
+    },
+    {
+     "name": "First",
+     "use": "the start colour stop"
+    },
+    {
+     "name": "Last",
+     "use": "the end colour stop"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the stops"
+    },
+    {
+     "name": "AddGrayLevel",
+     "use": "adds a stop by grey level (for fountain transparencies)"
+    },
+    {
+     "name": "GrayLevel",
+     "use": "grey level of the stop at Index"
+    }
+   ],
+   "gotchas": [
+    "Position is on the 0-100 scale of the gradient length (unverified for values outside it).",
+    "GrayLevel / AddGrayLevel are meant for transparency ramps where grey stands for transparency amount (unverified)."
+   ],
+   "example": "Dim ff As FountainFill\nSet ff = ActiveShape.Fill.ApplyFountainFill(CreateRGBColor(255, 120, 0), CreateRGBColor(120, 0, 160), cdrLinearFountainFill, 90)\nff.Colors.Add CreateRGBColor(255, 255, 255), 50\nDebug.Print ff.Colors.Count",
+   "equivalents": {
+    "AI": "GradientStops"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FountainFill",
+   "id": "class:FountainFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FountainFill",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings of a fountain (gradient) fill or fountain transparency: linear, radial, conical or square type, the start / end handle positions, angle, colour stops, steps, centre offset, pad / reflect / repeat spread, scale, skew and smoothing.",
+   "use_for": [
+    "gradient backgrounds and buttons",
+    "radial glow behind a product shot",
+    "repeat-reflect gradient stripes",
+    "fade-out transparency on a photo edge (via Transparency.Fountain)"
+   ],
+   "avoid": [
+    "mesh-like multi-directional colour: that is the Mesh Fill tool; the harvested object model has no mesh-fill object to script (only SelectionInformation.IsMeshFillPresent)",
+    "hard-edged bands only: a pattern or several shapes may be simpler"
+   ],
+   "how": "Coclass with default interface IVGFountainFill. Returned by Fill.ApplyFountainFill(...), Fill.Fountain on a fountain-filled shape, and by Transparency.ApplyFountainTransparency / Transparency.Fountain for gradient transparency.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrLinearFountainFill, cdrRadialFountainFill, cdrConicalFountainFill, cdrSquareFountainFill"
+    },
+    {
+     "name": "Colors",
+     "use": "the FountainColors stop collection"
+    },
+    {
+     "name": "StartColor",
+     "use": "start colour"
+    },
+    {
+     "name": "EndColor",
+     "use": "end colour"
+    },
+    {
+     "name": "SetAngle",
+     "use": "sets the gradient angle (Angle itself is read-only)"
+    },
+    {
+     "name": "Angle",
+     "use": "read-only angle"
+    },
+    {
+     "name": "StartX",
+     "use": "start handle X"
+    },
+    {
+     "name": "StartY",
+     "use": "start handle Y"
+    },
+    {
+     "name": "EndX",
+     "use": "end handle X"
+    },
+    {
+     "name": "EndY",
+     "use": "end handle Y"
+    },
+    {
+     "name": "Steps",
+     "use": "number of colour steps (banding control)"
+    },
+    {
+     "name": "CenterOffsetX",
+     "use": "centre offset in percent of object width"
+    },
+    {
+     "name": "CenterOffsetY",
+     "use": "centre offset in percent of object height"
+    },
+    {
+     "name": "SpreadMethod",
+     "use": "cdrFountainFillSpreadMethodPad / Reflect / Repeat"
+    },
+    {
+     "name": "SmoothBlend",
+     "use": "smooth blending on / off"
+    },
+    {
+     "name": "ScaleX",
+     "use": "fill X scale"
+    },
+    {
+     "name": "ScaleY",
+     "use": "fill Y scale"
+    },
+    {
+     "name": "Skew",
+     "use": "fill skew"
+    },
+    {
+     "name": "BlendAcceleration",
+     "use": "how fast the blend runs between stops"
+    },
+    {
+     "name": "IsTransparent",
+     "use": "True when any stop has transparency"
+    },
+    {
+     "name": "MakeOpaque",
+     "use": "removes stop transparency"
+    }
+   ],
+   "gotchas": [
+    "Angle is read-only: call SetAngle.",
+    "EdgePad, BlendType, MidPoint and SetEdgePad are hidden legacy members; per-stop MidPoint / BlendType on FountainColor replace them.",
+    "The same object type describes a fountain transparency; there the stop colours act as transparency levels.",
+    "Steps 0 is the default passed by ApplyFountainFill and appears to mean automatic / smooth (unverified)."
+   ],
+   "example": "Dim ff As FountainFill\nSet ff = ActiveShape.Fill.ApplyFountainFill(CreateCMYKColor(0, 60, 100, 0), CreateCMYKColor(0, 100, 100, 30), cdrRadialFountainFill)\nff.CenterOffsetX = -20: ff.CenterOffsetY = 20\nff.SpreadMethod = cdrFountainFillSpreadMethodPad\nff.Colors.Add CreateCMYKColor(0, 0, 0, 0), 40",
+   "equivalents": {
+    "AI": "GradientColor"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid no longer points scripts at a 'Mesh fill' object that does not exist in the harvest"
+   }
+  },
+  {
+   "name": "FrameWindow",
+   "id": "class:FrameWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FrameWindow",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "One top-level CorelDRAW frame window (the main application window or an extra floating frame holding document views): caption, state, Windows handle, activation, tiling and the dock / view hosts it owns.",
+   "use_for": [
+    "make sure the main window is restored before capturing screenshots of the app",
+    "get the window handle for targeted window messages from an automation harness",
+    "tile all document views for a side-by-side comparison"
+   ],
+   "avoid": [
+    "document windows / zoom: use the document's Window and ActiveView objects",
+    "closing documents: Close shuts every view in the frame and may raise save prompts"
+   ],
+   "how": "Coclass with default interface ICUIFrameWindow, reached from the UI framework: Application.FrameWork.MainFrameWindow, Application.FrameWork.FrameWindows.Item(i) or FrameWindows.Find(ID).",
+   "key_members": [
+    {
+     "name": "Caption",
+     "use": "frame title text"
+    },
+    {
+     "name": "Handle",
+     "use": "Windows HWND of the frame"
+    },
+    {
+     "name": "State",
+     "use": "cuiWindowStateRestored / Maximized / Minimized"
+    },
+    {
+     "name": "Restore",
+     "use": "restores position and size"
+    },
+    {
+     "name": "Maximize",
+     "use": "maximizes the frame"
+    },
+    {
+     "name": "Minimize",
+     "use": "minimizes the frame"
+    },
+    {
+     "name": "Activate",
+     "use": "brings the frame to the front"
+    },
+    {
+     "name": "IsActive",
+     "use": "True when it is the active frame"
+    },
+    {
+     "name": "IsMainFrame",
+     "use": "True for the main application window"
+    },
+    {
+     "name": "ID",
+     "use": "frame identifier used by FrameWindows.Find"
+    },
+    {
+     "name": "TileViews",
+     "use": "tiles contained views horizontally or vertically"
+    },
+    {
+     "name": "CombineViews",
+     "use": "merges views into one view host"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle"
+    },
+    {
+     "name": "Close",
+     "use": "closes the frame and all its views"
+    },
+    {
+     "name": "ViewHosts",
+     "use": "view hosts in the frame"
+    },
+    {
+     "name": "DockHosts",
+     "use": "dock hosts in the frame"
+    },
+    {
+     "name": "RootDockHost",
+     "use": "top-level dock host"
+    }
+   ],
+   "gotchas": [
+    "The typelib's description for this class reads 'ImageList class'; it is a copy-paste error, the members are those of a frame window.",
+    "A minimized frame gives blank screenshots: check State and call Restore first.",
+    "Close may raise modal save prompts that block an unattended run (unverified)."
+   ],
+   "example": "Dim fw As FrameWindow\nSet fw = Application.FrameWork.MainFrameWindow\nIf fw.State = cuiWindowStateMinimized Then fw.Restore\nDebug.Print fw.Caption, fw.Handle",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FrameWindows",
+   "id": "class:FrameWindows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FrameWindows",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The collection of CorelDRAW's top-level frame windows (main window plus any extra floating frames), with lookup by index or ID and First / Last shortcuts.",
+   "use_for": [
+    "find every CorelDRAW frame window before taking UI screenshots",
+    "locate a floating document frame by ID"
+   ],
+   "avoid": [
+    "listing open documents: use Application.Documents"
+   ],
+   "how": "Coclass with default interface ICUIFrameWindows, reached as Application.FrameWork.FrameWindows. Item is the default member.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of frame windows"
+    },
+    {
+     "name": "Item",
+     "use": "frame window by index"
+    },
+    {
+     "name": "Find",
+     "use": "frame window by ID"
+    },
+    {
+     "name": "First",
+     "use": "first frame window"
+    },
+    {
+     "name": "Last",
+     "use": "last frame window"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the frames"
+    }
+   ],
+   "gotchas": [
+    "Whether Item is base 0 or base 1 is not stated in the typelib (unverified); For Each avoids the question."
+   ],
+   "example": "Dim w As FrameWindow\nFor Each w In Application.FrameWork.FrameWindows\n  Debug.Print w.ID, w.Caption, w.IsMainFrame\nNext w",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "FrameWork",
+   "id": "class:FrameWork",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/FrameWork",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Root of CorelDRAW's UI framework: command bars, main menu and status bar, dockers, dialogs, message boxes, workspaces, frame windows, the background task manager, and the Automation object that runs any menu or toolbar command by GUID.",
+   "use_for": [
+    "run a menu command that has no object-model call (Automation.InvokeItem with its GUID)",
+    "show or hide a docker from a macro",
+    "add a custom toolbar for in-house macros",
+    "import a team workspace"
+   ],
+   "avoid": [
+    "document work (shapes, pages, export): use Application / Document objects",
+    "ImportWorkspace on a shared machine: it changes the user's persistent workspace"
+   ],
+   "how": "Coclass with default interface ICUIFrameWork, reached as Application.FrameWork (also from the UI framework's own ICUIApplication.FrameWork). The interface is flagged hidden but is the standard route to UI automation.",
+   "key_members": [
+    {
+     "name": "Automation",
+     "use": "ICUIAutomation: InvokeItem(guid) runs a command, IsEnabled checks it"
+    },
+    {
+     "name": "CommandBars",
+     "use": "all command bars"
+    },
+    {
+     "name": "MainMenu",
+     "use": "the main menu bar"
+    },
+    {
+     "name": "StatusBar",
+     "use": "the status bar"
+    },
+    {
+     "name": "ShowDocker",
+     "use": "shows a docker by GUID"
+    },
+    {
+     "name": "HideDocker",
+     "use": "hides a docker by GUID"
+    },
+    {
+     "name": "IsDockerVisible",
+     "use": "True when the docker is visible"
+    },
+    {
+     "name": "AddDocker",
+     "use": "registers a custom .NET docker"
+    },
+    {
+     "name": "RemoveDocker",
+     "use": "removes a custom docker"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "shows a dialog by GUID (modal)"
+    },
+    {
+     "name": "HideDialog",
+     "use": "hides a dialog by GUID"
+    },
+    {
+     "name": "ShowMessageBox",
+     "use": "app-styled message box"
+    },
+    {
+     "name": "ImportWorkspace",
+     "use": "imports a workspace file"
+    },
+    {
+     "name": "FrameWindows",
+     "use": "top-level frame windows"
+    },
+    {
+     "name": "MainFrameWindow",
+     "use": "the main window"
+    },
+    {
+     "name": "TaskManager",
+     "use": "runs background / UI-thread tasks"
+    },
+    {
+     "name": "GetWarning",
+     "use": "a warning object by ID"
+    },
+    {
+     "name": "Application",
+     "use": "the UI framework application object"
+    }
+   ],
+   "gotchas": [
+    "Commands run through Automation.InvokeItem that open a dialog block the COM call until the dialog closes: wrap calls in a timeout.",
+    "ShowDialog and ShowMessageBox are modal.",
+    "Docker, dialog and command GUIDs are not in the type library; take them from the cdr_menu / cdr_tool cards or the workspace XML."
+   ],
+   "example": "Dim cmd As String\ncmd = \"<command GUID from a cdr_menu card>\"\nWith Application.FrameWork\n  If .Automation.IsEnabled(cmd) Then .Automation.InvokeItem cmd\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GlobalMacroStorage",
+   "id": "class:GlobalMacroStorage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GlobalMacroStorage",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The class behind each GMS project's ThisMacroStorage module: it has no callable members of its own and exists to receive application-wide events (document open / new / save / export / print / close, selection change, window activation, start and quit) through the DIVGApplicationEvents source interface.",
+   "use_for": [
+    "auto-run a preflight before every export",
+    "stamp or log a document when it is saved",
+    "veto closing an unsaved job with QueryDocumentClose",
+    "initialise in-house tools when CorelDRAW starts"
+   ],
+   "avoid": [
+    "running a macro on demand from outside: use GMSManager.RunMacro",
+    "heavy work in SelectionChange: it fires on every click"
+   ],
+   "how": "Coclass whose default interface _IGlobalMacroStorage (hidden) is empty and whose event source is DIVGApplicationEvents. In VBA you pick GlobalMacroStorage in the ThisMacroStorage module's object list and write handlers named GlobalMacroStorage_<Event>; event delivery follows Application.EventsEnabled.",
+   "key_members": [
+    {
+     "name": "DocumentOpen",
+     "use": "event: Doc, FileName after a document opens"
+    },
+    {
+     "name": "DocumentNew",
+     "use": "event: a new document was created (FromTemplate, Template, IncludeGraphics)"
+    },
+    {
+     "name": "DocumentBeforeSave",
+     "use": "event before save (SaveAs, FileName)"
+    },
+    {
+     "name": "DocumentAfterSave",
+     "use": "event after save"
+    },
+    {
+     "name": "DocumentBeforeExport",
+     "use": "event before export (FileName, Filter, SaveBitmap)"
+    },
+    {
+     "name": "DocumentAfterExport",
+     "use": "event after export"
+    },
+    {
+     "name": "DocumentBeforePrint",
+     "use": "event before printing"
+    },
+    {
+     "name": "DocumentClose",
+     "use": "event when a document closes"
+    },
+    {
+     "name": "QueryDocumentClose",
+     "use": "event with Cancel: set True to stop the close"
+    },
+    {
+     "name": "QueryDocumentSave",
+     "use": "event with Cancel for saves"
+    },
+    {
+     "name": "QueryDocumentExport",
+     "use": "event with Cancel for exports"
+    },
+    {
+     "name": "QueryQuit",
+     "use": "event with Cancel for quitting"
+    },
+    {
+     "name": "SelectionChange",
+     "use": "event on every selection change"
+    },
+    {
+     "name": "WindowActivate",
+     "use": "event when a document window activates"
+    },
+    {
+     "name": "Start",
+     "use": "event when the application starts"
+    },
+    {
+     "name": "Quit",
+     "use": "event when the application quits"
+    }
+   ],
+   "gotchas": [
+    "The event names above come from DIVGApplicationEvents (the source interface this class lists in implements); _IGlobalMacroStorage itself declares nothing.",
+    "Handlers fire only while the GMS project that holds them is loaded, and not while Application.EventsEnabled is False.",
+    "Query* events pass Cancel by reference; setting it True vetoes the action (unverified for every Query* event)."
+   ],
+   "example": "' ThisMacroStorage module of a GMS project\nPrivate Sub GlobalMacroStorage_DocumentBeforeExport(ByVal Doc As Document, ByVal FileName As String, ByVal Filter As cdrFilter, ByVal SaveBitmap As Boolean)\n  Debug.Print \"exporting \" & FileName\nEnd Sub",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 'only from a project loaded at start-up' claim"
+   }
+  },
+  {
+   "name": "GMSMacro",
+   "id": "class:GMSMacro",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GMSMacro",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One macro (public Sub) inside a loaded GMS module: its name plus methods to run it, open it in the VBA editor or delete it.",
+   "use_for": [
+    "list the tools a GMS module offers",
+    "run a parameterless macro found by name"
+   ],
+   "avoid": [
+    "macros that need arguments: use GMSManager.RunMacro with the arguments listed after the macro name",
+    "Delete on shared tool modules: it removes the Sub from the module"
+   ],
+   "how": "Coclass with default interface IVGGMSMacro, reached as GMSManager.Projects.Item(name).Macros.Item(name or index), or returned by GMSMacros.Create.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "macro name"
+    },
+    {
+     "name": "Run",
+     "use": "executes the macro (no arguments)"
+    },
+    {
+     "name": "Edit",
+     "use": "opens the VBA editor at the macro"
+    },
+    {
+     "name": "Delete",
+     "use": "deletes the macro subroutine"
+    }
+   ],
+   "gotchas": [
+    "Run takes no parameters.",
+    "Edit opens the VBA editor window: never in unattended runs.",
+    "Delete changes the module source; it sticks once the module is saved."
+   ],
+   "example": "Dim m As GMSMacro\nFor Each m In GMSManager.Projects.Item(\"MyTools\").Macros\n  Debug.Print m.Name\nNext m\nGMSManager.Projects.Item(\"MyTools\").Macros.Item(\"ExportAll\").Run",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid no longer tells the reader to pass RunMacro a parameter array"
+   }
+  },
+  {
+   "name": "GMSMacros",
+   "id": "class:GMSMacros",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GMSMacros",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The collection of macros (public Subs) in one GMS module, with lookup by name or index and Create to add a new empty macro.",
+   "use_for": [
+    "enumerate the macros of an in-house tool module",
+    "check a macro exists before calling GMSManager.RunMacro"
+   ],
+   "avoid": [
+    "running with arguments: GMSManager.RunMacro"
+   ],
+   "how": "Coclass with default interface IVGGMSMacros, reached as GMSProject.Macros (GMSManager.Projects.Item(name).Macros). Item is the default member.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "macro by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of macros in the module"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the macros"
+    },
+    {
+     "name": "Create",
+     "use": "creates a new macro with the given Name"
+    }
+   ],
+   "gotchas": [
+    "A locked or password-protected module may show no macros (unverified).",
+    "Create edits the module's VBA source (unverified: which code module receives it)."
+   ],
+   "example": "Dim ms As GMSMacros\nSet ms = GMSManager.Projects.Item(\"MyTools\").Macros\nDebug.Print ms.Count\nIf ms.Count > 0 Then Debug.Print ms.Item(1).Name",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GMSManager",
+   "id": "class:GMSManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GMSManager",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Entry point to Global Macro Storage: the folders where GMS modules live, the collection of loaded modules, and RunMacro, which runs any VBA macro by module and macro name with parameters, including from an outside COM client such as Python.",
+   "use_for": [
+    "run an in-house VBA export or preflight macro from a Python pipeline",
+    "find the user and shared GMS folders to install a tool module",
+    "list which macro modules are loaded"
+   ],
+   "avoid": [
+    "menu commands that are not macros: FrameWork.Automation.InvokeItem",
+    "simple object-model work: call the COM objects directly instead of wrapping it in a macro"
+   ],
+   "how": "Coclass with default interface IVGGMSManager, reached as Application.GMSManager (VBA global GMSManager); from Python: app = win32com.client.Dispatch('CorelDRAW.Application.25'); app.GMSManager.",
+   "key_members": [
+    {
+     "name": "RunMacro",
+     "use": "runs MacroName in module ModuleName; Parameters is a ParamArray, so the macro's arguments follow MacroName; returns the macro's result"
+    },
+    {
+     "name": "Projects",
+     "use": "collection of loaded GMS modules"
+    },
+    {
+     "name": "GMSPath",
+     "use": "shared GMS folder"
+    },
+    {
+     "name": "UserGMSPath",
+     "use": "per-user GMS folder"
+    }
+   ],
+   "gotchas": [
+    "Parameters is a ParamArray (the typelib marks RunMacro vararg): list the arguments after MacroName and omit them when the macro takes none; wrapping them in Array() hands the macro one array argument.",
+    "MacroName is usually given as 'CodeModule.MacroName' (e.g. 'Module1.ExportAll') (unverified for every case).",
+    "A macro that shows a form or MsgBox blocks the COM call: keep pipeline macros UI-free."
+   ],
+   "example": "Dim r As Variant\nr = GMSManager.RunMacro(\"MyTools\", \"Module1.ExportAll\", \"C:\\out\", 300)\nGMSManager.RunMacro \"MyTools\", \"Module1.Preflight\"\nDebug.Print GMSManager.UserGMSPath",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "RunMacro Parameters is vararg (typelib cParamsOpt -1), not a required array: fixed key_members use, the 'pass an empty array' gotcha and the Array(...) example"
+   }
+  },
+  {
+   "name": "GMSProject",
+   "id": "class:GMSProject",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GMSProject",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One loaded GMS module (a .gms VBA project file): its name, file location, macros, modified / locked / password state, and Unload to drop it from memory.",
+   "use_for": [
+    "check which file a tool module was loaded from",
+    "list a module's macros",
+    "unload a module before replacing its .gms file"
+   ],
+   "avoid": [
+    "editing code: use the VBA editor",
+    "loading new modules: GMSProjects.Load"
+   ],
+   "how": "Coclass with default interface IVGGMSProject, reached as GMSManager.Projects.Item(name or index), or returned by GMSProjects.Load / Create.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "GMS module name (read / write)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "name as shown in the VBA editor"
+    },
+    {
+     "name": "Macros",
+     "use": "the module's macros"
+    },
+    {
+     "name": "FullFileName",
+     "use": "full path of the .gms file"
+    },
+    {
+     "name": "FileName",
+     "use": "file name"
+    },
+    {
+     "name": "FilePath",
+     "use": "folder"
+    },
+    {
+     "name": "Dirty",
+     "use": "True when modified and unsaved"
+    },
+    {
+     "name": "Locked",
+     "use": "True when the project is unviewable"
+    },
+    {
+     "name": "PasswordProtected",
+     "use": "True when protected by a password"
+    },
+    {
+     "name": "Unload",
+     "use": "unloads the module from memory"
+    }
+   ],
+   "gotchas": [
+    "Unload drops the module for this session; unsaved changes (Dirty) may be lost (unverified).",
+    "Renaming via Name may break toolbar buttons that call 'Module.Macro' by name (unverified)."
+   ],
+   "example": "Dim p As GMSProject\nFor Each p In GMSManager.Projects\n  Debug.Print p.Name, p.FullFileName, p.Macros.Count\nNext p",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GMSProjects",
+   "id": "class:GMSProjects",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/GMSProjects",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The collection of GMS modules CorelDRAW has loaded, with Load to bring in a .gms file (optionally copying it into the GMS folder, for the user or all users) and Create to make a new empty module.",
+   "use_for": [
+    "install an in-house macro module from a pipeline",
+    "check a required tool module is loaded before RunMacro"
+   ],
+   "avoid": [
+    "running macros: GMSManager.RunMacro or GMSMacro.Run"
+   ],
+   "how": "Coclass with default interface IVGGMSProjects, reached as GMSManager.Projects. Item (default member) takes an index or the module name.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "module by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of loaded modules"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over modules"
+    },
+    {
+     "name": "Load",
+     "use": "loads a .gms file; CopyFile copies it into the GMS folder, ForAllUsers targets the shared folder"
+    },
+    {
+     "name": "Create",
+     "use": "creates a new empty GMS module"
+    }
+   ],
+   "gotchas": [
+    "Load with CopyFile / ForAllUsers writes into CorelDRAW's GMS folders: a persistent install, and ForAllUsers likely needs admin rights (unverified).",
+    "Item with a name that is not loaded raises an error: loop with For Each to test first (unverified)."
+   ],
+   "example": "Dim p As GMSProject\nSet p = GMSManager.Projects.Load(\"C:\\tools\\PGDTools.gms\", True)\nDebug.Print p.Name, GMSManager.Projects.Count",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Grid",
+   "id": "class:Grid",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Grid",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The document grid: visible or not, dot or line grid, snap-to-grid, and its horizontal / vertical spacing (or frequency).",
+   "use_for": [
+    "switch on a layout grid and snapping for a modular poster",
+    "set a baseline-like spacing for icon design",
+    "hide the grid before screenshots"
+   ],
+   "avoid": [
+    "guidelines for specific positions: use Guide shapes",
+    "pixel grid for web export: that is a separate view option (unverified)"
+   ],
+   "how": "Coclass with default interface IVGGrid, reached as ActiveDocument.Grid.",
+   "key_members": [
+    {
+     "name": "Visible",
+     "use": "shows / hides the grid"
+    },
+    {
+     "name": "Type",
+     "use": "cdrGridDot or cdrGridLine"
+    },
+    {
+     "name": "Snap",
+     "use": "snap to grid on / off"
+    },
+    {
+     "name": "SpacingX",
+     "use": "horizontal spacing"
+    },
+    {
+     "name": "SpacingY",
+     "use": "vertical spacing"
+    },
+    {
+     "name": "SetFrequency",
+     "use": "sets lines per unit (GridX, GridY)"
+    },
+    {
+     "name": "Parent",
+     "use": "the document"
+    },
+    {
+     "name": "Application",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "Spacing and frequency describe the same grid two ways (distance vs lines per unit); set one, not both (unverified).",
+    "Values are in document units (ActiveDocument.Unit) (unverified)."
+   ],
+   "example": "With ActiveDocument.Grid\n  .Type = cdrGridLine\n  .SpacingX = 0.25: .SpacingY = 0.25\n  .Visible = True: .Snap = True\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Guide",
+   "id": "class:Guide",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Guide",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Guideline-specific data of a guideline shape: horizontal, vertical or slanted type, its two defining points, slope angle, axis intercepts, and methods to move or rotate it by two points or by a point and angle.",
+   "use_for": [
+    "place bleed / safe-area guides on every page of a print job",
+    "read existing guides to align generated objects",
+    "add slanted guides for a dynamic layout"
+   ],
+   "avoid": [
+    "regular grids: Grid",
+    "non-printing helper shapes that need styling: use ordinary shapes on a non-printing layer"
+   ],
+   "how": "Coclass with default interface IVGGuide, reached as Shape.Guide on a shape whose Type is cdrGuidelineShape. Guides are created with Page.GuidesLayer.CreateGuide(x1, y1, x2, y2) or CreateGuideAngle(x, y, Angle) and listed with ActivePage.Guides(cdrHorizontalGuide / cdrVerticalGuide / cdrSlantedGuide).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrHorizontalGuide / cdrVerticalGuide / cdrSlantedGuide"
+    },
+    {
+     "name": "SetPoints",
+     "use": "moves / rotates the guide through two points"
+    },
+    {
+     "name": "SetPointAndAngle",
+     "use": "moves / rotates the guide through a point at a slope angle"
+    },
+    {
+     "name": "GetPoints",
+     "use": "returns the two defining points"
+    },
+    {
+     "name": "GetPointAndAngle",
+     "use": "returns a point and the slope angle"
+    },
+    {
+     "name": "Point1X",
+     "use": "first point X"
+    },
+    {
+     "name": "Point1Y",
+     "use": "first point Y"
+    },
+    {
+     "name": "Point2X",
+     "use": "second point X"
+    },
+    {
+     "name": "Point2Y",
+     "use": "second point Y"
+    },
+    {
+     "name": "Angle",
+     "use": "read-only slope angle"
+    },
+    {
+     "name": "Preset",
+     "use": "True for guides that come from a guide preset"
+    },
+    {
+     "name": "MakeEditable",
+     "use": "makes a preset guide editable"
+    },
+    {
+     "name": "InterceptX",
+     "use": "X where the guide crosses the horizontal axis through the centre"
+    },
+    {
+     "name": "InterceptY",
+     "use": "Y where it crosses the vertical axis through the centre"
+    },
+    {
+     "name": "CenterX",
+     "use": "X of the guide point closest to the page centre"
+    },
+    {
+     "name": "CenterY",
+     "use": "Y of that point"
+    }
+   ],
+   "gotchas": [
+    "Point and angle properties are read-only: move guides with SetPoints / SetPointAndAngle.",
+    "Preset guides may refuse edits until MakeEditable is called (unverified).",
+    "GetPoints / GetPointAndAngle return their values through [out] Double arguments (the typelib marks them out; the harvest does not record it): pass Double variables."
+   ],
+   "example": "Dim g As Shape\nSet g = ActivePage.GuidesLayer.CreateGuideAngle(0, 5.5, 0)\nFor Each g In ActivePage.Guides(cdrHorizontalGuide)\n  Debug.Print g.Guide.Point1Y, g.Guide.Angle\nNext g",
+   "equivalents": {
+    "PS": "Guide"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "byref gotcha confirmed from the typelib ([out] params) instead of unverified; example now lists the horizontal guides it just created"
+   }
+  },
+  {
+   "name": "HatchFill",
+   "id": "class:HatchFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchFill",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings of a hatch fill: one or more sets of parallel lines (HatchPatterns) with their own angle, spacing and line style, an optional background colour, scale, rotation and skew, and the library the hatch came from. Gives technical-drawing style cross-hatching inside a shape.",
+   "use_for": [
+    "section hatching on architectural or engineering drawings",
+    "cross-hatched shading on a vintage illustration",
+    "map area patterns that survive black-only printing"
+   ],
+   "avoid": [
+    "bitmap or vector tile patterns: Pattern fill",
+    "smooth tone: Fountain fill or transparency"
+   ],
+   "how": "Coclass with default interface IVGHatchFill, returned by Fill.ApplyHatchFill(LibraryName, HatchNameOrIndex, ...), Fill.ApplyCustomHatchFill(Angle, Spacing, ...) and Fill.Hatch on a hatch-filled shape.",
+   "key_members": [
+    {
+     "name": "Patterns",
+     "use": "the line sets (HatchPatterns)"
+    },
+    {
+     "name": "AddPattern",
+     "use": "adds a line set: Angle, Spacing, Shift, origin, width, colour, style"
+    },
+    {
+     "name": "BackColor",
+     "use": "background colour; Nothing means no background"
+    },
+    {
+     "name": "SetNoBackColor",
+     "use": "makes the background transparent"
+    },
+    {
+     "name": "HasBackground",
+     "use": "True when the background is opaque"
+    },
+    {
+     "name": "Select",
+     "use": "switches to a hatch from a library"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "fill transforms with the shape"
+    },
+    {
+     "name": "ScaleLinesWithShape",
+     "use": "line thickness scales with the shape"
+    },
+    {
+     "name": "UseWorldCoordinates",
+     "use": "align hatches of different objects in world coordinates"
+    },
+    {
+     "name": "SetFillScale",
+     "use": "average scale of the fill"
+    },
+    {
+     "name": "SetLineScale",
+     "use": "average line-thickness scale"
+    },
+    {
+     "name": "FillScaleX",
+     "use": "horizontal scale"
+    },
+    {
+     "name": "FillScaleY",
+     "use": "vertical scale"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "extra rotation of the whole hatch"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "extra skew of the whole hatch"
+    },
+    {
+     "name": "LibraryName",
+     "use": "library the hatch came from"
+    },
+    {
+     "name": "HatchName",
+     "use": "hatch name in its library"
+    },
+    {
+     "name": "IsFromLibrary",
+     "use": "False once modified"
+    },
+    {
+     "name": "AddToLibrary",
+     "use": "stores this hatch in a library"
+    },
+    {
+     "name": "Library",
+     "use": "the owning HatchLibrary or Nothing"
+    }
+   ],
+   "gotchas": [
+    "Spacing and line widths are in document units (unverified).",
+    "LibraryName arguments expect the library's Name (English), not the translated DisplayName (unverified).",
+    "AddToLibrary writes into a hatch library: a persistent change."
+   ],
+   "example": "Dim h As HatchFill\nSet h = ActiveShape.Fill.ApplyCustomHatchFill(45, 0.1)\nh.AddPattern -45, 0.1\nh.BackColor = CreateRGBColor(255, 250, 235)",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HatchFills",
+   "id": "class:HatchFills",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchFills",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The hatch fills stored in one hatch library, found by name or index; each entry comes back as a Fill object carrying a hatch.",
+   "use_for": [
+    "pick a library hatch by name for a drawing legend (take the names from the library first)",
+    "list a library's hatches for a style sheet"
+   ],
+   "avoid": [
+    "building hatches by numbers: Fill.ApplyCustomHatchFill"
+   ],
+   "how": "Coclass with default interface IVGHatchFills, reached as HatchLibrary.Fills (ActiveDocument.HatchLibraries.Item(name).Fills). Item is the default member.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "hatch fill by name or index (returns a Fill)"
+    },
+    {
+     "name": "Find",
+     "use": "fill by name, Nothing when missing"
+    },
+    {
+     "name": "Count",
+     "use": "number of fills in the library"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the fills"
+    }
+   ],
+   "gotchas": [
+    "Entries are Fill objects, not HatchFill: copy them onto a shape with Shape.Fill.CopyAssign, read details via .Hatch.",
+    "Find returns Nothing rather than raising: test with Is Nothing."
+   ],
+   "example": "With ActiveDocument.HatchLibraries.DefaultLibrary.Fills\n  Debug.Print .Count\n  If .Count > 0 Then ActiveShape.Fill.CopyAssign .Item(1)\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "removed invented hatch names (brick / insulation / concrete, Find(\"Brick\")); example uses Item(1)"
+   }
+  },
+  {
+   "name": "HatchLibraries",
+   "id": "class:HatchLibraries",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchLibraries",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "All hatch fill libraries available to a document, with the default and the last-used (active) library and lookup by name or index.",
+   "use_for": [
+    "find the library that holds a house hatch set",
+    "list available hatch libraries for a picker"
+   ],
+   "avoid": [
+    "applying a hatch directly: Fill.ApplyHatchFill takes the library name itself"
+   ],
+   "how": "Coclass with default interface IVGHatchLibraries, reached as ActiveDocument.HatchLibraries. Item is the default member.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "library by name or index"
+    },
+    {
+     "name": "Find",
+     "use": "library by name, Nothing when missing"
+    },
+    {
+     "name": "Count",
+     "use": "number of libraries"
+    },
+    {
+     "name": "DefaultLibrary",
+     "use": "the default hatch library"
+    },
+    {
+     "name": "ActiveLibrary",
+     "use": "last selected library"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over libraries"
+    }
+   ],
+   "gotchas": [
+    "Find takes the library name; the translated DisplayName may differ in localised installs (unverified)."
+   ],
+   "example": "Dim lib As HatchLibrary\nFor Each lib In ActiveDocument.HatchLibraries\n  Debug.Print lib.Name, lib.DisplayName, lib.Fills.Count\nNext lib",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HatchLibrary",
+   "id": "class:HatchLibrary",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchLibrary",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "One hatch fill library: its English and translated names, its fills, whether it is the active library, and Activate to make it current in the UI.",
+   "use_for": [
+    "switch the hatch picker to a project library",
+    "read a library's fills for a legend"
+   ],
+   "avoid": [
+    "adding new hatches: HatchFill.AddToLibrary"
+   ],
+   "how": "Coclass with default interface IVGHatchLibrary, reached from HatchLibraries.Item / Find / DefaultLibrary / ActiveLibrary, or HatchFill.Library.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "English library name (use in scripts)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "translated name shown in the UI"
+    },
+    {
+     "name": "Fills",
+     "use": "the library's HatchFills"
+    },
+    {
+     "name": "Active",
+     "use": "True when active"
+    },
+    {
+     "name": "Activate",
+     "use": "makes the library active in the UI"
+    },
+    {
+     "name": "Index",
+     "use": "position in the libraries collection"
+    }
+   ],
+   "gotchas": [
+    "The harvested description of Fills says it returns a number; it returns the HatchFills collection (type IVGHatchFills)."
+   ],
+   "example": "Dim lib As HatchLibrary\nSet lib = ActiveDocument.HatchLibraries.DefaultLibrary\nlib.Activate\nDebug.Print lib.Name, lib.Fills.Count",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HatchPattern",
+   "id": "class:HatchPattern",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchPattern",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "One set of parallel lines inside a hatch fill: angle, spacing, origin, per-line shift (for dashed offsets) and the outline (width, colour, dash style) the lines are drawn with.",
+   "use_for": [
+    "tune line angle and spacing of a section hatch",
+    "make the second line set of a cross-hatch thinner or coloured"
+   ],
+   "avoid": [
+    "changing the whole hatch's scale or rotation: HatchFill.SetFillScale / RotationAngle"
+   ],
+   "how": "Coclass with default interface IVGHatchPattern, reached as HatchFill.Patterns.Item(i) or returned by HatchFill.AddPattern.",
+   "key_members": [
+    {
+     "name": "Angle",
+     "use": "line angle"
+    },
+    {
+     "name": "Spacing",
+     "use": "distance between lines"
+    },
+    {
+     "name": "OriginX",
+     "use": "start offset X"
+    },
+    {
+     "name": "OriginY",
+     "use": "start offset Y"
+    },
+    {
+     "name": "SetOrigin",
+     "use": "sets both offsets"
+    },
+    {
+     "name": "Shift",
+     "use": "extra horizontal shift of successive lines"
+    },
+    {
+     "name": "ShiftPercent",
+     "use": "shift as a percentage of the dash pattern"
+    },
+    {
+     "name": "Outline",
+     "use": "line style: width, colour, dash"
+    },
+    {
+     "name": "SetProperties",
+     "use": "sets the common properties in one call"
+    },
+    {
+     "name": "Reset",
+     "use": "back to default values"
+    },
+    {
+     "name": "Delete",
+     "use": "removes this line set"
+    },
+    {
+     "name": "Index",
+     "use": "position in the collection"
+    }
+   ],
+   "gotchas": [
+    "Outline is read-only as a reference; change its properties (Width, Color) rather than assigning a new outline.",
+    "Units follow the document unit (unverified)."
+   ],
+   "example": "Dim p As HatchPattern\nSet p = ActiveShape.Fill.Hatch.Patterns.Item(1)\np.Angle = 30: p.Spacing = 0.15\np.Outline.Width = 0.01",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "HatchPatterns",
+   "id": "class:HatchPatterns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/HatchPatterns",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The line sets that make up one hatch fill, by index, with Reset to cut the hatch back to a single default line set.",
+   "use_for": [
+    "walk all line sets of a hatch to restyle them",
+    "reset a complex library hatch to a simple single-line hatch"
+   ],
+   "avoid": [
+    "adding line sets: HatchFill.AddPattern"
+   ],
+   "how": "Coclass with default interface IVGHatchPatterns, reached as HatchFill.Patterns.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of line sets"
+    },
+    {
+     "name": "Item",
+     "use": "line set by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over line sets"
+    },
+    {
+     "name": "Reset",
+     "use": "deletes all but one line set and resets it"
+    }
+   ],
+   "gotchas": [
+    "Reset is destructive for the current hatch: it removes every line set but one."
+   ],
+   "example": "Dim p As HatchPattern\nFor Each p In ActiveShape.Fill.Hatch.Patterns\n  p.Outline.Color = CreateCMYKColor(0, 0, 0, 100)\nNext p",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IColorConversionHandler",
+   "id": "class:IColorConversionHandler",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IColorConversionHandler",
+   "status": "unusable",
+   "confidence": "low",
+   "summary": "Call-back interface meant to be handed to StructColorConversionOptions.ColorConversionHandler to decide what happens when colour profiles are missing or mismatched on open / import. In the 25.1 type library it declares no members, so a script has nothing to implement or call.",
+   "use_for": [
+    "recognising the type when reading ColorConversionHandler; nothing to script with it"
+   ],
+   "avoid": [
+    "handling profile mismatches: set the colour policy and source / target profile lists on StructColorConversionOptions (ColorPolicy, SourceColorProfileList, TargetColorProfileList) instead"
+   ],
+   "how": "Dispinterface inheriting IDispatch with an empty member list. It is the type of IVGStructColorConversionOptions.ColorConversionHandler, which the harvest describes as a custom call-back used when missing or mismatched profiles are encountered.",
+   "key_members": [
+    {
+     "name": "IColorConversionHandler",
+     "use": "the interface itself: the harvest lists no members on it"
+    }
+   ],
+   "gotchas": [
+    "Zero members in the type library: implementing it from VBA or Python gives the host nothing to call (what the host expects is undocumented in the harvest; unverified)."
+   ],
+   "example": "Dim opt As Object\nSet opt = CreateStructImportOptions\nDebug.Print opt.ColorConversionOptions.ColorConversionHandler Is Nothing",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICorelExportFilter",
+   "id": "class:ICorelExportFilter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICorelExportFilter",
+   "status": "hidden",
+   "confidence": "high",
+   "summary": "Default interface of ExportFilter, also implemented by every per-format export filter library (AI, BMP, CGM, EPS, GIF, JPG, JP2, PNG, SVG, TGA, WEBP, WMF ...): Reset, ShowDialog / HasDialog for the format's options, and Finish to actually write the file.",
+   "use_for": [
+    "finish an export started with ExportEx / ExportBitmap",
+    "show a format's export dialog once while setting up a job"
+   ],
+   "avoid": [
+    "unattended jobs with ShowDialog (modal)",
+    "plain exports where Document.Export is enough"
+   ],
+   "how": "Hidden dual interface; you hold it whenever ExportEx, ExportBitmap or Bitmap.SaveAs returns. Dim the variable As ExportFilter (the coclass) or As Object.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "writes the exported file"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "shows the filter's options dialog (hWnd optional); False on cancel"
+    },
+    {
+     "name": "HasDialog",
+     "use": "True when the filter has an options dialog"
+    },
+    {
+     "name": "Reset",
+     "use": "restores the filter's default settings (unverified: scope)"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "hidden read-only settings string"
+    }
+   ],
+   "gotchas": [
+    "Hidden in the object browser, so autocomplete does not offer Finish; it still works.",
+    "Per-format options are reached through the filter-specific type libraries listed in also_in (unverified: which properties each adds)."
+   ],
+   "example": "Dim f As ExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\icon.svg\", cdrSVG, cdrSelection)\nIf f.HasDialog Then Debug.Print \"has options dialog\"\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICorelImportFilter",
+   "id": "class:ICorelImportFilter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICorelImportFilter",
+   "status": "hidden",
+   "confidence": "high",
+   "summary": "The pending-import object returned by Layer.ImportEx: lets the format's import dialog be shown or reset, and places the file on the layer when Finish is called. Also implemented by the per-format import filter libraries (CGM, DSF, DXF, HPGL, SVG ...).",
+   "use_for": [
+    "import an SVG / DXF / AI file onto a chosen layer from a pipeline",
+    "show an import options dialog once while setting up"
+   ],
+   "avoid": [
+    "simple imports: Layer.Import does it in one call",
+    "opening a file as its own document: use OpenDocument"
+   ],
+   "how": "Hidden dual interface returned by ActiveLayer.ImportEx(FileName, Filter, Options); Options comes from CreateStructImportOptions.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "performs the import"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "shows the import options dialog (modal); False on cancel"
+    },
+    {
+     "name": "HasDialog",
+     "use": "True when the filter has an options dialog"
+    },
+    {
+     "name": "Reset",
+     "use": "restores default import settings (unverified: scope)"
+    }
+   ],
+   "gotchas": [
+    "Nothing is placed until Finish.",
+    "Imported objects usually end up selected, so ActiveSelection picks them up (unverified).",
+    "Hidden interface: not listed in the object browser."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveLayer.ImportEx(\"C:\\in\\art.svg\", cdrSVG)\nf.Finish\nDebug.Print ActiveSelectionRange.Count",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICorelScriptTools",
+   "id": "class:ICorelScriptTools",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICorelScriptTools",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy CorelSCRIPT helper library kept for old macros: unit conversion (inches, points, picas, ciceros, didots, centimetres, angles), file and folder utilities, file / folder / colour / font picker dialogs, registry reads, date helpers and the wait cursor.",
+   "use_for": [
+    "convert points or picas to another unit in an old-style macro",
+    "make an output folder or find files without the VBA FileSystemObject",
+    "show a wait cursor during a long batch"
+   ],
+   "avoid": [
+    "new code: VBA / Python file APIs and Application.ConvertUnits-style document units are clearer",
+    "unattended runs with GetFileBox / GetFolder / GetColor / GetFont: they open modal dialogs",
+    "Kill / RmFolder unless the path is certain: they delete permanently"
+   ],
+   "how": "Dual interface reached as Application.CorelScriptTools (VBA: CorelScriptTools). All members are plain methods.",
+   "key_members": [
+    {
+     "name": "LengthConvert",
+     "use": "converts a length between unit codes (FromUnit, ToUnit, Value)"
+    },
+    {
+     "name": "AngleConvert",
+     "use": "converts an angle between unit codes"
+    },
+    {
+     "name": "ToPoints",
+     "use": "converts to points"
+    },
+    {
+     "name": "FromPoints",
+     "use": "converts from points"
+    },
+    {
+     "name": "ToInches",
+     "use": "converts to inches"
+    },
+    {
+     "name": "FromInches",
+     "use": "converts from inches"
+    },
+    {
+     "name": "ToCentimeters",
+     "use": "converts to centimetres"
+    },
+    {
+     "name": "ToPicas",
+     "use": "converts to picas"
+    },
+    {
+     "name": "GetTempFolder",
+     "use": "temp folder path"
+    },
+    {
+     "name": "MkFolder",
+     "use": "creates a folder"
+    },
+    {
+     "name": "RmFolder",
+     "use": "removes a folder"
+    },
+    {
+     "name": "Kill",
+     "use": "deletes a file"
+    },
+    {
+     "name": "Rename",
+     "use": "renames / moves a file"
+    },
+    {
+     "name": "FindFirstFolder",
+     "use": "starts a file / folder search"
+    },
+    {
+     "name": "FindNextFolder",
+     "use": "next search hit"
+    },
+    {
+     "name": "GetFileBox",
+     "use": "file open / save dialog"
+    },
+    {
+     "name": "GetFolder",
+     "use": "folder picker dialog"
+    },
+    {
+     "name": "RegistryQuery",
+     "use": "reads a registry value"
+    },
+    {
+     "name": "BeginWaitCursor",
+     "use": "shows the wait cursor"
+    },
+    {
+     "name": "EndWaitCursor",
+     "use": "restores the cursor"
+    }
+   ],
+   "gotchas": [
+    "In CorelSCRIPT the To*/From* functions convert to / from tenths of a micron, its internal unit (unverified in 25.1).",
+    "LengthConvert / AngleConvert take numeric unit codes whose meaning is not in the harvest (unverified; not necessarily cdrUnit).",
+    "GetFileBox, GetFolder, GetColor and GetFont are modal dialogs."
+   ],
+   "example": "Dim t As Object, outDir As String\nSet t = Application.CorelScriptTools\noutDir = t.GetTempFolder() & \"pgd_out\"\nt.MkFolder outDir\nt.BeginWaitCursor\n' ... long batch ...\nt.EndWaitCursor",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIApplication",
+   "id": "class:ICUIApplication",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIApplication",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The UI framework's application object, mainly for add-ons that build their own dockers and dialogs: the top-level data context and data-source registration for UI binding, image lists, bitmaps, status text, screen rectangles and localized strings.",
+   "use_for": [
+    "load an icon file as a bitmap for a custom docker or message box",
+    "register a data source for a custom XAML / .NET docker",
+    "fetch a localized UI string by GUID"
+   ],
+   "avoid": [
+    "document and shape work: IVGApplication (CorelDRAW.Application)"
+   ],
+   "how": "Dual interface reached as Application.FrameWork.Application (ICUIFrameWork.Application) or a data source proxy's Application.",
+   "key_members": [
+    {
+     "name": "FrameWork",
+     "use": "back to the UI framework"
+    },
+    {
+     "name": "DataContext",
+     "use": "top-level UI data context"
+    },
+    {
+     "name": "RegisterDataSource",
+     "use": "registers a data-source factory under a name"
+    },
+    {
+     "name": "UnregisterDataSource",
+     "use": "removes a registered data source"
+    },
+    {
+     "name": "CreateDataSourceFactory",
+     "use": "wraps a dispatch object as a data-source factory"
+    },
+    {
+     "name": "CreateBitmapImage",
+     "use": "bitmap from a file name, byte array or stream"
+    },
+    {
+     "name": "CreateImageList",
+     "use": "image list for UI controls"
+    },
+    {
+     "name": "CreateStatusText",
+     "use": "status-bar text object"
+    },
+    {
+     "name": "CreateScreenRect",
+     "use": "screen rectangle object"
+    },
+    {
+     "name": "LoadLocalizedString",
+     "use": "string resource by GUID"
+    }
+   ],
+   "gotchas": [
+    "Data-source registration is for add-ons whose UI binds to it; from plain VBA it has little effect (unverified).",
+    "Registered data sources may persist for the session; unregister them when the add-on unloads (unverified)."
+   ],
+   "example": "Dim ui As Object, img As Object\nSet ui = Application.FrameWork.Application\nSet img = ui.CreateBitmapImage(\"C:\\icons\\pgd.png\")\nDebug.Print img.Valid, img.Width, img.Height",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIAutomation",
+   "id": "class:ICUIAutomation",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIAutomation",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "CorelDRAW's internal UI-automation interface (described in the typelib as 'Internal Automation - Do not use'): walk command bars by GUID, read captions, enabled state and screen positions of items, show bars, and invoke any command or dialog button by GUID. It is the route PGD uses for cdr_guid commands.",
+   "use_for": [
+    "run a menu command that has no object-model method (InvokeItem with the command GUID)",
+    "check a command is enabled before invoking it",
+    "map a toolbar or menu's items to GUIDs and captions",
+    "press a button inside an open dialog by GUID (InvokeDialogItem)"
+   ],
+   "avoid": [
+    "anything the object model can do directly: those calls are faster and do not depend on UI state",
+    "commands that open modal dialogs in unattended runs"
+   ],
+   "how": "Hidden dual interface reached as Application.FrameWork.Automation.",
+   "key_members": [
+    {
+     "name": "InvokeItem",
+     "use": "runs the command with this GUID"
+    },
+    {
+     "name": "IsEnabled",
+     "use": "True when the command can run now"
+    },
+    {
+     "name": "GetCaptionText",
+     "use": "caption of an item"
+    },
+    {
+     "name": "InvokeDialogItem",
+     "use": "presses an item in a dialog (GuidDialog, GuidItem)"
+    },
+    {
+     "name": "GetNumItemsOnBar",
+     "use": "number of items on a bar"
+    },
+    {
+     "name": "GetItem",
+     "use": "GUID of the item at Index on a bar; HasSubBar tells if it opens a sub-bar"
+    },
+    {
+     "name": "GetSubBar",
+     "use": "writes the sub-bar GUID of GuidBar into the [out] GuidSubBar argument; returns True when there is one"
+    },
+    {
+     "name": "ShowBar",
+     "use": "shows / hides a bar by GUID"
+    },
+    {
+     "name": "GetItemScreenRect",
+     "use": "screen rectangle of an item"
+    },
+    {
+     "name": "GetItemInstanceHwnd",
+     "use": "window handle of an item instance"
+    },
+    {
+     "name": "GetControlData",
+     "use": "ICUIControlData for a control GUID"
+    },
+    {
+     "name": "GetControlDataEx",
+     "use": "same, scoped to a parent GUID"
+    },
+    {
+     "name": "GetActiveMenuItemGuid",
+     "use": "GUID of an item in the open menu"
+    },
+    {
+     "name": "GetActiveMenuItemScreenRect",
+     "use": "screen rectangle of an item in the open menu"
+    }
+   ],
+   "gotchas": [
+    "Flagged hidden and 'do not use': members may change between versions without notice.",
+    "InvokeItem on a command that opens a dialog blocks until the dialog closes: give the call a timeout and treat a hang as a modal dialog.",
+    "A disabled command (IsEnabled False) does nothing when invoked (unverified: silently or with an error).",
+    "Invoke (no 'Item') is hidden; use InvokeItem."
+   ],
+   "example": "Dim a As Object, g As String\nSet a = Application.FrameWork.Automation\ng = \"<command GUID from a cdr_menu card>\"\nIf a.IsEnabled(g) Then a.InvokeItem g\nDebug.Print a.GetCaptionText(g)",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "GetSubBar use corrected: it returns a Boolean and hands the GUID back through an out argument"
+   }
+  },
+  {
+   "name": "ICUIBackgroundTask",
+   "id": "class:ICUIBackgroundTask",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIBackgroundTask",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Interface an add-on implements to run work off the UI thread through the framework's task manager: RunTask does the work, FinalizeTask runs afterwards (usually on the UI thread), QuitTask handles cancellation and FreeTask cleans up; Name is shown in the UI.",
+   "use_for": [
+    "long analysis (font scan, file indexing) in a custom add-on without freezing CorelDRAW"
+   ],
+   "avoid": [
+    "touching documents or shapes inside RunTask: do that in FinalizeTask on the UI thread",
+    "simple macros: a normal VBA loop with a wait cursor is enough"
+   ],
+   "how": "Dual interface inheriting ICUITask. You implement it and pass the object to Application.FrameWork.TaskManager.RunInBackground(priority, task) with a cuiTaskPriority (kMaybeLater, kLater, kSoon, kASAP); the framework calls the members, you never call them yourself.",
+   "key_members": [
+    {
+     "name": "RunTask",
+     "use": "the work; called by the framework, possibly on a background thread"
+    },
+    {
+     "name": "FinalizeTask",
+     "use": "called after RunTask unless removed, usually on the UI thread"
+    },
+    {
+     "name": "QuitTask",
+     "use": "called when the task is asked to quit; may come from another thread"
+    },
+    {
+     "name": "FreeTask",
+     "use": "called before the task is disposed"
+    },
+    {
+     "name": "Name",
+     "use": "name shown for the task in the UI"
+    }
+   ],
+   "gotchas": [
+    "Every member description says 'Do not call this yourself'.",
+    "Whether a VBA class module can implement this derived interface is not confirmed; it is aimed at .NET / C++ add-ons (unverified).",
+    "QuitTask may arrive on a different thread than RunTask: guard shared state."
+   ],
+   "example": "' caller side; task is an object implementing ICUIBackgroundTask\nDim tm As Object\nSet tm = Application.FrameWork.TaskManager\ntm.RunInBackground kSoon, task",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIBitmapImage",
+   "id": "class:ICUIBitmapImage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIBitmapImage",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "A bitmap held by the UI framework (made from a file, byte array or stream) for icons and message-box images; exposes only whether it loaded and its pixel size.",
+   "use_for": [
+    "check a custom toolbar or docker icon loaded before using it",
+    "pass an image to FrameWork.ShowMessageBox"
+   ],
+   "avoid": [
+    "bitmaps in the drawing: those are Shape / Bitmap objects of the document"
+   ],
+   "how": "Dual interface returned by ICUIApplication.CreateBitmapImage(ImageData, MaxSize), reached via Application.FrameWork.Application.",
+   "key_members": [
+    {
+     "name": "Valid",
+     "use": "True when the image loaded"
+    },
+    {
+     "name": "Width",
+     "use": "width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "height in pixels"
+    }
+   ],
+   "gotchas": [
+    "A wrong path gives an object with Valid False rather than an error (unverified)."
+   ],
+   "example": "Dim img As Object\nSet img = Application.FrameWork.Application.CreateBitmapImage(\"C:\\icons\\pgd.png\")\nIf img.Valid Then Debug.Print img.Width & \" x \" & img.Height",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUICommandBar",
+   "id": "class:ICUICommandBar",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUICommandBar",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One command bar: a toolbar, the main menu, a popup menu, the status bar or the property bar. Read its type, name and controls, show / hide or enable it, protect it from user changes, pop it up, reset or delete it.",
+   "use_for": [
+    "add an in-house toolbar for pipeline macros",
+    "hide toolbars before taking clean UI screenshots",
+    "pop up a custom context menu from a macro"
+   ],
+   "avoid": [
+    "running a single command: FrameWork.Automation.InvokeItem",
+    "permanent UI edits on a shared workstation: they persist in the workspace"
+   ],
+   "how": "Dual interface reached as Application.CommandBars.Item(name or index) (Item is default, so CommandBars(1) or CommandBars(\"<bar name>\")), Application.MainMenu, Application.StatusBar, or returned by CommandBars.Add.",
+   "key_members": [
+    {
+     "name": "Controls",
+     "use": "the bar's controls"
+    },
+    {
+     "name": "Visible",
+     "use": "shows / hides the bar"
+    },
+    {
+     "name": "Enabled",
+     "use": "enables / disables the bar"
+    },
+    {
+     "name": "Type",
+     "use": "read-only cuiBarType"
+    },
+    {
+     "name": "Name",
+     "use": "language-independent name (read / write)"
+    },
+    {
+     "name": "NameLocal",
+     "use": "localized name"
+    },
+    {
+     "name": "BuiltIn",
+     "use": "True for built-in bars"
+    },
+    {
+     "name": "Modes",
+     "use": "command bar modes (property-bar contexts)"
+    },
+    {
+     "name": "Protection",
+     "use": "cuiBarProtection flags against customizing / moving"
+    },
+    {
+     "name": "ShowPopup",
+     "use": "shows the bar as a popup at x, y"
+    },
+    {
+     "name": "Reset",
+     "use": "back to default"
+    },
+    {
+     "name": "Delete",
+     "use": "deletes the bar"
+    },
+    {
+     "name": "SetWidth",
+     "use": "sets the bar width"
+    },
+    {
+     "name": "Index",
+     "use": "position in CommandBars"
+    }
+   ],
+   "gotchas": [
+    "Customisations persist in the user's workspace unless the bar / controls were added with Temporary True.",
+    "Left, Top, Width, Height and Position are hidden members; use SetWidth / Visible rather than relying on them.",
+    "Use Name, not NameLocal, so scripts work in every UI language."
+   ],
+   "example": "Dim bar As Object\nSet bar = Application.CommandBars.Add(\"PGD Tools\", cuiBarFloating, True)\nbar.Controls.AddCustomButton \"<macro category GUID>\", \"PGDTools.Module1.ExportAll\"\nbar.Visible = True",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "replaced the invented 'Standard' bar name in how"
+   }
+  },
+  {
+   "name": "ICUICommandBarMode",
+   "id": "class:ICUICommandBarMode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUICommandBarMode",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "One mode of a command bar: a named set of controls the bar shows in a given context, as the property bar does for each tool or selection type.",
+   "use_for": [
+    "inspect which controls the property bar shows for a tool",
+    "add a macro button to one property-bar context"
+   ],
+   "avoid": [
+    "ordinary toolbars: they normally have a single control set on ICUICommandBar.Controls"
+   ],
+   "how": "Dual interface reached as CommandBar.Modes.Item(name or index).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "mode name"
+    },
+    {
+     "name": "NameLocal",
+     "use": "localized mode name"
+    },
+    {
+     "name": "Controls",
+     "use": "controls shown in this mode"
+    }
+   ],
+   "gotchas": [
+    "Mode names are internal and undocumented; list them first (unverified naming).",
+    "Which bars besides the property bar have several modes is not confirmed (unverified)."
+   ],
+   "example": "Dim m As Object\nFor Each m In Application.CommandBars.Item(1).Modes\n  Debug.Print m.Name, m.Controls.Count\nNext m",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUICommandBarModes",
+   "id": "class:ICUICommandBarModes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUICommandBarModes",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The collection of modes (context-specific control sets) of one command bar, by index or name.",
+   "use_for": [
+    "enumerate the property bar's tool contexts"
+   ],
+   "avoid": [
+    "changing controls: go to a mode's Controls"
+   ],
+   "how": "Dual interface reached as CommandBar.Modes. Item (default member) takes an index or a name.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "mode by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of modes"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over modes"
+    }
+   ],
+   "gotchas": [
+    "Index base is not stated (unverified); For Each avoids it."
+   ],
+   "example": "Dim ms As Object\nSet ms = Application.CommandBars.Item(1).Modes\nDebug.Print ms.Count",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUICommandBars",
+   "id": "class:ICUICommandBars",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUICommandBars",
+   "status": "current",
+   "confidence": "high",
+   "summary": "All command bars of CorelDRAW (toolbars, menus, status and property bars), with lookup by name or index and Add to create a new, optionally temporary, toolbar.",
+   "use_for": [
+    "create a temporary toolbar for a session's macros",
+    "list toolbars to hide them for screenshots"
+   ],
+   "avoid": [
+    "menu commands: FrameWork.Automation"
+   ],
+   "how": "Dual interface reached as Application.CommandBars or Application.FrameWork.CommandBars. Item is the default member.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "bar by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of bars"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over bars"
+    },
+    {
+     "name": "Add",
+     "use": "new bar: Name, Position (cuiBarPosition, default cuiBarFloating), Temporary"
+    }
+   ],
+   "gotchas": [
+    "Add without Temporary True creates a bar that persists in the workspace.",
+    "Adding a bar whose name already exists fails (unverified)."
+   ],
+   "example": "Dim b As Object\nFor Each b In Application.CommandBars\n  Debug.Print b.Name, b.Visible, b.BuiltIn\nNext b\nApplication.CommandBars.Add \"PGD Temp\", cuiBarTop, True",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIControl",
+   "id": "class:ICUIControl",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIControl",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One control (button, menu item, custom control) on a command bar: its caption, tooltip, description, size, visibility, command ID (GUID) and custom icon, plus free Tag / Parameter slots for macro data.",
+   "use_for": [
+    "read the GUID behind a toolbar button to invoke it later",
+    "label and icon a custom macro button",
+    "hide a control for a simplified kiosk workspace"
+   ],
+   "avoid": [
+    "running the control's command from code: FrameWork.Automation.InvokeItem with its ID"
+   ],
+   "how": "Dual interface reached as CommandBar.Controls.Item(i), or returned by Controls.Add / AddCustomButton / AddCustomControl / AddToggleButton.",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "read-only GUID of the control's command"
+    },
+    {
+     "name": "Caption",
+     "use": "visible caption (default member)"
+    },
+    {
+     "name": "ToolTipText",
+     "use": "tooltip"
+    },
+    {
+     "name": "DescriptionText",
+     "use": "longer description"
+    },
+    {
+     "name": "Visible",
+     "use": "shows / hides"
+    },
+    {
+     "name": "SetCustomIcon",
+     "use": "icon from an image file"
+    },
+    {
+     "name": "SetIcon2",
+     "use": "icon from an icon string"
+    },
+    {
+     "name": "Tag",
+     "use": "free string data"
+    },
+    {
+     "name": "Parameter",
+     "use": "free variant data"
+    },
+    {
+     "name": "Width",
+     "use": "control width"
+    },
+    {
+     "name": "Height",
+     "use": "control height"
+    }
+   ],
+   "gotchas": [
+    "SetIcon is hidden; use SetCustomIcon or SetIcon2.",
+    "Changes persist in the workspace unless the control was added as Temporary."
+   ],
+   "example": "Dim c As Object\nFor Each c In Application.CommandBars.Item(1).Controls\n  Debug.Print c.ID, c.Caption\nNext c",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example uses CommandBars.Item(1) instead of the invented 'Standard' bar name"
+   }
+  },
+  {
+   "name": "ICUIControlData",
+   "id": "class:ICUIControlData",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIControlData",
+   "status": "hidden",
+   "confidence": "low",
+   "summary": "Read access to the data behind a UI control, returned by FrameWork.Automation.GetControlData(guid): GetValue reads one named property of that control. Which property names exist is not in the type library.",
+   "use_for": [
+    "reading a control's current state (for example a toggle or value) during UI automation, once the property names are known"
+   ],
+   "avoid": [
+    "state the object model exposes directly (document, shape, tool settings): read it there"
+   ],
+   "how": "Hidden dual interface returned by ICUIAutomation.GetControlData(Guid) or GetControlDataEx(GuidParent, Guid).",
+   "key_members": [
+    {
+     "name": "GetValue",
+     "use": "value of the property named PropertyName"
+    }
+   ],
+   "gotchas": [
+    "Property names are undocumented; guesses fail at run time (unverified which names work).",
+    "Part of the internal automation surface: may change between versions."
+   ],
+   "example": "Dim d As Object\nSet d = Application.FrameWork.Automation.GetControlData(\"<control GUID>\")\nDebug.Print d.GetValue(\"<property name>\")",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIControls",
+   "id": "class:ICUIControls",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIControls",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The controls on a command bar or command bar mode, with methods to add a built-in command by ID, a macro button, a custom .NET control or a toggle button for a docker, and to remove controls.",
+   "use_for": [
+    "put an in-house macro on a toolbar",
+    "add a toggle button that opens a custom docker",
+    "remove clutter controls from a custom bar"
+   ],
+   "avoid": [
+    "permanent edits of built-in bars on shared machines: pass Temporary True"
+   ],
+   "how": "Dual interface reached as CommandBar.Controls or CommandBarMode.Controls. Item takes a long index.",
+   "key_members": [
+    {
+     "name": "Add",
+     "use": "adds a built-in control by ControlID (GUID), at Index, Temporary"
+    },
+    {
+     "name": "AddCustomButton",
+     "use": "adds a button that runs Command (a macro) in CategoryID"
+    },
+    {
+     "name": "AddCustomControl",
+     "use": "adds a custom control by class name from a .NET assembly"
+    },
+    {
+     "name": "AddToggleButton",
+     "use": "adds a button that shows / hides the UI element with this GUID"
+    },
+    {
+     "name": "Remove",
+     "use": "removes the control at Index"
+    },
+    {
+     "name": "Item",
+     "use": "control by index"
+    },
+    {
+     "name": "Count",
+     "use": "number of controls"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over controls"
+    }
+   ],
+   "gotchas": [
+    "Index 0 in the Add methods appears to mean 'append at the end' (unverified).",
+    "AddCustomButton needs the category GUID of the macro command category; it is not in the harvest (unverified value).",
+    "Without Temporary True the change is saved into the workspace."
+   ],
+   "example": "Dim bar As Object, c As Object\nSet bar = Application.CommandBars.Add(\"PGD Temp\", cuiBarFloating, True)\nSet c = bar.Controls.AddCustomButton(\"<macro category GUID>\", \"PGDTools.Module1.ExportAll\", 0, True)\nc.Caption = \"Export all\"\nc.ToolTipText = \"Run the PGD export macro\"\nbar.Visible = True",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example adds the button to a temporary bar instead of the invented 'Standard' bar"
+   }
+  }
+ ]
+}

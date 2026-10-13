@@ -1,0 +1,247 @@
+{
+ "cards": [
+  {
+   "name": "Eraser Tool",
+   "id": "Adobe Eraser Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eraser Tool",
+   "status": "current",
+   "summary": "Rubs away parts of vector artwork with a round brush: wherever you drag, the paths under the brush are cut and closed again around the erased area, so a filled shape gets a clean bite or splits into separate closed shapes, and stroked open paths are cut into pieces.",
+   "how": "Select the objects to erase (or enter Isolation Mode); with nothing selected it erases every unlocked, visible object it touches. Drag over the artwork. Modifier keys and option fields (standard Illustrator behaviour, not in the harvest): [ and ] change the brush size; Shift-drag constrains the stroke to a straight horizontal, vertical or diagonal line; Alt-drag draws a marquee and erases everything inside the rectangle; double-click the tool for Eraser Tool Options (Size, Angle, Roundness, each Fixed / Random / pen Pressure). It works on paths, compound paths, Live Paint groups and clipping paths, not on raster images or live type. It sits in the flyout with Scissors and Knife.",
+   "shortcut": "Shift+E",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Eraser Tool\"). The brush stroke itself cannot be replayed. The same result by script, one target at a time: draw a closed PathItem shaped like the area to remove (doc.pathItems.add() + setEntirePath), put it in front of the target, select both and run Pathfinder Minus Front with app.doScript(\"Minus Front (selection)\", \"Default Actions\") (harvest-verified; needs the Default Actions set loaded). Minus Front cuts only the backmost selected object, and it treats an open stroked path as a filled area, so outline such a stroke first (Object > Path > Outline Stroke, app.executeMenuCommand(\"OffsetPath v22\")).",
+   "use_for": [
+    "knocking a gap out of a filled shape where a headline or icon overlaps it",
+    "breaking a solid shape into separate pieces for a cut-paper or torn look",
+    "trimming stray overlaps from a hand-traced logo or lettering"
+   ],
+   "avoid": [
+    "when the cut must be exact or repeatable: draw the cut shape and use Pathfinder Minus Front",
+    "to remove pieces of a stroke along the path itself: the Path Eraser Tool (Adobe Freehand Erase Tool) follows the path",
+    "on placed images or live type: it does not erase them; mask the image or outline the text first",
+    "with nothing selected on a busy layout: it erases every object it touches"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "eraserTool",
+    "CDR": "Toolbox/Crop Tools/Eraser"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: flagged [ ], Shift, Alt and the Options fields as standard behaviour not in the harvest and dropped the unharvested 45-degree figure; script_api: the Minus Front recipe now says it cuts only the backmost selected object and that an open stroked path is treated as filled (outline it first via the harvested OffsetPath v22), both limits the Eraser does not have. Checked: Shift+E, invoke, flyout order, Default Actions preset (ran 2->1 in the harvest), Path Eraser id, PS eraserTool and CDR Eraser exist."
+   }
+  },
+  {
+   "name": "Knife Tool",
+   "id": "Adobe Knife Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eraser Tool",
+   "status": "current",
+   "summary": "Slices filled shapes along a line you drag, like cutting paper: every shape the cut crosses is divided into separate closed paths that keep the original fill and stroke and can then be moved or recoloured apart.",
+   "how": "Select the shapes to cut (with nothing selected it cuts every unlocked shape it crosses), then drag a freehand line right across them. Alt-drag cuts in a straight line and Alt+Shift constrains its angle (standard Illustrator behaviour, not in the harvest). The cut has to run all the way through a shape to split it. It acts on closed, filled paths. There is no default shortcut; it is the third tool in the Eraser flyout in the Default toolbar only.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Knife Tool\"). For the same result by script: draw the cutting path, put it in front of the shapes, select only that path and run Object > Path > Divide Objects Below, app.executeMenuCommand(\"Knife Tool2\"); note the harvest paired that menu id by shortcut-dialog order only, not by execution, so test it on a throwaway document first. Divide Objects Below uses the path as the cutter and deletes it.",
+   "use_for": [
+    "splitting a badge or circle into two colour halves for a duotone logo",
+    "cutting a shape into shards or strips for a broken-glass or sliced-type effect",
+    "dividing a background block along a diagonal for a split-colour poster"
+   ],
+   "avoid": [
+    "when the cut must be precise or follow a drawn curve: draw the path and use Divide Objects Below",
+    "to split an open path at one point: use the Scissors Tool",
+    "on live type or placed images: outline the text first; images are not cut"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Crop Tools/Knife"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: flagged the Alt / Alt+Shift keys as standard behaviour not in the harvest and dropped the unharvested 45-degree figure. Checked: no shortcut and Default-only flyout position 2 match the batch; Knife Tool2 is the harvested (unconfirmed, inconclusive test) id of Object/Path/Divide Objects Below and the card says so; CDR Knife exists."
+   }
+  },
+  {
+   "name": "Scissors Tool",
+   "id": "Adobe Scissors Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eraser Tool",
+   "status": "current",
+   "summary": "Cuts a path at the exact spot you click: a closed path becomes open at that point, and a second cut (or a cut on an open path) splits it into two separate paths, each ending in a new anchor point. Nothing moves; the gap only shows once you pull the ends apart.",
+   "how": "Press C and click on a path segment or an anchor point. Cutting mid-segment leaves two new end points stacked on top of each other with one of them selected, so switch to the Direct Selection Tool (A) to drag one end away or delete a piece. Click twice on a closed shape to split it into two open paths. On a filled shape the fill stays drawn across the opening. Smart Guides help land the click exactly on a path.",
+   "shortcut": "C",
+   "scriptable": "partial",
+   "script_api": "No verified tool call: the harvest has no invoke for this id (reading the tool back with app.getSelectedToolName() after app.selectTool raised Illustrator error PARM). Split a path by script instead, at an existing anchor k (to cut mid-segment, first split that Bezier segment and insert the new anchor): read the PathItem's pathPoints; for an open path make two paths with doc.pathItems.add() + setEntirePath(), anchors 0..k and k..end (anchor k in both); for a closed path one cut gives one open path running from k round to k (set closed = false). Copy leftDirection / rightDirection / pointType and the fill and stroke, then remove the original.",
+   "use_for": [
+    "opening a circle so text or a line can flow out of a gap in a logo ring",
+    "splitting an outline into separately coloured or separately animated segments",
+    "cutting a stroke so one end can get a different arrowhead or dash"
+   ],
+   "avoid": [
+    "to cut a filled shape into separate closed pieces: use the Knife Tool",
+    "to remove a length of stroke: the Path Eraser Tool (Adobe Freehand Erase Tool) does it in one drag",
+    "when clicking near but not on the path: it cuts nothing; turn on Smart Guides"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: a mid-segment cut leaves two stacked end points with only one selected (the card said the end points are selected); script_api: the 'two paths before and after the cut' recipe only fit an open path cut at an existing anchor; now covers the closed-path case (one open path, closed = false) and mid-segment cuts, and names getSelectedToolName() as the call that raised PARM. Checked: C, path, flyout, Direct Selection shortcut A (ai_tool_02), Path Eraser id; no PS or CDR item does a one-click path split, so no equivalents."
+   }
+  },
+  {
+   "name": "Adobe Color Picker Tool",
+   "id": "Adobe Color Picker Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eyedropper Tool",
+   "status": "unusable",
+   "summary": "An internal tool id listed in the Default toolbar's Eyedropper flyout; the harvest found no display name, tooltip or keyboard-shortcut entry for it, and what it does is not known (its place next to the Eyedropper suggests some colour-picking mode, but that is unconfirmed). Selecting it by script hung Illustrator 30.2.1 and the process exited.",
+   "how": "Not documented and not confirmed in the interface. A designer picks colours with the Eyedropper (I) or by double-clicking the Fill / Stroke swatch to open the Color Picker dialog.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None. Do not call app.selectTool(\"Adobe Color Picker Tool\"): it hung Illustrator 30.2.1 and the process exited (harvest, 2026-10-04). To take a colour by script read an item's fillColor / strokeColor and assign it where needed.",
+   "use_for": [
+    "nothing in a pipeline: sample colours with the Eyedropper (Adobe Eyedropper Tool) or set fillColor in the DOM"
+   ],
+   "avoid": [
+    "any scripted selection of this id: it crashed Illustrator during the harvest",
+    "relying on it in instructions to a designer: the harvest has no display name or tooltip for it, so there is nothing to tell them to look for"
+   ],
+   "confidence": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'it may not be visible in the toolbar' contradicted the batch (Tools Panel Presets list it in the Default toolbar's Eyedropper flyout); now says the harvest has no display name or tooltip to point a designer to. Rest checked: unusable / no / low match the batch error (hung 30.2.1, process exited); no equivalents."
+   }
+  },
+  {
+   "name": "Eyedropper",
+   "id": "Adobe Eyedropper Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eyedropper Tool",
+   "status": "current",
+   "summary": "Copies appearance from one object to another: click an object and the selected objects take on its fill, stroke, stroke weight, opacity and (for text) character and paragraph formatting. Shift-click samples just the colour under the pointer, including from placed images.",
+   "how": "Select the objects to restyle, press I and click the source object. Modifier keys and option fields below are standard Illustrator behaviour, not in the harvest. Shift-click samples only the colour at that pixel into the active Fill or Stroke (useful on photos or gradients); Alt-click does the reverse and applies the selected object's attributes to the object you click. With nothing selected a click loads the sampled attributes as the defaults for the next object. Double-click the tool for Eyedropper Options: tick which attributes are picked up and applied, and set the Raster Sample Size (a point sample or a small averaged area).",
+   "shortcut": "I",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Eyedropper Tool\"). The copy is done directly in the DOM: target.fillColor = source.fillColor; target.strokeColor = source.strokeColor; target.strokeWidth = source.strokeWidth; target.opacity = source.opacity; for type copy textRange.characterAttributes / paragraphAttributes property by property, or apply a named graphic / character style. Sampling a pixel colour from a placed image has no DOM call.",
+   "use_for": [
+    "matching a new shape's fill and stroke to an existing brand element",
+    "copying headline formatting from one text frame to another",
+    "pulling a colour out of a placed product photo for a matching background or accent"
+   ],
+   "avoid": [
+    "for styles reused across a document: save a Graphic Style or Character Style so later changes update everywhere",
+    "when only the fill should change but Options pick up everything: untick attributes in Eyedropper Options or Shift-click for colour only",
+    "for an exact brand colour: type the swatch values; sampling an anti-aliased or compressed image edge gives an off colour"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "eyedropperTool",
+    "CDR": "Toolbox/Eyedropper flyout/Attributes Eyedropper"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: flagged Shift / Alt and the Options fields as standard behaviour not in the harvest and dropped the unharvested 3x3 / 5x5 figures. Checked: name 'Eyedropper', shortcut I, invoke; fillColor / strokeColor / strokeWidth / opacity DOM copy is sound; PS eyedropperTool and CDR Attributes Eyedropper exist."
+   }
+  },
+  {
+   "name": "Measure Tool",
+   "id": "Adobe Measure Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Eyedropper Tool",
+   "status": "current",
+   "summary": "Measures the distance and angle between two points: drag (or click two points) and the Info panel shows the horizontal and vertical offsets, the straight-line distance and the angle. It draws nothing on the artboard.",
+   "how": "Pick it from the Eyedropper flyout (no default shortcut), then drag from the first point to the second, or click the first point and then the second. Shift constrains the line's angle (standard Illustrator behaviour, not in the harvest). The Info panel (Window > Info, Ctrl+F8) opens with W, H, D (distance) and the angle in the document's ruler units. Smart Guides snap the start and end to anchor points.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No tool call in the harvest (the selectTool probe never reached this id). A script measures directly instead: read anchors from pathItem.pathPoints[i].anchor or an item's geometricBounds / position and compute distance Math.sqrt(dx*dx + dy*dy) and angle Math.atan2(dy, dx) * 180 / Math.PI (atan2 returns radians); values are in points (1 pt = 1/72 inch).",
+   "use_for": [
+    "checking the gap between a logo and the trim edge against a brand clear-space rule",
+    "measuring the angle of a slanted element to match another one",
+    "checking spacing between repeated layout elements in a packaging dieline"
+   ],
+   "avoid": [
+    "when the dimension must appear on the artwork: use Illustrator's own Dimension Tool (Adobe Dimension Tool), which places dimension art",
+    "for object sizes: the W / H fields in the Transform or Properties panel are faster",
+    "for even spacing: use Align > Distribute Spacing instead of measuring each gap"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "rulerTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: sent designers to CorelDRAW for on-artwork dimensions, but Illustrator 30.2.1 has its own Adobe Dimension Tool (ai_tool_02, Default and Basic toolbars); now points there. script_api: atan2 gives radians, added the degree conversion. how: flagged Shift as not harvested and dropped the unharvested 45-degree figure. Checked: Ctrl+F8 is the harvested Window/Info shortcut (ai_menu_20); PS rulerTool exists."
+   }
+  },
+  {
+   "name": "Adobe Puppet Warp Tool",
+   "id": "Adobe Puppet Warp Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Free Transform Tool",
+   "status": "current",
+   "summary": "Bends vector artwork by moving pins placed on it, as if it were a rubber puppet: drag a pin and the shape stretches and curves smoothly around the pins that stay put, rewriting the paths directly. The harvest could not tie this id to a display name; the tool in the Free Transform flyout is presumably what the interface calls Puppet Warp Tool.",
+   "how": "Select the artwork, then pick the tool from the Free Transform flyout; Illustrator drops pins automatically and shows a triangle mesh. Click on the artwork to add more pins, drag a pin to warp, Shift-click to select several pins and move them together, hover just outside a selected pin until a dotted circle appears and drag to rotate around it, and press Delete to remove a selected pin. The Control / Properties panel offers Show Mesh, Expand Mesh (lets the mesh reach past the edge) and Select All Pins. Pin the parts that must not move first. Behaviour is Adobe's documented Puppet Warp, not a live test.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Puppet Warp Tool\") (verified live: app.getSelectedToolName() returned the id). Pins and drags cannot be scripted. Approximate bends by moving pathItem.pathPoints anchors and leftDirection / rightDirection, or use a live Warp or Free Distort effect (see the ai_effect cards).",
+   "use_for": [
+    "posing a vector character's arm, tail or leg without redrawing it",
+    "bending a straight ribbon, banner or stroke-based illustration into a gentle curve",
+    "nudging an icon or mascot into a more dynamic pose for a social graphic"
+   ],
+   "avoid": [
+    "on type you still need to edit: outline it first or use an envelope or Warp effect, which stay editable",
+    "for precise geometric shapes such as logos: it distorts curves organically; use Free Transform or path editing",
+    "when the change must stay adjustable: the warp rewrites the paths; keep a copy or use a live effect"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Puppet Warp"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "confidence high -> medium: the batch has no display name and the card's own summary says the tie to Puppet Warp is presumed, the behaviour is unharvested (same standard as the Adobe Dimension Tool card); how notes the source. Checked: status current and script_api match the live selectTool read-back; Effect/Warp and Live Free Distort exist; PS Edit/Puppet Warp exists."
+   }
+  },
+  {
+   "name": "Free Transform Tool",
+   "id": "Adobe Free Transform Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Free Transform Tool",
+   "status": "current",
+   "summary": "One tool for scaling, rotating, shearing and distorting the selection on its bounding box; a small floating widget switches between Free Transform, Perspective Distort (pull a corner to fake perspective) and Free Distort (move each corner independently). The paths are rewritten directly.",
+   "how": "Select the objects and press E; a bounding box and widget appear. In Free Transform mode drag a corner or side handle to scale, drag just outside a corner to rotate, drag a side handle along its side to shear. The Constrain toggle on the widget locks proportions; in Perspective Distort dragging a corner moves its neighbour on the same edge in mirror for a perspective taper; Free Distort moves one corner at a time. Each drag is applied when you release the mouse (its own undo step); there is no commit step as in Photoshop. Modifier keys (standard Illustrator behaviour, not in the harvest): Shift keeps proportions, Alt transforms from the reference point.",
+   "shortcut": "E",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Free Transform Tool\"). The transforms themselves are DOM calls: item.resize(scaleX%, scaleY%), item.rotate(angle), item.transform(matrix) with app.getScaleMatrix / app.getRotationMatrix; corner distortion via the live Free Distort effect (menu id \"Live Free Distort\", see the ai_effect card) or by moving pathPoints anchors.",
+   "use_for": [
+    "skewing a flat label or screen mock-up into rough perspective on a product shot",
+    "tapering a headline block for a dynamic poster title",
+    "quick scale-and-rotate of a group without opening the Transform dialog"
+   ],
+   "avoid": [
+    "for exact numeric changes: use the Transform panel or Object > Transform dialogs",
+    "for real multi-plane perspective: use the Perspective Grid",
+    "on live text that must stay editable: use Effect > Distort & Transform > Free Distort or an envelope instead of the distort modes"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Free Transform",
+    "CDR": "Toolbox/Pick Tools/Free Transform"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed 'Press Enter or switch tools to finish' (Photoshop's commit step; Illustrator applies each drag on release); Perspective Distort moves a corner's neighbour on the same edge, not opposite corners; flagged Shift / Alt as not harvested. Checked: E, invoke, Live Free Distort id (ai_effect_03), Effect/Distort & Transform/Free Distort path, PS Edit/Free Transform and CDR Pick Tools/Free Transform exist."
+   }
+  }
+ ]
+}

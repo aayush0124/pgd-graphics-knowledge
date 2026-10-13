@@ -1,0 +1,1215 @@
+{
+ "cards": [
+  {
+   "name": "EffectBevel",
+   "id": "class:EffectBevel",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "BevelToolLib/EffectBevel",
+   "status": "current",
+   "summary": "Creatable COM coclass in BevelToolLib (BevelToolOM.tlb) that stands behind CorelDRAW's Bevel effect (Effects > Bevel). It has no members of its own: everything is on its default interface IEffectBevel, and a script normally meets it as the object Effect.Custom returns for a shape that already carries a bevel.",
+   "use_for": [
+    "read back the bevel a designer applied in the UI (style, offset, lighting) before restyling it",
+    "tell a bevel apart from other custom effects on a shape (Effects collection -> Custom)"
+   ],
+   "avoid": [
+    "looking for bevel properties on the coclass itself: code against IEffectBevel",
+    "building a bevel from nothing in a pipeline before its EffectID is known: apply it once in the UI (Effects > Bevel) and edit it through IEffectBevel"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "bevelEmboss"
+   },
+   "how": "Coclass {C199E0BF-14B8-DDA9-4930-68C0517473FF}, flag cancreate, default interface IEffectBevel (members_on). In practice it is not CoCreated: a bevel lives as a custom effect on a shape, reached with shape.Effects.Item(i).Custom (IVGEffect.Custom -> IVGCustomEffect; the object also answers IEffectBevel's members, late-bound). New bevels would go through IVGShape.CreateCustomEffect(EffectID, Parameters).",
+   "key_members": [
+    {
+     "name": "IEffectBevel",
+     "use": "default interface (extra.implements): Type, Mode, Offset, LightColor, LightIntensity, LightDirection, LightAltitude, ShadowColor, AmbientIntensity, EffectID, EffectGroup"
+    }
+   ],
+   "gotchas": [
+    "The coclass exposes no members of its own (members_on = IEffectBevel).",
+    "cancreate does not mean a free-standing instance does anything: a bevel only exists attached to a shape (unverified that a CoCreated EffectBevel can be attached at all).",
+    "The harvest found no CreateBevel in VGCoreAuto.tlb, and the EffectID that CreateCustomEffect needs for a bevel was not probed; read EffectID off a bevel made in the UI first (unverified that it round-trips)."
+   ],
+   "example": "Dim fx As Object\nSet fx = ActiveShape.Effects.Item(1).Custom   ' the EffectBevel object\nDebug.Print fx.EffectID, fx.Type, fx.Mode, fx.Offset",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IEffectBevel",
+   "id": "class:IEffectBevel",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "BevelToolLib/IEffectBevel",
+   "status": "current",
+   "summary": "Dispatch interface of CorelDRAW's Bevel effect: the bevel style (Type: Soft Edge shaded slopes or Emboss raised relief), how far the bevel runs in from the edge (Mode + Offset), and the lighting that shades it (light colour, intensity, direction, altitude, shadow colour, ambient intensity). Setting these restyles a live bevel already applied to a filled vector shape.",
+   "use_for": [
+    "batch-restyle bevelled badge, button or logo shapes to one light direction and depth",
+    "switch a bevel between Soft Edge and Emboss on many objects at once",
+    "match shadow and highlight colours of bevels to a brand palette"
+   ],
+   "avoid": [
+    "photo-real 3D or extruded type: use the Extrude effect or render in another app",
+    "objects that must stay pure vector for cutting/plotting: bevel shading is generated artwork, convert or drop it first (unverified whether Soft Edge shading is bitmap-based)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "bevelEmboss"
+   },
+   "how": "BevelToolLib dispinterface (dual), inherits IVGCustomEffect. Reach it from a shape that has a bevel: shape.Effects.Item(i).Custom returns the IVGCustomEffect, and the same object answers these members. Type takes cdrBevelType (cdrBevelSoftEdge, cdrBevelEmboss); Mode takes cdrBevelMode (cdrBevelCenter = bevel to the centre, cdrBevelOffset = bevel only Offset deep).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "bevel style, cdrBevelType: Soft Edge (shaded sloping edges) or Emboss (raised relief look)"
+    },
+    {
+     "name": "Mode",
+     "use": "cdrBevelMode: bevel runs to the centre of the object or only Offset in from the edge"
+    },
+    {
+     "name": "Offset",
+     "use": "depth of the bevel from the edge when Mode is the offset mode (document units assumed, unverified)"
+    },
+    {
+     "name": "LightColor",
+     "use": "IVGColor of the lit side / highlight"
+    },
+    {
+     "name": "LightIntensity",
+     "use": "strength of the highlight; higher = brighter, more contrasty bevel"
+    },
+    {
+     "name": "LightDirection",
+     "use": "angle the light comes from (an angle in the docker; unit here unverified)"
+    },
+    {
+     "name": "LightAltitude",
+     "use": "height of the light above the object; low altitude = longer, darker shading"
+    },
+    {
+     "name": "ShadowColor",
+     "use": "IVGColor of the shaded side"
+    },
+    {
+     "name": "AmbientIntensity",
+     "use": "overall fill light on faces the main light does not hit"
+    },
+    {
+     "name": "EffectID",
+     "use": "read-only ID string of this custom effect; the value CreateCustomEffect would need (unverified)"
+    },
+    {
+     "name": "EffectGroup",
+     "use": "read-only IVGShape of the effect's group in the drawing"
+    }
+   ],
+   "gotchas": [
+    "No creation call is established: VGCoreAuto.tlb has no CreateBevel and the bevel EffectID for IVGShape.CreateCustomEffect was not probed by the harvest. Edit existing bevels; create new ones in the UI.",
+    "The members are not in VGCore's typelib: an early-bound IVGCustomEffect variable hides them, use Object (late binding) in VBA or load BevelToolOM.tlb in Python (unverified for win32com makepy).",
+    "LightColor and ShadowColor return IVGColor objects: change them with the colour's own methods (e.g. RGBAssign); whether an in-place edit writes back to the effect is unverified.",
+    "Bevel needs a closed, filled object in the UI; open paths or unfilled shapes give nothing (unverified for the API).",
+    "Ranges of Offset, LightIntensity, LightDirection, LightAltitude and AmbientIntensity are not harvested; probe on a test shape before batch use."
+   ],
+   "example": "Dim fx As Object\nSet fx = ActiveShape.Effects.Item(1).Custom   ' shape already bevelled in the UI\nfx.Type = cdrBevelEmboss\nfx.Mode = cdrBevelOffset\nfx.Offset = 0.08\nfx.LightDirection = 135\nfx.LightAltitude = 40\nfx.ShadowColor.RGBAssign 30, 30, 30",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: dropped Contour from the 3D alternative (only Extrude makes depth)"
+   }
+  },
+  {
+   "name": "IBrowserObjectModel",
+   "id": "class:IBrowserObjectModel",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "BrowserLib/IBrowserObjectModel",
+   "status": "current",
+   "summary": "Object model for CorelDRAW's browser-based (HTML) UI pages: it gives page script the application object, lets it read, write and watch properties on the UI framework's named data sources, fire events, and fetch localized strings. This reading comes from the member list (script listeners default to JScript); the harvest does not show which pages host it, so treat the details as unconfirmed.",
+   "use_for": [
+    "custom HTML docker that shows or reacts to document state",
+    "web-based panel that triggers a UI-framework event or updates a data-source value",
+    "localized captions inside an HTML panel"
+   ],
+   "avoid": [
+    "automating CorelDRAW from an outside pipeline: use CorelDRAW.Application and the VGCore object model (IVGApplication, IVGDocument) over COM",
+    "relying on data-source names in shipped tools: they are internal and can change between versions (unverified)"
+   ],
+   "confidence": "low",
+   "how": "BrowserLib dispinterface (dual, inherits IDispatch). No harvested VGCore member returns it, so it is not reached from Application or Document; it is presumably injected into HTML dockers / browser pages by the host (unverified). From page script: Application gives the app object model entry; GetValue / SetValue(DataSource, DataProperty[, Value]) read and write a data-source property; RegisterDataListener / RegisterEventListener attach a script string that runs on change or event; FireEvent raises an event; GetLocalizedString(Guid) returns UI text.",
+   "key_members": [
+    {
+     "name": "Application",
+     "use": "read-only IDispatch: entry object of the application object model"
+    },
+    {
+     "name": "GetValue",
+     "use": "read DataProperty of a named DataSource"
+    },
+    {
+     "name": "SetValue",
+     "use": "write a value to DataProperty of a DataSource"
+    },
+    {
+     "name": "FireEvent",
+     "use": "raise EventToFire on a DataSource with an array of parameters"
+    },
+    {
+     "name": "RegisterDataListener",
+     "use": "run a script string (Language default JScript) when a data-source property changes"
+    },
+    {
+     "name": "UnregisterDataListener",
+     "use": "remove that data listener"
+    },
+    {
+     "name": "RegisterEventListener",
+     "use": "run a script string when a named event fires"
+    },
+    {
+     "name": "UnregisterEventListener",
+     "use": "remove that event listener"
+    },
+    {
+     "name": "GetLocalizedString",
+     "use": "localized UI string for a GUID (which GUIDs it accepts is unverified)"
+    }
+   ],
+   "gotchas": [
+    "Not reachable from a VBA macro or an external COM client through any harvested member (unverified whether another public entry exists).",
+    "DataSource / DataProperty names are internal UI-framework names; the menu harvest shows binds such as DataSource=AppDS;Path=DocumentAvailable that look like the same namespace (unverified).",
+    "Listeners take script source as a string, not a function object; Language defaults to \"JScript\".",
+    "Application is typed IDispatch, so everything under it is late-bound.",
+    "Unregister listeners when the page goes away, or callbacks may target a dead page (unverified)."
+   ],
+   "example": "// bom = the IBrowserObjectModel the HTML page receives (entry name not harvested)\nvar app = bom.Application;\nvar hasDoc = bom.GetValue(\"AppDS\", \"DocumentAvailable\");\nbom.RegisterDataListener(\"AppDS\", \"DocumentAvailable\", \"refreshPanel()\");\nbom.UnregisterDataListener(\"AppDS\", \"DocumentAvailable\");",
+   "review": {
+    "by": "adversarial",
+    "changes": "GetLocalizedString: marked the 'command caption' guess unverified"
+   }
+  },
+  {
+   "name": "CalloutShape",
+   "id": "class:CalloutShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "CalloutToolLib/CalloutShape",
+   "status": "current",
+   "summary": "Creatable coclass in CalloutToolLib for CorelDRAW's callout custom shape: a leader line from a target object to a text label, drawn with the callout tools (2-Leg Callout on the Dimension flyout; 1-Leg / 3-Leg Callout on the CalloutTool bar; which of them make this custom shape is unverified). It has no members of its own; all callout properties are on its default interface ICalloutShape.",
+   "use_for": [
+    "find the callouts on a page (custom shapes) before restyling them",
+    "labelled product diagrams, technical drawings and infographics with leader lines"
+   ],
+   "avoid": [
+    "creating callouts by script: the CreateCustomShape TypeID and Parameters for a callout are not harvested; draw them with the Callout tool or use a line plus a text object",
+    "looking for callout properties on the coclass: they are on ICalloutShape"
+   ],
+   "confidence": "medium",
+   "how": "Coclass {174173BB-25DB-A3B4-4120-FB46798AB5B6}, flag cancreate, default interface ICalloutShape (members_on). A callout on the page is an IVGShape whose Type is cdrCustomShape; shape.Custom returns IVGCustomShape and the same object answers ICalloutShape's members. New ones would go through IVGLayer.CreateCustomShape(TypeID, Parameters).",
+   "key_members": [
+    {
+     "name": "ICalloutShape",
+     "use": "default interface (extra.implements): LeaderCurve, TextShape, Target, halo, ending and gap properties"
+    }
+   ],
+   "gotchas": [
+    "No members of its own (members_on = ICalloutShape).",
+    "Other custom shapes also report cdrCustomShape: compare TypeID with the TypeID read from a known callout before treating a shape as one.",
+    "The TypeID and parameter array CreateCustomShape needs for a callout were not harvested (unverified that a CoCreated CalloutShape can be placed)."
+   ],
+   "example": "Dim s As Shape, co As Object\nSet s = ActiveShape\nIf s.Type = cdrCustomShape Then\n  Set co = s.Custom                 ' a CalloutShape only if TypeID matches a known callout's\n  Debug.Print co.TypeID, co.HasTarget\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: named the harvested callout tools; example comment no longer claims every custom shape is a callout"
+   }
+  },
+  {
+   "name": "ICalloutShape",
+   "id": "class:ICalloutShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "CalloutToolLib/ICalloutShape",
+   "status": "current",
+   "summary": "Dispatch interface of a CorelDRAW callout: the leader curve and its outline, the label text shape, the ending drawn on the leader (type, size, fill), an optional halo behind the label (on/off, width, opacity, justification, colour), a gap value and the target object the callout points at. Used to restyle callouts in bulk or read what each one labels.",
+   "use_for": [
+    "restyle every callout on an infographic or exploded product diagram at once (leader weight, ending, halo)",
+    "white halo behind callout labels that sit over busy artwork or photos",
+    "audit which object each callout points at (Target / HasTarget)"
+   ],
+   "avoid": [
+    "changing where the label text comes from: TextSource is read-only here, set it in the Callout tool",
+    "re-targeting a callout to another object: Target is read-only; redraw it with the Callout tool"
+   ],
+   "confidence": "medium",
+   "how": "CalloutToolLib dispinterface (dual), inherits IVGCustomShape. Get it from a callout shape on the page: shape.Custom (late-bound object). Ending takes cdrCalloutEnding, HaloJustification cdrCalloutHaloJustify, TextSource returns cdrCalloutTextSource. Object-valued members (Outline, EndingFill, HaloColor, TextShape, LeaderCurve, Target) are read-only handles: edit through them.",
+   "key_members": [
+    {
+     "name": "TypeID",
+     "use": "read-only ID string of the custom-shape type; use it to recognise callouts"
+    },
+    {
+     "name": "LeaderCurve",
+     "use": "read-only IVGCurve of the leader line (length, nodes, bounding box)"
+    },
+    {
+     "name": "Outline",
+     "use": "read-only IVGOutline of the callout: set Width, Color, Style through it"
+    },
+    {
+     "name": "Ending",
+     "use": "cdrCalloutEnding: decoration drawn on the leader (none, box, line, circle, square, triangle and combinations)"
+    },
+    {
+     "name": "EndingSize",
+     "use": "size of that ending decoration"
+    },
+    {
+     "name": "EndingFill",
+     "use": "read-only IVGFill of the ending decoration"
+    },
+    {
+     "name": "Gap",
+     "use": "the callout's gap value (description only says 'Specifies the gap'; most likely the space between leader and label, unverified)"
+    },
+    {
+     "name": "TextShape",
+     "use": "read-only IVGShape of the label text: edit text and font through it"
+    },
+    {
+     "name": "TextSource",
+     "use": "read-only cdrCalloutTextSource: interactive (typed) text, or the target's height, width, area, perimeter, name, property, the clipboard, or an increment counter"
+    },
+    {
+     "name": "HaloVisible",
+     "use": "turn the halo behind the label on or off"
+    },
+    {
+     "name": "HaloWidth",
+     "use": "how far the halo extends around the label"
+    },
+    {
+     "name": "HaloOpacity",
+     "use": "halo opacity (a long; range not harvested)"
+    },
+    {
+     "name": "HaloJustification",
+     "use": "cdrCalloutHaloJustify: anchoring of the halo (centre or a corner)"
+    },
+    {
+     "name": "HaloColor",
+     "use": "read-only IVGColor of the halo: recolour with its methods (e.g. RGBAssign)"
+    },
+    {
+     "name": "Target",
+     "use": "read-only IVGShape the callout points at"
+    },
+    {
+     "name": "HasTarget",
+     "use": "whether the callout is attached to a target object"
+    }
+   ],
+   "gotchas": [
+    "HaloColor, Outline, EndingFill, LeaderCurve, TextShape and Target are read-only: change them through the returned object (Outline.Width = ..., HaloColor.RGBAssign ...), never by assignment.",
+    "TextSource is read-only although its description says 'Specifies the source of the text'.",
+    "HasTarget is writable but there is no Target setter: attaching a callout to a new object is not exposed (unverified what setting HasTarget = True does).",
+    "Not in VGCore's typelib: use late binding (Object) in VBA.",
+    "Units of Gap, HaloWidth and EndingSize (document units assumed) and the HaloOpacity range are not harvested (unverified)."
+   ],
+   "example": "Dim s As Shape, co As Object, id As String\nid = ActiveShape.Custom.TypeID   ' select one callout first\nFor Each s In ActivePage.Shapes\n  If s.Type = cdrCustomShape Then\n    Set co = s.Custom\n    If co.TypeID = id Then co.HaloVisible = True: co.HaloWidth = 0.05: co.HaloColor.RGBAssign 255, 255, 255\n  End If\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "TextSource: listed the real cdrCalloutTextSource values (Height/Width, Increment) instead of 'size'/'counter'; example now filters by a known callout TypeID (old loop called halo members on any custom shape, error 438)"
+   }
+  },
+  {
+   "name": "DefaultExport",
+   "id": "class:DefaultExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "DefaultFilterLib/DefaultExport",
+   "status": "current",
+   "summary": "Creatable coclass in DefaultFilterLib: the generic export-filter object, exposing only the base export-filter members (Reset, Finish, HasDialog, ShowDialog, ExternalSettings) through IDefaultExport. It is presumably what Document.ExportEx hands back for formats that have no dedicated filter library (unverified).",
+   "use_for": [
+    "finishing a scripted export to a format without its own filter settings interface",
+    "checking whether a filter offers an options dialog before an unattended run"
+   ],
+   "avoid": [
+    "setting format options on it: it has none; pass IVGStructExportOptions to ExportEx, or use the format's own filter class (IAIExport, IBMPExport ...)"
+   ],
+   "confidence": "medium",
+   "how": "Coclass {00000002-0CBA-11D4-B6B4-009027575A12}, flag cancreate, default interface IDefaultExport. Not created directly in practice: IVGDocument.ExportEx(FileName, Filter, Range, Options, PaletteOptions), IVGDocument.ExportBitmap and IVGBitmap.SaveAs return an ICorelExportFilter whose concrete class is the format's filter coclass; DefaultExport is the generic one. Call Finish to write the file.",
+   "key_members": [
+    {
+     "name": "IDefaultExport",
+     "use": "default interface (extra.implements): Reset, Finish, HasDialog, ShowDialog, ExternalSettings"
+    }
+   ],
+   "gotchas": [
+    "Which formats land on DefaultExport is not harvested; formats with their own library (ICorelExportFilter is also in FilterAILib, FilterBMPLib, FilterGIFLib, FilterJPGLib, FilterPNGLib, FilterSVGLib, FilterWEBPLib ...) return their own filter class.",
+    "Nothing is written until Finish is called on the returned filter."
+   ],
+   "example": "Dim f As ExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\page.tif\", cdrTIFF, cdrCurrentPage)   ' filter class for TIFF not harvested\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DefaultImport",
+   "id": "class:DefaultImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "DefaultFilterLib/DefaultImport",
+   "status": "current",
+   "summary": "Creatable coclass in DefaultFilterLib: the generic import-filter object, exposing only the base import-filter members (Reset, Finish, HasDialog, ShowDialog) through IDefaultImport. Presumably what Layer.ImportEx hands back for formats without a dedicated import filter library (unverified).",
+   "use_for": [
+    "finishing a scripted import (place a file onto a layer) in a pipeline",
+    "checking whether an import filter would raise an options dialog"
+   ],
+   "avoid": [
+    "setting import options on it: it has none; pass IVGStructImportOptions to ImportEx"
+   ],
+   "confidence": "medium",
+   "how": "Coclass {00000004-0CBA-11D4-B6B4-009027575A12}, flag cancreate, default interface IDefaultImport. Reached through IVGLayer.ImportEx(FileName, Filter, Options), which returns an ICorelImportFilter; call Finish to complete the import onto that layer.",
+   "key_members": [
+    {
+     "name": "IDefaultImport",
+     "use": "default interface (extra.implements): Reset, Finish, HasDialog, ShowDialog"
+    }
+   ],
+   "gotchas": [
+    "Which formats land on DefaultImport is not harvested; ICorelImportFilter is also in FilterCGMLib, FilterDSFLib, FilterDXFLib, FilterHPGLLib and FilterSVGLib, which have their own import classes.",
+    "The import is not complete until Finish is called."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ActiveLayer.ImportEx(\"C:\\in\\art.pdf\", cdrAutoSense)   ' import filter class for PDF not harvested\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "example: swapped .svg (FilterSVGLib has its own import class) for a format with no harvested filter library"
+   }
+  },
+  {
+   "name": "IDefaultExport",
+   "id": "class:IDefaultExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "DefaultFilterLib/IDefaultExport",
+   "status": "current",
+   "summary": "Interface of the generic export filter: reset the filter, show its options dialog (if it has one), read its external-settings string and Finish the export, which is what actually writes the file. Same member set as the base ICorelExportFilter.",
+   "use_for": [
+    "completing any ExportEx / ExportBitmap call in an export pipeline",
+    "letting a user confirm export options interactively in a macro (ShowDialog)"
+   ],
+   "avoid": [
+    "calling ShowDialog in an unattended pipeline: the modal dialog blocks automation; pass options through IVGStructExportOptions instead"
+   ],
+   "confidence": "medium",
+   "how": "DefaultFilterLib dispinterface (dual), inherits ICorelExportFilter. Get it as the return value of IVGDocument.ExportEx / ExportBitmap (or IVGBitmap.SaveAs), then call Finish.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "completes the export and writes the file"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether this filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the filter's options dialog (hWnd optional, default 0); returns a bool, presumably OK vs Cancel (unverified)"
+    },
+    {
+     "name": "Reset",
+     "use": "resets the filter (presumably back to default settings; unverified)"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "read-only string, hidden in the typelib; meaning not documented (perhaps the serialized filter settings, unverified)"
+    }
+   ],
+   "gotchas": [
+    "ExportEx only prepares the export: without Finish no file is written.",
+    "ShowDialog is modal; from an outside COM client it hangs the call until someone answers it.",
+    "Pass native Windows paths; an existing target may need IVGStructExportOptions.Overwrite = True (unverified).",
+    "Use cdrAI, not cdrAI9, for Illustrator export: cdrAI9 is import-only in the cdrFilter enum."
+   ],
+   "example": "Dim f As ExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\page.tif\", cdrTIFF, cdrCurrentPage)\nIf f.HasDialog Then Debug.Print \"filter has an options dialog\"\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "ExternalSettings: noted it is hidden in the typelib"
+   }
+  },
+  {
+   "name": "IDefaultImport",
+   "id": "class:IDefaultImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "DefaultFilterLib/IDefaultImport",
+   "status": "current",
+   "summary": "Interface of the generic import filter: reset it, show its options dialog if it has one, and Finish the import so the file's content lands on the target layer. Same member set as the base ICorelImportFilter.",
+   "use_for": [
+    "completing a scripted ImportEx in a layout or template pipeline (logos, placed artwork)"
+   ],
+   "avoid": [
+    "ShowDialog in unattended runs: modal dialog blocks automation"
+   ],
+   "confidence": "medium",
+   "how": "DefaultFilterLib dispinterface (dual), inherits ICorelImportFilter. Returned by IVGLayer.ImportEx(FileName, Filter, Options); call Finish.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "completes the import onto the layer"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the import options dialog (hWnd optional, default 0); returns a bool"
+    },
+    {
+     "name": "Reset",
+     "use": "resets the filter (presumably to defaults; unverified)"
+    }
+   ],
+   "gotchas": [
+    "Nothing is imported until Finish is called.",
+    "ShowDialog is modal and hangs an outside COM call until answered.",
+    "Where the imported content lands and whether it stays selected afterwards is not harvested (unverified); read ActiveSelection / the layer's Shapes after Finish."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ActiveLayer.ImportEx(\"C:\\in\\art.pdf\", cdrAutoSense)\nIf f.HasDialog Then Debug.Print \"filter has an options dialog (not shown)\"\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "example: Finish was skipped for any filter that has a dialog (HasDialog only reports the dialog exists); now always finishes"
+   }
+  },
+  {
+   "name": "IFilterSettings",
+   "id": "class:IFilterSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IFilterSettings",
+   "status": "current",
+   "summary": "Base settings interface for the bitmap formats of CorelDRAW's Export docker (quick export): output units, X and Y scale, resolution, aspect-ratio and size locks, and whether to embed the colour profile. The PNG, GIF, JPG and WEBP settings interfaces repeat these seven properties and add their own.",
+   "use_for": [
+    "set pixel density and size for exported web or social assets (1x / 2x)",
+    "embed or strip the colour profile on exported bitmaps"
+   ],
+   "avoid": [
+    "pipelines that need a proven route: IVGDocument.ExportBitmap / ExportEx with IVGStructExportOptions set size and resolution directly"
+   ],
+   "confidence": "medium",
+   "how": "ExportToolLib (ExportToolOM.tlb) dispinterface, inherits IDispatch. Settings objects come from IQuickExport.CreateFilterSettings(type As cdrFilter), which returns an IDispatch implementing the format's interface (IPNGFilterSettings, IJPGFilterSettings, IGIFFilterSettings, IWEBPFilterSettings); set properties, then attach with IQuickExportSettings.SetFormat.",
+   "key_members": [
+    {
+     "name": "Units",
+     "use": "cdrUnit for the output size (e.g. cdrPixel, cdrInch, cdrMillimeter)"
+    },
+    {
+     "name": "Resolution",
+     "use": "output resolution in dpi (long)"
+    },
+    {
+     "name": "ScaleX",
+     "use": "horizontal scale of the exported image (percent vs factor not harvested)"
+    },
+    {
+     "name": "ScaleY",
+     "use": "vertical scale of the exported image"
+    },
+    {
+     "name": "MaintainAspectRatio",
+     "use": "keep ScaleX and ScaleY locked together"
+    },
+    {
+     "name": "MaintainSize",
+     "use": "keep the physical size when resolution changes (pixel count follows), as in the Export dialog (unverified)"
+    },
+    {
+     "name": "EmbedColorProfile",
+     "use": "embed the document colour profile in the file"
+    }
+   ],
+   "gotchas": [
+    "The IQuickExport that creates these objects has no harvested entry point (no coclass in ExportToolOM.tlb, no VGCore member returns it).",
+    "CreateFilterSettings returns IDispatch: the format interface is late-bound.",
+    "Whether ScaleX / ScaleY are percentages or factors is not harvested; read a value set in the docker before writing one (unverified)."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet fs = qe.CreateFilterSettings(cdrPNG)\nfs.Units = cdrPixel\nfs.Resolution = 144\nfs.MaintainAspectRatio = True\nfs.EmbedColorProfile = True",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IGIFFilterSettings",
+   "id": "class:IGIFFilterSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IGIFFilterSettings",
+   "status": "current",
+   "summary": "GIF settings for the Export docker: the base size / resolution / profile settings plus palette, number of colours, dithering and its amount, transparency and interlacing. The result is an indexed-colour GIF: small flat web graphics, simple icons, line art.",
+   "use_for": [
+    "small flat-colour web graphics and icons with a transparent background",
+    "limited-palette exports for legacy email or banner slots"
+   ],
+   "avoid": [
+    "photos, gradients and soft shadows: GIF banding and dither noise; use JPG or PNG settings",
+    "semi-transparent edges: GIF transparency is on/off, use PNG"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "GIFSaveOptions",
+    "AI": "ExportOptionsGIF"
+   },
+   "how": "ExportToolLib dispinterface, inherits IFilterSettings. Created with IQuickExport.CreateFilterSettings(cdrGIF), configured, then attached with IQuickExportSettings.SetFormat.",
+   "key_members": [
+    {
+     "name": "NumColors",
+     "use": "palette size; fewer colours = smaller file, more banding"
+    },
+    {
+     "name": "Palette",
+     "use": "palette selection as a string (accepted values not harvested)"
+    },
+    {
+     "name": "Dithering",
+     "use": "dither method as a long (values not harvested; PNG's Dithering uses cdrDitherType)"
+    },
+    {
+     "name": "DitheringAmount",
+     "use": "strength of the dither pattern"
+    },
+    {
+     "name": "Transparency",
+     "use": "export with a transparent background (on/off, no partial alpha)"
+    },
+    {
+     "name": "Interlaced",
+     "use": "interlaced GIF that loads progressively"
+    },
+    {
+     "name": "Resolution",
+     "use": "output dpi (from IFilterSettings)"
+    },
+    {
+     "name": "Units",
+     "use": "cdrUnit for output size (from IFilterSettings)"
+    },
+    {
+     "name": "MaintainAspectRatio",
+     "use": "lock X/Y scale (from IFilterSettings)"
+    }
+   ],
+   "gotchas": [
+    "Dithering is a long here but cdrDitherType on IPNGFilterSettings; whether the numbers match cdrDitherType is unverified.",
+    "Palette is a free string; an unknown name may be ignored or fail (unverified).",
+    "Same reachability problem as every ExportToolLib object: no harvested way to get the IQuickExport that creates it."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet gif = qe.CreateFilterSettings(cdrGIF)\ngif.NumColors = 64\ngif.Transparency = True\ngif.Interlaced = False\nSet st = qe.CreateSettings: st.SetFormat gif: st.Suffix = \"_web\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed numbers not in the batch (256 colours, 1-bit)"
+   }
+  },
+  {
+   "name": "IJPGFilterSettings",
+   "id": "class:IJPGFilterSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IJPGFilterSettings",
+   "status": "current",
+   "summary": "JPEG settings for the Export docker: base size / resolution / profile settings plus colour mode, sub-format, quality, blur (smoothing before compression), progressive, optimized and interlaced flags, an overprint flag and whether document or proof colour settings are used. Produces a lossy, opaque JPEG.",
+   "use_for": [
+    "photo-heavy social posts and web banners at a set quality",
+    "CMYK or greyscale JPEG proofs for print review (ColorMode)"
+   ],
+   "avoid": [
+    "logos, text-heavy or flat-colour art: JPEG ringing around edges; use PNG",
+    "anything needing transparency: JPEG has none, use PNG or WEBP"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "JPEGSaveOptions",
+    "AI": "ExportForScreensOptionsJPEG"
+   },
+   "how": "ExportToolLib dispinterface, inherits IFilterSettings. Created with IQuickExport.CreateFilterSettings(cdrJPEG), configured, attached with IQuickExportSettings.SetFormat. ColorMode takes cdrColorMode (e.g. cdrRGB, cdrCMYK, cdrGreyScale); ColorSettings takes cdrColorSettings (cdrDocument or cdrProof).",
+   "key_members": [
+    {
+     "name": "QualityAmount",
+     "use": "compression quality; higher = better image, bigger file (range not harvested)"
+    },
+    {
+     "name": "ColorMode",
+     "use": "cdrColorMode of the output: RGB, CMYK or greyscale"
+    },
+    {
+     "name": "BlurAmount",
+     "use": "smoothing applied before compression to cut file size and blockiness"
+    },
+    {
+     "name": "Progressive",
+     "use": "progressive JPEG that loads in passes"
+    },
+    {
+     "name": "Optimize",
+     "use": "optimized encoding for a smaller file"
+    },
+    {
+     "name": "Subformat",
+     "use": "JPEG sub-format selector as a long (values not harvested)"
+    },
+    {
+     "name": "ColorSettings",
+     "use": "cdrColorSettings: convert with the document's colour settings or the proof settings"
+    },
+    {
+     "name": "Interlaced",
+     "use": "interlace flag (how it differs from Progressive for JPEG is unclear)"
+    },
+    {
+     "name": "Overprint",
+     "use": "overprint flag; its effect on a JPEG export is unclear (unverified)"
+    },
+    {
+     "name": "Resolution",
+     "use": "output dpi (from IFilterSettings)"
+    },
+    {
+     "name": "EmbedColorProfile",
+     "use": "embed the colour profile (from IFilterSettings)"
+    }
+   ],
+   "gotchas": [
+    "QualityAmount and BlurAmount ranges are not harvested; probe once and read back before batch use.",
+    "Subformat is a bare long; mapping to the Export dialog's sub-format choices is unverified.",
+    "CMYK JPEGs display oddly in browsers and many social uploaders: keep cdrRGB for web.",
+    "No harvested entry point to the IQuickExport that creates this object."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet jpg = qe.CreateFilterSettings(cdrJPEG)\njpg.ColorMode = cdrRGB\njpg.QualityAmount = 85\njpg.Progressive = True: jpg.Optimize = True\njpg.Resolution = 72\nSet st = qe.CreateSettings: st.SetFormat jpg",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPNGFilterSettings",
+   "id": "class:IPNGFilterSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IPNGFilterSettings",
+   "status": "current",
+   "summary": "PNG settings for the Export docker: base size / resolution / profile settings plus colour mode (full RGB, palette, greyscale, black-and-white), palette and colour count for paletted output, dither type and amount, transparency and interlacing. Lossless output, with a transparent background when Transparency is on.",
+   "use_for": [
+    "logo and icon exports with a transparent background",
+    "UI and social assets at 1x / 2x with crisp text and flat colour",
+    "small paletted PNGs for web (ColorMode palette + NumColors)"
+   ],
+   "avoid": [
+    "large photographic images: files get big, use JPG or WEBP settings"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "PNGSaveOptions",
+    "AI": "ExportForScreensOptionsPNG24"
+   },
+   "how": "ExportToolLib dispinterface, inherits IFilterSettings. Created with IQuickExport.CreateFilterSettings(cdrPNG), configured, attached with IQuickExportSettings.SetFormat. ColorMode takes cdrColorMode (cdrRGB, cdrPalette, cdrGreyScale, cdrBlackAndWhite ...); Dithering takes cdrDitherType (cdrDitherNone, cdrDitherOrdered, cdrDitherJarvis, cdrDitherStucki, cdrDitherFloyd).",
+   "key_members": [
+    {
+     "name": "ColorMode",
+     "use": "cdrColorMode: cdrRGB for full colour, cdrPalette for indexed, greyscale or black-and-white"
+    },
+    {
+     "name": "Transparency",
+     "use": "transparent background instead of the page colour"
+    },
+    {
+     "name": "NumColors",
+     "use": "colour count when the mode is paletted"
+    },
+    {
+     "name": "Palette",
+     "use": "palette selection as a string (accepted values not harvested)"
+    },
+    {
+     "name": "Dithering",
+     "use": "cdrDitherType used when reducing colours"
+    },
+    {
+     "name": "DitheringAmount",
+     "use": "strength of the dither"
+    },
+    {
+     "name": "Interlaced",
+     "use": "interlaced PNG that loads progressively (bigger file)"
+    },
+    {
+     "name": "Resolution",
+     "use": "output dpi (from IFilterSettings)"
+    },
+    {
+     "name": "Units",
+     "use": "cdrUnit of the output size (from IFilterSettings)"
+    },
+    {
+     "name": "EmbedColorProfile",
+     "use": "embed the colour profile (from IFilterSettings)"
+    }
+   ],
+   "gotchas": [
+    "Palette, NumColors and Dithering only matter in a paletted ColorMode (expected; unverified).",
+    "Dithering here is cdrDitherType, but on IGIFFilterSettings it is a plain long.",
+    "No harvested entry point to the IQuickExport that creates this object."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet png = qe.CreateFilterSettings(cdrPNG)\npng.ColorMode = cdrRGB\npng.Transparency = True\npng.Units = cdrPixel: png.Resolution = 144\nSet st = qe.CreateSettings: st.SetFormat png: st.Suffix = \"@2x\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IQuickExport",
+   "id": "class:IQuickExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IQuickExport",
+   "status": "current",
+   "summary": "Automation interface behind CorelDRAW's Export docker (Window > Dockers > Export), the batch 'quick export': attach one or more export recipes (format, suffix, title) to individual objects, set an output folder, and export everything registered in one go, much like Illustrator's Asset Export / Export for Screens.",
+   "use_for": [
+    "export every logo variant or icon on a sheet to PNG / JPG / WEBP at several sizes in one pass",
+    "social asset kits: one object, many formats and suffixes"
+   ],
+   "avoid": [
+    "pipelines that need a working entry point today: loop IVGDocument.ExportBitmap / ExportEx over shapes or pages instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Asset Export",
+    "PS": "File/Export/Export As"
+   },
+   "how": "ExportToolLib (ExportToolOM.tlb) dispinterface, inherits IDispatch. The harvest shows no coclass in ExportToolOM.tlb and no VGCore member that returns IQuickExport, so how a script obtains one is unknown (unverified; possibly only inside the docker itself). Once held: Source(shape) returns that object's IQuickExportItem; CreateSettings makes an IQuickExportSettings; CreateFilterSettings(cdrFilter) makes the per-format settings object; OutputFolder sets the destination; ExportAll writes all registered settings.",
+   "key_members": [
+    {
+     "name": "OutputFolder",
+     "use": "destination folder for exported files"
+    },
+    {
+     "name": "Source",
+     "use": "parameterized read-only property: Source(Shape) returns the IQuickExportItem holding that object's export settings"
+    },
+    {
+     "name": "CreateSettings",
+     "use": "new IQuickExportSettings (one export recipe)"
+    },
+    {
+     "name": "CreateFilterSettings",
+     "use": "new format settings object for a cdrFilter (cdrPNG, cdrJPEG, cdrGIF, cdrWEBP), returned as IDispatch"
+    },
+    {
+     "name": "ExportAll",
+     "use": "export every registered setting"
+    }
+   ],
+   "gotchas": [
+    "No harvested way to obtain the object: no creatable coclass in ExportToolLib and no Application / Document member returns it.",
+    "Source is a parameterized property, not a method; in Python win32com it may need the property-call form (unverified).",
+    "ExportAll exports all registered settings ('Export all the registred settings'), not only the ones added in this run; registrations may persist with the document (unverified).",
+    "CreateFilterSettings returns IDispatch: format properties are late-bound."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nqe.OutputFolder = \"C:\\out\\assets\"\nSet png = qe.CreateFilterSettings(cdrPNG): png.Resolution = 144: png.Transparency = True\nSet st = qe.CreateSettings\nst.SetFormat png: st.Suffix = \"@2x\": st.Enabled = True\nqe.Source(ActiveShape).AddSettings st\nqe.ExportAll",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IQuickExportItem",
+   "id": "class:IQuickExportItem",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IQuickExportItem",
+   "status": "current",
+   "summary": "The list of quick-export recipes attached to one object in the Export docker: add, read, replace or remove its export settings, and count or enumerate them.",
+   "use_for": [
+    "give one logo or icon several export recipes (PNG 1x, PNG 2x, JPG)",
+    "audit or clear the export recipes already attached to an object"
+   ],
+   "avoid": [
+    "using it without a confirmed way to get IQuickExport: there is no harvested entry point"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Asset"
+   },
+   "how": "ExportToolLib dispinterface. Returned by IQuickExport.Source(Shape). AddSettings attaches an IQuickExportSettings (parameter optional, default 0); Settings(Index) gets or replaces one; RemoveSettings(Index) deletes one; Count and _NewEnum (For Each) enumerate.",
+   "key_members": [
+    {
+     "name": "AddSettings",
+     "use": "attach an IQuickExportSettings to the object (Settings optional, default 0)"
+    },
+    {
+     "name": "Settings",
+     "use": "get or set the recipe at Index"
+    },
+    {
+     "name": "RemoveSettings",
+     "use": "remove the recipe at Index"
+    },
+    {
+     "name": "Count",
+     "use": "read-only number of recipes on the object"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "read-only enumerator so For Each works"
+    }
+   ],
+   "gotchas": [
+    "Whether Index is 0- or 1-based is not harvested (VGCore collections are 1-based; unverified here).",
+    "What AddSettings does when called without an argument (default 0) is not harvested; presumably adds a default recipe (unverified).",
+    "Remove from the highest index down when deleting in a loop, or indexes shift."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet it = qe.Source(ActiveShape)\nFor Each st In it\n  Debug.Print st.Title, st.Suffix, st.Enabled\nNext\nDebug.Print it.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IQuickExportSettings",
+   "id": "class:IQuickExportSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IQuickExportSettings",
+   "status": "current",
+   "summary": "One export recipe in the Export docker: its format settings object (GetFormat / SetFormat), the title and suffix used to build the exported file name, an on/off switch, and Export to run just this recipe.",
+   "use_for": [
+    "define a reusable recipe such as 'PNG @2x, transparent' for many objects",
+    "re-export a single recipe after a design change without running ExportAll"
+   ],
+   "avoid": [
+    "using it without a confirmed way to get IQuickExport: there is no harvested entry point"
+   ],
+   "confidence": "medium",
+   "how": "ExportToolLib dispinterface. Made with IQuickExport.CreateSettings or read with IQuickExportItem.Settings(Index). SetFormat takes the IDispatch from IQuickExport.CreateFilterSettings(cdrFilter); GetFormat returns it back.",
+   "key_members": [
+    {
+     "name": "SetFormat",
+     "use": "attach the format settings object (IPNGFilterSettings, IJPGFilterSettings ...)"
+    },
+    {
+     "name": "GetFormat",
+     "use": "read the attached format settings object (IDispatch)"
+    },
+    {
+     "name": "Suffix",
+     "use": "text appended to the exported file name (e.g. @2x)"
+    },
+    {
+     "name": "Title",
+     "use": "title used for the exported file name"
+    },
+    {
+     "name": "Enabled",
+     "use": "switch the recipe on or off without deleting it"
+    },
+    {
+     "name": "Export",
+     "use": "export with just this recipe"
+    }
+   ],
+   "gotchas": [
+    "How Title and Suffix combine into the final file name (and what Title defaults to) is not harvested (unverified).",
+    "GetFormat returns IDispatch: cast late-bound to the format interface.",
+    "Changing the object returned by GetFormat may not apply until SetFormat is called again (unverified)."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet st = qe.CreateSettings\nSet webp = qe.CreateFilterSettings(cdrWEBP)\nst.SetFormat webp\nst.Title = \"logo\": st.Suffix = \"_web\": st.Enabled = True\nst.Export",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IWEBPFilterSettings",
+   "id": "class:IWEBPFilterSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "ExportToolLib/IWEBPFilterSettings",
+   "status": "current",
+   "summary": "WebP settings for the Export docker: base size / resolution / profile settings plus colour mode, lossy or lossless compression, transparency, a quality amount and a compression ratio. Gives small web images that can keep an alpha background.",
+   "use_for": [
+    "lightweight website hero images and product shots",
+    "web graphics that need transparency at a smaller size than PNG"
+   ],
+   "avoid": [
+    "print or CMYK output: WebP is a web format; use TIFF or PDF from ExportEx",
+    "destinations that reject WebP (some social uploaders, older email clients): use JPG or PNG settings"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "ExportForScreensOptionsWebP"
+   },
+   "how": "ExportToolLib dispinterface, inherits IFilterSettings. Created with IQuickExport.CreateFilterSettings(cdrWEBP), configured, attached with IQuickExportSettings.SetFormat.",
+   "key_members": [
+    {
+     "name": "Lossiness",
+     "use": "lossy vs lossless compression (which bool value means lossy is not harvested)"
+    },
+    {
+     "name": "QualityAdvancedAmount",
+     "use": "quality amount for the compression (range not harvested)"
+    },
+    {
+     "name": "CompressionRatio",
+     "use": "compression ratio / effort value (meaning and range not harvested)"
+    },
+    {
+     "name": "Transparency",
+     "use": "keep a transparent background (alpha)"
+    },
+    {
+     "name": "ColorMode",
+     "use": "cdrColorMode of the output"
+    },
+    {
+     "name": "Resolution",
+     "use": "output dpi (from IFilterSettings)"
+    },
+    {
+     "name": "Units",
+     "use": "cdrUnit of the output size (from IFilterSettings)"
+    }
+   ],
+   "gotchas": [
+    "Lossiness is a bool with no description: True presumably means lossy (unverified). Read the value the docker writes before relying on it.",
+    "QualityAdvancedAmount and CompressionRatio ranges and their interaction are not harvested.",
+    "No harvested entry point to the IQuickExport that creates this object."
+   ],
+   "example": "' qe = an IQuickExport (entry point not harvested)\nSet webp = qe.CreateFilterSettings(cdrWEBP)\nwebp.Transparency = True\nwebp.QualityAdvancedAmount = 80\nwebp.Resolution = 72\nSet st = qe.CreateSettings: st.SetFormat webp",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "AIExport",
+   "id": "class:AIExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterAILib/AIExport",
+   "status": "current",
+   "summary": "Creatable coclass in FilterAILib: the Adobe Illustrator (.ai) export filter. It has no members of its own; the AI-specific options (target Illustrator version, text as curves, transparency, spot colours, simulated outlines/fills, placed images, preview, colour profile) are on its default interface IAIExport.",
+   "use_for": [
+    "handing CorelDRAW artwork to an Illustrator user or a print shop that asks for .ai"
+   ],
+   "avoid": [
+    "looking for options on the coclass: they are on IAIExport",
+    "files that must keep CorelDRAW-only effects editable: they are converted or flattened in AI export; send PDF or the .cdr instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "IllustratorSaveOptions"
+   },
+   "how": "Coclass {DAEDEA02-0CB9-11D4-B6B4-009027575A12}, flag cancreate, default interface IAIExport. Obtained as the filter object returned by IVGDocument.ExportEx(FileName, cdrAI, Range, Options); set its IAIExport properties late-bound, then Finish.",
+   "key_members": [
+    {
+     "name": "IAIExport",
+     "use": "default interface (extra.implements): Version, TextAsCurves, PreserveTransparency, ConvertSpotColors, SimulateOutlines, SimulateFills, IncludePlacedImages, IncludePreview, EmbedColorProfile, Finish"
+    }
+   ],
+   "gotchas": [
+    "No members of its own (members_on = IAIExport).",
+    "ExportEx's declared return type is ICorelExportFilter, so early-bound code does not see the AI options; use Object / late binding.",
+    "Use the cdrAI filter constant; cdrAI9 is import-only."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.ai\", cdrAI, cdrCurrentPage)   ' the AIExport object\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IAIExport",
+   "id": "class:IAIExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterAILib/IAIExport",
+   "status": "current",
+   "summary": "Options of the Adobe Illustrator (.ai) export filter: which Illustrator version to write (AiVersion, from Illustrator 3 up to CS6) and how CorelDRAW content is translated - text to curves, transparency preserved, spot colours converted, outlines and fills simulated as plain objects, placed images included, preview and colour profile embedded - plus the base filter members (Finish, ShowDialog ...).",
+   "use_for": [
+    "send a logo or layout to an Illustrator user with text outlined (TextAsCurves) so fonts cannot go missing",
+    "older-AI-version files for legacy cutters, plotters and sign shops",
+    "keep spot colours as spots for a print vendor (ConvertSpotColors = False)"
+   ],
+   "avoid": [
+    "round-tripping editable CorelDRAW effects: they are simulated or flattened; send PDF or .cdr",
+    "relying on live type in the .ai: turn TextAsCurves on unless the recipient has the fonts"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "IllustratorSaveOptions"
+   },
+   "how": "FilterAILib dispinterface (dual), inherits ICorelExportFilter. Set f = ActiveDocument.ExportEx(path, cdrAI, range, options): the returned filter is the AIExport object; set these properties (late-bound), then f.Finish writes the file. Version takes AiVersion (aiVersion3JP ... aiVersionCS6).",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "Illustrator version written (AiVersion, newest aiVersionCS6)"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "convert text to curves so no fonts are needed"
+    },
+    {
+     "name": "PreserveTransparency",
+     "use": "keep transparency instead of flattening it"
+    },
+    {
+     "name": "ConvertSpotColors",
+     "use": "convert spot colours to process (False keeps them as spots)"
+    },
+    {
+     "name": "SimulateOutlines",
+     "use": "turn outlines the format cannot express into plain objects (unverified which outlines)"
+    },
+    {
+     "name": "SimulateFills",
+     "use": "turn fills the format cannot express into plain objects (unverified which fills)"
+    },
+    {
+     "name": "IncludePlacedImages",
+     "use": "include placed bitmaps in the .ai"
+    },
+    {
+     "name": "IncludePreview",
+     "use": "embed a preview image"
+    },
+    {
+     "name": "EmbedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "hidden in the typelib, no description; presumably use the colour profile when converting colours (unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "write the file with the options set"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "show the AI export dialog (modal; avoid in pipelines)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has a dialog"
+    }
+   ],
+   "gotchas": [
+    "The newest AiVersion value is aiVersionCS6: the .ai is written to a CS6-or-older format, so Illustrator features newer than that cannot be carried (unverified which CorelDRAW content is affected).",
+    "Early-bound code typed ICorelExportFilter (ExportEx's return type) will not see these properties; use late binding.",
+    "Use cdrAI, not cdrAI9 (import-only, shares 1333 with cdrPDF).",
+    "Every property description says 'Gets ...' but none is read-only in the typelib; read back after setting to confirm (unverified).",
+    "ShowDialog is modal and hangs an outside COM call."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.ai\", cdrAI, cdrCurrentPage)\nf.Version = aiVersionCS6\nf.TextAsCurves = True\nf.ConvertSpotColors = False\nf.IncludePlacedImages = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha: dropped the claim that current Illustrator opens a CS6 .ai as legacy artwork (it does not; that prompt is for pre-CS files) and the invented '2026'; UseColorProfile marked hidden"
+   }
+  },
+  {
+   "name": "BMPExport",
+   "id": "class:BMPExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterBMPLib/BMPExport",
+   "status": "current",
+   "summary": "Creatable coclass in FilterBMPLib: the Windows Bitmap (.bmp) export filter. No members of its own; its one format option (Version) and the base filter members are on IBMPExport.",
+   "use_for": [
+    "BMP output for legacy Windows tools, embroidery or machine software that only reads .bmp"
+   ],
+   "avoid": [
+    "web or print delivery: use PNG, JPG or TIFF",
+    "looking for options on the coclass: they are on IBMPExport"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "BMPSaveOptions"
+   },
+   "how": "Coclass {DAEDE602-0CB9-11D4-B6B4-009027575A12}, flag cancreate, default interface IBMPExport. Obtained as the filter returned by IVGDocument.ExportBitmap(FileName, cdrBMP, ...) or ExportEx(FileName, cdrBMP, ...), then Finish.",
+   "key_members": [
+    {
+     "name": "IBMPExport",
+     "use": "default interface (extra.implements): Version plus Reset, Finish, HasDialog, ShowDialog, ExternalSettings"
+    }
+   ],
+   "gotchas": [
+    "No members of its own (members_on = IBMPExport).",
+    "Pixel size, resolution, colour depth and anti-aliasing are not on this filter: pass them to ExportBitmap or in IVGStructExportOptions."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\plate.bmp\", cdrBMP, cdrCurrentPage, cdrRGBColorImage, 1920, 1080, 96, 96)\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IBMPExport",
+   "id": "class:IBMPExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterBMPLib/IBMPExport",
+   "status": "current",
+   "summary": "Options of the Windows Bitmap (.bmp) export filter: only the BMP Version (BmpVersion: standard or enhanced) on top of the base filter members (Finish, Reset, ShowDialog, HasDialog, ExternalSettings). Everything else about the bitmap comes from the ExportBitmap arguments.",
+   "use_for": [
+    "scripted BMP export for legacy machine or embroidery software",
+    "choose the standard BMP variant for tools that cannot read newer headers"
+   ],
+   "avoid": [
+    "web, social or print deliverables: use PNG, JPG or TIFF"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "BMPSaveOptions"
+   },
+   "how": "FilterBMPLib dispinterface (dual), inherits ICorelExportFilter. Returned by IVGDocument.ExportBitmap(FileName, cdrBMP, Range, ImageType, Width, Height, ResolutionX, ResolutionY, ...) or ExportEx; set Version (BmpVersion: bmpStandard, bmpEnhanced), then Finish.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "BmpVersion: bmpStandard or bmpEnhanced (what 'enhanced' changes is not documented in the typelib)"
+    },
+    {
+     "name": "Finish",
+     "use": "write the file"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has a dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "show the BMP options dialog (modal)"
+    },
+    {
+     "name": "Reset",
+     "use": "reset the filter (presumably to defaults; unverified)"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "read-only settings string, hidden in the typelib (meaning undocumented)"
+    }
+   ],
+   "gotchas": [
+    "Size, resolution, ImageType (colour depth), anti-aliasing and transparency are ExportBitmap arguments (defaults ResolutionX/Y 72, ImageType 4), not filter properties.",
+    "What bmpEnhanced writes differently from bmpStandard is not harvested; test the target software with both (unverified).",
+    "Early-bound ICorelExportFilter hides Version; use late binding."
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\plate.bmp\", cdrBMP, cdrCurrentPage, cdrRGBColorImage, 1920, 1080, 96, 96)\nf.Version = bmpStandard\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "ExternalSettings: noted it is hidden in the typelib"
+   }
+  }
+ ]
+}

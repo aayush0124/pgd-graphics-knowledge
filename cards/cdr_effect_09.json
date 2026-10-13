@@ -1,0 +1,794 @@
+{
+ "cards": [
+  {
+   "name": "Dust and Scratch",
+   "id": "b2e22b39-eb2b-4847-a3ed-fd14b8c79741",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Correction/Dust and Scratch",
+   "status": "current",
+   "summary": "Noise clean-up: within a Radius of each pixel it smooths away specks and thin lines that differ from their neighbours by more than the Threshold, leaving broader edges alone. Pushed hard (big radius, low threshold) it melts fine detail into a flat, median-filtered, slightly painterly smear.",
+   "use_for": [
+    "removing dust specks and hairline scratches from scanned photos and prints",
+    "cleaning compression noise from a low-quality video frame or web image before placing it in a layout",
+    "despeckling a bitmap before PowerTRACE so the trace has fewer stray nodes",
+    "light smoothing of skin or busy texture on a placed photo"
+   ],
+   "avoid": [
+    "A large Radius with a low Threshold wipes real detail: thin type, hairlines, eyelashes and jewellery vanish (on the test plate the thin white hairlines in the bottom strip vanish first and the corners of the white 'PGD 2026' type round off); raise Threshold until only the specks disappear.",
+    "It cannot rebuild scratches or tears wider than the radius; retouch those with a clone or healing tool in Corel PHOTO-PAINT or Photoshop.",
+    "Not a general blur and not a sharpener: for overall softening use a Blur effect, and sharpen afterwards with Unsharp Mask if edges went soft.",
+    "The scripted path needs a bitmap shape (Shape.Bitmap); convert vector art to a bitmap first, or apply from the Effects menu where it stays a non-destructive effect."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Dust & Scratches"
+   },
+   "look": [
+    "despeckle",
+    "dust removal",
+    "scratch removal",
+    "noise reduction",
+    "median smooth",
+    "cleaned scan",
+    "smeared detail"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "Size in pixels of the neighbourhood searched for specks; flaws narrower than about the radius are removed. Bigger = stronger, blotchier smoothing that also eats real detail.",
+     "typical": "1-3 for real dust (default 2); 8-20 only as a stylised smear"
+    },
+    {
+     "name": "Threshold",
+     "does": "How different (0-255 levels) a pixel must be from its neighbours before it is treated as a speck. Low = more pixels replaced, stronger clean-up; high = only very contrasty specks are touched.",
+     "typical": "20-64 (default 64); near 0 smooths everything inside the radius"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 10,
+    "Threshold": 8
+   },
+   "pairs_with": [
+    "Effects/Sharpen/Unsharp Mask (restore edge crispness after the clean-up)",
+    "Bitmaps > Outline Trace / PowerTRACE (trace the despeckled bitmap)",
+    "Effects/Noise/Tune Noise (compare other noise filters side by side)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Dust and Scratch\", \"DustScratchEffect Radius=10,Threshold=8\")  (command format proven on other effects, not yet applied for this one; ApplyBitmapEffect returns OK even for a wrong string, so compare pixels before/after). Menu: Effects > Correction > Dust and Scratch (GUID b2e22b39-eb2b-4847-a3ed-fd14b8c79741).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low: one median-style pass; slows with a large Radius on big bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the test plate has 1-6 px hairlines and large 'PGD 2026' type, not small type; non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/ffa412bc2d11.png",
+    "crop": "gallery/cdr_effect/ffa412bc2d11_1to1.png",
+    "note": "1:1 crop: the thin hairlines vanish and the thicker ones merge into one white bar at the bottom, the swatch corners round off and the panel detail smooths into blobs while broad areas stay put: the hard-pushed median clean-up described (Radius 10 / Threshold 8).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/ffa412bc2d11.png",
+     "note": "Fine thin features are smoothed away: the white PGD type melts into unreadable blobs and the bottom hairlines merge into one bar, while the mid-tones and stripes only soften slightly (body diff about 1), the median-like clean-up described, pushed hard at Radius 10 / Threshold 8.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Tune Sharpen",
+   "id": "6feed4b4-f161-4914-baa2-77c5acba42e2",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Correction/Tune Sharpen",
+   "status": "needs_input",
+   "summary": "A side-by-side 'tune' dialog for sharpening: it previews thumbnails of four sharpen filters (Unsharp Mask, Adaptive Unsharp, Sharpen, Directional Sharpen) and you click the variant you like, step by step, to build up crisper edges and local contrast. How exactly the Percentage and Background sliders feed those thumbnails was not confirmed by the harvest.",
+   "use_for": [
+    "quickly comparing sharpening methods on a placed product shot or portrait",
+    "crisping a soft video frame or upscaled image before print",
+    "restoring edge snap after Dust and Scratch or resampling"
+   ],
+   "avoid": [
+    "Over-sharpening a soft or noisy image (like the test plate's video frame) brings out halos, JPEG blocks and grain; stop at the first step that looks crisp.",
+    "Scripted use is uncertain: the filter picks are enum keys (ImageNode_UnsharpMask, ImageNode_AdaptiveUnsharp, ImageNode_Sharpen, ImageNode_DirectionalSharpen) with no harvested values, so a script cannot reliably choose one and may change nothing; for a repeatable scripted sharpen use Effects > Sharpen > Unsharp Mask with explicit Percentage / Radius / Threshold.",
+    "Sharpening cannot restore real focus; a badly blurred photo stays blurred, just with crunchy edges.",
+    "The scripted path needs a bitmap shape (Shape.Bitmap).",
+    "scripts: no scripted form applies it (2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route): TuneSharpnessEffect accepted every form and changed no pixel); open the dialog (menu route) and pick the thumbnails by hand"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Smart Sharpen"
+   },
+   "look": [
+    "sharpen",
+    "crisp edges",
+    "edge contrast",
+    "unsharp mask",
+    "detail boost",
+    "clarity"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "Strength of each sharpening step the thumbnails apply (by analogy with Tune Blur's Step; not confirmed). Higher = crisper edges and more halo.",
+     "typical": "10 (default); 30-100 for a clearly visible step"
+    },
+    {
+     "name": "Background",
+     "does": "Meaning not confirmed by the harvest; probably limits how much flat, low-contrast background is sharpened (a threshold-like control). Leave at the default unless testing.",
+     "typical": "50 (default)"
+    },
+    {
+     "name": "Unsharp Mask",
+     "does": "Thumbnail / node for the Unsharp Mask variant: the dialog pick, not a numeric setting (values not harvested).",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "Adaptive Unsharp",
+     "does": "Thumbnail / node for the Adaptive Unsharp variant (sharpens by local edge strength).",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "Sharpen",
+     "does": "Thumbnail / node for the plain Sharpen variant.",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "Directional Sharpen",
+     "does": "Thumbnail / node for the Directional Sharpen variant (sharpens along edge direction, fewer halos).",
+     "typical": "pick in the dialog"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Background": 50
+   },
+   "pairs_with": [
+    "Dust and Scratch (clean first, then sharpen)",
+    "Effects/Sharpen/Unsharp Mask (scriptable, explicit control)",
+    "Effects/Blur/Tune Blur (the matching tune dialog for softening)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Tune Sharpen\", \"TuneSharpnessEffect Percentage=100,Background=50\")  (untested; the ImageNode_* filter picks have no harvested values, so this may apply nothing visible). Menu: Effects > Correction > Tune Sharpen (GUID 6feed4b4-f161-4914-baa2-77c5acba42e2).",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low-medium: the dialog renders four live thumbnails; the sharpen itself is fast",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings/scripting Percentage 60 -> 100 (harvested max; a sharpen step on the soft photo plate needs the strongest setting to read, as on the Tune Blur card); non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "Untested: no frame (failed.json); the 2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route) found no scripted form: TuneSharpnessEffect accepted every form and changed no pixel, so the look the card describes is not shown by any render; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": "harness, not the effect: the dialog (menu GUID) is the only route, so nothing a script sends can show the effect; untested, not wrong, and no re-render can fix it.",
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'TuneSharpnessEffect Percentage=100,Background=50'\"; harness, not the effect: no working scripted route was found, so the effect itself is untested; renderer: CrlFX.dll lists indexed keys (ListSize, Effect_%d, Percentage_%d, Background_%d, MaskType_%d), not probed yet (live chain not_done); with no variation picked the command changed nothing.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Indexed keys (Percentage_%d, Background_%d, MaskType_%d) are untried, so rerender stays true."
+     }
+    }
+   }
+  },
+  {
+   "name": "Art Style",
+   "id": "a625752d-50ad-4c1a-8ea2-2b45c67db957",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Art Style",
+   "status": "current",
+   "summary": "Machine-learning (neural network) style transfer: re-renders the bitmap in the manner of a chosen painting or artwork style, so a photo becomes a painted or illustrated image with that style's brushwork and palette while keeping its composition. The harvest found no dialog parameters it could bind, so the style choice and any strength controls are not described here.",
+   "use_for": [
+    "turning a stock photo into a painted illustration for a poster background",
+    "giving a set of mixed photos one artistic look across a brochure or social series",
+    "quick 'artwork' variants of a hero image for mood boards"
+   ],
+   "avoid": [
+    "Faces, logos and small text get warped by the style; do not use on photos where likeness or legible signage matters (press or news images), or mask those areas out.",
+    "The scripted path can only send the bare string 'ArtStyleEffect' with no parameters: untested for this effect, and the one bare effect-id string tried in the harvest apply tests (InvertEffect) changed no pixels. At best a script gets whatever style the dialog last used; choose the style from the menu dialog.",
+    "Neural processing is heavy on big bitmaps; resample to the output size first.",
+    "For a controllable, repeatable painterly look use Effects > Art Strokes (Impressionist, Watercolor ...) or Photoshop's Oil Paint instead."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Neural Filters"
+   },
+   "look": [
+    "style transfer",
+    "AI art",
+    "painterly",
+    "painted photo",
+    "artistic",
+    "illustration look"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Effects/Correction/Dust and Scratch (clean noise first so the style does not amplify it)",
+    "PowerClip (keep the stylised photo inside a shape)",
+    "Transparency tool (blend the stylised copy over the original)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Art Style\", \"ArtStyleEffect\")  (no parameters; untested for this effect, and the only bare effect-id string in the harvest apply tests changed nothing, so check pixels before/after). Menu: Effects > Creative > Art Style (GUID a625752d-50ad-4c1a-8ea2-2b45c67db957).",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "high: neural-network inference, seconds to minutes on a large bitmap",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid/scripting: bare 'ArtStyleEffect' string flagged as unproven (the only bare-id apply test, InvertEffect, changed no pixels); non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/b9049917f94a.png",
+    "note": "The photo is re-rendered as a painted illustration: flat facets with dark contour lines, the palette pushed to grey-blue with the stripe reds kept, the swatches turned into soft painted pastels, the style-transfer painting look described (in the dialog's stored style).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Crystalize",
+   "id": "44eb1121-92fa-4b82-a570-e42b89fe2aa5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Crystalize",
+   "status": "current",
+   "summary": "Breaks the image into irregular polygonal cells, each filled with one averaged colour, like looking through crystal facets; small Size gives a fine faceted texture, large Size a bold abstract patchwork of flat polygons with no outlines.",
+   "use_for": [
+    "abstract faceted background built from a photo",
+    "abstracting a busy photo behind headline text",
+    "geometric / low-poly style poster texture",
+    "stylised transition or title frames"
+   ],
+   "avoid": [
+    "Destroys detail: faces, logos and small type become blobs at large Size; mask them out or apply to a duplicate.",
+    "Cells have no outlines; for leaded cells use Effects > Creative > Stained Glass, for regular square blocks use Effects > Distort > Pixelate.",
+    "The menu says 'Crystalize' but the scripted effect id is CrystallizeEffect (double l); the scripted path needs a bitmap shape."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Crystallize",
+    "AI": "Effect/Pixelate/Crystallize"
+   },
+   "look": [
+    "crystallize",
+    "faceted",
+    "polygon cells",
+    "low poly",
+    "abstract mosaic",
+    "shattered"
+   ],
+   "params": [
+    {
+     "name": "Size",
+     "does": "Average size of the crystal cells; larger = fewer, bigger flat polygons and less recognisable image.",
+     "typical": "5-15 subtle texture, 30-60 bold abstract (default 10)"
+    }
+   ],
+   "demo_settings": {
+    "Size": 35
+   },
+   "pairs_with": [
+    "Stained Glass (same cells with solder lines)",
+    "Gaussian Blur afterwards to soften cell edges for a background",
+    "Transparency tool (fade the faceted copy over the original)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Crystalize\", \"CrystallizeEffect Size=35\")  (command format proven on other effects, not yet applied for this one). Menu: Effects > Creative > Crystalize (GUID 44eb1121-92fa-4b82-a570-e42b89fe2aa5).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/1865fdf352ff.png",
+    "note": "The plate is broken into large irregular polygon cells of flat averaged colour with no outlines; at Size 35 the cells are about 100 px, so the photo dissolves into an abstract patchwork, while the swatches still read as coloured cells along the bottom.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Fabric",
+   "id": "81298d36-0afa-4814-8bf8-02d2902b56b4",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Fabric",
+   "status": "current",
+   "summary": "Re-renders the image as textile: depending on Style it becomes crochet, needlepoint stitches, quilt patches, strings or tissue-paper collage, each element taking the colour of the image beneath. Size sets the stitch / patch size, Complete how much of the image is converted, Brightness the lightness of the fabric and Rotation the angle of the pattern. (The style list was not harvested; the names above are from the app's documentation, medium confidence.)",
+   "use_for": [
+    "handmade / craft-fair poster texture",
+    "embroidered or knitted look for kids', festive and textile-brand designs",
+    "textile mock-up of a logo or icon after converting it to a bitmap"
+   ],
+   "avoid": [
+    "Small elements over a busy photo read as noise; simplify the image or raise Size.",
+    "Style values were not harvested, so a script cannot choose a style; set it in the dialog.",
+    "Fine type and faces are lost; apply behind text, never to it.",
+    "For a texture that keeps the image intact use a bitmap pattern fill with transparency, or Photoshop's Texturizer."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Patchwork",
+    "AI": "Effect/Texture/Patchwork"
+   },
+   "look": [
+    "fabric",
+    "needlepoint",
+    "crochet",
+    "quilt",
+    "stitched",
+    "textile",
+    "embroidery",
+    "craft"
+   ],
+   "params": [
+    {
+     "name": "Style",
+     "does": "Which textile is simulated (crochet, needlepoint, quilt, strings, tissue collage ...); enum values not harvested.",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "Size",
+     "does": "Size of each stitch, patch or strand; bigger = coarser, more stylised.",
+     "typical": "10 (default); 15-30 to read clearly"
+    },
+    {
+     "name": "Complete",
+     "does": "Percentage of the image converted to fabric; below 100 lets parts of the original show through.",
+     "typical": "100 (default)"
+    },
+    {
+     "name": "Brightness",
+     "does": "Lightness of the rendered fabric.",
+     "typical": "40-60 (default 50)"
+    },
+    {
+     "name": "Rotation",
+     "does": "Angle of the stitch / patch pattern in degrees (5-degree steps on the compass wheel).",
+     "typical": "0 (default), 45 for a diagonal weave"
+    }
+   ],
+   "demo_settings": {
+    "Size": 20,
+    "Complete": 100,
+    "Brightness": 55,
+    "Rotation": 0
+   },
+   "pairs_with": [
+    "Frame (stitched or torn border to finish the textile look)",
+    "Artistic Text on top in a bold rounded face",
+    "Transparency tool (fade the fabric copy over the original photo)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Fabric\", \"FabricEffect Size=20,Complete=100,Brightness=55,Rotation=0\")  (Style left out because its enum values are not harvested and the data-source probe read no Style value (None), so the script may render nothing until a style has been picked in the dialog; command untested for this effect). Menu: Effects > Creative > Fabric (GUID 81298d36-0afa-4814-8bf8-02d2902b56b4).",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "medium: renders a texture per element; slower at small Size on large bitmaps",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: notes the probe read Style as None, so a script without a style may render nothing; non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/56a327a23ac5.png",
+    "note": "The picture is rebuilt as a regular grid of small square stitches with dark gaps between them, each stitch taking the colour underneath, a needlepoint-like textile look in the dialog's stored style.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Frame",
+   "id": "cfb3ed0a-eb65-4237-97c4-aa7bce46cb2e",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Frame",
+   "status": "needs_input",
+   "summary": "Puts a decorative edge frame around the bitmap, taken from a frame image (a preset from the frame library or a file you load); the frame can be recoloured, faded (Opacity), feathered, blended into the picture, scaled horizontally and vertically, flipped and rotated. The result is a brushed, torn or ornamental border painted over the picture's edges.",
+   "use_for": [
+    "vintage or brushed photo edges for posters and invitations",
+    "framing a portrait for a certificate or greeting card",
+    "quick decorative border on social graphics"
+   ],
+   "avoid": [
+    "It needs a frame image: a preset (Presets / CurrentFrameImage) or a file path (File). The harvest could not read the defaults or the frame list (the data source only exists while the dialog is open), so scripted use without the dialog is unreliable.",
+    "The frame covers the image edges: keep faces, logos and text away from the outer 10-15 percent.",
+    "Square has no caption in the dialog; by analogy with Glass Block and Scatter it probably locks Vertical to Horizontal. How a frame image fits a non-square bitmap was not harvested, so check the corners on wide images.",
+    "For a clean geometric border use a vector rectangle outline or PowerClip instead; it stays editable and sharp at any print size."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Render/Picture Frame"
+   },
+   "look": [
+    "photo frame",
+    "border",
+    "vintage edges",
+    "brushed edges",
+    "decorative frame",
+    "torn edges"
+   ],
+   "params": [
+    {
+     "name": "Presets",
+     "does": "Which saved frame preset to use (values not harvested).",
+     "typical": "pick in the dialog"
+    },
+    {
+     "name": "File",
+     "does": "Path of a frame image file to load instead of a preset.",
+     "typical": "a frame from the frame library"
+    },
+    {
+     "name": "Color",
+     "does": "Colour of the frame.",
+     "typical": "black or white, or a brand colour"
+    },
+    {
+     "name": "Opacity",
+     "does": "Opacity of the frame over the image (0-100).",
+     "typical": "80-100"
+    },
+    {
+     "name": "Blur/Feather",
+     "does": "Softens the frame's inner edge so it fades into the picture.",
+     "typical": "0-20"
+    },
+    {
+     "name": "Blend",
+     "does": "Merge mode of the frame with the image (values not harvested).",
+     "typical": "normal"
+    },
+    {
+     "name": "Horizontal",
+     "does": "Horizontal scale of the frame, likely percent of the image width (1-140).",
+     "typical": "100"
+    },
+    {
+     "name": "Vertical",
+     "does": "Vertical scale of the frame, likely percent (1-140).",
+     "typical": "100"
+    },
+    {
+     "name": "Square",
+     "does": "Probably locks Vertical to Horizontal (the control has no caption; inferred from Glass Block and Scatter).",
+     "typical": "on"
+    },
+    {
+     "name": "HFlip",
+     "does": "Mirrors the frame left-right.",
+     "typical": "off"
+    },
+    {
+     "name": "VFlip",
+     "does": "Mirrors the frame top-bottom.",
+     "typical": "off"
+    },
+    {
+     "name": "Rotate",
+     "does": "Rotates the frame in degrees (0-359).",
+     "typical": "0"
+    }
+   ],
+   "demo_settings": {
+    "Opacity": 100,
+    "BlurFeather": 10,
+    "Horizontal": 100,
+    "Vertical": 100,
+    "Square": true,
+    "Rotate": 0
+   },
+   "pairs_with": [
+    "Fabric or Art Strokes effects (a frame finishes a stylised photo)",
+    "Effects/Creative/Vignette (softer edge darkening instead of an ornament)",
+    "PowerClip (place the framed photo inside a layout shape)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Frame\", \"FrameEffect Opacity=100,BlurFeather=10,Horizontal=100,Vertical=100,Square=1,Rotate=0\")  (untested; the frame itself (Preset / CurrentFrameImage / FrameItemSelected) has no harvested values and must be chosen in the dialog first; File and Color have no key in the command template, so a frame file or colour cannot be passed by script). Menu: Effects > Creative > Frame (GUID cfb3ed0a-eb65-4237-97c4-aa7bce46cb2e).",
+   "scriptable": "partial",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low-medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid/params: Square's meaning was stated as fact and claimed to keep the ornament in proportion; now marked as inferred (no caption). scripting: File and Color are not in the command template; non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Glass Block",
+   "id": "b424f217-ced3-4f62-a0c8-3a3ea7c87aa2",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Glass Block",
+   "status": "current",
+   "summary": "Makes the image look as if seen through a wall of thick glass bricks: the picture is divided into a grid of rectangular blocks and each block shows a shifted, lens-distorted piece of what is behind it, so edges break into a stepped grid.",
+   "use_for": [
+    "obscured-glass backdrop behind headline text",
+    "architectural or bathroom-window texture",
+    "abstract grid backgrounds from a photo",
+    "stylised obscuring of a busy background"
+   ],
+   "avoid": [
+    "Small blocks on a busy photo read as noise; use blocks large enough to see the grid (Block width/height of 40 or more on a 1920 px image; the unit is not harvested).",
+    "Faces and text stay partly recognisable; for real anonymising use Pixelate with a large cell or a solid cover.",
+    "For a rippled or frosted look rather than a brick grid use Scatter or Smoked Glass."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Distort/Glass",
+    "AI": "Effect/Distort/Glass"
+   },
+   "look": [
+    "glass block",
+    "glass bricks",
+    "refraction grid",
+    "obscured glass",
+    "tiled distortion",
+    "privacy glass"
+   ],
+   "params": [
+    {
+     "name": "Block width",
+     "does": "Width of each glass block; bigger = larger, more obvious bricks.",
+     "typical": "20 (default); 40-80 to read clearly"
+    },
+    {
+     "name": "Block height",
+     "does": "Height of each glass block.",
+     "typical": "same as width for square bricks"
+    },
+    {
+     "name": "Square",
+     "does": "Locks block height to block width.",
+     "typical": "on for square bricks (default off)"
+    }
+   ],
+   "demo_settings": {
+    "BlockWidth": 60,
+    "BlockHeight": 60,
+    "Square": true
+   },
+   "pairs_with": [
+    "Smoked Glass (tint and soften the bricked image)",
+    "Transparency tool (fade the glass copy over a sharp original)",
+    "bold sans headline on top"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Glass Block\", \"GlassBlockEffect BlockWidth=60,BlockHeight=60,Square=1\")  (bool written as 1/0 like the data source; command untested for this effect). Menu: Effects > Creative > Glass Block (GUID b424f217-ced3-4f62-a0c8-3a3ea7c87aa2).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: '40+ px' stated a unit the harvest does not give; non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/994b27113d94.png",
+    "note": "The plate is seen through a grid of glass bricks: each 60-unit block shows a shifted, refracted slice, so vertical edges step, the mid-tone detail is cut into strips and the PGD type is repeated three times in staggered copies.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Mosaic",
+   "id": "1a0b1202-d0ef-4fe7-8a95-ac7617b30703",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Mosaic",
+   "status": "current",
+   "summary": "Turns the image into a tile mosaic: small irregular tiles, each filled with the colour of the image underneath, set on a background (grout) colour, with an optional vignette frame around the result. The exact tile shape was not checked in the harvest (medium confidence).",
+   "use_for": [
+    "ceramic / Roman mosaic look for posters and signage",
+    "decorative, handmade-feeling backgrounds from a photo",
+    "playful stylisation of simple images or icons converted to bitmaps"
+   ],
+   "avoid": [
+    "Detail and type vanish at large tile sizes; mask faces and text out.",
+    "Background Color is not part of the scripted command, so a script gets the dialog's current grout colour.",
+    "For square, grout-free blocks (censor or 8-bit look) use Effects > Distort > Pixelate; for irregular polygons without grout use Crystalize."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Mosaic Tiles",
+    "AI": "Effect/Texture/Mosaic Tiles"
+   },
+   "look": [
+    "mosaic",
+    "tiles",
+    "ceramic tiles",
+    "grout",
+    "handmade",
+    "tessellated"
+   ],
+   "params": [
+    {
+     "name": "Size",
+     "does": "Size of the tiles; bigger = fewer, chunkier tiles.",
+     "typical": "5-10 fine (default 10), 15-20 bold"
+    },
+    {
+     "name": "Background Color",
+     "does": "Colour of the grout showing between the tiles.",
+     "typical": "white, black or a dark grey"
+    },
+    {
+     "name": "Vignette",
+     "does": "Adds a vignette / frame around the mosaic.",
+     "typical": "off (default)"
+    }
+   ],
+   "demo_settings": {
+    "Size": 20,
+    "Vignette": false
+   },
+   "pairs_with": [
+    "Frame (finish the mosaic with a border)",
+    "Transparency tool (blend the mosaic with the original)",
+    "bold display type in a solid panel"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Mosaic\", \"MosaicEffect Size=20,Vignette=0\")  (command untested for this effect). Menu: Effects > Creative > Mosaic (GUID 1a0b1202-d0ef-4fe7-8a95-ac7617b30703).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings/scripting Size 15 -> 20 (harvested max; tiles must survive the gallery downscale of the 1920 px plate); non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/bd649ecd795d.png",
+    "note": "The whole plate is laid in small irregular tiles, each in the colour of the photo beneath it, separated by light grout lines; the picture stays recognisable at Size 20.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Scatter",
+   "id": "d754d079-5c3a-42b2-b200-95e24f8fe436",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Scatter",
+   "status": "current",
+   "summary": "Scrambles the image by moving pixels a random distance up to the Horizontal and Vertical amounts, so edges dissolve into a grainy, spray-painted or frosted-glass jitter while the colours stay the same.",
+   "use_for": [
+    "frosted / shower-glass texture over a photo",
+    "dissolving, spray-paint edges for grunge posters",
+    "breaking up a background so headline text stands out"
+   ],
+   "avoid": [
+    "Large amounts make faces, type and logos unreadable; mask them out.",
+    "The pattern is random and there is no seed setting, so a particular scatter cannot be chosen or matched by a setting; not for results that must match exactly.",
+    "For a smooth soft blur use a Blur effect; for a tinted frosted panel use Smoked Glass."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Spatter",
+    "AI": "Effect/Brush Strokes/Spatter"
+   },
+   "look": [
+    "scatter",
+    "diffuse",
+    "frosted glass",
+    "spray",
+    "jitter",
+    "grainy dissolve"
+   ],
+   "params": [
+    {
+     "name": "Horizontal",
+     "does": "Maximum sideways distance pixels are scattered.",
+     "typical": "5-10 subtle (default 10), 20-40 strong"
+    },
+    {
+     "name": "Vertical",
+     "does": "Maximum up/down distance pixels are scattered.",
+     "typical": "same as Horizontal"
+    },
+    {
+     "name": "Square",
+     "does": "Locks Vertical to Horizontal.",
+     "typical": "on (default)"
+    }
+   ],
+   "demo_settings": {
+    "Horizontal": 30,
+    "Vertical": 30,
+    "Square": true
+   },
+   "pairs_with": [
+    "Smoked Glass (tint and soften for a frosted panel)",
+    "Transparency tool (scatter only the edges of a photo)",
+    "grunge type and textures"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Scatter\", \"ScatterEffect Horizontal=30,Square=1,Vertical=30\")  (bool written as 1/0 like the data source; command untested for this effect). Menu: Effects > Creative > Scatter (GUID d754d079-5c3a-42b2-b200-95e24f8fe436).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 're-applying gives a different pattern' was unharvested; now says there is no seed setting; non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/c5039829d606.png",
+    "note": "Edges dissolve into a grainy jitter: the frame border, the swatch edges and the PGD type turn speckled and the photo reads softer overall; Horizontal and Square were ignored by the script (dropped), and the effect is random (repeat-render noise 10), so only the Vertical scatter is confirmed.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Smoked Glass",
+   "id": "1ee328a0-9f4c-4e31-965d-9f9888d36eba",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Creative/Smoked Glass",
+   "status": "current",
+   "summary": "Lays a semi-transparent, tinted, blurred 'smoked glass' over the bitmap: the picture is softened (Blurring) and washed with a colour (Tint sets how strong), as if seen through dark tinted glass.",
+   "use_for": [
+    "darkened, softened photo backdrop behind white headline text",
+    "tinted privacy / frosted-glass panel look",
+    "mood tint on a hero image"
+   ],
+   "avoid": [
+    "It dulls and softens the whole bitmap; for a crisp colour grade use an Adjust effect instead.",
+    "Color is not part of the scripted command, so a script gets the dialog's current tint colour.",
+    "For glassmorphism on part of a layout, apply it to a cropped copy of the photo inside a PowerClip panel so the rest stays sharp."
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "smoked glass",
+    "tinted glass",
+    "frosted",
+    "darkened backdrop",
+    "colour wash",
+    "soft tint"
+   ],
+   "params": [
+    {
+     "name": "Tint",
+     "does": "Strength of the colour wash over the image (0 = no tint).",
+     "typical": "20-60 (default 40)"
+    },
+    {
+     "name": "Blurring",
+     "does": "How much the image behind the glass is blurred.",
+     "typical": "50-90 (default 90)"
+    },
+    {
+     "name": "Color",
+     "does": "The tint colour (the smoke).",
+     "typical": "dark grey or black for smoke, or a brand colour"
+    }
+   ],
+   "demo_settings": {
+    "Tint": 60,
+    "Level": 100
+   },
+   "pairs_with": [
+    "white or light headline text on top",
+    "Glass Block or Scatter first for a textured glass",
+    "PowerClip (confine the smoked copy to a panel)"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Smoked Glass\", \"SmokedGlassEffect Tint=60,Level=100\")  (Level is the Blurring slider; command untested for this effect). Menu: Effects > Creative > Smoked Glass (GUID 1ee328a0-9f4c-4e31-965d-9f9888d36eba).",
+   "scriptable": "yes",
+   "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
+   "cost": "low-medium: blur scales with bitmap size",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive true -> qualified string (menu route stacks; scripted ApplyBitmapEffect stack-or-bake not harvested)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/26d9571c0214.png",
+    "note": "The plate is seen through dark tinted glass: everything is darkened to about 40 % of its brightness (mean 53 vs 133) with a warm grey tint; the picture stays sharp because Level (the blurring) was ignored by the script (dropped), so the softening part of the card is untested.",
+    "rerender": false
+   }
+  }
+ ]
+}

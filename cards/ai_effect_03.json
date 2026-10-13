@@ -1,0 +1,1140 @@
+{
+ "cards": [
+  {
+   "name": "Ellipse",
+   "id": "Live Ellipse",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Convert to Shape/Ellipse",
+   "status": "current",
+   "summary": "Live effect that redraws the object as an ellipse sized from its bounding box: in Relative mode it pads the bounds and passes the ellipse through the corners of that padded box, so the oval comes out noticeably larger than the object. The original path is kept as the editable source but no longer drawn, and the ellipse is painted with the target's own fill / stroke, so on a group or any target without paint of its own nothing is drawn at all.",
+   "use_for": [
+    "oval badge or pill behind a price or label that resizes with the text",
+    "round speech-bubble base under type",
+    "stamp / seal outline on a logo lock-up",
+    "turning each shape of an icon set into a uniform oval token (apply it to each path, not to their group)"
+   ],
+   "avoid": [
+    "Applied to a bare group the whole group disappears (the PGD render of the plate group came out as an empty white artboard): the contents are replaced by an ellipse painted with the group's own appearance, which has no fill or stroke. For one plate behind a whole group or a text object, add a new Fill in the Appearance panel, drag it below the contents and apply the effect to that fill only; for ovals per shape, apply it to each path.",
+    "The harvest's scripted render (applyEffect on a red-filled, blue-stroked rectangle) drew only the stroke of the new shape, the fill did not show: after applying by script, check that the fill survived, or apply it to a dedicated fill / stroke attribute.",
+    "Needs a real shape you can edit point by point (a logo badge you will tweak by hand)? Draw it with the shape tools or Object > Expand Appearance; the live shape cannot be node-edited.",
+    "A perfect circle is only produced when the padded box is square; use Absolute mode with equal AbsWidth / AbsHeight, or draw a circle with the Ellipse tool."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "ellipse",
+    "oval",
+    "pill",
+    "badge",
+    "button shape",
+    "live shape",
+    "rounded outline"
+   ],
+   "params": [
+    {
+     "name": "Shape",
+     "does": "which shape replaces the object: 0 Rectangle, 1 Rounded Rectangle, 2 Ellipse (the three menu items are this one effect with a different starting Shape)",
+     "typical": "set by the menu item you pick"
+    },
+    {
+     "name": "Absolute",
+     "does": "0 = Relative (shape = object bounds plus RelWidth / RelHeight padding), 1 = Absolute (fixed AbsWidth x AbsHeight regardless of the object)",
+     "typical": "0 for buttons and labels that grow with the text"
+    },
+    {
+     "name": "RelWidth",
+     "does": "extra width in pt added on each side of the object's stroked bounds in Relative mode (harvest render: the 300x200 probe rectangle with a 6 pt stroke and RelWidth / RelHeight 18 came out about 342 x 242 pt, i.e. 18 pt per side outside the stroke edge)",
+     "typical": "6-24 pt"
+    },
+    {
+     "name": "RelHeight",
+     "does": "extra height in pt added above and below the bounds in Relative mode",
+     "typical": "4-18 pt"
+    },
+    {
+     "name": "AbsWidth",
+     "does": "fixed width in pt in Absolute mode",
+     "typical": "36-200 pt"
+    },
+    {
+     "name": "AbsHeight",
+     "does": "fixed height in pt in Absolute mode",
+     "typical": "36-200 pt"
+    }
+   ],
+   "enum_labels": {
+    "Shape": {
+     "0": "Rectangle",
+     "1": "Rounded Rectangle",
+     "2": "Ellipse"
+    },
+    "Absolute": {
+     "0": "Relative",
+     "1": "Absolute"
+    }
+   },
+   "pairs_with": [
+    "Effect > Path > Offset Path (spacing)",
+    "Effect > Stylize > Drop Shadow",
+    "Appearance panel: Add New Fill",
+    "Effect > Distort & Transform > Transform (move the ellipse off-centre)"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "Shape": 2,
+    "Absolute": 0,
+    "RelWidth": 30,
+    "RelHeight": 30,
+    "AbsWidth": 36,
+    "AbsHeight": 36,
+    "CornerRadius": 9
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Shape Effects\"><Dict data=\"I Shape 2 R RelHeight 30 R Absolute 0 R CornerRadius 9 R AbsHeight 36 R AbsWidth 36 R RelWidth 30 U DisplayString Ellipse\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Ellipse\") opens the 'Shape Options' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer says the original path stays visible underneath (the harvest render shows only the new shape); RelWidth 'does' now gives the measured render size (342 x 242 pt from the stroked bounds)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/e2a0a98dd5f8.png",
+    "note": "Applied per shape (on the group the frame was blank, index note, as the avoid line says), every shape is redrawn as an ellipse through its padded bounds, clearly larger than the original: the filled + stroked box keeps only its stroke ring (the fill-loss the avoid line records), the star and circle become filled ellipses, the zigzag a wide stroked oval.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "gallery/ai_effect/e2a0a98dd5f8.png",
+     "note": "The frame is a pure white artboard (every pixel 255, no shape left): applied to the bare PGD_TEST group, Convert to Shape replaced the whole plate with an ellipse painted in the group's own fill / stroke, which is none; demo_settings are not the cause (no paint parameter), and status stays current because the effect draws on a painted path, so a per-shape render (the renderer's newer fallback) is what would show the oval.",
+     "rerender": true,
+     "second_opinion": "corrected: verdict broken agreed (frame e2a0a98dd5f8.png is pure white, every pixel 255) and the rewritten summary / avoid lines match it and the harvest render (ellipse ~1.41x the padded box, stroke only); rerender set true: the frame predates effect_gallery.py's blank-frame fallback, which re-applies to each plate shape, and the renderer skips indexed keys unless asked, so it must be re-run with --ids"
+    }
+   }
+  },
+  {
+   "name": "Rectangle",
+   "id": "Live Rectangle",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Convert to Shape/Rectangle",
+   "status": "current",
+   "summary": "Live effect that redraws the object as a plain rectangle equal to its bounding box plus RelWidth / RelHeight padding on each side (or a fixed AbsWidth x AbsHeight box). The original geometry is kept as the editable source but no longer drawn, so a rectangle applied to a text's fill grows and shrinks as the text changes.",
+   "use_for": [
+    "auto-sizing label or tag plate behind a headline",
+    "flat button background that tracks its caption",
+    "price strip or lower-third bar under type",
+    "bounding frame for each item in a grid of mixed shapes"
+   ],
+   "avoid": [
+    "Applied to a bare group nothing is drawn at all: the PGD render of the same effect (Convert to Shape > Ellipse, 'Adobe Shape Effects') on the plate group came out as an empty white artboard, because the new shape is painted with the group's own appearance, which has no fill or stroke. For one plate behind a whole group or a text object, add a new Fill in the Appearance panel, drag it below the contents and apply the effect to that fill only; for one box per shape, apply it to each path.",
+    "The harvest's scripted render (applyEffect on a red-filled, blue-stroked rectangle) drew only the stroke of the new shape, the fill did not show: after applying by script, check that the fill survived, or apply it to a dedicated fill / stroke attribute.",
+    "Needs a real shape you can edit point by point (a logo badge you will tweak by hand)? Draw it with the shape tools or Object > Expand Appearance; the live shape cannot be node-edited.",
+    "Rounded corners wanted: use Convert to Shape > Rounded Rectangle (or Effect > Stylize > Round Corners) instead of stacking effects."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "rectangle",
+    "box",
+    "label plate",
+    "tag",
+    "button shape",
+    "live shape",
+    "padded frame"
+   ],
+   "params": [
+    {
+     "name": "Shape",
+     "does": "which shape replaces the object: 0 Rectangle, 1 Rounded Rectangle, 2 Ellipse (the three menu items are this one effect with a different starting Shape)",
+     "typical": "set by the menu item you pick"
+    },
+    {
+     "name": "Absolute",
+     "does": "0 = Relative (shape = object bounds plus RelWidth / RelHeight padding), 1 = Absolute (fixed AbsWidth x AbsHeight regardless of the object)",
+     "typical": "0 for buttons and labels that grow with the text"
+    },
+    {
+     "name": "RelWidth",
+     "does": "extra width in pt added on each side of the object's stroked bounds in Relative mode (harvest render: the 300x200 probe rectangle with a 6 pt stroke and RelWidth / RelHeight 18 came out about 342 x 242 pt, i.e. 18 pt per side outside the stroke edge)",
+     "typical": "6-24 pt"
+    },
+    {
+     "name": "RelHeight",
+     "does": "extra height in pt added above and below the bounds in Relative mode",
+     "typical": "4-18 pt"
+    },
+    {
+     "name": "AbsWidth",
+     "does": "fixed width in pt in Absolute mode",
+     "typical": "36-200 pt"
+    },
+    {
+     "name": "AbsHeight",
+     "does": "fixed height in pt in Absolute mode",
+     "typical": "36-200 pt"
+    }
+   ],
+   "enum_labels": {
+    "Shape": {
+     "0": "Rectangle",
+     "1": "Rounded Rectangle",
+     "2": "Ellipse"
+    },
+    "Absolute": {
+     "0": "Relative",
+     "1": "Absolute"
+    }
+   },
+   "pairs_with": [
+    "Appearance panel: Add New Fill",
+    "Effect > Path > Offset Path",
+    "Effect > Stylize > Drop Shadow",
+    "Effect > Distort & Transform > Transform"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "Shape": 0,
+    "Absolute": 0,
+    "RelWidth": 30,
+    "RelHeight": 30,
+    "AbsWidth": 36,
+    "AbsHeight": 36,
+    "CornerRadius": 9
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Shape Effects\"><Dict data=\"I Shape 0 R RelHeight 30 R Absolute 0 R CornerRadius 9 R AbsHeight 36 R AbsWidth 36 R RelWidth 30 U DisplayString Rectangle\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Rectangle\") opens the 'Shape Options' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer says the original path stays visible underneath (the harvest render shows only the new shape); RelWidth 'does' now gives the measured render size (342 x 242 pt from the stroked bounds)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/95838bb5506e.png",
+    "note": "Applied per shape (blank on the group, index note), each shape becomes a padded rectangle in its own paint: the box only as a stroked outline (fill lost, as the avoid line says), the star a blue box, the circle a gradient box, the zigzag a long stroked bar.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict not_rendered agreed (no frame at its key, not in index / failed); first avoid line said a group 'may reshape the contents', but the Ellipse frame of this same effect on the plate group is blank, so it now says nothing is drawn; demo_settings (Shape 0, Relative, 30 pt padding) are valid and will show once the renderer's per-shape fallback runs"
+    }
+   }
+  },
+  {
+   "name": "Rounded Rectangle",
+   "id": "Live Rounded Rectangle",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Convert to Shape/Rounded Rectangle",
+   "status": "current",
+   "summary": "Live effect that redraws the object's outline as a rounded rectangle: the bounding box plus RelWidth / RelHeight padding on each side (or a fixed AbsWidth x AbsHeight), with CornerRadius rounding the corners. Used under text it gives a pill or button shape that keeps its padding as the words change.",
+   "use_for": [
+    "UI button or chip behind a label",
+    "rounded tag / sticker plate under a price",
+    "pill-shaped call-to-action in a social graphic",
+    "consistent rounded tiles behind icons of different sizes"
+   ],
+   "avoid": [
+    "Applied to a bare group nothing is drawn at all: the PGD render of the same effect (Convert to Shape > Ellipse, 'Adobe Shape Effects') on the plate group came out as an empty white artboard, because the new shape is painted with the group's own appearance, which has no fill or stroke. For one plate behind a whole group or a text object, add a new Fill in the Appearance panel, drag it below the contents and apply the effect to that fill only; for one rounded box per shape, apply it to each path.",
+    "The harvest's scripted render (applyEffect on a red-filled, blue-stroked rectangle) drew only the stroke of the new shape, the fill did not show: after applying by script, check that the fill survived, or apply it to a dedicated fill / stroke attribute.",
+    "Needs a real shape you can edit point by point (a logo badge you will tweak by hand)? Draw it with the shape tools or Object > Expand Appearance; the live shape cannot be node-edited.",
+    "A full pill needs CornerRadius of at least half the final height; small radii on a tall box read as a plain rectangle."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "rounded rectangle",
+    "pill",
+    "button",
+    "chip",
+    "tag",
+    "live shape",
+    "rounded corners"
+   ],
+   "params": [
+    {
+     "name": "Shape",
+     "does": "which shape replaces the object: 0 Rectangle, 1 Rounded Rectangle, 2 Ellipse (the three menu items are this one effect with a different starting Shape)",
+     "typical": "set by the menu item you pick"
+    },
+    {
+     "name": "Absolute",
+     "does": "0 = Relative (shape = object bounds plus RelWidth / RelHeight padding), 1 = Absolute (fixed AbsWidth x AbsHeight regardless of the object)",
+     "typical": "0 for buttons and labels that grow with the text"
+    },
+    {
+     "name": "RelWidth",
+     "does": "extra width in pt added on each side of the object's stroked bounds in Relative mode (harvest render: the 300x200 probe rectangle with a 6 pt stroke and RelWidth / RelHeight 18 came out about 342 x 242 pt, i.e. 18 pt per side outside the stroke edge)",
+     "typical": "6-24 pt"
+    },
+    {
+     "name": "RelHeight",
+     "does": "extra height in pt added above and below the bounds in Relative mode",
+     "typical": "4-18 pt"
+    },
+    {
+     "name": "AbsWidth",
+     "does": "fixed width in pt in Absolute mode",
+     "typical": "36-200 pt"
+    },
+    {
+     "name": "AbsHeight",
+     "does": "fixed height in pt in Absolute mode",
+     "typical": "36-200 pt"
+    },
+    {
+     "name": "CornerRadius",
+     "does": "corner radius in pt; only shapes the Rounded Rectangle",
+     "typical": "6-30 pt"
+    }
+   ],
+   "enum_labels": {
+    "Shape": {
+     "0": "Rectangle",
+     "1": "Rounded Rectangle",
+     "2": "Ellipse"
+    },
+    "Absolute": {
+     "0": "Relative",
+     "1": "Absolute"
+    }
+   },
+   "pairs_with": [
+    "Appearance panel: Add New Fill",
+    "Effect > Stylize > Drop Shadow",
+    "Effect > Path > Offset Path",
+    "Effect > Stylize > Inner Glow"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "Shape": 1,
+    "Absolute": 0,
+    "RelWidth": 30,
+    "RelHeight": 30,
+    "AbsWidth": 36,
+    "AbsHeight": 36,
+    "CornerRadius": 40
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Shape Effects\"><Dict data=\"I Shape 1 R RelHeight 30 R Absolute 0 R CornerRadius 40 R AbsHeight 36 R AbsWidth 36 R RelWidth 30\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Rounded Rectangle\") opens the 'Shape Options' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "RelWidth 'does' now gives the measured render size (342 x 242 pt from the stroked bounds)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/55fa72e72725.png",
+    "note": "Applied per shape (blank on the group, index note), each shape becomes a padded rectangle with rounded corners in its own paint (the box only as a stroked outline, fill lost), as the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict not_rendered agreed (no frame at its key, not in index / failed); first avoid line said a group 'may reshape the contents', but the Ellipse frame of this same effect on the plate group is blank, so it now says nothing is drawn; demo_settings (Shape 1, Relative, 30 pt padding, CornerRadius 40) are valid and will show once the renderer's per-shape fallback runs"
+    }
+   }
+  },
+  {
+   "name": "Free Distort",
+   "id": "Live Free Distort",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Free Distort",
+   "status": "current",
+   "summary": "Live four-corner distortion: the art's bounding box is mapped onto a new quadrilateral by dragging its corners, giving keystone perspective, slants and squashed cast-shadow shapes while the original paths stay editable. With dst equal to src (the harvested dialog values) it does nothing.",
+   "use_for": [
+    "fake perspective on a sign, screen mock-up or packaging face",
+    "cast shadow lying on the ground behind type or a product (the 'Shadow Back' / 'Shadow Front' graphic styles do this)",
+    "Star-Wars style receding headline",
+    "skewing a badge to sit on an angled surface"
+   ],
+   "avoid": [
+    "The harvested dialog values (dst = src) are a no-op: change at least one dst corner.",
+    "Corner order is confirmed by the harvest: the probe rectangle (left 250, top 450, 300x200) stored src0 250/450 top-left, src1 550/450 top-right, src2 250/250 bottom-left, src3 550/250 bottom-right, v up. That a 0-100 src box is fitted to any art's bounds is inferred from the 'Shadow Back' style; check the first scripted render.",
+    "Needs curved bending (arc, flag, bulge): use Effect > Warp or Object > Envelope Distort instead; Free Distort only moves four corners.",
+    "The harvest probed a vector rectangle only; behaviour on placed or embedded images is not confirmed, so check the render before relying on it for photos."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Transform/Distort",
+    "CDR": "Object/Perspective/Add Perspective"
+   },
+   "look": [
+    "perspective",
+    "keystone",
+    "four-corner distort",
+    "skew",
+    "cast shadow",
+    "receding text"
+   ],
+   "params": [
+    {
+     "name": "src0h",
+     "does": "source top-left corner, horizontal: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src0v",
+     "does": "source top-left corner, vertical, y up: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src1h",
+     "does": "source top-right corner, horizontal: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src1v",
+     "does": "source top-right corner, vertical, y up: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src2h",
+     "does": "source bottom-left corner, horizontal: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src2v",
+     "does": "source bottom-left corner, vertical, y up: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src3h",
+     "does": "source bottom-right corner, horizontal: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "src3v",
+     "does": "source bottom-right corner, vertical, y up: the reference box the art is mapped from; the menu stores the art's own bounds in pt, the shipped 'Shadow Back' style a 0-100 box and 'Shadow Front' a box in pt, so any box works",
+     "typical": "0 / 100 box, or leave as stored"
+    },
+    {
+     "name": "dst0h",
+     "does": "where the top-left corner goes, horizontal (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst0v",
+     "does": "where the top-left corner goes, vertical, y up (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst1h",
+     "does": "where the top-right corner goes, horizontal (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst1v",
+     "does": "where the top-right corner goes, vertical, y up (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst2h",
+     "does": "where the bottom-left corner goes, horizontal (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst2v",
+     "does": "where the bottom-left corner goes, vertical, y up (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst3h",
+     "does": "where the bottom-right corner goes, horizontal (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    },
+    {
+     "name": "dst3v",
+     "does": "where the bottom-right corner goes, vertical, y up (pt, same frame as src)",
+     "typical": "move 10-40% of the box away from the src value"
+    }
+   ],
+   "pairs_with": [
+    "Effect > Stylize > Feather (soft cast shadow)",
+    "Effect > Blur > Gaussian Blur",
+    "Appearance panel: duplicate fill for a shadow copy",
+    "Effect > Distort & Transform > Transform"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "src0h": 0,
+    "src0v": 100,
+    "src1h": 100,
+    "src1v": 100,
+    "src2h": 0,
+    "src2v": 0,
+    "src3h": 100,
+    "src3v": 0,
+    "dst0h": 25,
+    "dst0v": 100,
+    "dst1h": 75,
+    "dst1v": 100,
+    "dst2h": 0,
+    "dst2v": 0,
+    "dst3h": 100,
+    "dst3v": 0
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Free Distort\"><Dict data=\"R src0h 0 R dst3v 0 R src1v 100 R src3h 100 R dst0h 25 R dst1h 75 R dst2h 0 R src2v 0 R src1h 100 R src0v 100 R dst0v 100 R dst2v 0 R dst3h 100 R src3v 0 R dst1v 100 R src2h 0\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Free Distort\") opens the 'Free Distort' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "src 'does': the shipped styles store both a 0-100 box (Shadow Back) and a box in pt (Shadow Front), not only 0-100; corner-order avoid line now cites the harvested probe values that confirm it (0 TL, 1 TR, 2 BL, 3 BR, v up); unsupported raster claim replaced with 'not confirmed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/25ef30dbd9d4.png",
+    "note": "The top corners moved in to 25 % / 75 % of the width, so the whole group is keystoned: the box leans right with a narrower top, the star narrows at the top, the circle tilts into an egg leaning left, while the type and zigzag near the bottom barely move, the keystone perspective the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Pucker & Bloat",
+   "id": "Live Pucker & Bloat",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Pucker & Bloat",
+   "status": "current",
+   "summary": "Live effect that pushes anchor points and their curve handles in opposite directions: negative values (Pucker) curve the segments inward and throw the anchors out into sharp spikes, positive values (Bloat) balloon the segments outward into rounded lobes and petals. The stored d_factor is the dialog percentage (a shipped graphic style stores -25); 0, the harvested value, does nothing.",
+   "use_for": [
+    "starburst / sale-sticker shapes from a circle or polygon (Pucker)",
+    "flower, cloud and petal shapes from a polygon or star (Bloat)",
+    "playful bubbly display type",
+    "organic blob backgrounds for social graphics"
+   ],
+   "avoid": [
+    "d_factor 0 (the harvested value) is a no-op.",
+    "Result depends on anchor count: a 4-point circle gives only four lobes or spikes; add anchors (Object > Path > Add Anchor Points) or use a polygon for more.",
+    "Body text becomes unreadable fast; keep it to display type and shapes.",
+    "Want an even zigzag edge rather than curves: use Zig Zag."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Distort/Push & Pull"
+   },
+   "look": [
+    "pucker",
+    "bloat",
+    "starburst",
+    "spiky",
+    "petals",
+    "flower",
+    "bubbly",
+    "inflated"
+   ],
+   "params": [
+    {
+     "name": "d_factor",
+     "does": "amount in percent: negative = Pucker (spiky, concave), positive = Bloat (rounded, convex); the shipped 'Bubble Mouse Down' style stores -25",
+     "typical": "-20 to -60 for spikes, 20 to 80 for petals"
+    }
+   ],
+   "pairs_with": [
+    "Effect > Distort & Transform > Zig Zag (more points first)",
+    "Effect > Stylize > Round Corners",
+    "Effect > Path > Offset Path",
+    "Effect > Distort & Transform > Roughen"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "d_factor": -60
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Punk and Bloat\"><Dict data=\"R d_factor -60\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Pucker & Bloat\") opens the 'Pucker & Bloat' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "d_factor 'does': removed the -200 to 200 slider range (not in the harvest)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/63cf49cb4cad.png",
+    "note": "At -60 % (Pucker) every segment curves inward and the anchors are thrown out into sharp spikes: the box becomes a four-spike star, the circle a four-point star, the star and type grow spikes and the zigzag curls into hooked lines, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Roughen",
+   "id": "Live Roughen",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Roughen",
+   "status": "current",
+   "summary": "Live effect that adds extra points along every path and jitters them at random, turning clean edges into a jagged (Corner) or wobbly (Smooth) hand-cut outline. Size sets how far points move (relative % or absolute pt) and Detail how densely points are added.",
+   "use_for": [
+    "torn-paper, hand-cut or grunge edges on badges and type",
+    "cartoon explosion / crumpled outlines",
+    "rough map borders and terrain shapes (the shipped Textures styles use it)",
+    "breaking the computer-perfect look of icons and frames"
+   ],
+   "avoid": [
+    "The harvest's scripted render (applyEffect on a filled + stroked rectangle) roughened the fill and the stroke differently, so the stroke no longer sat on the fill edge; for matching edges apply it from the Effect menu at object level and check, or Expand Appearance and roughen once.",
+    "Random: the jitter changes when the object is edited, so do not rely on one exact outline across versions.",
+    "Small text at high Size or Detail turns illegible; use small absolute sizes on type.",
+    "Want a regular, repeating edge: use Zig Zag."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Edit Shape Tools/Roughen"
+   },
+   "look": [
+    "rough edge",
+    "jagged",
+    "torn paper",
+    "hand-cut",
+    "grunge outline",
+    "wobbly",
+    "distressed"
+   ],
+   "params": [
+    {
+     "name": "absoluteness",
+     "does": "0 = Relative (size is a % of the object), 1 = Absolute (size in pt)",
+     "typical": "1 for predictable results on mixed sizes"
+    },
+    {
+     "name": "size",
+     "does": "displacement in Relative mode, % of the object's size",
+     "typical": "1-5%"
+    },
+    {
+     "name": "asiz",
+     "does": "displacement in Absolute mode, pt",
+     "typical": "2-15 pt"
+    },
+    {
+     "name": "dtal",
+     "does": "Detail: how densely points are added along the path (higher = more, finer jags)",
+     "typical": "5-30"
+    },
+    {
+     "name": "roundness",
+     "does": "0 = Corner points (sharp, jagged), 1 = Smooth points (wavy)",
+     "typical": "0 for torn / spiky, 1 for wobbly hand-drawn"
+    }
+   ],
+   "enum_labels": {
+    "absoluteness": {
+     "0": "Relative",
+     "1": "Absolute"
+    },
+    "roundness": {
+     "0": "Corner",
+     "1": "Smooth"
+    }
+   },
+   "pairs_with": [
+    "Effect > Stylize > Inner Glow (charred edge)",
+    "Effect > Stylize > Drop Shadow",
+    "Effect > Path > Offset Path",
+    "Effect > Distort & Transform > Tweak"
+   ],
+   "cost": "low to medium: many added points on long paths and type",
+   "demo_settings": {
+    "absoluteness": 1,
+    "size": 3,
+    "asiz": 12,
+    "dtal": 12,
+    "roundness": 0
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Roughen\"><Dict data=\"R roundness 0 R absoluteness 1 R size 3 R asiz 12 R dtal 12\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Roughen\") opens the 'Roughen' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "Detail no longer claims a per-inch unit (not in the harvest): summary and dtal 'does' reworded"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/4bfd16303c0a.png",
+    "note": "Every path got sharp, irregular corner-point teeth against ref.png: box stroke and fill edge, star, gradient circle rim, the PGD letters and the zigzag are all jagged and hand-cut at 12 pt / detail 12, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/ai_effect/4bfd16303c0a.png",
+     "note": "Every path got sharp, irregular corner-point teeth against ref.png: box stroke and fill edge, star, gradient circle rim, the PGD letters and the zigzag line are all jagged and hand-cut at 12 pt / detail 12, as the card says.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Transform",
+   "id": "Live Transform",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Transform",
+   "status": "current",
+   "summary": "Live, editable version of Object > Transform > Transform Each: scales, moves, rotates and reflects the art around a reference point and can stack extra transformed copies, so one object becomes a repeat pattern, radial array or echo trail. At the harvested values (100%, 0 move, 0 degrees, 0 copies) it does nothing.",
+   "use_for": [
+    "radial repeats (flower, sun rays, clock ticks) from one shape with copies + rotation",
+    "echo / motion-trail type with scaled, offset copies",
+    "live mirror of half a logo with Reflect",
+    "offset duplicate fills for retro 3D or shadow type (the shipped Type Effects styles do this)"
+   ],
+   "avoid": [
+    "The harvested values are a no-op: set copies, a move, a scale or a rotation.",
+    "Percent and factor are stored twice (scaleH_Percent + scaleH_Factor, rotate_Degrees + rotate_Radians); when scripting set both of each pair to agree.",
+    "pinPoint 4 is the centre of the 3 x 3 reference grid (the dialog value at harvest); the shipped Live Reflect X / Y styles use 3 and 1, but which grid squares those are is not confirmed by the harvest.",
+    "The sign convention of moveV_Pts is not confirmed by the harvest (Illustrator stores art with y up internally), so check the direction on the first render.",
+    "Many copies of a complex group slow every redraw; expand or use Repeat (Object > Repeat) for big arrays."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Free Transform",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "look": [
+    "repeat",
+    "radial array",
+    "echo",
+    "copies",
+    "mirror",
+    "rotate",
+    "scale",
+    "offset duplicate"
+   ],
+   "params": [
+    {
+     "name": "numCopies",
+     "does": "extra transformed copies stacked with the original",
+     "typical": "3-24"
+    },
+    {
+     "name": "scaleH_Percent",
+     "does": "horizontal scale %",
+     "typical": "80-110"
+    },
+    {
+     "name": "scaleV_Percent",
+     "does": "vertical scale %",
+     "typical": "80-110"
+    },
+    {
+     "name": "scaleH_Factor",
+     "does": "same horizontal scale as a factor (percent / 100)",
+     "typical": "0.8-1.1"
+    },
+    {
+     "name": "scaleV_Factor",
+     "does": "same vertical scale as a factor",
+     "typical": "0.8-1.1"
+    },
+    {
+     "name": "rotate_Degrees",
+     "does": "rotation per copy, degrees",
+     "typical": "15, 30, 45 for radial repeats"
+    },
+    {
+     "name": "rotate_Radians",
+     "does": "same rotation in radians",
+     "typical": "degrees x pi / 180"
+    },
+    {
+     "name": "moveH_Pts",
+     "does": "horizontal move per copy, pt",
+     "typical": "2-40"
+    },
+    {
+     "name": "moveV_Pts",
+     "does": "vertical move per copy, pt (sign convention not confirmed)",
+     "typical": "-40 to 40"
+    },
+    {
+     "name": "pinPoint",
+     "does": "reference point on the 3 x 3 grid the transform pivots around (4 = centre)",
+     "typical": "4"
+    },
+    {
+     "name": "reflectX",
+     "does": "Reflect X checkbox: mirror the art (the shipped 'Live Reflect X' style uses it with 1 copy and pinPoint 3 to add a mirrored copy; the flip axis is not confirmed by the harvest)",
+     "typical": "off"
+    },
+    {
+     "name": "reflectY",
+     "does": "Reflect Y checkbox: mirror the art on the other axis (the shipped 'Live Reflect Y' style uses it with 1 copy and pinPoint 1)",
+     "typical": "off"
+    },
+    {
+     "name": "randomize",
+     "does": "randomise each setting between 0 and the value",
+     "typical": "off"
+    },
+    {
+     "name": "scaleLines",
+     "does": "Scale Strokes & Effects with the art",
+     "typical": "on when copies shrink"
+    },
+    {
+     "name": "transformObjects",
+     "does": "transform the objects themselves",
+     "typical": "on"
+    },
+    {
+     "name": "transformPatterns",
+     "does": "transform pattern fills too",
+     "typical": "off"
+    }
+   ],
+   "enum_labels": {
+    "pinPoint": {
+     "4": "centre of the reference-point grid"
+    }
+   },
+   "pairs_with": [
+    "Appearance panel: duplicate fill / stroke",
+    "Effect > Distort & Transform > Free Distort",
+    "Effect > Stylize > Drop Shadow",
+    "Object > Repeat > Radial"
+   ],
+   "cost": "low per copy; grows with copies x art complexity",
+   "demo_settings": {
+    "numCopies": 4,
+    "scaleH_Percent": 80.0,
+    "scaleV_Percent": 80.0,
+    "scaleH_Factor": 0.8,
+    "scaleV_Factor": 0.8,
+    "rotate_Degrees": 15.0,
+    "rotate_Radians": 0.261799,
+    "moveH_Pts": 30.0,
+    "moveV_Pts": 0.0,
+    "pinPoint": 4,
+    "reflectX": false,
+    "reflectY": false,
+    "randomize": false,
+    "scaleLines": true,
+    "transformObjects": true,
+    "transformPatterns": false
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Transform\"><Dict data=\"R scaleV_Factor 0.8 R rotate_Degrees 15.0 R scaleH_Percent 80.0 R scaleV_Percent 80.0 R scaleH_Factor 0.8 R moveH_Pts 30.0 R moveV_Pts 0.0 B transformPatterns 0 I numCopies 4 B scaleLines 1 B reflectY 0 B transformObjects 1 B reflectX 0 B randomize 0 I pinPoint 4 R rotate_Radians 0.261799\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Transform\") opens the 'Transform Effect' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "reflectX 'does' claimed 'across the horizontal axis', which the harvest does not show: now neutral, citing the shipped Live Reflect X / Y styles; summary no longer calls it 'Transform Each in the Appearance panel'; demo moveH_Pts 0 -> 30 (and scripting) so the 80% copies step out of the original instead of nesting inside it, where they could be hidden if drawn behind"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/2abeba04eb50.png",
+    "note": "Four progressively smaller (80 %), 15-degree-rotated, right-shifted copies of the whole group fan out behind the original around the group centre, a clear echo trail as the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/ai_effect/2abeba04eb50.png",
+     "note": "Four progressively smaller (80%), 15-degree-rotated, right-shifted copies of the whole group fan out behind the original around the group centre (box copies step down-right, circle copies up-left, PGD and zigzag copies curl upward), a clear echo trail as described.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Tweak",
+   "id": "Live Scribble and Tweak",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Tweak",
+   "status": "current",
+   "summary": "Live Tweak effect: moves anchor points and/or their In and Out curve handles by random horizontal and vertical amounts, so geometric shapes go loose, lopsided and hand-drawn. Unlike Roughen it adds no points; it bends the existing ones.",
+   "use_for": [
+    "sketchy, hand-drawn versions of icons and frames",
+    "loose wobbly type for kids or casual branding",
+    "breaking up repeated shapes so a pattern looks organic",
+    "imperfect brush-like outlines on top of a clean fill (the shipped Colored Pencil Outline style)"
+   ],
+   "avoid": [
+    "The harvest's scripted render (applyEffect on a filled + stroked rectangle) moved the fill and the stroke differently; when they must match, apply at object level from the menu and check, or Expand Appearance first.",
+    "Random: the result changes when the art is edited, so it cannot be matched exactly across files.",
+    "On a rectangle (four corner anchors) it only shifts the corners and bows the sides (the harvest render); add anchor points first for an all-over hand-drawn wobble.",
+    "Want jagged noise along the edge: use Roughen."
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "hand-drawn",
+    "wobbly",
+    "sketchy",
+    "loose",
+    "organic",
+    "lopsided",
+    "tweak"
+   ],
+   "params": [
+    {
+     "name": "absoluteness",
+     "does": "0 = Relative (horz / vert are % of the object), 1 = Absolute (ahor / aver in pt), by analogy with Roughen's absoluteness",
+     "typical": "0"
+    },
+    {
+     "name": "horz",
+     "does": "maximum horizontal move in Relative mode, %",
+     "typical": "2-15"
+    },
+    {
+     "name": "vert",
+     "does": "maximum vertical move in Relative mode, %",
+     "typical": "2-15"
+    },
+    {
+     "name": "ahor",
+     "does": "maximum horizontal move in Absolute mode, pt (read from the key name, not confirmed)",
+     "typical": "2-20"
+    },
+    {
+     "name": "aver",
+     "does": "maximum vertical move in Absolute mode, pt (read from the key name, not confirmed)",
+     "typical": "2-20"
+    },
+    {
+     "name": "anch",
+     "does": "move anchor points",
+     "typical": "on"
+    },
+    {
+     "name": "in",
+     "does": "move the 'In' control handles",
+     "typical": "on"
+    },
+    {
+     "name": "out",
+     "does": "move the 'Out' control handles",
+     "typical": "on"
+    }
+   ],
+   "enum_labels": {
+    "absoluteness": {
+     "0": "Relative",
+     "1": "Absolute"
+    }
+   },
+   "pairs_with": [
+    "Effect > Distort & Transform > Roughen",
+    "Effect > Stylize > Round Corners",
+    "Effect > Path > Offset Path",
+    "Effect > Stylize > Scribble"
+   ],
+   "cost": "low: moves existing points only",
+   "demo_settings": {
+    "absoluteness": 1,
+    "horz": 15,
+    "vert": 15,
+    "ahor": 25,
+    "aver": 25,
+    "anch": true,
+    "in": true,
+    "out": true
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Scribble and Tweak\"><Dict data=\"B in 1 R absoluteness 1 R horz 15 R vert 15 B anch 1 R aver 25 R ahor 25 B out 1\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Scribble and Tweak\") opens the 'Tweak' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid line said rectangles 'only skew': the harvest render shows the stroke's sides bowed into curves too (handles move); reworded"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/5b0c7b950809.png",
+    "note": "Shapes went loose and lopsided without new points: the box sides bow and its corners curl, the star points bend, the circle becomes a lopsided blob, the type is mangled and the zigzag's corners loop, the hand-drawn wobble the card describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Twist",
+   "id": "Live Twist",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Twist",
+   "status": "current",
+   "summary": "Live Twist (Adobe Twirl) effect: rotates the art more at its centre than at its edges, curling straight segments into a swirl or pinwheel. Angle is in degrees and its sign sets the direction; 0, the harvested value, does nothing.",
+   "use_for": [
+    "swirl and vortex motifs from stars, polygons and bursts",
+    "hypnotic or psychedelic type treatments",
+    "pinwheel and spiral logo marks",
+    "adding motion to a radial repeat"
+   ],
+   "avoid": [
+    "angle 0 (the harvested value) is a no-op.",
+    "Applied to a group it twists the whole group about the group's centre, not each object in place: the PGD test render at angle 90 on the plate group swung the box, type and circle round the plate's centre and pushed part of the zigzag off the artboard; apply it to each object for a swirl per shape, or lower the angle to keep a wide group in frame.",
+    "On shapes with few anchor points the twist may read as little more than a rotation (not confirmed: the harvest render at angle 0 is a no-op, and the PGD test render at angle 90 on the plate group bent even the circle into a crescent); add anchor points first for a smooth spiral.",
+    "Large angles on text destroy legibility; keep type twists small.",
+    "Want a pixel swirl on a photo: use Photoshop Filter > Distort > Twirl, the vector effect only bends paths."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Distort/Twirl",
+    "CDR": "Toolbox/Distort/Twister"
+   },
+   "look": [
+    "twist",
+    "swirl",
+    "twirl",
+    "spiral",
+    "vortex",
+    "pinwheel"
+   ],
+   "params": [
+    {
+     "name": "angle",
+     "does": "twist angle in degrees; positive and negative turn opposite ways (a shipped style uses 120)",
+     "typical": "30-180"
+    }
+   ],
+   "pairs_with": [
+    "Object > Path > Add Anchor Points",
+    "Effect > Distort & Transform > Transform (radial copies)",
+    "Effect > Distort & Transform > Pucker & Bloat",
+    "Effect > Distort & Transform > Zig Zag"
+   ],
+   "cost": "low: vector math, redraws instantly",
+   "demo_settings": {
+    "angle": 90
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Twirl\"><Dict data=\"R angle 90\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Twist\") opens the 'Twist' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "few-anchor avoid line was stated as fact without harvest evidence: hedged"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/99bd2103b1a8.png",
+    "note": "At 90 degrees on the group the box, type and circle swing round the plate's centre, the circle bends into a crescent and part of the zigzag leaves the artboard, exactly as the card's avoid line describes.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json. The stray 99bd2103b1a8.png (11:23 test run, no index row) is visually identical to work/ai/effect_gallery/old_run1/99bd2103b1a8.png, whose old_run1/index.json row records applyEffect 'Adobe Twirl' angle 90 on group PGD_TEST: a strong clockwise swirl, so the demo angle 90 is not a no-op. Kept not_rendered until the current run indexes it.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict not_rendered kept; the stray frame was judged after all via its old_run1 record (angle 90 on the group = clear swirl, summary holds); added a group-twist avoid line and updated the few-anchor line's evidence from that frame"
+    }
+   }
+  },
+  {
+   "name": "Zig Zag",
+   "id": "Live Zig Zag",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Distort & Transform/Zig Zag",
+   "status": "current",
+   "summary": "Live effect that replaces every path segment with an even series of ridges: Corner points give a sharp sawtooth zigzag, Smooth points a regular wave. Size is set in pt (Absolute) or % (Relative) and Ridges per segment sets how many waves each segment gets (the harvest render of a 300x200 rectangle at 10 pt, 4 ridges showed even +/-10 pt teeth on every side).",
+   "use_for": [
+    "sawtooth / pinking-shear edges on tickets, coupons and stickers",
+    "wavy divider lines and underlines",
+    "squiggle strokes and scribble accents in social graphics",
+    "postage-stamp and cartoon electric edges"
+   ],
+   "avoid": [
+    "Ridges are per segment, so long and short segments get the same count: a rectangle's long side ends up with wider teeth than its short side; add anchor points or draw evenly spaced segments for a uniform rhythm.",
+    "Text gets ridges on every glyph segment and turns noisy; use it on shapes and strokes.",
+    "Want irregular noise: use Roughen."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Distort/Zipper"
+   },
+   "look": [
+    "zigzag",
+    "sawtooth",
+    "wavy line",
+    "squiggle",
+    "pinking shears",
+    "ridges",
+    "electric edge"
+   ],
+   "params": [
+    {
+     "name": "absoluteness",
+     "does": "1 = Absolute (amount in pt), 0 = Relative (relAmount in %)",
+     "typical": "1"
+    },
+    {
+     "name": "amount",
+     "does": "ridge height in Absolute mode, pt (peak deviation each side of the path)",
+     "typical": "3-20 pt"
+    },
+    {
+     "name": "relAmount",
+     "does": "ridge height in Relative mode, % of the object",
+     "typical": "2-10%"
+    },
+    {
+     "name": "ridges",
+     "does": "ridges per segment",
+     "typical": "3-20"
+    },
+    {
+     "name": "roundness",
+     "does": "0 = Corner (sharp zigzag), 1 = Smooth (wave)",
+     "typical": "0 for sawtooth, 1 for wave"
+    }
+   ],
+   "enum_labels": {
+    "absoluteness": {
+     "0": "Relative",
+     "1": "Absolute"
+    },
+    "roundness": {
+     "0": "Corner",
+     "1": "Smooth"
+    }
+   },
+   "pairs_with": [
+    "Effect > Stylize > Feather",
+    "Effect > Distort & Transform > Roughen",
+    "Effect > Path > Offset Path",
+    "Appearance panel: Add New Stroke"
+   ],
+   "cost": "low to medium: one set of ridges per segment, heavy on type",
+   "demo_settings": {
+    "absoluteness": 1,
+    "amount": 18,
+    "relAmount": 3,
+    "ridges": 5,
+    "roundness": 0
+   },
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Zigzag\"><Dict data=\"R amount 18 R ridges 5 R relAmount 3 R roundness 0 R absoluteness 1\"/></LiveEffect>'); // UI route: app.executeMenuCommand(\"Live Zig Zag\") opens the 'Zig Zag' dialog",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/1ad1d6993dd3.png",
+    "note": "Every segment is replaced by sharp, even ridges: the box gets a sawtooth edge, the star and circle ridged outlines (5 ridges per segment), the type turns into a noisy spiky mass and the zigzag gains small teeth, as the summary and the text avoid line say.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and not in failed.json, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  }
+ ]
+}

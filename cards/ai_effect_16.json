@@ -1,0 +1,409 @@
+{
+ "cards": [
+  {
+   "name": "Reticulation",
+   "id": "Live PSAdapter_plugin_Rtcl",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Reticulation",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that imitates film emulsion reticulation: the rasterized artwork is rebuilt as clumped, irregular monochrome grain, heavy and dark in the shadows and sparse in the highlights. In Illustrator it renders in black and white (the probe's red rectangle became a dark, speckled grey block), so the colour of the artwork is lost.",
+   "use_for": [
+    "gritty monochrome grain texture on a poster illustration or band flyer",
+    "aged-film or darkroom look on a placed photo inside a layout",
+    "turning a flat colour shape into a speckled texture fill",
+    "noisy black-and-white background panel behind headline type"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Keeping the artwork's colours: the result is black-and-white grain; put the effected copy over the colour art in Multiply, or use Effect > Texture > Grain for a coloured grain.",
+    "Small type and fine lines: the grain clumps break them up and kill legibility.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send Density / Foreground Level / Background Level (they live in the binary 'data' descriptor), so a scripted apply runs without them (it then uses the dialog's last-used values; the gallery route, see scripting, carries chosen values).",
+    "Repeatable output: the grain is seeded randomly (FlRs) and changes every time the effect is applied."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Reticulation"
+   },
+   "look": [
+    "film grain",
+    "reticulation",
+    "clumped grain",
+    "speckled",
+    "monochrome texture",
+    "darkroom",
+    "gritty",
+    "noisy black and white"
+   ],
+   "params": [
+    {
+     "name": "Density",
+     "does": "how dense the grain clumps are; higher packs more grain into the image",
+     "typical": "12 (dialog value at harvest) for a moderate grain, 30-45 for a heavy, obvious texture"
+    },
+    {
+     "name": "Foreground Level",
+     "does": "weight of the black (foreground) tone: raising it pushes more of the image into dark grain",
+     "typical": "40 (dialog value at harvest); lower to 20-30 to keep light shapes readable"
+    },
+    {
+     "name": "Background Level",
+     "does": "weight of the white (background) tone in the highlights: changes how much of the light areas stays clean",
+     "typical": "5 (dialog value at harvest); 5-15 for most work"
+    }
+   ],
+   "demo_settings": {
+    "Density": 32,
+    "Foreground Level": 40,
+    "Background Level": 10
+   },
+   "enum_labels": {
+    "GEfk": {
+     "Rtcl": "Reticulation (this effect's own Filter Gallery code)"
+    }
+   },
+   "pairs_with": [
+    "Transparency panel Multiply: the reticulated copy over the original colour artwork keeps colour under the grain",
+    "Effect > Sketch > Halftone Pattern for a print-screen texture instead of organic grain",
+    "Document Raster Effects Settings (300 ppi for print) so the grain size is judged at output resolution"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Rtcl\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect (round trip verified), but Density / Foreground Level / Background Level live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result does not use chosen values; the plug-in then uses the dialog's last-used values (render check: visible change, mean diff 9.17). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Rtcl'), which opens the 'Reticulation (100%)' dialog pre-filled with the last-used values, where the values are set and confirmed with OK (a person or UI automation); or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "the batch only says a scripted apply runs without the Photoshop parameters and their rendering is unverified, so 'uses the plug-in's fallback settings' was reworded to 'runs without them (values unverified)'; the executeMenuCommand route now says the values are set in the dialog and confirmed with OK. Checked and kept: demo_settings sit inside the ranges the Photoshop harvest probed for the same Filter Gallery plug-in; the named equivalents exist in pgd.py."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/77e557fc01ba.png",
+    "note": "The photo is rebuilt as clumped, irregular black-and-white grain, heavy in the shadows and sparse in the highlights (maximum chroma 0), the reticulation look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Stamp",
+   "id": "Live PSAdapter_plugin_Stmp",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Stamp",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that reduces the rasterized artwork to flat, smoothed black-and-white shapes, like an inked rubber stamp or woodcut print. Light/Dark Balance sets where tones split into black or white and Smoothness rounds off the shape edges; in the probe the red fill dropped to white while the darker blue stroke stayed as a solid black outline.",
+   "use_for": [
+    "rubber-stamp or woodcut style mark from a coloured illustration",
+    "two-tone black-and-white logo or badge mock-up",
+    "high-contrast silhouette treatment of a placed photo for a poster",
+    "base for Image Trace when a clean two-colour vector is needed"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Artwork whose shapes sit at similar brightness: they all fall to the same side of the split and merge into one black or white blob; adjust colours first or use Effect > Sketch > Photocopy for edge detail.",
+    "Fine detail and small type: Smoothness rounds counters and thin strokes away.",
+    "Final vector output: the result is raster; for scalable two-tone art use Object > Image Trace (Black and White) instead.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send Light/Dark Balance / Smoothness (binary 'data' descriptor), so a scripted apply runs without them (it then uses the dialog's last-used values; the gallery route, see scripting, carries chosen values)."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Stamp",
+    "CDR": "Effects/Transform/Threshold"
+   },
+   "look": [
+    "rubber stamp",
+    "two-tone",
+    "black and white",
+    "woodcut",
+    "high contrast",
+    "silhouette",
+    "threshold",
+    "ink print"
+   ],
+   "params": [
+    {
+     "name": "Light/Dark Balance",
+     "does": "the tone split between black and white: raising it turns more of the image black",
+     "typical": "25 (dialog value at harvest); 30-35 to pull mid-tone colours into black"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how much the black/white shape edges are smoothed and simplified; higher gives rounder, blobbier shapes",
+     "typical": "5 (dialog value at harvest) keeps detail, 10-20 for a soft, inky stamp"
+    }
+   ],
+   "demo_settings": {
+    "Light/Dark Balance": 32,
+    "Smoothness": 8
+   },
+   "enum_labels": {
+    "GEfk": {
+     "Stmp": "Stamp (this effect's own Filter Gallery code)"
+    }
+   },
+   "pairs_with": [
+    "Transparency panel Multiply over a coloured shape to tint the stamp ink",
+    "Effect > Distort & Transform > Roughen on the source shapes for a worn stamp edge",
+    "Object > Expand Appearance then Object > Image Trace to turn the stamp into vector shapes"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Stmp\"><Dict data=\"I dataSize 52 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect (round trip verified), but Light/Dark Balance / Smoothness live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result does not use chosen values; the plug-in then uses the dialog's last-used values (render check: clear change, mean diff 18.45). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Stmp'), which opens the 'Stamp (100%)' dialog pre-filled with the last-used values, where the values are set and confirmed with OK (a person or UI automation); or save the look as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "the batch only says a scripted apply runs without the Photoshop parameters and their rendering is unverified, so 'uses the plug-in's fallback settings' was reworded to 'runs without them (values unverified)'; the executeMenuCommand route now says the values are set in the dialog and confirmed with OK. Checked and kept: demo_settings sit inside the ranges the Photoshop harvest probed for the same Filter Gallery plug-in; the named equivalents exist in pgd.py."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/786b8b8333ba.png",
+    "note": "The photo is reduced to flat, smoothed black and white shapes split at the Light/Dark Balance, like an inked rubber stamp (maximum chroma 0), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Torn Edges",
+   "id": "Live PSAdapter_plugin_TrnE",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Torn Edges",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that rebuilds the rasterized artwork as black-and-white areas with ragged, fibrous edges, as if the shapes were torn from paper. Image Balance sets the black/white split, Smoothness how jagged the tears are and Contrast how hard the edge is; in the scripted probe the red-and-blue rectangle became one solid black block (fill and stroke merged) with only a faint grainy fringe on its outer edge and no visible tear.",
+   "use_for": [
+    "torn-paper headline or title treatment on high-contrast type",
+    "ripped-edge black shapes for a collage or punk / zine poster",
+    "rough-edged silhouette of a placed photo",
+    "distressed two-tone badge or label"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Keeping colour: everything turns black or white; for a coloured torn edge use Effect > Distort & Transform > Roughen on the vector shape.",
+    "Low-contrast artwork: shapes of similar tone merge into one black mass with no visible tear.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send Image Balance / Smoothness / Contrast (binary 'data' descriptor), so a scripted apply runs without them (it then uses the dialog's last-used values; the gallery route, see scripting, carries chosen values).",
+    "Repeatable output: the tear pattern is seeded randomly (FlRs) and changes on every application."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Torn Edges"
+   },
+   "look": [
+    "torn paper",
+    "ripped edges",
+    "ragged",
+    "rough edge",
+    "black and white",
+    "distressed",
+    "collage",
+    "zine"
+   ],
+   "params": [
+    {
+     "name": "Image Balance",
+     "does": "where tones split into black or white; shifts how much of the artwork ends up black",
+     "typical": "25 (dialog value at harvest) for an even split"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how smooth the torn edges are: low values give rough, fibrous tears, high values cleaner edges",
+     "typical": "11 (dialog value at harvest); 3-6 for a clearly ragged tear"
+    },
+    {
+     "name": "Contrast",
+     "does": "hardness of the black/white edge: low leaves soft grey fringes, high gives crisp torn outlines",
+     "typical": "17 (dialog value at harvest); 18-25 for a crisp paper edge"
+    }
+   ],
+   "demo_settings": {
+    "Image Balance": 25,
+    "Smoothness": 4,
+    "Contrast": 20
+   },
+   "enum_labels": {
+    "GEfk": {
+     "TrnE": "Torn Edges (this effect's own Filter Gallery code)"
+    }
+   },
+   "pairs_with": [
+    "Illustrator Effects > Stylize > Drop Shadow to lift the torn shape off the page",
+    "Transparency panel Multiply over a paper texture or colour fill",
+    "Object > Expand Appearance then Image Trace to keep the torn outline as vector"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_TrnE\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect (round trip verified), but Image Balance / Smoothness / Contrast live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result does not use chosen values; the plug-in then uses the dialog's last-used values (render check: visible change, mean diff 13.57). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_TrnE'), which opens the 'Torn Edges (100%)' dialog pre-filled with the last-used values, where the values are set and confirmed with OK (a person or UI automation); or save the look as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the probe render is a solid black block with only a faint grainy fringe, not a 'rough rim' (fill and stroke merged, no tear visible); the batch only says a scripted apply runs without the Photoshop parameters and their rendering is unverified, so 'uses the plug-in's fallback settings' was reworded to 'runs without them (values unverified)'; the executeMenuCommand route now says the values are set in the dialog and confirmed with OK. Checked and kept: demo_settings sit inside the ranges the Photoshop harvest probed for the same Filter Gallery plug-in; the named equivalents exist in pgd.py."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/bf1bc8f00bbd.png",
+    "note": "The photo is rebuilt as black and white areas with ragged, fibrous torn edges (maximum chroma 0), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Water Paper",
+   "id": "Live PSAdapter_plugin_WtrP",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Water Paper",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that makes the artwork look daubed onto damp, fibrous paper: colours soak in and bleed along paper fibres into soft, blotchy patches. Unlike most Sketch effects it keeps the artwork's colours; on flat vector shapes there is little to bleed: the scripted probe barely changed (mean diff 2.40), its colours only brightened and the fill/stroke boundary softened by a pixel or two, with no visible fibre texture.",
+   "use_for": [
+    "soft wet-paper or ink-bleed look on an illustration or placed photo",
+    "handmade, organic feel for a greeting card or packaging graphic",
+    "damp-paper blotches on gradient-rich or photographic art inside a layout",
+    "textured background panel from a photo or gradient behind type"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Expecting a strong change on flat vector art: the effect reads best on photos and gradients; for a clearer painted look use Effect > Artistic > Watercolor.",
+    "Text that must stay sharp: fibre bleed softens letter edges.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send Fiber Length / Brightness / Contrast (binary 'data' descriptor); the scripted apply without them barely changed the probe (mean diff 2.40).",
+    "Repeatable output: the fibre pattern is seeded randomly (FlRs) and changes on every application."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Sketch/Water Paper"
+   },
+   "look": [
+    "wet paper",
+    "ink bleed",
+    "fibrous",
+    "blotchy",
+    "soaked",
+    "handmade paper",
+    "painterly",
+    "soft edges"
+   ],
+   "params": [
+    {
+     "name": "Fiber Length",
+     "does": "length of the paper fibres the colour bleeds along; longer gives more spreading and softer, streakier blotches",
+     "typical": "15 (dialog value at harvest); 30-45 for an obvious bleed"
+    },
+    {
+     "name": "Brightness",
+     "does": "overall brightness of the result",
+     "typical": "60 (dialog value at harvest); lower to about 50 to keep colours rich"
+    },
+    {
+     "name": "Contrast",
+     "does": "contrast of the result; high values deepen the blotch structure, low values wash it out",
+     "typical": "80 (dialog value at harvest); 70-85 for most work"
+    }
+   ],
+   "demo_settings": {
+    "Fiber Length": 40,
+    "Brightness": 50,
+    "Contrast": 80
+   },
+   "enum_labels": {
+    "GEfk": {
+     "WtrP": "Water Paper (this effect's own Filter Gallery code)"
+    }
+   },
+   "pairs_with": [
+    "Effect > Texture > Texturizer for a visible paper surface",
+    "Effect > Artistic > Watercolor for stronger painted strokes",
+    "Document Raster Effects Settings (300 ppi) so fibre length is judged at output resolution"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_WtrP\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect (round trip verified), but Fiber Length / Brightness / Contrast live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result does not use chosen values; the plug-in then uses the dialog's last-used values (render check: barely visible, mean diff 2.40). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_WtrP'), which opens the 'Water Paper (100%)' dialog pre-filled with the last-used values, where the values are set and confirmed with OK (a person or UI automation); or save the look as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary no longer claims feathery fibre bleed on flat vector edges (the probe render only brightened and softened the fill/stroke boundary by a pixel or two); use_for 'blurring hard vector edges into fibrous ones' and a flat background panel replaced with gradient/photo uses; the batch only says a scripted apply runs without the Photoshop parameters and their rendering is unverified, so 'uses the plug-in's fallback settings' was reworded to 'runs without them (values unverified)'; the executeMenuCommand route now says the values are set in the dialog and confirmed with OK. Checked and kept: demo_settings sit inside the ranges the Photoshop harvest probed for the same Filter Gallery plug-in; the named equivalents exist in pgd.py."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/900ead65ecb6.png",
+    "note": "Unlike the other Sketch effects the photo keeps its colours, which soak and bleed along vertical paper fibres into soft, streaky patches (strip and type smeared), the damp-paper look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Glowing Edges",
+   "id": "Live PSAdapter_plugin_GlwE",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Stylize/Glowing Edges",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Stylize) that finds colour edges and turns them into bright, neon-like lines on black: every flat area goes black and only the outlines glow, in colours taken from the edges. In the scripted probe the red-and-blue rectangle became a black block with only a thin, dim purple line where the red fill met the blue stroke; its outer edge against the empty artboard did not light up.",
+   "use_for": [
+    "neon or blacklight outline look for a nightlife or gaming poster",
+    "sci-fi / X-ray style treatment of a placed photo",
+    "glowing line-art version of a logo grouped with a filled background shape, so its outlines are colour edges",
+    "edge-only abstract background texture"
+   ],
+   "avoid": [
+    "Greyed out in CMYK documents: the Filter Gallery effects need an RGB document (File > Document Color Mode > RGB) or do the look in Photoshop.",
+    "Light layouts: the effect fills every shape with black; for a glow that keeps the fill use Illustrator Effects > Stylize > Outer Glow or Inner Glow.",
+    "Single-colour shapes on an empty artboard: in the probe only the internal fill/stroke boundary lit up and the outer edge against the transparent artboard stayed black, so an unstroked logo mark or type is likely to come out as a plain black silhouette; group it with a filled background shape first, or use a stroke plus Outer Glow.",
+    "Crisp vector neon lines: the edges are raster; for scalable neon use a stroke plus Outer Glow.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send Edge Width / Edge Brightness / Smoothness (binary 'data' descriptor), so a scripted apply runs without them (it then uses the dialog's last-used values; the gallery route, see scripting, carries chosen values)."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Stylize/Glowing Edges"
+   },
+   "look": [
+    "neon",
+    "glowing outlines",
+    "edges on black",
+    "blacklight",
+    "x-ray",
+    "electric",
+    "line glow",
+    "dark"
+   ],
+   "params": [
+    {
+     "name": "Edge Width",
+     "does": "thickness of the glowing edge lines",
+     "typical": "2 (dialog value at harvest) for fine lines, 4-6 for bold neon tubes"
+    },
+    {
+     "name": "Edge Brightness",
+     "does": "how bright and saturated the glowing lines are",
+     "typical": "6 (dialog value at harvest) is dim; 12-18 for a vivid glow"
+    },
+    {
+     "name": "Smoothness",
+     "does": "smooths the detected edges, dropping small noisy edges and giving cleaner, softer lines",
+     "typical": "5 (dialog value at harvest); 5-10 on photos"
+    }
+   ],
+   "demo_settings": {
+    "Edge Width": 4,
+    "Edge Brightness": 15,
+    "Smoothness": 5
+   },
+   "enum_labels": {
+    "GEfk": {
+     "GlwE": "Glowing Edges (this effect's own Filter Gallery code)"
+    }
+   },
+   "pairs_with": [
+    "Transparency panel Screen: the glowing copy over dark artwork drops the black and keeps only the lines",
+    "Illustrator Effects > Stylize > Outer Glow on a duplicate for extra bloom",
+    "Effect > Blur > Gaussian Blur on a Screen-mode copy for a soft neon haze"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_GlwE\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect (round trip verified), but Edge Width / Edge Brightness / Smoothness live in the binary 'data' descriptor that Dict data cannot carry, so the scripted result does not use chosen values; the plug-in then uses the dialog's last-used values (render check: visible change, mean diff 13.50). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_GlwE'), which opens the 'Glowing Edges (100%)' dialog pre-filled with the last-used values, where the values are set and confirmed with OK (a person or UI automation); or save the look as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the probe line is thin and dim purple at the inner fill/stroke boundary, and the outer edge against the empty artboard did not glow (render read pixel by pixel); added that as an avoid, and the logo use_for now needs a filled background shape; the batch only says a scripted apply runs without the Photoshop parameters and their rendering is unverified, so 'uses the plug-in's fallback settings' was reworded to 'runs without them (values unverified)'; the executeMenuCommand route now says the values are set in the dialog and confirmed with OK. Checked and kept: demo_settings sit inside the ranges the Photoshop harvest probed for the same Filter Gallery plug-in; the named equivalents exist in pgd.py."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/749ff25ea51f.png",
+    "note": "Every flat area goes black and only the contours glow as bright neon lines in colours taken from the edges (the strip blocks reduced to coloured outlines), as the card describes.",
+    "rerender": false
+   }
+  }
+ ]
+}

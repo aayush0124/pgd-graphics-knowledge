@@ -1,0 +1,453 @@
+{
+ "cards": [
+  {
+   "name": "Insert Placeholder Text",
+   "id": "4aa2e1ed-c1c9-455b-b9d0-dd38b425e4b6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Paragraph Text Frame/Insert Placeholder Text",
+   "status": "needs_input",
+   "summary": "Fills the selected paragraph text frame with dummy placeholder text so a layout can be judged before the real copy arrives. Disabled in every probed state (no document, empty document, rectangle or bitmap selected): its enable state comes from the Text tool component, so it needs a paragraph text frame selected or being edited.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4aa2e1ed-c1c9-455b-b9d0-dd38b425e4b6\"); object model alternative: write your own string with Shape.Text.Story.Text = \"...\" (unverified)",
+   "use_for": [
+    "rough out a brochure or magazine spread with filled body-copy frames",
+    "test column count, leading and frame linking before the client copy is ready"
+   ],
+   "avoid": [
+    "final output: the dummy text is real text and will print or export; replace it, and run Spell Check or a search before release",
+    "nothing selected, or an artistic text / plain shape selected: the command stays disabled; create a frame with Create Empty Text Frame first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Type/Paste Lorem Ipsum",
+    "AI": "Type/Fill With PlaceHolder Text"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Link",
+   "id": "14753345-8b01-483e-b2c5-d655b4998aa0",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Paragraph Text Frame/Link",
+   "status": "needs_input",
+   "summary": "Links the selected paragraph text frames so text that overflows the first flows on into the next, giving one story across several frames, columns or pages. Disabled in every probed state (nothing, a rectangle or a bitmap selected); its enable test (LinkTextFramesEnable) points to two or more paragraph text frames being selected.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"14753345-8b01-483e-b2c5-d655b4998aa0\"); object model: Shape.Text.Frame.LinkTo(TargetShape) (TextFrame.LinkTo(Shape) is harvested; call unverified)",
+   "use_for": [
+    "flow one article across columns or pages of a newsletter",
+    "continue overflowing body copy into a second frame (to flow it into a drawn shape, use the frame's overflow tab or TextFrame.LinkTo(Shape))"
+   ],
+   "avoid": [
+    "artistic text: only paragraph text frames link; convert the text to paragraph text first",
+    "a single selected frame: the command needs both the source and the target selected"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Type/Threaded Text/Create"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/use_for: dropped the unsupported claim that the menu command links a frame to any object and the invented 'at least one a frame' enable rule; shape linking now pointed at the overflow tab or TextFrame.LinkTo(Shape)"
+   }
+  },
+  {
+   "name": "Show Text Frames",
+   "id": "2c6d197a-1ba0-4932-ac89-549fa7f2f172",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Paragraph Text Frame/Show Text Frames",
+   "status": "current",
+   "summary": "Check toggle (an application-wide view setting) that shows or hides the on-screen boundary of paragraph text frames. The boundary is a screen guide only and never prints. Enabled in every probed state, including with no document; its enable test turns it off only in Page Sorter view.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"2c6d197a-1ba0-4932-ac89-549fa7f2f172\")",
+   "use_for": [
+    "see where empty or unfilled text frames sit while laying out a page",
+    "hide frame outlines for a clean on-screen proof or a screenshot"
+   ],
+   "avoid": [
+    "scripts that need a known state: invoking it flips the toggle and the harvested object model has no call that reads this setting, so check the menu tick before invoking"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: Page Sorter view was not a probed state, it is the enable expression; avoid: 'read the current state first' named no way to do it, now says none is harvested"
+   }
+  },
+  {
+   "name": "Unlink",
+   "id": "a2286835-2538-4291-bd95-ff24b7dbc69b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Paragraph Text Frame/Unlink",
+   "status": "needs_input",
+   "summary": "Breaks the link between the selected linked paragraph text frames so text stops flowing from one to the next; each frame keeps the text it was showing. It shares Link's enable test (LinkTextFramesEnable), so it enables on the same frame selection as Link and was disabled in every probed state.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"a2286835-2538-4291-bd95-ff24b7dbc69b\"); object model: Shape.Text.Frame.UnLink (TextFrame.UnLink is a harvested member; call itself unverified)",
+   "use_for": [
+    "split one long story into independent frames for separate editing",
+    "detach a frame before deleting or moving it to another layout"
+   ],
+   "avoid": [
+    "frames that are not linked: there is nothing to break, even though the command can be enabled by the same selection that enables Link",
+    "when you only want to change where text flows: unlink, then Link to the new target"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Type/Threaded Text/Remove Threading"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/avoid: removed 'needs linked frames selected / stays disabled when not linked', which contradicts the batch (Unlink uses the same enable test as Link)"
+   }
+  },
+  {
+   "name": "Show Non-Printing Characters",
+   "id": "964c2574-5f78-4da3-9356-c523b4e03a54",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Show Non-Printing Characters",
+   "status": "current",
+   "summary": "Check toggle (an application preference) that displays hidden formatting marks inside text: spaces, tabs, paragraph returns, line breaks and similar. The marks are on screen only and never print. Needs an open document.",
+   "shortcut": "Ctrl+Shift+C (registered in two context shortcut tables, so it applies only in those contexts)",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"964c2574-5f78-4da3-9356-c523b4e03a54\")",
+   "use_for": [
+    "find double spaces, stray tabs and extra returns in imported body copy",
+    "check why a line breaks or a tab column will not align"
+   ],
+   "avoid": [
+    "scripts that need a known state: invoking it flips the toggle and the harvested object model has no call that reads this preference, so check the menu tick before invoking",
+    "no document open: the command is disabled"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Type/Show Hidden Characters"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'read the state first' named no way to do it; now says no read call is harvested"
+   }
+  },
+  {
+   "name": "Straighten Text",
+   "id": "0ce0b6c1-eab7-4b59-9cd9-d42c1fe89195",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Straighten Text",
+   "status": "needs_input",
+   "summary": "Removes the horizontal and vertical shifts and the rotation applied to individual characters (for example with the Shape tool or character shift settings), putting the text back in a straight line on its baseline. Disabled in every probed state: it needs a text object selected.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"0ce0b6c1-eab7-4b59-9cd9-d42c1fe89195\"); object model: Shape.Text.Story.Straighten (TextRange.Straighten is a harvested member, described as removing horizontal and vertical character shifts and their rotation; call itself unverified)",
+   "use_for": [
+    "reset a playful bouncing-letter headline back to straight type",
+    "clean up imported text whose characters were nudged or rotated one by one"
+   ],
+   "avoid": [
+    "when you only want to remove vertical shifts and keep the rotations: use Text/Align to Baseline",
+    "text converted to curves: it is no longer text, so there is nothing to straighten"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Tabs",
+   "id": "9f68d8b2-92a1-4165-8b90-5cd380bfd319",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Tabs",
+   "status": "current",
+   "summary": "Opens the tab settings dialog for paragraph text: add, move and delete tab stops, set their alignment and leader characters. Enabled in a document even with a rectangle or bitmap selected, which suggests that with no paragraph text selected it edits the default paragraph style's tabs.",
+   "how": "Add tab stops by position or repeat them at a fixed interval, set each stop's alignment (left, right, centre, decimal), and switch on a leader character (for example dots) with its spacing for menu and price-list rows.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9f68d8b2-92a1-4165-8b90-5cd380bfd319\"); object model: Shape.Text.Story.Tabs.Add(Position, Alignment, Leadered) / .AddEvery(Position, Alignment, Leadered) / .Clear, Alignment = cdrTextTabLeft|cdrTextTabRight|cdrTextTabCenter|cdrTextTabDecimal, plus .LeaderCharacter and .LeaderSpacing (TextRange.Tabs returns TextTabPositions; signatures harvested, calls unverified)",
+   "use_for": [
+    "restaurant menu or price list with dot leaders to a right-aligned price",
+    "decimal-aligned figures in a spec sheet without building a table"
+   ],
+   "avoid": [
+    "artistic text: tab stops apply to paragraph text",
+    "real grid data that needs borders, shading or cell merges: use the Table menu instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Type/Tabs"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the Add/AddEvery arguments are in the harvest (Position, cdrTextTabAlignment, Leadered), so gave them instead of 'exact arguments unverified'"
+   }
+  },
+  {
+   "name": "Text",
+   "id": "9d4d5201-9b1b-f9a0-4505-b470880ad5c2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Text",
+   "status": "current",
+   "summary": "Opens or closes the Text docker, the main typography panel with Character, Paragraph and Frame sections (font, size, fill, kerning, alignment, spacing, indents, columns and frame alignment). Check item that reflects whether the docker is open; enabled in every probed state. Also at Window/Dockers/Text.",
+   "shortcut": "Ctrl+T",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9d4d5201-9b1b-f9a0-4505-b470880ad5c2\"); object model: FrameWork.ShowDocker(\"a3f597ca-e079-ab88-4e2f-28a3b4db6d8e\") / HideDocker / IsDockerVisible (harvested FrameWork methods; the GUID is the docker bound to this item's check state; unverified)",
+   "use_for": [
+    "set font, size, tracking and leading for a headline or body copy",
+    "set paragraph alignment, indents, columns and vertical frame alignment"
+   ],
+   "avoid": [
+    "scripts that need it open: invoking toggles it closed if it is already open; test FrameWork.IsDockerVisible first or call ShowDocker, which only opens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Window/Character",
+    "AI": "Window/Type/Character"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api/avoid: added the harvested IsDockerVisible / HideDocker so a script can read and set the docker state"
+   }
+  },
+  {
+   "name": "Text Statistics",
+   "id": "bf3bd8fe-ca26-4fe0-91b0-3b5c99786fb6",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Text Statistics",
+   "status": "current",
+   "summary": "Opens a read-only dialog reporting statistics for the selected text or, with nothing selected, the whole document: counts such as lines, words and characters, and the fonts used. Needs an open document. The exact list of fields is from general knowledge, not the harvest.",
+   "how": "Nothing to set: read the counts and the font list, then close. Select a text object first to get figures for that object only.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"bf3bd8fe-ca26-4fe0-91b0-3b5c99786fb6\"); object model: Shape.Text.Story.Words.Count, .Characters.Count, .Lines.Count, .Paragraphs.Count (TextRange collections are harvested; unverified)",
+   "use_for": [
+    "check copy length against a word count brief",
+    "list the fonts a file uses before packaging it for print"
+   ],
+   "avoid": [
+    "automation: the dialog needs a person to close it; count with the object model instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Use Hyphenation",
+   "id": "ecda8c51-d340-4a6d-a86b-c85e2bdabf36",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Use Hyphenation",
+   "status": "current",
+   "summary": "Check toggle that turns automatic hyphenation on or off for the selected paragraph text, so long words break across lines with a hyphen. Enabled in a document even with a rectangle or bitmap selected, which suggests that with no text selected it changes the default paragraph style.",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"ecda8c51-d340-4a6d-a86b-c85e2bdabf36\"); object model: Shape.Text.Story.AutoHyphenate = cdrTrue (TextRange.AutoHyphenate is a harvested cdrTriState property; unverified)",
+   "use_for": [
+    "justified narrow columns that would otherwise show wide word gaps",
+    "dense body copy in brochures and newsletters"
+   ],
+   "avoid": [
+    "headlines, logos and short display lines: hyphens there look like mistakes",
+    "scripts that need a known state: the menu flips the toggle; set AutoHyphenate instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "toggleAutoHyphen"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "WhatTheFont",
+   "id": "629b84fd-fb2d-44a5-9dfa-832bb3074400",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/WhatTheFont",
+   "status": "hidden",
+   "summary": "Font identification: you drag a capture area around lettering in the drawing window (for example type in a placed bitmap) and it is sent to the online WhatTheFont service, which suggests matching fonts. In 25.1 the item's visibility is bound to a constant false, so it no longer appears in the menu. Its probed enable states were odd (on with no document, off in an empty document, on with a rectangle or bitmap selected).",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"629b84fd-fb2d-44a5-9dfa-832bb3074400\")",
+   "use_for": [
+    "identify the font in a client's scanned or photographed logo"
+   ],
+   "avoid": [
+    "relying on it in 25.1: the item is hidden and the online service may not answer; identify the font outside CorelDRAW",
+    "offline machines: the lookup needs an internet connection"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Type/Match Font",
+    "AI": "Type/Retype"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial (hidden item whose capture and web lookup need a person); summary: it captures a dragged area, not 'the selected artwork'"
+   }
+  },
+  {
+   "name": "Grammatik",
+   "id": "e80117b8-7406-4072-aaf8-7710f55b2f2e",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/Grammatik",
+   "status": "needs_input",
+   "summary": "Opens the Writing Tools dialog on the Grammatik grammar checker, which flags grammar, punctuation and style problems in the document's text and suggests replacements. Visible on the harvest machine (Grammatik installed) but enabled only when the drawing contains at least one text object, so it was disabled in every probed state.",
+   "how": "Step through each flagged problem and choose Replace, Skip once or Skip all. The rules used depend on the text's language tag (set with Writing Tools/Language).",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e80117b8-7406-4072-aaf8-7710f55b2f2e\")",
+   "use_for": [
+    "proof longer copy (brochure body text, flyer paragraphs) before print"
+   ],
+   "avoid": [
+    "automation: the dialog waits for a person at every flag",
+    "languages Grammatik does not support: tag the text with Writing Tools/Language and use Spell Check, or proof the copy in a word processor"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Language",
+   "id": "947e5baa-3f40-4ef6-a7eb-0725d3c98992",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/Language",
+   "status": "needs_input",
+   "summary": "Opens a dialog that tags the selected text with a language, which the spell checker, Grammatik, Thesaurus and hyphenation then use. It changes no glyphs. Enabled only while editing text or with exactly one text object selected, so it was disabled in every probed state.",
+   "how": "Pick the language from the list and confirm; select only the words in a second language to tag just those.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"947e5baa-3f40-4ef6-a7eb-0725d3c98992\"); object model: Shape.Text.Story.LanguageID = <cdrTextLanguage value> (TextRange.LanguageID is a harvested property; unverified)",
+   "use_for": [
+    "bilingual layouts so each language is spell-checked and hyphenated by its own rules",
+    "stop the spell checker flagging every word of a foreign-language line"
+   ],
+   "avoid": [
+    "expecting it to switch font or script: it only tags the language; change the font in the Text docker"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "QuickCorrect",
+   "id": "2edc8b8b-1a92-41a6-8134-59580b22f1a2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/QuickCorrect",
+   "status": "current",
+   "summary": "Opens the QuickCorrect settings, the type-as-you-go corrections: a replacement list (for example (c) to the copyright sign), capitalising the first letter of sentences, fixing two initial capitals and typographic quotes. Needs an open document.",
+   "how": "Switch the individual corrections on or off and add your own replace-this-with-that entries; they apply to text typed afterwards, not to existing text.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"2edc8b8b-1a92-41a6-8134-59580b22f1a2\")",
+   "use_for": [
+    "auto-insert symbols or long brand names from a short typed code",
+    "stop unwanted auto-capitalisation when typing lowercase brand styling"
+   ],
+   "avoid": [
+    "fixing text already in the file: QuickCorrect works only while typing; use Edit/Find and Replace"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Settings",
+   "id": "f33ec567-fc13-4ac9-83b3-5c1916e120e3",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/Settings",
+   "status": "current",
+   "summary": "Opens the writing-tools spelling settings (the bound handler is named SpellAssist), presumably options such as automatic spell checking while typing, which errors to show and which words to ignore. Enabled in every probed state, including with no document; its enable test turns it off only while CorelDRAW is in-place active inside another application. The exact options are not in the harvest.",
+   "how": "Choose whether spelling is checked as you type and how errors and suggestions are shown, then confirm.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f33ec567-fc13-4ac9-83b3-5c1916e120e3\")",
+   "use_for": [
+    "turn off red squiggles while working on display type full of brand names",
+    "set up spell checking before proofing a text-heavy layout"
+   ],
+   "avoid": [
+    "running a check: this only sets options; use Writing Tools/Spell Check"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: in-place activation was not a probed state, it is the enable expression; reworded"
+   }
+  },
+  {
+   "name": "Spell Check",
+   "id": "067b5be7-8e74-47f9-817d-ded0d4c18eb2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/Spell Check",
+   "status": "needs_input",
+   "summary": "Opens the Writing Tools dialog on the spell checker, which steps through misspelled words in the selected text or the document and offers replacements. Visible on the harvest machine but enabled only when the drawing contains at least one text object, so it was disabled in every probed state.",
+   "shortcut": "Ctrl+F12",
+   "how": "For each flagged word choose Replace, Skip once, Skip all or add it to the user word list; the check range can be the selection or the whole document.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"067b5be7-8e74-47f9-817d-ded0d4c18eb2\")",
+   "use_for": [
+    "proof headlines and body copy before sending a layout to print",
+    "catch typos in imported or retyped client copy"
+   ],
+   "avoid": [
+    "text converted to curves: it is no longer text and is not checked; check before converting",
+    "automation: the dialog waits for a person at every word"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Check Spelling",
+    "AI": "Edit/Spelling/Check Spelling..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Thesaurus",
+   "id": "72106e09-c1d2-4ccd-894d-94f73500f23b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Text/Writing Tools/Thesaurus",
+   "status": "current",
+   "summary": "Opens the Writing Tools dialog on the Thesaurus, which looks up synonyms and related words for a word and can replace the selected word with one of them. Visible on the harvest machine and enabled whenever a document is open.",
+   "how": "Select a word in the text (or type one into the lookup), browse the meanings and their synonyms, then Replace to swap it into the text.",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"72106e09-c1d2-4ccd-894d-94f73500f23b\")",
+   "use_for": [
+    "find a shorter word so a headline fits its line",
+    "vary repeated words in body copy"
+   ],
+   "avoid": [
+    "automation: it is an interactive lookup dialog with nothing to script"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

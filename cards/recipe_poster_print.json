@@ -1,0 +1,1234 @@
+{
+ "cards": [
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Pop-art colour halftone",
+   "id": "recipe:poster_print:color_halftone_pop",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo or illustration is rebuilt from big overlapping cyan, magenta, yellow and black dots on rotated screens, the enlarged-print rosette of pop art.",
+   "use_for": [
+    "pop-art posters and album covers",
+    "retro comic-style portraits",
+    "bold social backgrounds from a plain photo"
+   ],
+   "avoid": [
+    "small output sizes with a large radius: the image dissolves into dots; scale the radius to the print size",
+    "faces you need to recognise at a glance: keep the original underneath at partial opacity",
+    "files going to a real CMYK press: the simulated dots clash with the press screen (moire); flatten to a high resolution and proof"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Duplicate the photo layer so the original stays untouched (or convert it to a smart object for a smart filter)."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "brightnessEvent",
+       "settings": {
+        "brightness": 10,
+        "center": 40,
+        "useLegacy": false
+       },
+       "note": "Optional punch first: Image > Adjustments > Brightness/Contrast (verified: brighter, ends held near black and white)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "colorHalftone",
+       "settings": {
+        "Radius": 12,
+        "Channel 1": 108,
+        "Channel 2": 162,
+        "Channel 3": 90,
+        "Channel 4": 45
+       },
+       "note": "Filter > Pixelate > Color Halftone: radius 12 px with the classic screen angles (verified frame: overlapping CMY-style dots with a rosette, pure saturated colours). Radius 20+ for a poster seen from far away."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_ClrH",
+       "settings": {
+        "Radius": 12,
+        "Channel 1": 108,
+        "Channel 2": 162,
+        "Channel 3": 90,
+        "Channel 4": 45
+       },
+       "note": "On the placed image or the artwork group: Effect > Pixelate > Color Halftone, same angles. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+       "note": "Convert to Bitmap first if the artwork is vector (the effect works on bitmaps)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "4a0eca0b-519f-48da-8599-1053461413b6",
+       "settings": {
+        "Cyan": 15,
+        "Magenta": 75,
+        "Yellow": 0,
+        "Max dot radius": 10
+       },
+       "note": "Effects > Color Transform > Halftone at the largest dot (verified: coarse CMYK screen with rosettes). The Black angle key was dropped in the test, so leave it at its default."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "1135",
+    "brightnessEvent",
+    "colorHalftone",
+    "Live PSAdapter_plugin_ClrH",
+    "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+    "4a0eca0b-519f-48da-8599-1053461413b6"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Newsprint mono halftone",
+   "id": "recipe:poster_print:newsprint_halftone",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo printed like an old newspaper: one black dot screen whose dots grow with the shadows, on a warm off-white paper tone with a little ink speckle.",
+   "use_for": [
+    "vintage newspaper and broadsheet mock-ups",
+    "zine and collage cut-outs",
+    "background photos that must stay quiet behind type"
+   ],
+   "avoid": [
+    "fine detail you need to read: a coarse screen erases it",
+    "shrinking the result afterwards: resampled dots turn to grey mush or moire; build it at final size",
+    "the Photoshop Bitmap route on an RGB document: Image > Mode > Bitmap only works on Grayscale"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1007",
+       "note": "Image > Mode > Grayscale on a copy of the document (verified: colour channels become one Gray channel)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1006",
+       "note": "Image > Mode > Bitmap: changeMode(ChangeMode.BITMAP, options) with a BitmapConversionOptions (next step); flattens the layers."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:BitmapConversionOptions",
+       "note": "method = HALFTONESCREEN, resolution = output ppi (e.g. 300), frequency = 20-35 lines per inch for a visible dot, angle = 45, shape = ROUND."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1007",
+       "note": "Back to Grayscale (then RGB) so the paper tone can be added on a layer above in Multiply."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Add Noise",
+       "settings": {
+        "noise": 4,
+        "distort": "gaussianDistribution",
+        "monochromatic": true
+       },
+       "note": "Faint monochrome speckle like ink and paper fibre (verified: Add Noise at 25 % is strong; keep it low)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_HlfS",
+       "settings": {
+        "Size": 3,
+        "Contrast": 10,
+        "Pattern Type": "Dot"
+       },
+       "note": "On the placed photo: Effect > Sketch > Halftone Pattern, Dot type, small size, low contrast; the sketch effects use the default black and white. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "Image in Multiply over a rectangle in the paper colour (#EFE8D8) so the white turns into paper."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+       "note": "Bitmaps > Mode > Grayscale (8-bit)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "256c8079-fd98-4d81-8553-ec2c5eaf758f",
+       "note": "Bitmaps > Mode > Black and White (1-bit) with the Halftone conversion method, round dots, 20-35 lpi (dialog; the object-model route ConvertToBW is unverified)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+       "settings": {
+        "NoiseMode": "Gaussian",
+        "Level": 15,
+        "Density": 30,
+        "ColorMode": "Intensity"
+       },
+       "note": "Optional, on a grayscale copy before the 1-bit step: light Gaussian intensity noise for ink grit."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "CorelDRAW: the 1-bit halftone conversion settings live in the Black and White dialog.",
+    "A 1-bit bitmap in CorelDRAW or Illustrator can then be coloured: its black pixels take the object's fill colour."
+   ],
+   "built_from": [
+    "1007",
+    "1006",
+    "class:BitmapConversionOptions",
+    "addNoise",
+    "Live PSAdapter_plugin_HlfS",
+    "MULTIPLY",
+    "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+    "256c8079-fd98-4d81-8553-ec2c5eaf758f",
+    "b08950be-822b-491b-8fa8-74821cef12e8",
+    "halftoneScreen"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Risograph two-ink print",
+   "id": "recipe:poster_print:risograph",
+   "app": "multi",
+   "status": "current",
+   "summary": "Two flat fluorescent inks (typically pink and blue) printed as grainy halftones that overlap into a third colour and sit slightly out of register.",
+   "use_for": [
+    "indie posters, zines and event flyers",
+    "illustrations that should feel hand-printed",
+    "a warm, imperfect alternative to full colour"
+   ],
+   "avoid": [
+    "brand colours that must match exactly: riso inks and offsets are approximate by design",
+    "more than two or three inks: the look turns muddy",
+    "large solid areas of both inks: they overprint dark; give each ink its own parts of the image"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Duplicate the (greyscale-looking) image layer: the bottom copy becomes ink 1, the top copy ink 2. Desaturate both first."
+      },
+      {
+       "kind": "ps_adjustment",
+       "name": "Desaturate",
+       "note": "Image > Adjustments > Desaturate on each copy (verified: flat greyscale)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "halftoneScreen",
+       "settings": {
+        "halftoneSize": 3,
+        "center": 12,
+        "screenType": "scratchDisks"
+       },
+       "note": "Ink 1 (bottom copy): Filter > Sketch > Halftone Pattern, Dot (scratchDisks): a black-and-white dot screen (verified frame). Use the default black / white colours."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "stamp",
+       "settings": {
+        "Light/Dark Balance": 20,
+        "Smoothness": 6
+       },
+       "note": "Ink 2 (top copy): Stamp gives flat two-tone shapes for the second ink (verified: smoothed black / white like a rubber stamp)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Color Overlay",
+       "settings": {
+        "mode": "screen",
+        "color": "#FF48B0",
+        "opacity": 100
+       },
+       "note": "On ink 1: Screen with fluorescent pink turns black to pink and keeps white white. On ink 2 the same with riso blue #0078BF."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Both ink layers in Multiply so white drops out and the overlap prints as a dark purple (the render matched the Multiply formula; 'wrong' refers to an outdated plate sentence)."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "note": "translate(3, 2) on ink 2: the deliberate misregistration."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Grain",
+       "settings": {
+        "Intensity": 25,
+        "Contrast": 50,
+        "Grain Type": "grainStippled"
+       },
+       "note": "On a merged copy: stippled grain for the drum texture (verified: Grain is strong; keep intensity low). Untested: stippled was not the rendered type (enlarged was)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "path:Edit/Edit Colors/Recolor with Preset/Two Color",
+       "note": "Edit Colors > Recolor with Preset > Two Color on the artwork, mapping it onto the two ink colours (menu path only: no executeMenuCommand id is known)."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "Put each ink's objects on its own layer and set them to Multiply so overlaps darken like ink."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Transform",
+       "settings": {
+        "numCopies": 0,
+        "moveH_Pts": 1.5,
+        "moveV_Pts": 1.0,
+        "scaleH_Percent": 100.0,
+        "scaleV_Percent": 100.0,
+        "scaleH_Factor": 1.0,
+        "scaleV_Factor": 1.0,
+        "rotate_Degrees": 0.0,
+        "rotate_Radians": 0.0,
+        "pinPoint": 4,
+        "transformObjects": true
+       },
+       "note": "On the second ink's group: move 1.5 pt right and 1 pt down, no copies: the misregistration (vertical sign unconfirmed)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_Grn ",
+       "settings": {
+        "Intensity": 30,
+        "Contrast": 50,
+        "Grain Type": "GrSp"
+       },
+       "note": "Effect > Texture > Grain on each ink group for the print texture. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+       "note": "Grayscale (8-bit) on the bitmap."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "fa741d10-48f6-4a96-b2bc-9d6cc5f28f40",
+       "note": "Bitmaps > Mode > Duotone (8-bit): two inks, pink and blue, each with its own curve (dialog; misregistration is not possible inside one duotone)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+       "settings": {
+        "NoiseMode": "Spike",
+        "Level": 30,
+        "Density": 20,
+        "ColorMode": "Intensity"
+       },
+       "note": "Ink grit: spike noise at low density (verified Add Noise; spike was not the rendered mode). Apply before the duotone step if the dialog refuses noise on a duotone bitmap."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "CorelDRAW: pick the two inks and shape their curves in the Duotone dialog.",
+    "Illustrator: decide which objects print in which ink (the Two Color recolour mapping) by eye."
+   ],
+   "built_from": [
+    "1135",
+    "desaturate",
+    "halftoneScreen",
+    "stamp",
+    "solidFill",
+    "multiply",
+    "class:ArtLayer",
+    "grain",
+    "path:Edit/Edit Colors/Recolor with Preset/Two Color",
+    "MULTIPLY",
+    "Live Transform",
+    "Live PSAdapter_plugin_Grn ",
+    "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+    "fa741d10-48f6-4a96-b2bc-9d6cc5f28f40",
+    "b08950be-822b-491b-8fa8-74821cef12e8"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Screen-print flat colour",
+   "id": "recipe:poster_print:screen_print",
+   "app": "multi",
+   "status": "current",
+   "summary": "An image reduced to a handful of flat ink colours with simplified, slightly rough shapes, like a hand-pulled screen print or gig poster.",
+   "use_for": [
+    "gig and film posters",
+    "T-shirt and merch artwork (limited ink count)",
+    "stylised portraits and landmarks"
+   ],
+   "avoid": [
+    "subtle gradients and skin tones you need to keep: they band into flat steps",
+    "type inside the image: the simplification breaks small letters into shards; set type on top afterwards",
+    "real screen-print separations from the Photoshop result alone: trace to vector so each ink is a clean shape"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:posterization",
+       "settings": {
+        "levels": 4
+       },
+       "note": "Posterize adjustment layer above the image: 4 levels per channel snaps tones into flat bands (verified screen-print look)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "cutout",
+       "settings": {
+        "No. of Levels": 5,
+        "Edge Simplicity": 4,
+        "Edge Fidelity": 2
+       },
+       "note": "On the image layer: Filter > Artistic > Cutout rebuilds it from flat colour levels with roughly cut edges (verified; it breaks type into shards, as warned)."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Add Noise",
+       "settings": {
+        "noise": 3,
+        "distort": "uniformDistribution",
+        "monochromatic": true
+       },
+       "note": "A trace of ink texture."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "Make and Expand Image Tracing",
+       "note": "On the placed photo: Image Trace with a 4-6 colour preset and expand it into flat filled shapes (object model: placedItem.trace(), then tracing.expandTracing(); set the colour count in the Image Trace panel)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Roughen",
+       "settings": {
+        "absoluteness": 1,
+        "asiz": 1.5,
+        "dtal": 20,
+        "roundness": 0
+       },
+       "note": "A very small corner roughen on the traced group makes the edges look cut by hand (verified: sharp irregular teeth at 12 pt; here 1.5 pt)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "e0065483-23c2-4a45-a57d-20888827a5f3",
+       "settings": {
+        "Level": 4
+       },
+       "note": "Effects > Color Transform > Posterize: 4 levels (verified)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "AF57ED80-7C7B-4d27-9081-204086A21FCC",
+       "note": "Outline Trace > Clipart (PowerTRACE) to turn the posterised bitmap into flat filled shapes; set the colour count in the dialog."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Illustrator and CorelDRAW: the trace colour count and smoothing are set in the Image Trace panel / PowerTRACE dialog."
+   ],
+   "built_from": [
+    "adjustmentLayer:posterization",
+    "cutout",
+    "addNoise",
+    "Make and Expand Image Tracing",
+    "Live Roughen",
+    "e0065483-23c2-4a45-a57d-20888827a5f3",
+    "AF57ED80-7C7B-4d27-9081-204086A21FCC"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Comic book ink and dots",
+   "id": "recipe:poster_print:comic_pop",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo turned into comic art: flat posterised colour, dark ink lines along the contrast edges and a dot screen showing in the shadows.",
+   "use_for": [
+    "comic-style portraits and reaction thumbnails",
+    "pop posters and event flyers",
+    "playful explainer illustrations from photos"
+   ],
+   "avoid": [
+    "low-contrast or soft photos: the edge lines come out patchy; add contrast first",
+    "serious or sensitive news photos: the cartoon look trivialises them"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1135",
+       "note": "Duplicate the photo layer."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "posterEdges",
+       "settings": {
+        "Edge Thickness": 3,
+        "Edge Intensity": 4,
+        "Posterization": 3
+       },
+       "note": "Bottom copy: Filter > Artistic > Poster Edges: flat posterised tones with dark lines along the edges (verified printed-poster look)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "colorHalftone",
+       "settings": {
+        "Radius": 6,
+        "Channel 1": 108,
+        "Channel 2": 162,
+        "Channel 3": 90,
+        "Channel 4": 45
+       },
+       "note": "Top copy: Color Halftone at a small radius for the dot screen."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Top copy in Multiply at 30-50 % opacity so the dots show mainly in the shadows (formula-verified mode)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_PstE",
+       "settings": {
+        "Edge Thickness": 3,
+        "Edge Intensity": 4,
+        "Posterization": 3
+       },
+       "note": "On the placed photo: Effect > Artistic > Poster Edges. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_ClrH",
+       "settings": {
+        "Radius": 6,
+        "Channel 1": 108,
+        "Channel 2": 162,
+        "Channel 3": 90,
+        "Channel 4": 45
+       },
+       "note": "On a copy in front (Paste in Front), set to Multiply at 40 %: Color Halftone dots."
+      },
+      {
+       "kind": "ai_blend_mode",
+       "id": "MULTIPLY",
+       "note": "The dotted copy in Multiply."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "e0065483-23c2-4a45-a57d-20888827a5f3",
+       "settings": {
+        "Level": 4
+       },
+       "note": "Posterize to 4 levels for flat colour."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "4a0eca0b-519f-48da-8599-1053461413b6",
+       "settings": {
+        "Cyan": 15,
+        "Magenta": 75,
+        "Yellow": 0,
+        "Max dot radius": 4
+       },
+       "note": "Halftone at a small dot radius over the posterised image."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "CorelDRAW: for ink outlines, trace a Find Edges copy (Effects > Contour > Find Edges, Solid) with Outline Trace > Line Art and lay the black lines on top."
+   ],
+   "built_from": [
+    "1135",
+    "posterEdges",
+    "colorHalftone",
+    "multiply",
+    "Live PSAdapter_plugin_PstE",
+    "Live PSAdapter_plugin_ClrH",
+    "MULTIPLY",
+    "e0065483-23c2-4a45-a57d-20888827a5f3",
+    "4a0eca0b-519f-48da-8599-1053461413b6",
+    "481e887a-d9e6-4864-8e28-8f27ab23baff",
+    "465261A5-B978-4d76-A63C-6969CE51CCCA"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Grunge distressed print",
+   "id": "recipe:poster_print:grunge_distress",
+   "app": "multi",
+   "status": "current",
+   "summary": "Artwork or type looks worn: ragged sprayed edges, speckled ink drop-outs and a rough surface grain, like a weathered poster or a well-used stamp.",
+   "use_for": [
+    "rock, street and sports posters",
+    "vintage labels and badges",
+    "distressed headline type"
+   ],
+   "avoid": [
+    "corporate and clean-tech layouts",
+    "small text: drop-outs make it unreadable; distress only display sizes",
+    "print files that need crisp vector edges: the effect is raster"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "Layer/Rasterize/Type",
+       "note": "Rasterize the type or shape layer (or work on a flattened copy)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "spatter",
+       "settings": {
+        "sprayRadius": 12,
+        "smoothness": 5
+       },
+       "note": "Filter > Brush Strokes > Spatter: edges turn ragged and speckled (verified), fills keep their colour."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Grain",
+       "settings": {
+        "Intensity": 40,
+        "Contrast": 60,
+        "Grain Type": "grainSpeckle"
+       },
+       "note": "Speckle grain for ink drop-outs (verified Grain; Speckle was not the rendered type)."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Texturizer",
+       "settings": {
+        "Texture Type": "texTypeSandstone",
+        "Scaling": 100,
+        "Relief": 6,
+        "Light Direction": "lightDirTopLeft",
+        "Invert Texture": false
+       },
+       "note": "Low sandstone relief for a rough surface (verified Texturizer, brick at 14; keep relief low)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live Roughen",
+       "settings": {
+        "absoluteness": 1,
+        "asiz": 1.5,
+        "dtal": 25,
+        "roundness": 0
+       },
+       "note": "On the type outlines or shapes: small corner roughen for chipped edges."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_Spt ",
+       "settings": {
+        "Spray Radius": 12,
+        "Smoothness": 5
+       },
+       "note": "Effect > Brush Strokes > Spatter: sprayed, ragged edges. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_Grn ",
+       "settings": {
+        "Intensity": 40,
+        "Contrast": 60,
+        "Grain Type": "GrSp"
+       },
+       "note": "Effect > Texture > Grain, speckle, for drop-outs."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+       "note": "Convert to Bitmap (bitmap effects need pixels)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+       "settings": {
+        "NoiseMode": "Spike",
+        "Level": 50,
+        "Density": 35,
+        "ColorMode": "Intensity"
+       },
+       "note": "Spike noise for speckle (verified Add Noise; spike not the rendered mode)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "cf70adb0-b20e-4850-a038-97047635dd0e",
+       "settings": {
+        "Roughness": 50,
+        "Detail": 50,
+        "LightDirection": 135,
+        "Invert": false
+       },
+       "note": "Effects > Texture > Stone at medium roughness: a lit pitted surface over the art, colours kept (verified at 100 / 100)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "A scanned paper or wall texture over the art in Multiply (your own scan) gives the most convincing grunge; none ships with this recipe."
+   ],
+   "built_from": [
+    "Layer/Rasterize/Type",
+    "spatter",
+    "grain",
+    "texturizer",
+    "Live Roughen",
+    "Live PSAdapter_plugin_Spt ",
+    "Live PSAdapter_plugin_Grn ",
+    "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+    "b08950be-822b-491b-8fa8-74821cef12e8",
+    "cf70adb0-b20e-4850-a038-97047635dd0e"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Printed-on-paper texture",
+   "id": "recipe:poster_print:paper_texture",
+   "app": "multi",
+   "status": "current",
+   "summary": "Flat digital artwork picks up the feel of uncoated paper or canvas: a fine embossed tooth, a slight warm tone and soft grain.",
+   "use_for": [
+    "illustrations and posters that feel too digital",
+    "book covers and stationery mock-ups",
+    "backgrounds for quote cards"
+   ],
+   "avoid": [
+    "UI and screen graphics that must stay crisp",
+    "large relief values: the texture overpowers the art",
+    "CorelDRAW Wave Paper when colours must hold: its render faded colours strongly toward pastel"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_filter",
+       "id": "texturizer",
+       "settings": {
+        "Texture Type": "texTypeCanvas",
+        "Scaling": 100,
+        "Relief": 4,
+        "Light Direction": "lightDirTopLeft",
+        "Invert Texture": false
+       },
+       "note": "Filter > Texture > Texturizer, canvas tooth lit from the top left (verified: relief embossed over the frame, colours kept)."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:photoFilter",
+       "settings": {
+        "Filter Color": "#E8C9A0",
+        "Density": 15,
+        "Preserve Luminosity": true
+       },
+       "note": "Photo Filter adjustment layer: a slight warm paper cast (verified with a cool filter, luminosity kept)."
+      },
+      {
+       "kind": "ps_filter",
+       "name": "Add Noise",
+       "settings": {
+        "noise": 2,
+        "distort": "gaussianDistribution",
+        "monochromatic": true
+       },
+       "note": "Fine fibre grain."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_Txtz",
+       "settings": {
+        "Texture Type": "TxCa",
+        "Scaling": 100,
+        "Relief": 4,
+        "Light Direction": "LDTL",
+        "Invert Texture": false
+       },
+       "note": "Effect > Texture > Texturizer, canvas, light top left, on the artwork group. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Bitmap",
+       "settings": {
+        "Front": 0,
+        "Back": 100,
+        "TransformWithShape": false
+       },
+       "note": "Cleanest route: a rectangle filled with the paper colour on top, given a bitmap pattern transparency from your own paper scan (FileName = that file; verified with a photo as the pattern)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "bdc5d812-24de-4136-8a91-e4689f4918f8",
+       "settings": {
+        "Pressure": 6,
+        "ColorMode": "Color"
+       },
+       "note": "Alternative on a bitmap: Effects > Art Strokes > Wave Paper lays a grainy paper texture (verified) but fades colours toward pastel."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Supply your own paper scan for the CorelDRAW bitmap-pattern transparency (no texture file ships with PGD)."
+   ],
+   "built_from": [
+    "texturizer",
+    "adjustmentLayer:photoFilter",
+    "addNoise",
+    "Live PSAdapter_plugin_Txtz",
+    "vector:Transparency:Bitmap",
+    "bdc5d812-24de-4136-8a91-e4689f4918f8"
+   ],
+   "confidence": "high"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Torn-paper collage piece",
+   "id": "recipe:poster_print:torn_paper",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo or colour block sits on a scrap of paper with a ragged torn edge and a soft shadow, ready to layer into a collage.",
+   "use_for": [
+    "collage posters and mood boards",
+    "quote and note cards",
+    "scrapbook-style social posts"
+   ],
+   "avoid": [
+    "perfectly repeating edges: tear each piece with a new random seed or the collage looks stamped",
+    "tiny pieces: a torn edge needs at least 300 px to read"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live Roughen",
+       "settings": {
+        "absoluteness": 1,
+        "asiz": 4,
+        "dtal": 30,
+        "roundness": 0
+       },
+       "note": "On a white or paper-coloured rectangle: corner points, fine detail, a few points of size: a jagged torn edge (verified: sharp irregular teeth)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Adobe Drop Shadow",
+       "settings": {
+        "horz": 3,
+        "vert": 3,
+        "blur": 6,
+        "opac": 0.4,
+        "blnd": 1
+       },
+       "note": "Soft shadow right and down so the scrap lifts off the page (verified: shadow offset right / down for positive values)."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "makeMask",
+       "note": "For a photo scrap: a second roughened shape over the photo, both selected, Make Clipping Mask."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Distort:Zipper",
+       "settings": {
+        "Amplitude": 6,
+        "Frequency": 30,
+        "Random": true,
+        "Smooth": false,
+        "Local": false
+       },
+       "note": "Zipper distortion with Random on and Smooth off gives an irregular torn edge (card: Random for torn paper). Untested: the verified frame had Random and Smooth off."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 45,
+        "Feather": 6,
+        "OffsetX": 0.04,
+        "OffsetY": -0.04,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 9
+       },
+       "note": "Soft shadow down-right."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:PowerClip",
+       "settings": {
+        "CenterInContainer": 0
+       },
+       "note": "Place the photo inside the torn shape (AddToPowerClip). Untested: PowerClip is a needs_input card with no render test."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "3541",
+       "note": "Layer > Rasterize > Shape on the paper rectangle layer."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "spatter",
+       "settings": {
+        "sprayRadius": 20,
+        "smoothness": 4
+       },
+       "note": "Spatter roughens the rectangle's edges into a ragged, fibrous border (verified: edges ragged and speckled)."
+      },
+      {
+       "kind": "ps_layer_style",
+       "name": "Drop Shadow",
+       "settings": {
+        "mode": "multiply",
+        "color": "#000000",
+        "opacity": 40,
+        "useGlobalAngle": false,
+        "localLightingAngle": 120,
+        "distance": 4,
+        "chokeMatte": 0,
+        "blur": 8
+       },
+       "note": "Soft shadow down-right of the scrap."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2972",
+       "note": "Put the photo layer above the scrap and Create Clipping Mask so it shows only inside the torn shape."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "CorelDRAW: the Roughen tool brushes a torn edge onto part of an outline by hand (no script call)."
+   ],
+   "built_from": [
+    "Live Roughen",
+    "Live Adobe Drop Shadow",
+    "makeMask",
+    "vector:Distort:Zipper",
+    "vector:DropShadow",
+    "vector:PowerClip",
+    "3541",
+    "spatter",
+    "dropShadow",
+    "2972"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Woodcut / linocut print",
+   "id": "recipe:poster_print:woodcut",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo becomes a bold two-tone relief print: solid black ink shapes with carved, slightly rough edges on paper.",
+   "use_for": [
+    "folk-style posters and book illustrations",
+    "craft beer and food labels",
+    "portraits with a hand-printed feel"
+   ],
+   "avoid": [
+    "busy, low-contrast photos: the two-tone cut loses the subject; pick a strong silhouette",
+    "fine facial detail: it fills in; crop tighter"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_adjustment",
+       "name": "Desaturate",
+       "note": "Greyscale first."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "stamp",
+       "settings": {
+        "Light/Dark Balance": 24,
+        "Smoothness": 8
+       },
+       "note": "Filter > Sketch > Stamp: flat smoothed black-and-white shapes like a rubber stamp or lino block (verified). Balance sets how much goes black."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "tornEdges",
+       "settings": {
+        "Image Balance": 25,
+        "Smoothness": 10,
+        "Contrast": 17
+       },
+       "note": "Optional: Torn Edges adds ragged, fibrous borders to the black shapes (verified two-tone with ragged edges)."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Lay the result in Multiply over a paper colour layer so white becomes paper."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_Stmp",
+       "settings": {
+        "Light/Dark Balance": 24,
+        "Smoothness": 8
+       },
+       "note": "On the placed photo: Effect > Sketch > Stamp. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Make and Expand Image Tracing",
+       "note": "For true vector cuts: rasterise the stamped result and Image Trace it in black and white, then expand."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "12be5151-7003-4b89-90d3-c8f016ddfd99",
+       "settings": {
+        "ScraperMode": "White",
+        "Density": 15,
+        "Size": 10
+       },
+       "note": "Effects > Art Strokes > Scraperboard in White mode: black surface with scratched white strokes, the closest scripted carved-print look (verified in Color mode; White mode not rendered)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "desaturate",
+    "stamp",
+    "tornEdges",
+    "multiply",
+    "Live PSAdapter_plugin_Stmp",
+    "Make and Expand Image Tracing",
+    "12be5151-7003-4b89-90d3-c8f016ddfd99"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "poster_print",
+   "name": "Line engraving",
+   "id": "recipe:poster_print:line_engraving",
+   "app": "multi",
+   "status": "current",
+   "summary": "A photo rendered as fine engraved lines whose thickness follows the tone, the banknote / old-print engraving look.",
+   "use_for": [
+    "vintage portraits and certificates",
+    "premium packaging and labels",
+    "editorial illustrations with a classic print feel"
+   ],
+   "avoid": [
+    "small output: the lines merge into grey; keep the line count low for small sizes",
+    "screens with scaling: line screens moire when resized; export at final size"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_filter",
+       "id": "halftoneScreen",
+       "settings": {
+        "halftoneSize": 2,
+        "center": 10,
+        "screenType": "screenLine"
+       },
+       "note": "Filter > Sketch > Halftone Pattern, Line: horizontal lines that thicken in the shadows (verified as a dot screen; the Line type was not rendered)."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "graphicPen",
+       "settings": {
+        "strokeLength": 12,
+        "lightDark": 50,
+        "strokeDirection": "strokeDirHorizontal"
+       },
+       "note": "Alternative: Graphic Pen draws fine parallel ink strokes, dense in the dark areas (verified, left diagonal)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live PSAdapter_plugin_GraP",
+       "settings": {
+        "Stroke Length": 12,
+        "Light/Dark Balance": 50,
+        "Stroke Direction": "SDHz"
+       },
+       "note": "On the placed photo: Effect > Sketch > Graphic Pen. Illustrator runs Photoshop Effects as raster effects at Document Raster Effects Settings resolution: set 300 ppi for print first."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "e1eab0e5-49cc-45ed-b6c2-d0eb33e97939",
+       "settings": {
+        "Style": "Crosshatch",
+        "Density": 50,
+        "InkPools": 10
+       },
+       "note": "Effects > Art Strokes > Pen & Ink, Crosshatch: a black crosshatch ink drawing on white (verified)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "5b7880f2-4266-4ce2-bc2b-eb85f3344795",
+       "settings": {
+        "Detail": 85,
+        "Depth": 60,
+        "LightDirection": 315
+       },
+       "note": "Alternative: Etching turns it into an engraved metal plate in one surface colour (verified: deep grooves lit from the upper left)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "halftoneScreen",
+    "graphicPen",
+    "Live PSAdapter_plugin_GraP",
+    "e1eab0e5-49cc-45ed-b6c2-d0eb33e97939",
+    "5b7880f2-4266-4ce2-bc2b-eb85f3344795"
+   ],
+   "confidence": "medium"
+  }
+ ]
+}

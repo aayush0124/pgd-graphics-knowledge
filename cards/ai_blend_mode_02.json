@@ -1,0 +1,334 @@
+{
+ "cards": [
+  {
+   "name": "Multiply",
+   "id": "MULTIPLY",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Multiply",
+   "status": "current",
+   "summary": "Multiplies the object's colour with the artwork beneath it, so the result is always darker: white in the top object disappears, black stays black, and colours mix like overprinted transparent inks. On the plate (the box sits under the magenta-to-violet third of the rectangle, the star under the middle, the circle under the blue-to-cyan third) the box turns red to dark red (243,5,21 to 176,34,22), the star a deeper blue (15,41,227), and the gradient circle olive-green to dark navy (76,89,34 to 8,46,81); the black type and strokes stay black and over the bare artboard the rectangle keeps its own colours.",
+   "use_for": [
+    "shadows and shading shapes that darken whatever is underneath",
+    "overprint / riso / screen-print look where overlapping colour shapes build darker mixes",
+    "dropping a scanned sketch or texture with a white background onto artwork so the white vanishes",
+    "tinting a logo area or photo with a flat colour without hiding the detail"
+   ],
+   "avoid": [
+    "on a dark background: multiply can only darken, so the object nearly vanishes; use Screen or Overlay",
+    "to lighten or glow: use Screen",
+    "for print without live transparency (PDF/X-1a, legacy EPS) the overlaps are flattened, and lowered opacity is transparency too; for ink-on-ink darkening without transparency use Overprint Fill in the Attributes panel and check Overprint Preview"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "multiply",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "darken",
+    "overprint",
+    "ink mix",
+    "shadow",
+    "riso",
+    "transparent ink",
+    "white knocks out"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Opacity in the Transparency panel to soften the darkening",
+    "Isolate Blending on a group to keep the mode from hitting artwork outside the group",
+    "Knockout Group",
+    "Drop Shadow effect, which defaults to Multiply (Inner and Outer Glow default to Screen)"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.MULTIPLY  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.MULTIPLY;",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live transparency attribute of the object or group, changed or reset (Normal) at any time; it is flattened only on export to formats without live transparency",
+   "cost": "negligible on screen; adds transparency flattening on export to PDF/X-1a, EPS or print",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Multiply (cdrMergeMultiply); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the wrong 'use Normal plus opacity' fix for no-transparency exports (opacity is transparency too), pointed to Overprint Fill; pairs_with: Inner Glow defaults to Screen (harvest blnd 2), only Drop Shadow defaults to Multiply (blnd 1); added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/731ae797641a.png",
+    "note": "Every overlap is darker: the box red to dark red, the star a deeper blue, the circle olive-green to dark navy, the black type and strokes stay black and the rectangle keeps its own colours over the bare artboard, as the card says; text corrected while passing (the star is a deeper blue, not violet). Maths check: the frame matches the standard Multiply formula on every plate shape within 0.35 levels on average (99th percentile 0.5), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Normal",
+   "id": "NORMAL",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Normal",
+   "status": "current",
+   "summary": "The default: no blending, the object simply covers what is beneath it (see-through only through its opacity). On the test plate the magenta-to-cyan rectangle hides the part of the group it covers completely.",
+   "use_for": [
+    "resetting an object that was set to another blend mode",
+    "plain opaque layout objects, text and logos",
+    "fades and see-through panels controlled only by opacity"
+   ],
+   "avoid": [
+    "when the colour should interact with the art underneath (darken, lighten, add contrast): pick Multiply, Screen, Overlay or Soft Light instead",
+    "expecting a reduced-opacity Normal object to look like a blend mode: it only cross-fades, it never darkens or adds contrast"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "normal",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "opaque",
+    "no blend",
+    "default",
+    "cover",
+    "plain"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Opacity in the Transparency panel",
+    "Opacity masks"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.NORMAL  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.NORMAL;",
+   "scriptable": "yes",
+   "non_destructive": "yes: the default transparency attribute; changing to any other mode and back loses nothing",
+   "cost": "none; a Normal object at full opacity adds no transparency to flatten",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Normal (cdrMergeNormal); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped an unharvested number (100%); added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/21b3708ac898.png",
+    "note": "The rectangle covers the part of the group under it completely (only the zigzag tips below it show), identical to the Normal reference, as the card says. Maths check: the frame matches the standard Normal formula on every plate shape within 0.0 levels on average (99th percentile 0.0), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Overlay",
+   "id": "OVERLAY",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Overlay",
+   "status": "current",
+   "summary": "Multiplies or screens depending on the colour underneath: darks of the lower artwork get darker, lights get lighter, so the top colour tints the mid-tones while the lower art's highlights and shadows are kept and contrast rises. On the plate (the box sits under the magenta-to-violet third of the rectangle, the star under the middle, the circle under the blue-to-cyan third) the box turns red to red-orange (255,10,41 to 255,67,44), the star stays a strong blue, and the gradient circle goes yellow-orange on its left to pink-magenta (211,91,162) under the cyan end, a punchy higher-contrast recolour rather than a visible magenta-to-cyan wash; the rectangle disappears over the black type and zigzag (black stays black) and shows its own colours over the bare artboard, since there is nothing to blend with.",
+   "use_for": [
+    "strong colour tint over illustrations or embedded photos that keeps their light and shade",
+    "duotone-style colour washes on poster art",
+    "adding contrast-boosting texture (grain, paper, halftone) over flat vector fills",
+    "colour-graded hero sections and social graphics"
+   ],
+   "avoid": [
+    "over pure white or pure black areas: nothing happens there; use Multiply (on white) or Screen (on black) instead",
+    "when a gentler tint is wanted: Soft Light is the softer sibling",
+    "Overlay uses the lower artwork as the deciding layer; swapping stacking order changes the result (Hard Light is the reverse)",
+    "Over the empty artboard there is nothing to blend with, so the object shows its own colours there (the artboard is not a white object); put a white shape behind it if it must react to the 'paper'."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "overlay",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "contrast",
+    "colour wash",
+    "tint",
+    "punchy",
+    "duotone",
+    "vivid",
+    "texture overlay"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Opacity below full to tame the tint",
+    "Isolate Blending on the group",
+    "grain / texture images or Grain effect on the top object",
+    "Soft Light as a gentler alternative"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.OVERLAY  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.OVERLAY;",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live transparency attribute of the object or group, changed or reset at any time; flattened only on export to formats without live transparency",
+   "cost": "negligible on screen; adds transparency flattening on export to PDF/X-1a, EPS or print",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Overlay (cdrMergeOverlay); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the rectangle does not vanish over the empty artboard (no backdrop to blend with, it shows its own colours), only over the black type/stroke; avoid: added the empty-artboard case; pairs_with: removed invented 50-80% opacity; added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/dca79f5bd0ac.png",
+    "note": "Contrast rises and the colours shift (box red, star strong blue, circle yellow-orange to pink-magenta) while the black type and zigzag stay black and the bare artboard shows the rectangle itself, as the card says; text corrected while passing (no cyan tint appears on the shapes, the sentence now names the sampled colours). Maths check: the frame matches the standard Overlay formula on every plate shape within 0.74 levels on average (99th percentile 1.5), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Saturation",
+   "id": "SATURATIONBLEND",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Saturation",
+   "status": "current",
+   "summary": "Keeps the hue and luminance of the artwork underneath and takes only the saturation of the top object, so the colours beneath become more or less vivid without changing hue or brightness. A grey top object turns what it covers greyscale; a vivid one pushes muted colours to full saturation. On the test plate the blend is subtle: the black type and zigzag stay neutral, and the already-saturated orange box, blue star and gradient circle change little under the saturated magenta and cyan ends (a little duller where the gradient's mid colours are less saturated); over the empty artboard the rectangle simply shows its own colours.",
+   "use_for": [
+    "desaturating part of an illustration or embedded photo by placing a grey shape in Saturation mode over it",
+    "selective black-and-white treatment with a colour accent left outside the shape",
+    "boosting muted colours of a placed image to full intensity with a saturated shape"
+   ],
+   "avoid": [
+    "expecting a colour change: Saturation never changes hue; to recolour use the Color or Hue mode",
+    "over white, black or grey areas: they have no saturation to change and stay as they are",
+    "over already-saturated flat colours (like the test plate) the change is barely visible",
+    "it is one of the modes that does not blend spot colours; convert spot colours to process before relying on it in print",
+    "Over the empty artboard there is nothing to blend with, so the object shows its own colours there (the artboard is not a white object); put a white shape behind it if it must react to the 'paper'."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "saturation",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "desaturate",
+    "greyscale",
+    "black and white",
+    "vivid",
+    "saturation boost",
+    "muted"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Luminosity, Color and Hue modes",
+    "Opacity to partially desaturate",
+    "Isolate Blending on the group",
+    "Edit > Edit Colors > Saturate as a destructive alternative"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.SATURATIONBLEND  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.SATURATIONBLEND;",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live transparency attribute of the object or group, changed or reset at any time; flattened only on export to formats without live transparency",
+   "cost": "negligible on screen; adds transparency flattening on export to PDF/X-1a, EPS or print",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Saturation (cdrMergeSaturation); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: over the empty artboard the rectangle shows its own colours (not a neutral 'white stays white' area), and less-saturated mid-gradient colours dull the art slightly; avoid: added the empty-artboard case; added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/e5190a272de3.png",
+    "note": "The change is subtle as described: the box stays orange on its left and goes duller tan-orange to the right, the star a duller blue, the circle slightly duller then more saturated red under cyan, while the type and zigzag stay neutral. Maths check: the frame matches the standard Saturation formula on every plate shape within 0.67 levels on average (99th percentile 1.8), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Screen",
+   "id": "SCREEN",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Screen",
+   "status": "current",
+   "summary": "Multiplies the inverse of the colours, so the result is always lighter, like projecting two slides onto one screen: black in the top object disappears and white stays white. On the test plate the magenta-to-cyan rectangle turns the black PGD type and zigzag magenta-to-cyan and lightens the orange box, blue star and gradient circle into pink, pale and near-white mixes; over the empty artboard it shows its own colours, since there is nothing to blend with.",
+   "use_for": [
+    "glows, light leaks, flares and highlights on dark artwork",
+    "dropping a light texture or bokeh image with a black background so the black vanishes",
+    "neon or lit-sign effects over dark backgrounds",
+    "knocking a dark logo area back to a lighter tint"
+   ],
+   "avoid": [
+    "over a white or very light object: screen can only lighten, so the object disappears; use Multiply or Overlay. Over the empty artboard it does not vanish but shows its own colours (the artboard is not an object to blend with)",
+    "to darken or add shadow: use Multiply",
+    "for print, lightened mixes over spot colours can separate unexpectedly; check Overprint Preview and flattener output"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "screen",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "lighten",
+    "glow",
+    "light leak",
+    "neon",
+    "projected light",
+    "black knocks out",
+    "pastel"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Outer Glow and Inner Glow effects, which default to Screen",
+    "Gaussian Blur effect on the top object for soft glows",
+    "Opacity to control brightness",
+    "Isolate Blending on the group"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.SCREEN  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.SCREEN;",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live transparency attribute of the object or group, changed or reset at any time; flattened only on export to formats without live transparency",
+   "cost": "negligible on screen; adds transparency flattening on export to PDF/X-1a, EPS or print",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Screen (cdrMergeScreen); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary + avoid: the rectangle does not vanish over the empty artboard (no backdrop, it shows its own colours), only over white objects; pairs_with: Outer and Inner Glow default to Screen (harvest blnd 2); added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/8b2a83cee1d9.png",
+    "note": "Everything under the rectangle gets lighter: the black type and zigzag take the gradient's colours, the box goes pink, the star pale periwinkle and the circle near-white pink-lavender, as the card says. Maths check: the frame matches the standard Screen formula on every plate shape within 0.34 levels on average (99th percentile 0.5), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Soft Light",
+   "id": "SOFTLIGHT",
+   "app": "AI",
+   "kind": "ai_blend_mode",
+   "path": "Window/Transparency/Blending Mode/Soft Light",
+   "status": "current",
+   "summary": "A gentle dodge/burn: where the top colour is lighter than mid-grey the artwork beneath is lightened, where it is darker the artwork is darkened, like shining a diffused spotlight on it. Pure white and pure black underneath stay unchanged. On the plate (the box sits under the magenta-to-violet third of the rectangle, the star under the middle, the circle under the blue-to-cyan third) the box turns red-orange (255,63,56 to 255,93,61), the star stays strong blue, and the gradient circle yellow-orange to pink (212,99,144) under the cyan end, a softer version of Overlay's shift; the rectangle disappears over the black type and zigzag and shows its own colours over the bare artboard. The frame matches the W3C soft-light formula, not Photoshop's.",
+   "use_for": [
+    "subtle colour grading or warm/cool washes over illustrations and placed photos",
+    "soft shading and lighting passes on flat vector art (grey shapes to dodge/burn)",
+    "gentle paper, grain or texture overlays that should not overpower the art"
+   ],
+   "avoid": [
+    "when a strong, obvious tint is wanted: use Overlay",
+    "over pure white or black areas nothing changes",
+    "it can look like it did nothing on low-contrast or very light art; raise the top colour's contrast or switch to Overlay",
+    "Over the empty artboard there is nothing to blend with, so the object shows its own colours there (the artboard is not a white object); put a white shape behind it if it must react to the 'paper'."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "softLight",
+    "CDR": "cdrMergeMode"
+   },
+   "look": [
+    "soft contrast",
+    "subtle tint",
+    "diffused light",
+    "gentle grade",
+    "dodge and burn",
+    "texture overlay"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Overlay as the stronger alternative",
+    "grain / paper textures",
+    "Opacity for fine control",
+    "Isolate Blending on the group"
+   ],
+   "scripting": "pageItem.blendingMode = BlendModes.SOFTLIGHT  // e.g. app.activeDocument.selection[0].blendingMode = BlendModes.SOFTLIGHT;",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live transparency attribute of the object or group, changed or reset at any time; flattened only on export to formats without live transparency",
+   "cost": "negligible on screen; adds transparency flattening on export to PDF/X-1a, EPS or print",
+   "equivalents_note": "CorelDRAW: Transparency tool, Merge mode Softlight (cdrMergeSoftlight); script: shape.Transparency.MergeMode.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the rectangle does not vanish over the empty artboard (no backdrop, it shows its own colours), only over the black type/stroke; dropped an unharvested number (50% grey); avoid: added the empty-artboard case; added CorelDRAW equivalents_note."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_blend_mode/0487383f1c81.png",
+    "note": "A milder Overlay: the box goes red-orange (Overlay gives pure red), the star stays strong blue, the circle yellow-orange to pink, the black type and zigzag stay dark; text corrected while passing (the sampled colours replace the 'magenta-to-cyan cast'); the frame matches the W3C soft-light formula, not Photoshop's. Maths check: the frame matches the standard Soft Light formula on every plate shape within 0.69 levels on average (99th percentile 1.3), and the rectangle shows its own colours over the bare artboard (error 0.0).",
+    "rerender": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,666 @@
+{
+ "cards": [
+  {
+   "name": "ParagraphStyle",
+   "id": "class:ParagraphStyle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/ParagraphStyle",
+   "status": "current",
+   "summary": "Scripting object for one named paragraph style (an entry of the Paragraph Styles panel). It stores character attributes (font, size, colour, tracking) and paragraph attributes (alignment, indents, spacing) under a name, and applyTo pushes them onto text so every frame it touches gets the same typography.",
+   "use_for": [
+    "consistent headline / body / caption typography across every text frame of a poster, brochure or menu",
+    "template automation: style copy dropped into a layout with one applyTo call per frame",
+    "restyling a whole document by editing one style instead of every frame"
+   ],
+   "avoid": [
+    "formatting a few characters inside a paragraph: use a CharacterStyle or the TextRange's characterAttributes",
+    "applyTo without clearingOverrides = true on text that already has local formatting: the overrides stay on top and the text does not match the style"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "IVGStyle",
+    "PS": "Window/Paragraph Styles"
+   },
+   "how": "Reached through the document's collection: app.activeDocument.paragraphStyles (ParagraphStyles). Create one with paragraphStyles.add(name), fetch one with paragraphStyles.getByName(name) or by index. Set its look through the characterAttributes and paragraphAttributes sub-objects, then call style.applyTo(textFrameOrTextRange, true). Over COM it is the same object with PascalCase members (Name, CharacterAttributes, ParagraphAttributes, ApplyTo, Clear, Delete).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "the style name shown in the Paragraph Styles panel; writable, so a script can rename a style"
+    },
+    {
+     "name": "characterAttributes",
+     "use": "character formatting the style carries (textFont, size, fillColor, tracking ...); set its properties"
+    },
+    {
+     "name": "paragraphAttributes",
+     "use": "paragraph formatting the style carries (justification, firstLineIndent, spaceBefore, spaceAfter ...); set its properties"
+    },
+    {
+     "name": "applyTo",
+     "use": "applyTo(textItem, clearingOverrides=false): apply the style to a text frame, text range or array of them; pass true to drop local overrides"
+    },
+    {
+     "name": "clear",
+     "use": "remove every attribute from the style so it defines nothing of its own"
+    },
+    {
+     "name": "remove",
+     "use": "delete this style from the document"
+    },
+    {
+     "name": "add",
+     "use": "listed on the instance but mirrors the collection; create styles with doc.paragraphStyles.add(name)"
+    },
+    {
+     "name": "removeAll",
+     "use": "listed on the instance but mirrors the collection (deletes all elements); avoid on a single style"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "returns \"ParagraphStyle\"; use to type-check objects from mixed lists"
+    }
+   ],
+   "gotchas": [
+    "applyTo's clearingOverrides defaults to false: local formatting already on the text survives the apply, so the text can look different from the style; pass true for a clean apply.",
+    "characterAttributes and paragraphAttributes are read-only references: change the style by setting their properties (style.paragraphAttributes.justification = Justification.CENTER), not by assigning a new object.",
+    "characterAttributes.textFont is typed TextFont: assign app.textFonts.getByName(\"<PostScript name>\"), not a font-name string.",
+    "The add / removeAll members on the instance mirror the collection; the COM interface has neither (it has Delete instead of remove). Create styles with doc.paragraphStyles.add(name).",
+    "paragraphStyles.add(name) with a name that already exists throws; look it up with getByName inside try/catch first (unverified).",
+    "The default [Normal Paragraph Style] cannot be removed (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar ps = doc.paragraphStyles.add(\"Body Copy\");\nps.characterAttributes.size = 11;\nps.paragraphAttributes.justification = Justification.LEFT;\nps.paragraphAttributes.spaceAfter = 6;\nps.applyTo(doc.textFrames[0].textRange, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Story",
+   "id": "class:Story",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/Story",
+   "status": "current",
+   "summary": "Scripting object for one flow of text: every character that runs through a chain of threaded (linked) text frames, or the text of a single unthreaded frame. It has no text or formatting of its own; it hands the text out as TextRange views (whole story, paragraphs, lines, words, characters) and lists the frames it flows through.",
+   "use_for": [
+    "reading or restyling the whole article of a multi-column brochure or magazine spread that is threaded across frames",
+    "counting characters of a body-copy flow for copy fitting",
+    "walking paragraphs in reading order across frames instead of frame by frame"
+   ],
+   "avoid": [
+    "writing text directly: Story has no contents; use story.textRange.contents",
+    "frame layout (position, columns, frame shape): use the TextFrameItem from story.textFrames, or its textPath"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "IVGText"
+   },
+   "how": "Reach it from a frame (app.activeDocument.textFrames[i].story) or from the document's list (app.activeDocument.stories). Illustrator makes and dissolves stories as frames are threaded or unthreaded; a script never constructs one. All text work goes through its TextRange views: textRange (the whole story), the paragraphs / lines / words / characters / insertionPoints / textRanges collections, and textFrames for the frames in thread order. COM: Story with Length, TextRange, TextFrames, Paragraphs ...",
+   "key_members": [
+    {
+     "name": "textRange",
+     "use": "the whole story as one TextRange: read/replace contents, format everything at once"
+    },
+    {
+     "name": "textFrames",
+     "use": "the frames this story flows through, in thread order"
+    },
+    {
+     "name": "paragraphs",
+     "use": "paragraphs of the story (each a TextRange) for per-paragraph styling"
+    },
+    {
+     "name": "lines",
+     "use": "composed lines as currently laid out (each a TextRange)"
+    },
+    {
+     "name": "words",
+     "use": "words of the story (each a TextRange)"
+    },
+    {
+     "name": "characters",
+     "use": "single characters (each a TextRange)"
+    },
+    {
+     "name": "insertionPoints",
+     "use": "positions between characters, for inserting text"
+    },
+    {
+     "name": "textRanges",
+     "use": "the story's text as a TextRanges collection (harvest: 'All the text in this text range'); how it is split is not documented, so do not assume formatting runs"
+    },
+    {
+     "name": "textSelection",
+     "use": "the text the user has selected inside this story"
+    },
+    {
+     "name": "length",
+     "use": "number of characters in the story"
+    },
+    {
+     "name": "parent",
+     "use": "the containing document"
+    },
+    {
+     "name": "typename",
+     "use": "returns \"Story\""
+    }
+   ],
+   "gotchas": [
+    "Story has no contents, no attributes and no edit methods of its own: read, write and format through story.textRange or its collections.",
+    "Point-text frames cannot be threaded, so each one is a story of its own; only area and path text can form multi-frame stories.",
+    "lines reflects the current composition: it changes when frames are resized or fonts change, and overset text that is not displayed may not appear in it (unverified).",
+    "textSelection is only filled while the user has text selected with the Type tool; in an unattended run expect it to be empty (unverified).",
+    "Looping over characters or words is one DOM call per element and gets slow on long stories; format whole paragraphs or the whole textRange when you can (unverified)."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar st = tf.story;\n$.writeln(st.length + \" chars in \" + st.textFrames.length + \" frames\");\nvar paras = st.paragraphs;\nfor (var i = 0; i < paras.length; i++) {\n  paras[i].characterAttributes.size = 12;\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "textRanges use no longer claims it splits the story into formatting runs (harvest gives no granularity)"
+   }
+  },
+  {
+   "name": "TextPath",
+   "id": "class:TextPath",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/TextPath",
+   "status": "current",
+   "summary": "The path a text frame lives on: the shape that holds area text, or the line that path (on-path) text runs along; point text has none. It carries the path geometry (pathPoints, setEntirePath, position, width, height) and its own fill, stroke, opacity and blend mode, so a script can colour or outline the text box shape separately from the letters.",
+   "use_for": [
+    "give an area-text box a background fill or border (callout, label panel, price tag) without drawing a separate rectangle",
+    "reshape the line a headline follows on a badge, seal or curved banner",
+    "read the text box's bounds or area for copy-fit and layout checks"
+   ],
+   "avoid": [
+    "colouring the letters: set textRange.characterAttributes.fillColor; textPath.fillColor paints the frame shape",
+    "point text: it has no text path; convert with textFrame.convertPointObjectToAreaObject() or build area text from a PathItem with textFrames.areaText(path)",
+    "duplicating, deleting or transforming the text object: TextPath has no duplicate / remove / transform; act on the owning TextFrameItem (position / top / left on the path are writable, but move the frame, not its path)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Read-only property of a text frame: app.activeDocument.textFrames[i].textPath, defined for frames whose kind is TextType.AREATEXT or TextType.PATHTEXT. A script does not create one directly: it draws a PathItem and passes it to textFrames.areaText(path) or textFrames.pathText(path, ...), which turns that path into the frame's text path. Geometry is then edited with setEntirePath / pathPoints, appearance with filled, fillColor, stroked, strokeColor, strokeWidth, opacity and blendingMode. COM: TextFrame.TextPath with PascalCase members (SetEntirePath, FillColor ...).",
+   "key_members": [
+    {
+     "name": "pathPoints",
+     "use": "the anchor points of the frame shape / text line"
+    },
+    {
+     "name": "setEntirePath",
+     "use": "replace the whole path from an array of [x, y] anchor points; the text reflows into the new shape"
+    },
+    {
+     "name": "filled",
+     "use": "turn on a fill for the frame shape (background panel behind area text)"
+    },
+    {
+     "name": "fillColor",
+     "use": "colour of that frame fill (not the glyph colour)"
+    },
+    {
+     "name": "stroked",
+     "use": "turn on an outline for the frame shape or the text line"
+    },
+    {
+     "name": "strokeColor",
+     "use": "outline colour of the frame shape"
+    },
+    {
+     "name": "strokeWidth",
+     "use": "outline weight in points"
+    },
+    {
+     "name": "strokeDashes",
+     "use": "dash lengths for a dashed frame border; empty for solid"
+    },
+    {
+     "name": "opacity",
+     "use": "opacity of the path appearance, 0.0-100.0"
+    },
+    {
+     "name": "blendingMode",
+     "use": "BlendModes value used when compositing the path"
+    },
+    {
+     "name": "position",
+     "use": "top-left corner of the text path"
+    },
+    {
+     "name": "width",
+     "use": "width of the text path (harvest range 0-16348)"
+    },
+    {
+     "name": "height",
+     "use": "height of the text path (harvest range 0-16348)"
+    },
+    {
+     "name": "top",
+     "use": "top edge position"
+    },
+    {
+     "name": "left",
+     "use": "left edge position"
+    },
+    {
+     "name": "closed",
+     "use": "whether the path is closed (area shapes) or open (a text line)"
+    },
+    {
+     "name": "area",
+     "use": "area of the path in square points (read-only)"
+    },
+    {
+     "name": "editable",
+     "use": "read-only flag: can this text path be modified"
+    },
+    {
+     "name": "clipping",
+     "use": "use the path as a clipping path"
+    },
+    {
+     "name": "note",
+     "use": "free-text note stored on the path"
+    }
+   ],
+   "gotchas": [
+    "Point text (TextType.POINTTEXT) has no text path (the harvest describes textPath as 'area and path text'): check textFrame.kind before touching textPath.",
+    "fillColor / strokeColor style the frame shape, not the glyphs: an area-text box with filled = true shows a coloured panel behind the text.",
+    "strokeMiterLimit's harvested description ('whether a join is mitered ...') is the wrong text: the member is a number, the miter-limit ratio.",
+    "strokeDashes: the harvest says 'set to {}' (AppleScript spelling); in ExtendScript pass an empty array [] for a solid line (unverified).",
+    "Unlike PathItem it has no transform, move, duplicate or remove members: transform the TextFrameItem instead.",
+    "Reshaping on-path text with setEntirePath can move where the text starts and ends; the frame's startTValue / endTValue may need resetting (unverified)."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nif (tf.kind == TextType.AREATEXT) {\n  var tp = tf.textPath;\n  var c = new RGBColor(); c.red = 255; c.green = 220; c.blue = 0;\n  tp.filled = true; tp.fillColor = c;\n  tp.stroked = true; tp.strokeWidth = 2;\n}",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid no longer says the path cannot be moved (position/top/left are writable in the harvest); added harvested 0-16348 range to width/height"
+   }
+  },
+  {
+   "name": "TextRange",
+   "id": "class:TextRange",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Text processing commands and classes for Adobe Illustrator/TextRange",
+   "status": "current",
+   "summary": "The workhorse of Illustrator text scripting: a run of characters inside a story (a whole frame's text, one paragraph, word or character, or any offset/length slice). Through it a script reads or replaces the string (contents) and formats just that run via characterAttributes and paragraphAttributes.",
+   "use_for": [
+    "writing headline and body copy into template text frames",
+    "highlighting a price, date or keyword in another size or colour inside a sentence",
+    "ALL-CAPS headlines (changeCaseTo) and per-word / per-letter styling for typographic posters",
+    "applying character or paragraph styles to part of the text"
+   ],
+   "avoid": [
+    "frame layout (position, columns, box shape): use the TextFrameItem or its TextPath",
+    "per-character loops over long copy: slow; format whole words, paragraphs or one sliced range instead",
+    "reusing ranges fetched before a contents edit: fetch them again after inserting or deleting text"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "IVGTextRange"
+   },
+   "how": "Get one from any text container: textFrame.textRange (whole frame), story.textRange (whole threaded story), or any element of the characters / words / lines / paragraphs / textRanges / insertionPoints collections (each element is itself a TextRange). Read or replace the text with contents; format with characterAttributes (textFont, size, fillColor, tracking ...) and paragraphAttributes (justification, indents, spacing); narrow it by setting characterOffset and length (or start / end). To apply a named style call characterStyle.applyTo(range) or paragraphStyle.applyTo(range). COM: TextRange with PascalCase members, Delete instead of remove.",
+   "key_members": [
+    {
+     "name": "contents",
+     "use": "the text string of the range; assign to replace it"
+    },
+    {
+     "name": "characterAttributes",
+     "use": "character formatting of this run: textFont, size, fillColor, strokeColor, tracking, baselineShift ..."
+    },
+    {
+     "name": "paragraphAttributes",
+     "use": "paragraph formatting of the paragraphs the range touches: justification, indents, spaceBefore/After ..."
+    },
+    {
+     "name": "characters",
+     "use": "the single characters in the range (each a TextRange)"
+    },
+    {
+     "name": "words",
+     "use": "the words in the range (each a TextRange)"
+    },
+    {
+     "name": "lines",
+     "use": "the composed lines in the range"
+    },
+    {
+     "name": "paragraphs",
+     "use": "the paragraphs in the range"
+    },
+    {
+     "name": "textRanges",
+     "use": "the range's text as a TextRanges collection; how it is split is not documented, so do not assume formatting runs (use getTextRunLength for the first run)"
+    },
+    {
+     "name": "insertionPoints",
+     "use": "positions between characters, for inserting text"
+    },
+    {
+     "name": "characterOffset",
+     "use": "offset of the first character from the start of the story; settable to slide the range"
+    },
+    {
+     "name": "length",
+     "use": "number of characters in the range; settable to grow or shrink it"
+    },
+    {
+     "name": "start",
+     "use": "start index of the range"
+    },
+    {
+     "name": "end",
+     "use": "end index of the range"
+    },
+    {
+     "name": "kerning",
+     "use": "pair kerning in milli-ems (thousandths of an em)"
+    },
+    {
+     "name": "story",
+     "use": "the story this range belongs to"
+    },
+    {
+     "name": "paragraphStyles",
+     "use": "paragraph styles already used in the range (read-only list)"
+    },
+    {
+     "name": "characterStyles",
+     "use": "character styles already used in the range (read-only list)"
+    },
+    {
+     "name": "changeCaseTo",
+     "use": "changeCaseTo(CaseChangeType.UPPERCASE / LOWERCASE / TITLECASE / SENTENCECASE)"
+    },
+    {
+     "name": "getTextRunLength",
+     "use": "length of the first run of uniformly formatted text in the range"
+    },
+    {
+     "name": "remove",
+     "use": "delete the characters of the range"
+    }
+   ],
+   "gotchas": [
+    "characterAttributes / paragraphAttributes are read-only references: set their properties (range.characterAttributes.size = 48), never assign a new object.",
+    "paragraphAttributes always act on whole paragraphs, even when the range covers only part of one.",
+    "characterStyles / paragraphStyles only list styles already used in the range; to apply a style call style.applyTo(range).",
+    "Assigning contents replaces the run; the new text takes the formatting of the first character that was replaced (unverified).",
+    "Ranges are not live anchors: after inserting or deleting text, ranges fetched earlier can point at the wrong characters; fetch them again (unverified).",
+    "Taking characters[n] and then setting its length is the usual way to slice an arbitrary sub-range (common idiom, unverified in 30.2).",
+    "Each characters[i] / words[i] access is a separate DOM call; loops over thousands of characters are very slow (unverified).",
+    "select() / deSelect() change the user's selection and need the document active; avoid them in unattended runs (unverified)."
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar r = tf.textRange;\nr.contents = \"Summer Sale\";\nr.paragraphAttributes.justification = Justification.CENTER;\nr.words[0].characterAttributes.size = 72;\nr.changeCaseTo(CaseChangeType.UPPERCASE);\n$.writeln(r.getTextRunLength());",
+   "review": {
+    "by": "adversarial",
+    "changes": "textRanges use no longer claims formatting runs (harvest gives no granularity)"
+   }
+  },
+  {
+   "name": "TracingObject",
+   "id": "class:TracingObject",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Tracing classes for Adobe Illustrator/TracingObject",
+   "status": "current",
+   "summary": "The live Image Trace result attached to a traced raster: the script handle on Illustrator's Image Tracing plugin group. It reports the trace's path, anchor and colour counts and turns the trace into real editable vector paths (expandTracing) or discards it and gives back the source image (releaseTracing).",
+   "use_for": [
+    "converting a raster logo, sketch, stamp or scanned signature into editable vector paths",
+    "batch-vectorising icons or line art for print, vinyl or laser cutting",
+    "checking trace complexity (anchors, paths, colours) before expanding, e.g. to reject an over-detailed result"
+   ],
+   "avoid": [
+    "photographs that must keep their photo look: tracing posterises into flat colour shapes; keep the raster",
+    "changing trace settings here: they live in tracingOptions (see TracingOptions)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "IVGTraceSettings"
+   },
+   "how": "Created by tracing a raster: app.activeDocument.rasterItems[i].trace() (or placedItems[i].trace()) returns a PluginItem whose isTracing is true and whose tracing property is this TracingObject. Adjust tracing.tracingOptions, let the trace recompute, read pathCount / anchorCount / usedColorCount, then call expandTracing() for a GroupItem of paths or releaseTracing() to get the source art back. COM: PluginItem.Tracing -> TracingObject with ExpandTracing / ReleaseTracing.",
+   "key_members": [
+    {
+     "name": "tracingOptions",
+     "use": "the TracingOptions driving this trace; set its properties to re-trace"
+    },
+    {
+     "name": "sourceArt",
+     "use": "the raster/placed art the trace was made from"
+    },
+    {
+     "name": "pathCount",
+     "use": "number of paths in the current trace result"
+    },
+    {
+     "name": "anchorCount",
+     "use": "number of anchor points in the result; a complexity check before expanding"
+    },
+    {
+     "name": "usedColorCount",
+     "use": "number of colours the result uses"
+    },
+    {
+     "name": "expandTracing",
+     "use": "expandTracing(viewed=false): convert the trace to a GroupItem of paths; deletes this tracing object"
+    },
+    {
+     "name": "releaseTracing",
+     "use": "drop the trace and return the source art as a PageItem; deletes this tracing object"
+    },
+    {
+     "name": "parent",
+     "use": "the PluginItem that holds the trace"
+    },
+    {
+     "name": "typename",
+     "use": "returns \"TracingObject\""
+    }
+   ],
+   "gotchas": [
+    "trace() always starts with default options (harvest: 'using default options'); set tracingOptions afterwards (that the trace then re-runs is unverified).",
+    "trace() moves the raster into the new trace (harvest: 'Reorders this raster to the source art'): afterwards reach the image through tracing.sourceArt, not its old rasterItems / placedItems index (unverified detail).",
+    "expandTracing and releaseTracing delete this tracing object (harvest): references to it are dead afterwards, and the PluginItem is likely gone too (unverified); keep the returned GroupItem / PageItem.",
+    "Call app.redraw() after trace() or option changes before reading the counts or expanding, or you can get a stale or empty result (widely reported, unverified).",
+    "expandTracing(true) expands what the current viewMode shows rather than the plain tracing result (unverified).",
+    "Large high-resolution images block the script for a long time inside trace(); downsample first and wrap the call in a timeout (unverified).",
+    "A PlacedItem that is not a raster (linked PDF / AI / EPS) cannot be traced (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar pi = doc.rasterItems[0].trace();\nvar t = pi.tracing;\napp.redraw();\n$.writeln(t.pathCount + \" paths, \" + t.anchorCount + \" anchors, \" + t.usedColorCount + \" colours\");\nvar art = t.expandTracing();",
+   "review": {
+    "by": "adversarial",
+    "changes": "trace() 'reorders' gotcha rewritten: the raster becomes the trace's sourceArt, not a stacking-order change; re-run after option change and dead PluginItem marked unverified"
+   }
+  },
+  {
+   "name": "TracingOptions",
+   "id": "class:TracingOptions",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Tracing classes for Adobe Illustrator/TracingOptions",
+   "status": "current",
+   "summary": "The settings of one Image Trace, the same controls as the Image Trace panel: mode (colour / grey / black-and-white), limited colours or full-colour fidelity, threshold, grey levels, path / corner / noise fidelity, fills vs strokes, abutting vs overlapping method, ignore white, plus loading and saving named presets. Changing them re-traces the linked TracingObject.",
+   "use_for": [
+    "clean black-and-white logo, stamp or signature vectorisation (black-and-white mode, threshold, ignore white)",
+    "limited-palette traces for screen-print style posters and illustrations (limited colours, tracingColors)",
+    "repeatable house trace settings saved as a named preset for batch runs"
+   ],
+   "avoid": [
+    "setting options before a trace exists: there is no standalone TracingOptions; trace first, then edit pi.tracing.tracingOptions",
+    "photo-real output: even high colour fidelity gives flat shapes; keep the raster"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "IVGTraceSettings"
+   },
+   "how": "Reached through a trace: app.activeDocument.rasterItems[i].trace().tracing.tracingOptions (or placedItems[i]). Either loadFromPreset(name) with a name from app.tracingPresetsList, or set properties one by one using the TracingModeType, TracingColorType, TracingMethodType and ViewType enums; save the combination with storeToPreset(name). preset reports the active preset name. COM: TracingObject.TracingOptions with PascalCase members (TracingMode, Threshold, LoadFromPreset ...).",
+   "key_members": [
+    {
+     "name": "tracingMode",
+     "use": "TracingModeType.TRACINGMODECOLOR / TRACINGMODEGRAY / TRACINGMODEBLACKANDWHITE"
+    },
+    {
+     "name": "tracingColorTypeValue",
+     "use": "TracingColorType.TRACINGLIMITEDCOLOR (uses tracingColors) or TRACINGFULLCOLOR (uses colorFidelity)"
+    },
+    {
+     "name": "tracingColors",
+     "use": "maximum number of colours in limited-colour mode"
+    },
+    {
+     "name": "colorFidelity",
+     "use": "colour fidelity in full-colour mode"
+    },
+    {
+     "name": "threshold",
+     "use": "black/white cut-off for black-and-white mode; 1-256 (harvest)"
+    },
+    {
+     "name": "grayLevels",
+     "use": "number of grey levels for greyscale mode; 1-256 (harvest)"
+    },
+    {
+     "name": "pathFidelity",
+     "use": "how closely paths follow the pixels (higher = more anchors)"
+    },
+    {
+     "name": "cornerFidelity",
+     "use": "how readily corners are kept sharp instead of rounded"
+    },
+    {
+     "name": "noiseFidelity",
+     "use": "minimum pixel area that becomes a path; raise to drop specks"
+    },
+    {
+     "name": "tracingMethod",
+     "use": "TracingMethodType.TRACINGMETHODABUTTING (cut-out shapes) or TRACINGMETHODOVERLAPPING (stacked shapes)"
+    },
+    {
+     "name": "fills",
+     "use": "produce filled shapes"
+    },
+    {
+     "name": "strokes",
+     "use": "produce stroked paths (line art)"
+    },
+    {
+     "name": "maxStrokeWeight",
+     "use": "widest feature traced as a stroke when strokes are on"
+    },
+    {
+     "name": "ignoreWhite",
+     "use": "drop white areas from the result (abutting method, black-and-white mode only)"
+    },
+    {
+     "name": "snapCurveToLines",
+     "use": "snap slightly curved segments to straight lines"
+    },
+    {
+     "name": "autoGrouping",
+     "use": "group the resulting paths automatically"
+    },
+    {
+     "name": "palette",
+     "use": "colour library name used for tracing, e.g. 'Document Library'"
+    },
+    {
+     "name": "viewMode",
+     "use": "ViewType: how the trace is displayed (result, outlines, source image ...)"
+    },
+    {
+     "name": "loadFromPreset",
+     "use": "loadFromPreset(presetName): load a whole preset; returns bool"
+    },
+    {
+     "name": "storeToPreset",
+     "use": "storeToPreset(presetName): save current options as a preset; overwrites an unlocked preset of the same name"
+    }
+   ],
+   "gotchas": [
+    "ignoreWhite only works with tracingMethod = TRACINGMETHODABUTTING and black-and-white mode (harvested description).",
+    "fills and strokes cannot both be off (harvest: 'Fills, Strokes or both must be on').",
+    "tracingColors only counts with TRACINGLIMITEDCOLOR and colorFidelity only with TRACINGFULLCOLOR (harvested descriptions); setting the other one has no visible effect.",
+    "preset is read-only: switch presets with loadFromPreset, using a name exactly as listed in app.tracingPresetsList.",
+    "storeToPreset silently overwrites an existing unlocked preset with the same name (harvest).",
+    "threshold only applies to black-and-white mode and grayLevels only to greyscale mode (harvested descriptions); both take 1-256.",
+    "The harvest gives ranges only for threshold and grayLevels (1-256); ranges of tracingColors, colorFidelity, pathFidelity, cornerFidelity, noiseFidelity and maxStrokeWeight are not in it, and out-of-range values may be clamped or throw (unverified).",
+    "Every property change re-runs the trace; on big images set everything, then app.redraw() once before expanding (unverified)."
+   ],
+   "example": "var pi = app.activeDocument.placedItems[0].trace();\nvar o = pi.tracing.tracingOptions;\no.tracingMode = TracingModeType.TRACINGMODEBLACKANDWHITE;\no.threshold = 128;\no.tracingMethod = TracingMethodType.TRACINGMETHODABUTTING;\no.ignoreWhite = true;\napp.redraw();\nvar art = pi.tracing.expandTracing();",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha claimed numeric ranges are absent from the harvest: threshold and grayLevels are 1-256 there; added those ranges to key_members and gotchas, threshold/grayLevels mode note now cites the harvest instead of 'unverified'"
+   }
+  },
+  {
+   "name": "Matrix",
+   "id": "class:Matrix",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Transformation matrix events and classes for Adobe Illustrator/Matrix",
+   "status": "current",
+   "summary": "A 2D affine transformation matrix value: mValueA-D hold scale, rotation and skew, mValueTX / mValueTY the translation in points. Scripts build one with the app.get...Matrix / app.concatenate...Matrix functions and apply it with pageItem.transform(); text frames also expose their current one as textFrame.matrix.",
+   "use_for": [
+    "rotate + scale + move artwork in one step for pattern, badge or layout automation",
+    "reading a text frame's rotation or scale so it can be copied to other elements",
+    "exact skews (shear), which rotate() and resize() cannot express"
+   ],
+   "avoid": [
+    "a single plain move, rotation or scale: call translate(), rotate() or resize() on the PageItem",
+    "editing a matrix and expecting the art to follow: the matrix is a detached value until passed to transform()"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "IVGTransformMatrix"
+   },
+   "how": "Get one from the Application: app.getIdentityMatrix(), app.getRotationMatrix(angle), app.getScaleMatrix(scaleX, scaleY), app.getTranslationMatrix(deltaX, deltaY); combine with app.concatenateMatrix / concatenateRotationMatrix / concatenateScaleMatrix / concatenateTranslationMatrix; invert with app.invertMatrix; test with app.isEqualMatrix / isSingularMatrix. Apply with pageItem.transform(matrix, changePositions, changeFillPatterns, changeFillGradients, changeStrokePattern, changeLineWidths, transformAbout). The six fields can also be read or set directly. COM: _Matrix with MValueA ... MValueTY; the Matrix coclass is creatable (harvest flag cancreate).",
+   "key_members": [
+    {
+     "name": "mValueA",
+     "use": "horizontal scale / cosine component of rotation"
+    },
+    {
+     "name": "mValueB",
+     "use": "rotation / vertical skew component; Math.atan2(mValueB, mValueA) gives the rotation angle"
+    },
+    {
+     "name": "mValueC",
+     "use": "rotation / horizontal skew component"
+    },
+    {
+     "name": "mValueD",
+     "use": "vertical scale / cosine component of rotation"
+    },
+    {
+     "name": "mValueTX",
+     "use": "horizontal translation in points"
+    },
+    {
+     "name": "mValueTY",
+     "use": "vertical translation in points"
+    }
+   ],
+   "gotchas": [
+    "A Matrix is a value: changing its fields or concatenating does nothing to artwork until it is passed to pageItem.transform().",
+    "The concatenate functions return a new matrix: assign the result (m = app.concatenateScaleMatrix(m, 120, 120)).",
+    "Order matters: rotate-then-translate is not the same as translate-then-rotate.",
+    "Scale values are percentages (harvested defaults are 100.0 = unchanged), not factors.",
+    "transform() defaults to transformAbout = Transformation.CENTER (harvest), so the matrix is applied about the item's centre, not the document origin; changeLineWidths (default 100) controls stroke-weight scaling.",
+    "textFrame.matrix is read-only: read it to recover a frame's rotation, change it with transform().",
+    "The harvest marks the six mValue members as class scope; treat them as fields of the matrix object you hold (unverified).",
+    "Angles are in degrees with positive = counter-clockwise, and the scripting y axis points up, so signs of mValueB / mValueC are the reverse of screen-down systems (unverified)."
+   ],
+   "example": "var doc = app.activeDocument;\nvar m = app.getRotationMatrix(15);\nm = app.concatenateScaleMatrix(m, 120, 120);\nm = app.concatenateTranslationMatrix(m, 50, 0);\ndoc.selection[0].transform(m);\nvar tm = doc.textFrames[0].matrix;\n$.writeln(Math.atan2(tm.mValueB, tm.mValueA) * 180 / Math.PI);",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for no longer says mirror flips need a matrix (resize with a negative scale mirrors); how notes the creatable COM Matrix coclass"
+   }
+  }
+ ]
+}

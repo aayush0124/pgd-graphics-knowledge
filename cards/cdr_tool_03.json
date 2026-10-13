@@ -1,0 +1,235 @@
+{
+ "cards": [
+  {
+   "name": "2-Point Line",
+   "id": "7c391635-ddb3-45b6-b62b-66827f20547c",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/2-Point Line",
+   "status": "current",
+   "summary": "Draws one straight line segment between two points by dragging; the result is an open two-node curve (outline only). Property-bar modes also draw a line perpendicular or tangent to an existing object.",
+   "how": "Press at the start point, drag to the end point, release. Hold Ctrl while dragging to constrain the angle to the constrain-angle step set in Options. Start a drag on the end node of an existing line to continue it as one path. On the property bar pick the mode: 2-Point Line, Perpendicular 2-Point Line (start on an object's edge for a line at right angles to it) or Tangent 2-Point Line (start on a curved edge for a tangent); outline width, style and arrowheads are on the property bar too.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"7c391635-ddb3-45b6-b62b-66827f20547c\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); the drawing itself: ActiveLayer.CreateLineSegment(StartX, StartY, EndX, EndY). Perpendicular / tangent placement has to be computed by the script.",
+   "use_for": [
+    "divider rules in a layout or menu",
+    "leader and callout lines on product sheets",
+    "straight connector lines in diagrams and infographics",
+    "tangent lines between circles in technical drawings (belts, pulleys)"
+   ],
+   "avoid": [
+    "several connected straight segments: use Polyline, one object instead of many",
+    "curved strokes: use Bézier, Pen or 3-Point Curve",
+    "measured lines with a value label: use a dimension tool",
+    "alignment helpers: use guidelines, which do not print"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Line Tool",
+    "PS": "Line Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: dropped the '15 degrees by default' constrain-angle value and the '90-degree' figure (numbers not in the batch); the constrain step is now 'set in Options' and the perpendicular mode is described in words"
+   }
+  },
+  {
+   "name": "3-Point Curve",
+   "id": "39243caf-50fd-4d48-8d57-6c2d155f8f51",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/3-Point Curve",
+   "status": "current",
+   "summary": "Draws one smooth curved segment in two steps: drag out the start and end points, release, then move the pointer to set where the curve bows to and click. The result is an open curve shaped like an arch or bow.",
+   "how": "Drag from the start point to the end point and release; move the pointer to pull the middle of the curve out to the side you want and click to commit. Refine the bow afterwards with the Shape tool by dragging the curve or its handles. Modifier keys for the third step are not covered by the harvest; read the status-bar hints in the app.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"39243caf-50fd-4d48-8d57-6c2d155f8f51\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); the result: ActiveLayer.CreateCurveSegment2(x1, y1, StartingControlPointX, StartingControlPointY, EndingControlPointX, EndingControlPointY, x2, y2) with control points the script computes from the wanted apex, or for a true circular arc through three points crv.AppendSubpathThreePointArc(StartX, StartY, EndX, EndY, ThirdX, ThirdY) on a curve from ActiveDocument.CreateCurve, then ActiveLayer.CreateCurve crv.",
+   "use_for": [
+    "an arched baseline for text on a path (arched headline, badge text)",
+    "swoosh and smile strokes in logos",
+    "curved connector or flow arrows in diagrams",
+    "simple arches in illustrations"
+   ],
+   "avoid": [
+    "curves with more than one bend: use Bézier, Pen or B-Spline",
+    "an exact circular arc with a known radius and angles: use the Ellipse tool in arc mode",
+    "hand-sketched lines: use Freehand"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Arc Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the 'two-node' node count, which the batch does not record for this tool"
+   }
+  },
+  {
+   "name": "B-Spline",
+   "id": "b0afd160-27bc-40e1-a197-8cf43510a9d1",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/B-Spline",
+   "status": "current",
+   "summary": "Draws a smooth curve from control points you click; the curve is pulled toward the points rather than passing through them (except at clamped points), so it comes out evenly flowing with no handles to manage. The object stays an editable B-spline.",
+   "how": "Click to start, click to add each control point, double-click to end an open curve, or click the first point to close it. Reshape later with the Shape tool by dragging control points; a control point can be set clamped (the curve passes through it) or floating (the curve is only pulled toward it). Convert to curves when you need ordinary Bézier nodes.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"b0afd160-27bc-40e1-a197-8cf43510a9d1\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); the result: Set bs = ActiveDocument.CreateBSpline(NumControlPoints, Closed), set its control points, then ActiveLayer.CreateBSpline(bs); Shape.BSpline reads an existing one back.",
+   "use_for": [
+    "flowing waves and ribbons for backgrounds and banners",
+    "smooth organic shapes and blobs",
+    "even, fair curves for text on a path",
+    "smooth cut or plot paths without kinks"
+   ],
+   "avoid": [
+    "a curve that must hit exact points with sharp corners: use Bézier or Pen",
+    "node-level Bézier work or export to tools that expect plain paths: convert to curves first",
+    "straight-segment runs: use Polyline"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Curvature Tool",
+    "PS": "Curvature Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Bézier",
+   "id": "9462a0c7-bd9c-4972-869e-7a13352dc9cd",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/Bézier",
+   "status": "current",
+   "summary": "The classic node-by-node path tool: each click places a node, a click joins with a straight segment and a click-drag pulls out control handles for a smooth curved segment. Builds precise open or closed curve objects.",
+   "how": "Click to place corner nodes joined by straight lines; press and drag to make a smooth node and shape the curve by the handle length and direction. Hold Ctrl to constrain angles. Click the first node to close the shape so it can take a fill; to stop an open path, switch to another tool, for example the Pick tool. Fix nodes afterwards with the Shape tool.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Application.ActiveTool = 6 (cdrToolDrawBezier) or Application.FrameWork.Automation.InvokeItem \"9462a0c7-bd9c-4972-869e-7a13352dc9cd\" selects the tool; draw the same object without the mouse: Set crv = ActiveDocument.CreateCurve; Set sp = crv.CreateSubPath(x, y); sp.AppendLineSegment x, y (straight) / sp.AppendCurveSegment2 x, y, StartingControlPointX, StartingControlPointY, EndingControlPointX, EndingControlPointY (curved); then ActiveLayer.CreateCurve crv; a single curve segment: ActiveLayer.CreateCurveSegment2(...).",
+   "use_for": [
+    "precise logo and icon outlines",
+    "tracing a sketch or photo by hand",
+    "custom lettering and letterform repairs",
+    "clean closed shapes for vinyl cutting and laser paths"
+   ],
+   "avoid": [
+    "when you want to see the next segment before placing it: use Pen",
+    "quick sketchy lines: use Freehand",
+    "handle-free smooth curves: use B-Spline",
+    "runs of straight segments only: Polyline is faster"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Pen Tool",
+    "PS": "Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the Spacebar-to-Pick key, which is not in the batch or the harvested shortcut tables; now just 'switch to another tool'"
+   }
+  },
+  {
+   "name": "Freehand",
+   "id": "a4561afd-624f-4943-bb8e-feb4e7bb89b7",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/Freehand",
+   "status": "current",
+   "summary": "Draws like a pencil: the line follows the mouse or stylus as you drag and CorelDRAW turns the stroke into a smoothed curve with nodes. Two separate clicks draw a straight segment instead.",
+   "how": "Drag to sketch a freehand line; click once and click again to draw a straight segment (Ctrl constrains its angle). Start a new stroke on the end node of an existing line to extend it, and finish on the start node to close it. The property-bar Freehand smoothing value sets how much the stroke is simplified: higher gives fewer nodes and smoother curves. Shortcut F5.",
+   "shortcut": "F5",
+   "scriptable": "partial",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"a4561afd-624f-4943-bb8e-feb4e7bb89b7\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); a script cannot supply hand input, but ActiveDocument.CreateCurveFitToPoints(Points, UseCurrentViewForTolerance, tolerance) fits a smooth curve through a point list (the same idea as freehand smoothing), then ActiveLayer.CreateCurve.",
+   "use_for": [
+    "hand-drawn, sketchy line art and doodles",
+    "signatures and handwritten annotations with a tablet",
+    "quick rough shapes to refine later",
+    "organic hand-lettered strokes"
+   ],
+   "avoid": [
+    "precise outlines: use Bézier or Pen",
+    "a brush-stroke look with varying width: use Artistic Media",
+    "shaky mouse lines: raise Freehand smoothing or draw with Bézier"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Freehand Tool",
+    "PS": "Freeform Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Pen",
+   "id": "6a131f1c-82eb-4b30-9479-d3efcdf3b78d",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/Pen",
+   "status": "current",
+   "summary": "Draws Bézier paths segment by segment like the Bézier tool, but with the property-bar Preview mode on it shows a live preview of the next segment as you move the pointer; click for corner nodes, click-drag for smooth curves, double-click to finish.",
+   "how": "Click to place a corner node and straight segment; press and drag to make a smooth node and bend the segment; the preview line shows the next segment before you commit. Double-click to end an open path or click the first node to close it. Property bar: Preview mode and Auto add-delete (click on the path to add or remove nodes while drawing). Hold Ctrl to constrain angles.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"6a131f1c-82eb-4b30-9479-d3efcdf3b78d\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); draw the same object without the mouse: Set crv = ActiveDocument.CreateCurve; Set sp = crv.CreateSubPath(x, y); sp.AppendLineSegment x, y (straight) / sp.AppendCurveSegment2 x, y, StartingControlPointX, StartingControlPointY, EndingControlPointX, EndingControlPointY (curved); then ActiveLayer.CreateCurve crv.",
+   "use_for": [
+    "precise logo, icon and packaging die-line outlines",
+    "tracing artwork when you want to see each segment before placing it",
+    "clean closed shapes for fills and cutting"
+   ],
+   "avoid": [
+    "quick loose sketching: use Freehand",
+    "very smooth flowing curves without handle work: use B-Spline",
+    "straight-segment-only runs: Polyline needs fewer decisions"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Pen Tool",
+    "PS": "Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the live preview of the next segment is tied to the property-bar Preview mode toggle that 'how' names, not claimed as always on"
+   }
+  },
+  {
+   "name": "Polyline",
+   "id": "faf6d5d5-1ecf-41aa-aabe-3e83cfc85fb7",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Curve Tools/Polyline",
+   "status": "current",
+   "summary": "Draws a connected run of straight segments as one object: click each corner and the line keeps going until you double-click. Dragging between clicks adds freehand sections to the same line.",
+   "how": "Click to start, click at each corner, double-click to finish; click the start node to close the shape for a fill. Hold Ctrl to constrain segment angles. Drag instead of clicking to draw a freehand stretch inside the same polyline.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Application.FrameWork.Automation.InvokeItem \"faf6d5d5-1ecf-41aa-aabe-3e83cfc85fb7\" selects the tool (harvest: Application.ActiveTool reads back -1 for it, so ActiveTool cannot select it); the result: crv.AppendSubpathFromPoints(Points, Close) on a curve from ActiveDocument.CreateCurve (or CreateSubPath plus AppendLineSegment per corner), then ActiveLayer.CreateCurve crv.",
+   "use_for": [
+    "zigzags, lightning bolts and sawtooth edges",
+    "line charts and route lines on maps",
+    "floor-plan walls and technical outlines",
+    "irregular polygons and badges"
+   ],
+   "avoid": [
+    "smooth curves: use Bézier, Pen or B-Spline",
+    "regular polygons and stars: use the Polygon or Star tool",
+    "a single straight line: 2-Point Line is quicker"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Pen Tool",
+    "PS": "Pen Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

@@ -1,0 +1,195 @@
+{
+ "cards": [
+  {
+   "name": "Table",
+   "id": "5507c778-4c9f-4933-b35f-9b6a15e084ec",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Text Tools/Table",
+   "status": "current",
+   "summary": "Draws a live table object: a grid of cells that each hold paragraph text, with its own row and column count, cell background and border settings. The table stays editable as one object (add or delete rows and columns, merge cells, restyle borders) instead of being a pile of rectangles and text boxes.",
+   "how": "With a document open, pick Table from the Text Tools flyout, set the number of rows and columns on the property bar, then drag a rectangle on the page to create the table. Click inside a cell to type; drag across cells to select a range and set background colour, border sides, border width and colour on the property bar. Row and column dividers can be dragged to resize. The Table menu covers the rest: Insert / Delete rows and columns, Merge Cells / Unmerge Cells, Distribute Rows Evenly / Columns Evenly, Convert Text to Table (delimited text) and Convert Table to Text.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Tool activation: Application.FrameWork.Automation.InvokeItem \"5507c778-4c9f-4933-b35f-9b6a15e084ec\" (the harvest read back this GUID; Application.ActiveTool reads -1, so it has no cdrTools value). An existing table is editable through the TableToolLib object model (TableToolOM.tlb): ITableShape.Rows / Columns / Cell / CellRange / Borders, AddRow, AddColumn, SetCellSpacing, ConvertToText, reached via Shape.Custom (typed IVGCustomShape; ITableShape inherits IVGCustomShape, so the table members are on the same object). Creating a new table by script would go through IVGLayer.CreateCustomShape(TypeID, Parameters); the table's TypeID string and parameter layout are not in the harvest, so script creation is unverified.",
+   "use_for": [
+    "price lists and rate cards on a flyer or menu board",
+    "spec or nutrition tables on packaging and product sheets",
+    "timetables, schedules and comparison grids in a brochure",
+    "turning tab-delimited data pasted as text into a styled table (Convert Text to Table)"
+   ],
+   "avoid": [
+    "large data sets or tables that run across many pages: build them in a layout or spreadsheet app and place the result",
+    "purely decorative grids with no text: Graph Paper or plain rectangles are lighter",
+    "when the file must open as editable tables in Illustrator or Photoshop: neither has a table object, so the table arrives as grouped shapes and text"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'Tool activation only' reworded (the field also covers editing), and noted that ITableShape inherits IVGCustomShape, which is why Shape.Custom reaches it"
+   }
+  },
+  {
+   "name": "Text",
+   "id": "927a2b18-0239-410b-9bb4-3befd7186abb",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Text Tools/Text",
+   "status": "current",
+   "summary": "Creates and edits text. A click starts artistic text (a free line of type that scales like an object, for headlines and logos); a drag draws a paragraph text frame whose text wraps and can flow into linked frames, for body copy. Clicking on a curve places the text along that path.",
+   "how": "Press F8 (or pick Text from the Text Tools flyout), click on the page and type for artistic text, or drag a box first for paragraph text. Choose font, size, style and alignment on the property bar before or after typing; select characters by dragging over them with the tool to restyle just those. Point at an open or closed curve until the cursor changes and click to start text on the path (Text > Fit Text to Path does the same for existing text). Click into existing text with the tool to edit it; Esc leaves editing.",
+   "shortcut": "F8",
+   "scriptable": "yes",
+   "script_api": "Select the tool: Application.ActiveTool = 7 (cdrToolDrawText) or FrameWork.Automation.InvokeItem \"927a2b18-0239-410b-9bb4-3befd7186abb\" (both read back in the harvest). Create the text directly instead: IVGLayer.CreateArtisticText(Left, Bottom, Text, LanguageID, CharSet, Font, Size, Bold, Italic, Underline, Alignment) or IVGLayer.CreateParagraphText(Left, Top, Right, Bottom, Text, ...); CreateArtisticTextWide / CreateParagraphTextWide for Unicode. Then Shape.Text.Story / Range / FontProperties to restyle, Text.FitToPath to put it on a curve, Text.ConvertToArtistic / ConvertToParagraph to switch type.",
+   "use_for": [
+    "poster and banner headlines as artistic text",
+    "logo wordmarks that will later be converted to curves",
+    "body copy in brochure and flyer columns as paragraph text frames",
+    "circular badge or seal lettering set on a path",
+    "labels and callout text on diagrams and infographics"
+   ],
+   "avoid": [
+    "long multi-page body copy with styles and footnotes: a dedicated layout app handles it better",
+    "artistic text for paragraphs: it never wraps; use a paragraph frame",
+    "sending files to sign makers or printers without the fonts: convert text to curves on a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "typeCreateOrEditTool",
+    "AI": "Adobe Type Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Pan",
+   "id": "a34b8f68-3a88-4a65-8ce2-5808e9dbde22",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Zoom Tools/Pan",
+   "status": "current",
+   "summary": "Moves the view of the drawing window (scrolls the page around) without changing the zoom level or touching any object. It is a navigation tool only; nothing in the document or its output changes.",
+   "how": "Press H (or pick Pan from the Zoom Tools flyout) and drag in the drawing window to slide the view in any direction. Switch back to the working tool afterwards (the Pick tool for selecting). Useful when zoomed in close on node or detail work and the area you need is just off screen.",
+   "shortcut": "H",
+   "scriptable": "yes",
+   "script_api": "Select the tool: Application.ActiveTool = 67 (cdrToolPan) or FrameWork.Automation.InvokeItem \"a34b8f68-3a88-4a65-8ce2-5808e9dbde22\" (both read back in the harvest). A script moves the view directly instead of dragging: ActiveWindow.ActiveView.SetViewPoint(x, y, Zoom), the OriginX / OriginY properties, SetViewArea(x, y, Width, Height) or ToFitPage / ToFitSelection / ToFitShape. View changes never affect exports, so a pipeline rarely needs this except before a screen capture.",
+   "use_for": [
+    "moving around a large poster or banner layout while zoomed in on detail",
+    "checking alignment along the edge of a wide signage or vehicle-wrap file",
+    "framing the view before taking a screenshot of the canvas"
+   ],
+   "avoid": [
+    "jumping to a known area: zoom to the selection or page instead of dragging there",
+    "expecting it to move artwork: it only moves the view; use the Pick tool to move objects"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "handTool",
+    "AI": "Adobe Scroll Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Zoom",
+   "id": "5f1c9019-0140-4fb4-aaf8-961bccda18d2",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Zoom Tools/Zoom",
+   "status": "current",
+   "summary": "Changes the magnification of the drawing window: click to zoom in around a point, right-click to zoom out, or drag a marquee to fill the window with that area. The property bar adds zoom levels and zoom-to-selection / all objects / page buttons. View only; the document is not changed.",
+   "how": "Press Z (or pick Zoom from the Zoom Tools flyout). Click to zoom in centred on the click point, right-click to zoom out, or drag a rectangle around the area to fill the window with it. Use the property bar's zoom-level list and its fit buttons (selected objects, all objects, page, page width, page height) for exact framing. Switch back to the Pick tool to keep editing.",
+   "shortcut": "Z",
+   "scriptable": "yes",
+   "script_api": "Select the tool: Application.ActiveTool = 66 (cdrToolZoom) or FrameWork.Automation.InvokeItem \"5f1c9019-0140-4fb4-aaf8-961bccda18d2\" (both read back in the harvest). A script zooms directly: ActiveWindow.ActiveView.Zoom (get/set), ZoomIn, ZoomOut, ZoomInAtPoint(x, y), SetViewArea(x, y, Width, Height), SetActualSize, ToFitSelection, ToFitAllObjects, ToFitPage, ToFitPageWidth, ToFitPageHeight. View changes never affect exports.",
+   "use_for": [
+    "inspecting node placement and joins on a logo at high magnification",
+    "checking small print, legal lines and barcodes on packaging at actual size",
+    "framing an area of the layout before a screen capture or client review"
+   ],
+   "avoid": [
+    "judging print sharpness of placed photos from the screen zoom: check effective resolution in the document instead",
+    "resizing artwork: zoom changes only the view; scale objects with the Pick tool or Transformations"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "zoomTool",
+    "AI": "Adobe Zoom Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Transparency",
+   "id": "b4b2ecec-4dc4-4c76-aa55-abcb1c862cde",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Transparency",
+   "status": "current",
+   "summary": "Makes a selected object see-through, live and editable: uniform transparency at one percentage, fountain (gradient) transparency that fades the object out along a linear, elliptical, conical or rectangular ramp, or pattern / texture transparency. It also sets the merge (blend) mode and whether the transparency applies to the fill, the outline or both.",
+   "how": "Select an object, pick the Transparency tool and either drag across the object to create a linear fountain transparency (drag start = first node, drag end = last node) or choose a type on the property bar: No Transparency, Uniform, Fountain, vector / bitmap / two-colour pattern, Texture. Drag the on-object handles to change the direction and length of the fade; select a node to set its transparency value, and add nodes along the vector for a multi-step fade. On the property bar set the merge mode (Normal, Multiply, Screen ...), the target (fill, outline or both) and Freeze if you need the result fixed.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "Select the tool: Application.ActiveTool = 72 (cdrToolTransparency) or FrameWork.Automation.InvokeItem \"b4b2ecec-4dc4-4c76-aa55-abcb1c862cde\" (both read back in the harvest). Apply it directly on the shape: Shape.Transparency.ApplyUniformTransparency(Value) or ApplyFountainTransparency(Start, End, Type, Angle, Steps, EdgePad, MidPoint, CenterOffsetX, CenterOffsetY), ApplyPatternTransparency, ApplyTextureTransparency, ApplyNoTransparency; then MergeMode, AppliedTo, Freeze / Unfreeze on the same IVGTransparency object.",
+   "use_for": [
+    "fading a photo or shape into the background of a poster or banner",
+    "soft gradient overlays behind headline text so it stays readable",
+    "glass, glare and reflection highlights on product illustrations",
+    "tinted see-through panels on a brochure cover or social card",
+    "watermark-style logos at low opacity"
+   ],
+   "avoid": [
+    "print jobs bound for PDF/X-1a, EPS or spot-colour plates: transparency gets flattened and can create stitching or colour shifts; flatten or test-proof early",
+    "large numbers of transparent objects in one file: rendering and export slow down; group or rasterise finished areas",
+    "soft drop-shadow edges: use the Drop Shadow effect instead of a hand-built fade"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Transparency Palette Menu Item"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Variable Outline",
+   "id": "f69c2a02-4e9a-4c62-a06c-e7d677477402",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Variable Outline",
+   "status": "current",
+   "summary": "Gives an object's outline a variable width: you place width nodes along the stroke and pull them in or out, so the line tapers, swells or is thicker on one side, like an inked or calligraphic line, while it stays a live outline on the original path rather than a filled shape.",
+   "how": "Select a curve or shape that has an outline, press V (or pick Variable Outline in the toolbox), then drag on the outline away from or toward the path to widen or narrow it at that point; each drag leaves a width node that can be dragged along the path or re-dragged to change its width. Set exact widths on the property bar. The object model stores a separate width for each side of the path, so the two sides can differ. When a later step needs a plain filled shape, use Object > Convert Outline to Object.",
+   "shortcut": "V",
+   "scriptable": "yes",
+   "script_api": "Tool activation: FrameWork.Automation.InvokeItem \"f69c2a02-4e9a-4c62-a06c-e7d677477402\" (Application.ActiveTool reads -1, no cdrTools value; after InvokeItem the toolbox data source read back the button's GUID, but Application.ActiveToolStateGuid read 07eb3b50-bba5-4cfa-933b-37f159006431, so test for that state GUID, not the button's, when checking the tool is active). The result is settable directly: Shape.Outline.VariableWidthNodes.Add(t, Width) with t in 0..1 along the curve, then each IVGVariableWidthNode's PositionT, Width, Side1Width, Side2Width and Delete; VariableWidthNodes.Clear removes the variable width and Copy transfers it from another shape. This path comes from the type library and has not been run live.",
+   "use_for": [
+    "tapered strokes on line-art icons and illustrations",
+    "comic and hand-drawn inking with thick-thin lines",
+    "lettering swashes and flourishes in a logo",
+    "roads, rivers and borders on illustrated maps that narrow along their length"
+   ],
+   "avoid": [
+    "a uniform stroke: set the width in the Outline Pen or on the property bar",
+    "pressure-sensitive brush strokes drawn freehand: use the Artistic Media tool (Expression or Calligraphic mode)",
+    "files going to Illustrator, SVG or a cutter: check the export, and convert the outline to an object first if the varying width does not survive"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Width Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: clarified the state GUID; InvokeItem did activate the tool (the data source read back the button GUID), only ActiveToolStateGuid reads 07eb3b50-...; the old wording read as if activation failed"
+   }
+  }
+ ]
+}

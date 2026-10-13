@@ -1,0 +1,609 @@
+{
+ "cards": [
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Liquify",
+   "id": "'LqFy'",
+   "path": "Filter/Liquify",
+   "status": "needs_input",
+   "summary": "Opens the Liquify workspace, where brush tools push, pull, twirl, pucker and bloat pixels as if the image were a thick fluid (Forward Warp, Reconstruct, Smooth, Twirl, Pucker, Bloat, Push Left, Freeze / Thaw Mask) and Face-Aware sliders reshape eyes, nose, mouth and face outline on detected faces. The result is smoothly reshaped or smeared pixels; the warp itself is made by hand in the dialog, the harvest found no keys that describe it.",
+   "use_for": [
+    "subtle body or face reshaping in portrait and fashion retouching",
+    "caricature, melting or bulging distortion for a poster or meme visual",
+    "bending a logo or texture so it follows the folds of fabric or a curved product",
+    "liquid, smeared abstract backgrounds from a colourful photo"
+   ],
+   "avoid": [
+    "unattended scripts: there are no harvested params for the strokes (declared_params 0), so an empty DialogModes.NO call has nothing to apply; a person has to warp in the dialog (Save Mesh / Load Mesh reuse a warp)",
+    "straight lines near the warp (flag poles, podium edges, door frames) bend visibly: paint a Freeze Mask over them first",
+    "heavy face reshaping of real people in news or documentary images misrepresents them",
+    "vector artwork or type that must stay editable: rasterise first or convert to a smart object; for a controlled pin- or grid-based bend use Edit/Puppet Warp or Edit/Transform/Warp instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Warp Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Smudge"
+   },
+   "look": [
+    "warp",
+    "push pull",
+    "reshape",
+    "bloat",
+    "pucker",
+    "twirl",
+    "melting",
+    "smeared",
+    "fluid distortion",
+    "face reshape",
+    "caricature",
+    "slimming"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Edit/Puppet Warp",
+    "Edit/Transform/Warp",
+    "Select/Subject"
+   ],
+   "shortcut": "Ctrl+Shift+X",
+   "scripting": "executeAction(charIDToTypeID(\"LqFy\"), undefined, DialogModes.ALL); // no stringID is registered for LqFy (harvest); no keys describe the strokes, so DialogModes.NO with an empty descriptor (it runs, 1146 ms in the harvest) has no warp to apply: the dialog route needs a person",
+   "scriptable": "partial",
+   "non_destructive": true,
+   "cost": "medium: 1146 ms just to run on the 480x270 harvest layer; the real cost is the manual brush work, and large files make the brushes lag",
+   "review": {
+    "by": "adversarial",
+    "changes": "Puppet Warp is not a numeric bend: reworded that alternative; rest checked (shortcut, LqFy charID, smart_filter true, 1146 ms, declared_params 0; AI Warp tool and CDR Smudge point back to Liquify)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: the warp is brushed by hand in the Liquify workspace; no harvested keys describe it (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Neural Filters",
+   "id": "neuralGalleryFilters",
+   "path": "Filter/Neural Filters",
+   "status": "needs_input",
+   "summary": "Opens the Neural Filters workspace, a gallery of machine-learning filters (portrait retouching such as Skin Smoothing and Smart Portrait, Style Transfer, Colorize, Photo Restoration, Depth Blur, Super Zoom, Harmonization and others) that each have their own sliders; models download on first use and some filters run in Adobe's cloud. Which filters this 27.4 install offers was not harvested, and the harvest did not run it.",
+   "use_for": [
+    "one-click skin smoothing or JPEG artefact clean-up on a portrait",
+    "colourising or restoring an old black-and-white photo",
+    "matching the colour and light of a pasted element to its background (Harmonization)",
+    "turning a photo into a painted look with Style Transfer"
+   ],
+   "avoid": [
+    "unattended scripts: it opens its own workspace and downloads or calls cloud models (harvest error); NF_UI_DATA is an opaque object that was not decoded, so a call cannot be built from a spec",
+    "offline machines or confidential client images: cloud filters need sign-in and upload the image",
+    "changing the expression, age or gaze of real people in news images (Smart Portrait) misrepresents them",
+    "precise, repeatable results: the models can change between versions; use classic filters or Camera Raw for reproducible looks"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "AI retouch",
+    "skin smoothing",
+    "style transfer",
+    "colorize",
+    "photo restoration",
+    "depth blur",
+    "super zoom",
+    "harmonize",
+    "smart portrait"
+   ],
+   "params": [
+    {
+     "name": "NF_UI_DATA",
+     "does": "Data: the chosen filters and their slider values as one opaque object (not decoded by the harvest)",
+     "typical": "recorded from the workspace, never written by hand"
+    },
+    {
+     "name": "NF_OUTPUT_TYPE",
+     "does": "Output Type: where the result goes (the workspace's Output menu: current layer, new layer, smart filter, new document ...); the integer codes were not harvested",
+     "typical": "unknown codes: pick the output in the workspace"
+    }
+   ],
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Layer/Layer Mask/Reveal All",
+    "Filter/Camera Raw Filter"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"neuralGalleryFilters\"), undefined, DialogModes.ALL); // should open the workspace for a person (the harvest did not run it); keys NF_UI_DATA (object) and NF_OUTPUT_TYPE (integer) are declared in the terminology but were never run or decoded, so no DialogModes.NO call can be built",
+   "scriptable": "partial",
+   "non_destructive": "only when the workspace's output is set to a smart filter or a new layer; the harvest did not test it",
+   "cost": "heavy: model downloads on first use, GPU work or a cloud round trip per filter; not timed (not executed)",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting comment no longer states as fact that the DialogModes.ALL call opens the workspace (never run); rest checked against the declared keys and the harvest error"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: each neural filter is set in its own workspace with downloaded models (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Parametric Filters",
+   "id": "Filter/Parametric Filters",
+   "path": "Filter/Parametric Filters",
+   "status": "hidden",
+   "summary": "A Filter menu entry that is hidden in this 27.4 install (menu_visible false) and has no Action Manager event, so the harvest could not run or render it and what it produces is unknown. The name suggests a newer filter set with live, re-editable parameters, but that is unverified.",
+   "use_for": [
+    "nothing yet: record what it does once the menu item is visible and has been tried by hand"
+   ],
+   "avoid": [
+    "any automated or scripted use: no Action Manager event was found and app.runMenuItem does not accept its menu command id (harvest error)",
+    "planning a look around it: nothing about its output was observed; use a documented filter instead"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "look": [
+    "parametric filter",
+    "unverified"
+   ],
+   "params": [],
+   "pairs_with": [],
+   "scripting": "none: no Action Manager event in the plug-in PiPLs or Photoshop.exe terminology, and menu command 7789 is not accepted by app.runMenuItem (harvest)",
+   "scriptable": "no",
+   "cost": "unknown: never run",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (hidden, no event, menu command 7789, scriptable no, low confidence all match the batch)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: hidden in this install (status hidden) and no Action Manager event was harvested.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'hidden' kept."
+    }
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Vanishing Point",
+   "id": "'VnPt'",
+   "path": "Filter/Vanishing Point",
+   "status": "needs_input",
+   "summary": "Opens the Vanishing Point dialog, where you click four corners to define perspective planes (blue grid = valid plane), tear off connected planes around corners, then clone, paint or paste artwork onto them; pasted art is scaled and skewed to the plane so it sits on the wall, floor or box side in correct perspective. Planes and pasted content come from the dialog and the clipboard, not from harvested keys.",
+   "use_for": [
+    "placing a poster, logo or signage design onto a photographed wall, billboard or shop front",
+    "packaging mockups: wrapping artwork around two or three sides of a box",
+    "removing objects from tiled floors, windows or brick walls by cloning in perspective",
+    "extending a building facade or floor pattern in perspective"
+   ],
+   "avoid": [
+    "unattended scripts: no keys describe the planes or the pasted art, so an empty DialogModes.NO call (it runs, 297 ms in the harvest) has nothing to place",
+    "CMYK, Grayscale or Lab documents: the harvest lists RGB only; convert to RGB first",
+    "smart objects: not available as a smart filter (harvest: command not currently available); add an empty layer and work on that so the result stays separate",
+    "curved surfaces such as bottles or flags: use Edit/Puppet Warp or Edit/Transform/Warp; for an editable flat placement use Edit/Transform/Perspective on a smart object"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Perspective Grid Tool",
+    "CDR": "Object/Perspective/Draw in Perspective"
+   },
+   "look": [
+    "perspective",
+    "mockup",
+    "wall mockup",
+    "box mockup",
+    "billboard",
+    "signage",
+    "perspective clone",
+    "perspective paste",
+    "3D plane"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Layer/New/Layer",
+    "Edit/Copy",
+    "Edit/Transform/Perspective",
+    "Edit/Perspective Warp"
+   ],
+   "shortcut": "Ctrl+Alt+V",
+   "scripting": "executeAction(charIDToTypeID(\"VnPt\"), undefined, DialogModes.ALL); // no stringID is registered for VnPt (harvest); copy the artwork to the clipboard first, then draw planes and paste in the dialog: a person is needed",
+   "scriptable": "partial",
+   "non_destructive": false,
+   "cost": "light to run (297 ms with an empty descriptor on the 480x270 harvest layer); the time goes into drawing planes by hand",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (RGB-only modes, smart-filter error, 297 ms, Ctrl+Alt+V and VnPt charID match the batch; AI Perspective Grid and CDR Draw in Perspective exist)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: needs perspective planes drawn in its dialog and pasted art (status needs_input).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Add Noise",
+   "id": "addNoise",
+   "path": "Filter/Noise/Add Noise",
+   "status": "current",
+   "summary": "Scatters random pixel values over the image like sensor noise or film grain. Gaussian distribution gives a speckled, stronger grain than Uniform at the same Percent; Monochromatic adds only grey (luminance) grain instead of red, green and blue specks.",
+   "use_for": [
+    "grain to stop banding in gradients and flat AI-generated skies before print or video export",
+    "matching the grain of a pasted cut-out or clean graphic to a noisy photo",
+    "gritty, analogue texture for a poster, album cover or risograph look",
+    "added to a 50% grey layer set to Overlay, as adjustable grain over the whole design"
+   ],
+   "avoid": [
+    "low-resolution web images: noise makes JPEG files bigger and blockier",
+    "high Percent with colour (non-monochromatic) noise looks like cheap sensor noise; keep it monochromatic for film grain",
+    "small type and hairlines: speckles break thin strokes, so apply grain under the type layer",
+    "a non-destructive, editable grain: Layer/New Adjustment Layer/Grain or Filter/Camera Raw Filter grain"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Grain",
+    "CDR": "Effects/Noise/Add Noise"
+   },
+   "look": [
+    "noise",
+    "grain",
+    "film grain",
+    "speckle",
+    "gritty",
+    "analogue",
+    "dither",
+    "sensor noise"
+   ],
+   "params": [
+    {
+     "name": "noise",
+     "does": "Percent: how strong the noise is",
+     "typical": "2-6 for subtle grain or dithering; 15-30 for a gritty look"
+    },
+    {
+     "name": "distort",
+     "does": "Distribution: Uniform spreads values evenly; Gaussian gives more speckled, stronger grain",
+     "typical": "gaussianDistribution for film-like grain"
+    },
+    {
+     "name": "monochromatic",
+     "does": "only lightness noise (grey grain) instead of coloured specks",
+     "typical": "true for film grain, false for digital noise"
+    }
+   ],
+   "demo_settings": {
+    "noise": 25,
+    "distort": "gaussianDistribution",
+    "monochromatic": false
+   },
+   "enum_labels": {
+    "distort": {
+     "uniformDistribution": "Uniform",
+     "gaussianDistribution": "Gaussian"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Layer/New Adjustment Layer/Grain",
+    "Filter/Blur/Gaussian Blur",
+    "Overlay blend mode on a 50% grey layer"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putUnitDouble(s(\"noise\"), charIDToTypeID(\"#Prc\"), 25); d.putEnumerated(s(\"distort\"), s(\"distort\"), s(\"gaussianDistribution\")); d.putBoolean(s(\"monochromatic\"), false); executeAction(s(\"addNoise\"), d, DialogModes.NO); // keys left out fall back to the last-used values; the harvest could not read a Percent range; the result descriptor reported 12.5 / uniform for the gallery's 25 / gaussian run, but the frame's noise (std about 55 levels, 57 % of pixels off by more than 32) is beyond what uniform 12.5 % can make, so the sent values were applied",
+   "scriptable": "yes",
+   "non_destructive": "yes as a smart filter on a smart object: the harvest applied it to a smart object and read the filterFX entry back, storing distort, monochromatic and noise (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); on a plain pixel layer it rewrites the pixels",
+   "cost": "light: 67 ms on the 480x270 harvest test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive now cites the harvest's smart-filter probe instead of 'this harvest did not test it'; keys, enum, #Prc unit and demo checked"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/8383f9763e5a.png",
+    "crop": "gallery/ps_filter/8383f9763e5a_1to1.png",
+    "note": "Strong RGB colour specks over the whole frame (1:1 crop: noise std about 55 levels, 57 % of pixels off by more than 32), more than Uniform 12.5 % could give (it stops at +/-32), so the frame used the Gaussian 25 % sent and the read-back (12.5 / uniform) is stale like the other 11.",
+    "rerender": false,
+    "text_fixed": "scripting: read-back vs frame"
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Despeckle",
+   "id": "despeckle",
+   "path": "Filter/Noise/Despeckle",
+   "status": "current",
+   "summary": "One-step noise removal with no settings: it finds edges (areas of strong colour change) and blurs everything except those edges, so fine speckle and grain soften while outlines stay. The change is subtle; it is often run two or three times.",
+   "use_for": [
+    "quick clean-up of grainy scans or phone photos before printing",
+    "softening halftone dots or JPEG speckle in a scanned logo or document",
+    "a first pass before sharpening a noisy image"
+   ],
+   "avoid": [
+    "already soft images such as video frames: there is little to remove and the change is barely visible",
+    "strong or coloured noise: use Filter/Noise/Reduce Noise or Filter/AI Denoise, which have controls",
+    "repeated passes on faces: skin turns waxy and fine texture disappears",
+    "1-px lines and fine hairlines: Despeckle treats them as speckle (a 1 px white hairline on the plate dropped from 255 to 118 while 2 px and wider lines stayed)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Noise/Remove Noise"
+   },
+   "look": [
+    "denoise",
+    "noise removal",
+    "clean up",
+    "edge-preserving blur",
+    "subtle smoothing",
+    "despeckle"
+   ],
+   "params": [],
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Noise/Reduce Noise",
+    "Filter/Sharpen/Unsharp Mask"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"despeckle\"), undefined, DialogModes.NO); // no settings",
+   "scriptable": "yes",
+   "non_destructive": "yes as a smart filter on a smart object: the harvest applied it to a smart object and read the filterFX entry back, with no stored settings (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); on a plain pixel layer it rewrites the pixels",
+   "cost": "light: 69 ms on the 480x270 harvest test layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive now cites the harvest's smart-filter probe instead of 'this harvest did not test it'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/98f0e36fd8fb.png",
+    "crop": "gallery/ps_filter/98f0e36fd8fb_1to1.png",
+    "note": "Subtle as the card says: on the 1:1 crop the 1-px hairline is knocked down (255 to 118) and the photo softens by under 1 level while 2-px and wider lines and the block edges stay untouched (max 5 levels); the plate has no grain, so the noise-removal claim itself rests on that thin-line behaviour.",
+    "rerender": false,
+    "text_fixed": "avoid line from the 1:1 crop"
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Dust & Scratches",
+   "id": "dustAndScratches",
+   "path": "Filter/Noise/Dust & Scratches",
+   "status": "current",
+   "summary": "Finds pixels that differ from their neighbours by more than Threshold and replaces them with the median of the pixels within Radius, which removes dust spots and thin scratches. At a larger Radius or a low Threshold the whole image turns into soft, blotchy, painterly patches and thin lines and small type disappear.",
+   "use_for": [
+    "removing dust and scratches from scanned photos and film",
+    "cleaning sensor dust spots in a flat sky (inside a selection)",
+    "smoothing skin or backgrounds as a base for frequency-separation retouching",
+    "a blotchy, watercolour-like texture at high Radius"
+   ],
+   "avoid": [
+    "the whole image at high Radius: detail, type and edges melt; select the damaged area first and keep Radius as small as removes the spots",
+    "Threshold 0 on a photo you want to keep sharp: every pixel is replaced, which is the same as a strong Median",
+    "single large blemishes: the Spot Healing Brush or Content-Aware Fill gives cleaner results",
+    "scripts that rely on exact values: the harvest read-back echoed the stored values whatever was sent, so check the pixels after a scripted run"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Correction/Dust and Scratch"
+   },
+   "look": [
+    "dust removal",
+    "scratch removal",
+    "restoration",
+    "blotchy",
+    "smoothing",
+    "painterly blur",
+    "median"
+   ],
+   "params": [
+    {
+     "name": "radius",
+     "does": "Radius: how far, in pixels, it looks for replacement values; bigger removes larger spots but blurs more",
+     "typical": "1-4 for dust on scans; 8-20 for a painterly look"
+    },
+    {
+     "name": "threshold",
+     "does": "Threshold: how far, in brightness levels, a pixel must differ before it is replaced; higher keeps more texture",
+     "typical": "raise from 0 until grain returns while the spots stay gone (often 10-40)"
+    }
+   ],
+   "demo_settings": {
+    "radius": 10,
+    "threshold": 0
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Select/Color Range",
+    "Filter/Sharpen/Unsharp Mask"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"radius\"), 10); d.putInteger(s(\"threshold\"), 0); executeAction(s(\"dustAndScratches\"), d, DialogModes.NO); // an empty descriptor runs with the stored values (harvest audit); sent values are honoured (gallery: the values sent reproduce the frame, the reported 16 / 20 do not); the result descriptor reports the last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes as a smart filter on a smart object: the harvest applied it to a smart object and read the filterFX entry back, storing radius and threshold (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); on a plain pixel layer it rewrites the pixels",
+   "cost": "light at small Radius; grows with Radius on large images (not timed by the harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 0-255 Threshold range (the harvest read no range); non_destructive now cites the harvest's smart-filter probe instead of 'this harvest did not test it'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/993b7351d592.png",
+    "crop": "gallery/ps_filter/993b7351d592_1to1.png",
+    "note": "Threshold 0 turns the whole frame into soft blotchy patches: the type becomes blobs, the hairlines merge, block corners round off; the stale read-back (16 / 20) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "scripting: sent values confirmed"
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Median",
+   "id": "median",
+   "path": "Filter/Noise/Median",
+   "status": "current",
+   "summary": "Replaces every pixel with the median brightness of the pixels within Radius. Noise and specks vanish and texture flattens into smooth patches with rounded corners; at larger Radius the image looks like a blobby watercolour or posterised painting and thin lines and small type are wiped out.",
+   "use_for": [
+    "removing salt-and-pepper noise or halftone dots from a scan",
+    "smoothing a jagged layer mask or selection edge",
+    "a soft, blobby painterly background behind a headline",
+    "simplifying a photo into flat shapes before Image Trace or posterising"
+   ],
+   "avoid": [
+    "images with type, hairlines or fine detail you want to keep: anything thinner than about the Radius disappears",
+    "faces at high Radius: features turn plastic; mask them out",
+    "plain blur with soft edges: use Filter/Blur/Gaussian Blur; for edge-preserving smoothing use Filter/Blur/Surface Blur"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Noise/Median"
+   },
+   "look": [
+    "median",
+    "denoise",
+    "blobby",
+    "watercolour",
+    "painterly",
+    "posterised",
+    "smooth patches",
+    "noise removal"
+   ],
+   "params": [
+    {
+     "name": "radius",
+     "does": "Radius: the neighbourhood size in pixels; bigger = flatter, blobbier result",
+     "typical": "1-3 for noise; 8-25 for a painterly look; 2-10 on masks"
+    }
+   ],
+   "demo_settings": {
+    "radius": 15
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Blur/Surface Blur",
+    "Filter/Sharpen/Unsharp Mask"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putUnitDouble(s(\"radius\"), charIDToTypeID(\"#Pxl\"), 15); executeAction(s(\"median\"), d, DialogModes.NO); // radius 1-500 (harvest clamp); the smart-filter record stores radius as a pixel unit double; the terminology declares an integer, so d.putInteger(s(\"radius\"), 15) is the alternative if the unit form is refused",
+   "scriptable": "yes",
+   "non_destructive": "yes as a smart filter on a smart object: the harvest applied it to a smart object and read the filterFX entry back, storing radius (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); on a plain pixel layer it rewrites the pixels",
+   "cost": "light: 163 ms on the 480x270 harvest test layer; slower at large Radius",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive now cites the harvest's smart-filter probe instead of 'this harvest did not test it'; scripting notes the pixel-unit form the smart filter stores"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/09f3246f599a.png",
+    "crop": "gallery/ps_filter/09f3246f599a_1to1.png",
+    "note": "Texture flattens into smooth patches with rounded block corners, the type is wiped to specks and the hairlines merge into one bar, the blobby median look described.",
+    "rerender": false
+   }
+  },
+  {
+   "app": "PS",
+   "kind": "ps_filter",
+   "name": "Reduce Noise",
+   "id": "denoise",
+   "path": "Filter/Noise/Reduce Noise",
+   "status": "current",
+   "summary": "Classic noise-reduction dialog: Strength and Preserve Details smooth luminance noise, Reduce Color Noise removes coloured blotches, Sharpen Details restores some edge crispness and Remove JPEG Artifact softens JPEG compression blocks. The result is a cleaner, smoother image that turns waxy when pushed.",
+   "use_for": [
+    "cleaning low-light or high-ISO photos before print",
+    "removing colour blotches and JPEG blocks from a compressed video frame or web image",
+    "preparing a noisy photo for upscaling or for a large poster background"
+   ],
+   "avoid": [
+    "calling it with an empty descriptor: Photoshop refuses it (program error, harvest); send colorNoise, sharpen and removeJPEGArtifact, the descriptor the harvest ran (channelDenoise was not sent, so it is optional)",
+    "high Strength on faces: skin goes plastic; keep Preserve Details up or mask faces",
+    "images that are already soft, such as the test frame: the visible change is small",
+    "best-quality denoising: Filter/AI Denoise or Filter/Camera Raw Filter give cleaner results on photos",
+    "hard-edged colour graphics (logos, colour bars, UI): Reduce Color Noise at 100 % bled colour a few pixels across the plate's sharp colour-block borders (blue into violet, magenta into grey); lower it or mask such areas"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Noise/Remove Noise"
+   },
+   "look": [
+    "denoise",
+    "noise reduction",
+    "clean",
+    "smooth",
+    "JPEG artifact removal",
+    "colour noise removal"
+   ],
+   "params": [
+    {
+     "name": "colorNoise",
+     "does": "Reduce Color Noise %: removes red / green / blue blotches",
+     "typical": "the result descriptor always reports 45 (the dialog's last-used value), not what was applied; 50-100 on blotchy frames"
+    },
+    {
+     "name": "sharpen",
+     "does": "Sharpen Details %: puts back some edge contrast lost to smoothing",
+     "typical": "the result descriptor always reports 25 (the dialog's last-used value), not what was applied; 0 for the smoothest result"
+    },
+    {
+     "name": "removeJPEGArtifact",
+     "does": "Remove JPEG Artifact: softens JPEG compression blocks and ringing",
+     "typical": "true for web or video images"
+    },
+    {
+     "name": "channelDenoise",
+     "does": "With: list of per-channel settings; the read-back entry holds amount (Strength, read back 6) and edgeFidelity (Preserve Details %, read back 60), its channel reference read back only as <reference>",
+     "typical": "amount 6-10, edgeFidelity 40-60"
+    }
+   ],
+   "demo_settings": {
+    "colorNoise": 100,
+    "sharpen": 0,
+    "removeJPEGArtifact": true
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Sharpen/Unsharp Mask",
+    "Filter/Noise/Despeckle"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"colorNoise\"), 100); d.putInteger(s(\"sharpen\"), 0); d.putBoolean(s(\"removeJPEGArtifact\"), true); executeAction(s(\"denoise\"), d, DialogModes.NO); // an empty descriptor is refused; these three keys (integers / boolean) are the descriptor the harvest ran. The result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels. Strength and Preserve Details stay at the stored values unless you also send the channelDenoise list, untested: var r = new ActionReference(); r.putEnumerated(s(\"channel\"), s(\"channel\"), s(\"composite\")); var c = new ActionDescriptor(); c.putReference(s(\"channel\"), r); c.putInteger(s(\"amount\"), 10); c.putInteger(s(\"edgeFidelity\"), 40); var l = new ActionList(); l.putObject(s(\"channelDenoiseParams\"), c); d.putList(s(\"channelDenoise\"), l); (the composite reference is an assumption: the harvest read it back only as <reference>)",
+   "scriptable": "yes",
+   "non_destructive": "yes as a smart filter on a smart object: the harvest applied it to a smart object and read the filterFX entry back, storing colorNoise, removeJPEGArtifact and sharpen (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); on a plain pixel layer it rewrites the pixels",
+   "cost": "medium: 789 ms on the 480x270 harvest test layer; longer on a full-HD frame (not timed)",
+   "review": {
+    "by": "adversarial",
+    "changes": "the batch shows the harvest ran it with only colorNoise, sharpen and removeJPEGArtifact (value_sent_for_probe), so 'send every key, including channelDenoise' was wrong: scripting is now that proven three-key call with channelDenoise as an optional, untested add-on; 45 / 25 are no longer called defaults (batch: no defaults recorded, read-back ignores sent values); removed the unsourced 8x8 block size, the composite-channel claim in params and the 'a few seconds on full HD' extrapolation; non_destructive now cites the harvest's smart-filter probe"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "gallery/ps_filter/8d62466578a2.png",
+    "crop": "gallery/ps_filter/8d62466578a2_1to1.png",
+    "note": "Untested: the soft, noise-free photo plate gives Reduce Noise nothing to clean, so the cleaner / waxy result cannot be judged; the frame only shows Reduce Color Noise 100 % bleeding colour across the strip's hard block borders (blue into violet, magenta into the ramp) on the 1:1 crop, now a card fact. Needs a plate with added luminance + colour noise (or JPEG blocks); the demo settings are not the cause.",
+    "rerender": false,
+    "previous": {
+     "verdict": "weak",
+     "note": "960 frame unchanged by eye; on the 1:1 crop the only change is colour bleeding across the hard block borders (blue into violet, magenta into the ramp) and a slight softening: the soft, noise-free plate gives Reduce Noise nothing to clean, so the cleaner / waxy claim cannot be judged here.",
+     "rerender": false,
+     "by": "first pass, same run"
+    },
+    "second_opinion": {
+     "agree": false,
+     "verdict": "not_rendered",
+     "note": "Overturned weak -> not_rendered (Untested). Re-opened frame + crop: photo unchanged, colour bleed at block borders only. Plate check: no noise or JPEG blocks anywhere on the plate, so raising settings cannot show the effect (and Strength / Preserve Details sit in channelDenoise, not in the demo); this is a plate limit, not a filter fault. Harness check: the result descriptor is stale for this filter, but the frame differs from the plate (crop diff 3.8), so the values sent were applied."
+    }
+   }
+  }
+ ]
+}

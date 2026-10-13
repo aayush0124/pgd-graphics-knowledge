@@ -1,0 +1,1384 @@
+{
+ "cards": [
+  {
+   "name": "IJP2Export",
+   "id": "class:IJP2Export",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterJP2Lib/IJP2Export",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's JPEG 2000 export filter: the object Document.ExportBitmap(..., cdrJP2 or cdrJPC) returns answers these properties, which pick a .jp2 file or a bare codestream (Subformat), the compression level, the progression order and how masked (transparent) areas are coded; Finish writes the file.",
+   "use_for": [
+    "scripted JPEG 2000 export of a page or selection for an archive or a print / GIS workflow that asks for JP2",
+    "a raw JPEG 2000 codestream without the JP2 wrapper (export constant cdrJPC, or Subformat = jp2Codestream)",
+    "large raster previews where JPEG's block artefacts are not acceptable"
+   ],
+   "avoid": [
+    "web or social delivery: browsers barely open JPEG 2000; use the JPEG (IJPGExport) or WebP (IWEBPExport) filter",
+    "vector output: JP2 is raster; use ISVGExport or a PDF export",
+    "unattended runs that call ShowDialog: it is modal and hangs the script"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportBitmap(FileName, cdrJP2 (= 820), Range, ImageType, Width, Height, ResolutionX, ResolutionY, ...) returns an ICorelExportFilter whose run-time object is the JPEG 2000 filter (coclass JP2Export); cdrJPC (= 821, 'JPG2000 Codestream (Export only)') is the codestream variant of the same export. Set these properties on it through IDispatch, then call Finish.",
+   "key_members": [
+    {
+     "name": "Subformat",
+     "use": "Jp2Subformat: jp2Standard (0) = .jp2 file with JP2 header boxes, jp2Codestream (1) = bare codestream"
+    },
+    {
+     "name": "Compression",
+     "use": "compression level (long); the scale is not in the harvest, read the default back before setting it"
+    },
+    {
+     "name": "Progression",
+     "use": "Jp2Progression order: jp2Quality, jp2ResolutionQuality, jp2ResolutionPosition, jp2Position, jp2Channels"
+    },
+    {
+     "name": "HasMask",
+     "use": "read-only: the exported image carries a transparency mask"
+    },
+    {
+     "name": "OptimizeMaskedArea",
+     "use": "code the masked-out (transparent) area more cheaply (unverified)"
+    },
+    {
+     "name": "OptimizedCompression",
+     "use": "compression level that goes with OptimizeMaskedArea (meaning unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the JPEG 2000 file (JP2 or bare codestream) with the current settings"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the filter's settings back to their defaults (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the JPEG 2000 options dialog (modal); optional hWnd parent"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "the export constants are cdrJP2 (820, JP2 file) and cdrJPC (821, bare codestream), both export-only; cdrJPG2000Import (818) is the import filter and will not export",
+    "Compression and OptimizedCompression are bare longs with no harvested range: probe the values the dialog writes before scripting them (unverified)",
+    "spelled Subformat here but SubFormat on IJPGExport; late-bound name lookup is case-insensitive, so both spellings resolve (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\scan.jp2\", cdrJP2, cdrCurrentPage, cdrRGBColorImage, 2400, 1800, 300, 300)\nf.Subformat = 0     ' jp2Standard\nf.Progression = 0   ' jp2Quality\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested codestream export constant cdrJPC (821) to summary, use_for, how and the constants gotcha (card implied cdrJP2 was the only export constant); Finish no longer names an unharvested '.j2c' extension"
+   }
+  },
+  {
+   "name": "JP2Export",
+   "id": "class:JP2Export",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterJP2Lib/JP2Export",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's JPEG 2000 export filter (FilterJP2Lib). It adds nothing of its own: its default interface IJP2Export carries Subformat, Compression, Progression and the mask options; this is the object that sits behind the filter returned by ExportBitmap(..., cdrJP2), and most likely by cdrJPC (unverified).",
+   "use_for": [
+    "recognising the run-time JP2 filter object (CLSID / CastTo target) when inspecting an ExportBitmap result",
+    "scripted JPEG 2000 export, through the IJP2Export properties"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportBitmap with cdrJP2",
+    "web delivery: JPEG 2000 is poorly supported in browsers; export JPEG or WebP"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IJP2Export. In practice a script never creates it: ActiveDocument.ExportBitmap(path, cdrJP2, ...) returns an instance, and its members are set late-bound.",
+   "key_members": [
+    {
+     "name": "Subformat",
+     "use": "on IJP2Export: .jp2 file (jp2Standard) or bare codestream (jp2Codestream)"
+    },
+    {
+     "name": "Compression",
+     "use": "on IJP2Export: compression level (long)"
+    },
+    {
+     "name": "Progression",
+     "use": "on IJP2Export: Jp2Progression order of the codestream"
+    },
+    {
+     "name": "Finish",
+     "use": "on IJP2Export: writes the file"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "on IJP2Export: modal options dialog"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IJP2Export, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\scan.jp2\", cdrJP2, cdrCurrentPage, cdrRGBColorImage, 2400, 1800, 300, 300)\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: noted the harvested codestream constant cdrJPC as a second route to this filter (unverified)"
+   }
+  },
+  {
+   "name": "IJPGExport",
+   "id": "class:IJPGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterJPGLib/IJPGExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's JPEG export filter, answered by the object Document.ExportBitmap(..., cdrJPEG) returns: Compression (file size against quality), Smoothing, SubFormat (chroma subsampling), Progressive and Optimized encoding; Finish writes the .jpg. This is the With-block the macro recorder writes after an ExportBitmap call.",
+   "use_for": [
+    "batch export of social posts, thumbnails and web images from CorelDRAW pages",
+    "client preview JPEGs at a fixed pixel size and quality",
+    "progressive JPEGs for web pages that load top-down blurry-to-sharp"
+   ],
+   "avoid": [
+    "artwork that needs a transparent background: JPEG has no alpha; use IPNGExport or IWEBPExport",
+    "flat logos, text and line art: JPEG rings around hard edges; use PNG or SVG",
+    "print masters: a lossy JPEG is a poor master; export PDF or TIFF"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportBitmap(FileName, cdrJPEG (= 774), Range, ImageType, Width, Height, ResolutionX, ResolutionY, AntiAliasingType, ...) returns an ICorelExportFilter whose run-time object is the JPEG filter (coclass JPGExport); set these properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Compression",
+     "use": "compression amount (long): higher = smaller file, lower quality; the export dialog shows the inverse as Quality (unverified)"
+    },
+    {
+     "name": "Smoothing",
+     "use": "smoothing applied before encoding to hide block artefacts (long; scale not in the harvest, unverified)"
+    },
+    {
+     "name": "SubFormat",
+     "use": "chroma subsampling, the dialog's Sub format list (standard or optional); which long value means which is not in the harvest (unverified)"
+    },
+    {
+     "name": "Progressive",
+     "use": "write a progressive JPEG"
+    },
+    {
+     "name": "Optimized",
+     "use": "optimised Huffman tables: slightly smaller file, same pixels"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .jpg with the current settings"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the JPEG settings back to their defaults (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the JPEG export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "Compression is not 'quality': a high value means heavy compression and visible artefacts (unverified scale)",
+    "pixel size, resolution, colour mode and anti-aliasing are ExportBitmap arguments, not filter properties",
+    "a CMYK ImageType writes a CMYK JPEG that many web viewers show with wrong colours; use cdrRGBColorImage for screens",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\post.jpg\", cdrJPEG, cdrCurrentPage, cdrRGBColorImage, 1080, 1350, 72, 72, cdrNormalAntiAliasing)\nf.Progressive = False\nf.Optimized = True\nf.SubFormat = 0\nf.Compression = 10\nf.Smoothing = 0\nf.Finish",
+   "equivalents": {
+    "PS": "JPEGSaveOptions",
+    "AI": "ExportOptionsJPEG"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members: removed figures not in the harvest ('100 - Compression' quality formula, '4:2:0' / '4:4:4' value mapping, 'Smoothing 0 = off'); kept the meanings, marked unverified"
+   }
+  },
+  {
+   "name": "JPGExport",
+   "id": "class:JPGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterJPGLib/JPGExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's JPEG export filter (FilterJPGLib). It has no members of its own; its default interface IJPGExport holds Compression, Smoothing, SubFormat, Progressive and Optimized. It is the run-time object behind the filter ExportBitmap(..., cdrJPEG) returns.",
+   "use_for": [
+    "recognising the JPEG filter object (CLSID / CastTo target) when inspecting an ExportBitmap result",
+    "scripted JPEG export, through the IJPGExport properties"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportBitmap with cdrJPEG",
+    "transparent artwork: JPEG has no alpha; use the PNG filter"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IJPGExport. Scripts get an instance from ActiveDocument.ExportBitmap(path, cdrJPEG, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "Compression",
+     "use": "on IJPGExport: compression amount (higher = smaller, lower quality)"
+    },
+    {
+     "name": "Smoothing",
+     "use": "on IJPGExport: pre-encode softening"
+    },
+    {
+     "name": "SubFormat",
+     "use": "on IJPGExport: chroma subsampling choice"
+    },
+    {
+     "name": "Progressive",
+     "use": "on IJPGExport: progressive JPEG"
+    },
+    {
+     "name": "Finish",
+     "use": "on IJPGExport: writes the file"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IJPGExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\post.jpg\", cdrJPEG, cdrCurrentPage, cdrRGBColorImage, 1080, 1350, 72, 72)\nf.Compression = 10\nf.Finish",
+   "equivalents": {
+    "PS": "JPEGSaveOptions",
+    "AI": "ExportOptionsJPEG"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPNGExport",
+   "id": "class:IPNGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterPNGLib/IPNGExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's PNG export filter, answered by the object Document.ExportBitmap(..., cdrPNG) returns: interlacing, how transparency is written (none, one image colour, or the masked area) with its colour / palette index and mask inversion, plus read-only palette information for paletted output; Finish writes the .png.",
+   "use_for": [
+    "transparent-background logos, stickers and icons for web, apps and video overlays",
+    "UI graphics, text cards and flat illustrations that need crisp edges",
+    "paletted PNGs for small files (ImageType cdrPalettedImage)"
+   ],
+   "avoid": [
+    "photographs for the web: PNG files get large; use IJPGExport or IWEBPExport",
+    "vector delivery that must scale: use ISVGExport",
+    "print: export PDF / TIFF in CMYK; PNG is an RGB screen format"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportBitmap(FileName, cdrPNG (= 802), Range, ImageType, Width, Height, ResolutionX, ResolutionY, AntiAliasingType, Dithered, Transparent, ...) returns an ICorelExportFilter whose run-time object is the PNG filter (coclass PNGExport); set these properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Transparency",
+     "use": "PngTransparency: pngNone (0), pngImageColor (1) = one colour becomes transparent, pngMaskedArea (2) = the export's masked area becomes transparent"
+    },
+    {
+     "name": "Color",
+     "use": "the colour made transparent with pngImageColor (long colour value; encoding unverified)"
+    },
+    {
+     "name": "ColorIndex",
+     "use": "palette index of the transparent colour in paletted output"
+    },
+    {
+     "name": "InvertMask",
+     "use": "swap transparent and opaque areas of the mask"
+    },
+    {
+     "name": "Interlaced",
+     "use": "Adam7 interlaced PNG: shows progressively, slightly bigger file"
+    },
+    {
+     "name": "Paletted",
+     "use": "read-only: the output is a paletted PNG"
+    },
+    {
+     "name": "NumColors",
+     "use": "read-only: number of palette colours"
+    },
+    {
+     "name": "PaletteColor",
+     "use": "read-only, takes Index: one palette entry"
+    },
+    {
+     "name": "MaskPresent",
+     "use": "read-only: the export produced a mask to use for transparency"
+    },
+    {
+     "name": "TransparentColors",
+     "use": "variant list of colours treated as transparent (format unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .png with the current settings"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the PNG export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "a transparent background starts in the ExportBitmap call: pass Transparent:=True with an RGB ImageType so there is a mask; the Transparency property only chooses how it is written (unverified)",
+    "Paletted, NumColors and PaletteColor are read-only and only mean something when ImageType is cdrPalettedImage",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\sticker.png\", cdrPNG, cdrCurrentPage, cdrRGBColorImage, 1080, 1080, 72, 72, cdrNormalAntiAliasing, False, True)\nf.Interlaced = False\nf.InvertMask = False\nf.Finish",
+   "equivalents": {
+    "PS": "PNGSaveOptions",
+    "AI": "ExportOptionsPNG24"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for and Paletted: removed the unharvested '8-bit' figure"
+   }
+  },
+  {
+   "name": "PNGExport",
+   "id": "class:PNGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterPNGLib/PNGExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's PNG export filter (FilterPNGLib). No members of its own: its default interface IPNGExport holds the transparency, interlacing and palette properties. It is the run-time object behind the filter ExportBitmap(..., cdrPNG) returns.",
+   "use_for": [
+    "recognising the PNG filter object (CLSID / CastTo target) when inspecting an ExportBitmap result",
+    "scripted transparent PNG export, through the IPNGExport properties"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportBitmap with cdrPNG",
+    "photos for the web: use the JPEG or WebP filter"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IPNGExport. Scripts get an instance from ActiveDocument.ExportBitmap(path, cdrPNG, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "Transparency",
+     "use": "on IPNGExport: none / one image colour / masked area"
+    },
+    {
+     "name": "Interlaced",
+     "use": "on IPNGExport: Adam7 interlacing"
+    },
+    {
+     "name": "InvertMask",
+     "use": "on IPNGExport: swap transparent and opaque"
+    },
+    {
+     "name": "Paletted",
+     "use": "on IPNGExport: read-only, paletted output"
+    },
+    {
+     "name": "Finish",
+     "use": "on IPNGExport: writes the file"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IPNGExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\icon.png\", cdrPNG, cdrCurrentPage, cdrRGBColorImage, 512, 512, 72, 72, cdrNormalAntiAliasing, False, True)\nf.Finish",
+   "equivalents": {
+    "PS": "PNGSaveOptions",
+    "AI": "ExportOptionsPNG24"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ISVGExport",
+   "id": "class:ISVGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterSVGLib/ISVGExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's SVG export filter, answered by the object Document.ExportEx(..., cdrSVG or cdrSVGZ) returns: SVG version and encoding, how styles are written, output size and units, coordinate precision, text as curves or with embedded / subset fonts, and whether placed bitmaps are embedded and in which format; Finish writes the file.",
+   "use_for": [
+    "logos and icons for websites and apps",
+    "handing editable vector artwork to a developer or a web-animation build",
+    "compressed SVGZ export for the web (cdrSVGZ)"
+   ],
+   "avoid": [
+    "print delivery: export PDF",
+    "artwork built on lenses, mesh fills or bitmap effects: they have no clean SVG form and come out rasterised or approximated; export PNG instead (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. SVG is a vector filter, so use ActiveDocument.ExportEx(FileName, cdrSVG (= 1345) or cdrSVGZ (= 1347), Range, Options) which returns an ICorelExportFilter whose run-time object is the SVG filter (coclass SVGExport); set these properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "SvgVersion: svgVer10, svgVer11, svgVerBasic11, svgVerTiny11, svgVer12, svgVerTiny12; 1.1 is the safe choice for browsers"
+    },
+    {
+     "name": "Styling",
+     "use": "SvgStyling: svgInternalStyleSheet (<style> block), svgExternalCSS (separate .css), svgPresentationAttributes (fill / stroke as attributes, the most portable)"
+    },
+    {
+     "name": "Encoding",
+     "use": "SvgEncoding: svgUTF8 or svgUTF16"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "convert text to paths so the SVG needs no font"
+    },
+    {
+     "name": "EmbedFont",
+     "use": "embed the fonts used when text stays live"
+    },
+    {
+     "name": "CharacterSubsetting",
+     "use": "which glyphs get embedded: svgUsedOnly, svgUsedAndEnglish, svgUsedAndRoman, svgAll"
+    },
+    {
+     "name": "GiveEmbededFontPriority",
+     "use": "prefer the embedded font over an installed font of the same name (unverified)"
+    },
+    {
+     "name": "Units",
+     "use": "SvgUnits for Width / Height: svgInches, svgMillimeters, svgCentimeters, svgPixels, svgPercent"
+    },
+    {
+     "name": "Width",
+     "use": "output width in Units (double)"
+    },
+    {
+     "name": "Height",
+     "use": "output height in Units (double)"
+    },
+    {
+     "name": "DrawingPrecision",
+     "use": "SvgDrawingPrecision svg_1to1 .. svg_1to100000: coordinate scale, finer = bigger file (unverified)"
+    },
+    {
+     "name": "UseDecimalPrecision",
+     "use": "write decimal coordinates instead of scaled whole numbers (unverified)"
+    },
+    {
+     "name": "EmbedImages",
+     "use": "embed placed bitmaps as data inside the SVG instead of linking separate files"
+    },
+    {
+     "name": "BmpExportType",
+     "use": "SvgBmpExportType for placed bitmaps: svgJpg, svgGif, svgPng"
+    },
+    {
+     "name": "FountainSteps",
+     "use": "number of steps when a fountain fill has to be approximated (unverified)"
+    },
+    {
+     "name": "EmbedJavaScript",
+     "use": "include JavaScript in the SVG (what CorelDRAW writes is unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .svg / .svgz with the current settings"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "use ExportEx (or Export) for SVG; ExportBitmap is the raster route",
+    "the member is spelled GiveEmbededFontPriority (one 'd' in Embeded) exactly as harvested",
+    "with EmbedImages False the bitmaps are written as separate files next to the SVG; moving only the .svg breaks them (unverified)",
+    "svgExternalCSS writes a separate stylesheet the SVG depends on (unverified)",
+    "KeepPixelMeasurements is a hidden member: do not build on it",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.svg\", cdrSVG, cdrSelection)\nf.Version = 1        ' svgVer11\nf.Styling = 2        ' svgPresentationAttributes\nf.TextAsCurves = True\nf.EmbedImages = True\nf.Finish",
+   "equivalents": {
+    "AI": "ExportOptionsSVG"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SVGExport",
+   "id": "class:SVGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterSVGLib/SVGExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's SVG export filter (FilterSVGLib). No members of its own: its default interface ISVGExport holds the version, styling, font, unit, precision and image options. It is the run-time object behind the filter ExportEx(..., cdrSVG / cdrSVGZ) returns.",
+   "use_for": [
+    "recognising the SVG filter object (CLSID / CastTo target) when inspecting an ExportEx result",
+    "scripted SVG export for web logos and icons, through the ISVGExport properties"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportEx with cdrSVG",
+    "print delivery: export PDF"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is ISVGExport. Scripts get an instance from ActiveDocument.ExportEx(path, cdrSVG, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "on ISVGExport: SVG version"
+    },
+    {
+     "name": "Styling",
+     "use": "on ISVGExport: how fills and strokes are written"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "on ISVGExport: text to paths"
+    },
+    {
+     "name": "EmbedImages",
+     "use": "on ISVGExport: embed or link bitmaps"
+    },
+    {
+     "name": "Finish",
+     "use": "on ISVGExport: writes the file"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface ISVGExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\icon.svg\", cdrSVG, cdrSelection)\nf.TextAsCurves = True\nf.Finish",
+   "equivalents": {
+    "AI": "ExportOptionsSVG"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ITGAExport",
+   "id": "class:ITGAExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterTGALib/ITGAExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's Targa (TGA) export filter, answered by the object Document.ExportBitmap(..., cdrTGA) returns. Its only own setting is Version (tgaNormal or tgaEnhanced; what tgaEnhanced adds is not in the harvest); size, resolution, colour mode and transparency come from the ExportBitmap arguments.",
+   "use_for": [
+    "textures, sprites and UI atlases for game engines that ask for TGA",
+    "stills with alpha for video and compositing tools that read Targa"
+   ],
+   "avoid": [
+    "web and social: use PNG, JPEG or WebP",
+    "print: use PDF or TIFF"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportBitmap(FileName, cdrTGA (= 771), Range, ImageType, Width, Height, ResolutionX, ResolutionY, AntiAliasingType, Dithered, Transparent, ...) returns an ICorelExportFilter whose run-time object is the TGA filter (coclass TGAExport); set Version late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "TgaVersion: tgaNormal (0) or tgaEnhanced (1); what Enhanced adds is unverified"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .tga"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the TGA setting back to its default (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the TGA export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "alpha comes from ExportBitmap's Transparent argument with an RGB ImageType, not from this interface (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\sprite.tga\", cdrTGA, cdrCurrentPage, cdrRGBColorImage, 512, 512, 72, 72, cdrNormalAntiAliasing, False, True)\nf.Version = 0   ' tgaNormal\nf.Finish",
+   "equivalents": {
+    "PS": "TargaSaveOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the guessed 'TGA 2.0 layout with footer' meaning of tgaEnhanced (number not in the harvest)"
+   }
+  },
+  {
+   "name": "TGAExport",
+   "id": "class:TGAExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterTGALib/TGAExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's Targa export filter (FilterTGALib). No members of its own: its default interface ITGAExport carries the single Version setting. It is the run-time object behind the filter ExportBitmap(..., cdrTGA) returns.",
+   "use_for": [
+    "recognising the TGA filter object (CLSID / CastTo target) when inspecting an ExportBitmap result",
+    "scripted TGA export for game or video tools"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportBitmap with cdrTGA",
+    "web delivery: use PNG / JPEG / WebP"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is ITGAExport. Scripts get an instance from ActiveDocument.ExportBitmap(path, cdrTGA, ...) and set Version late-bound.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "on ITGAExport: tgaNormal or tgaEnhanced"
+    },
+    {
+     "name": "Finish",
+     "use": "on ITGAExport: writes the file"
+    },
+    {
+     "name": "Reset",
+     "use": "on ITGAExport: default settings (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "on ITGAExport: read-only, the filter has a dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "on ITGAExport: modal options dialog"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface ITGAExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\sprite.tga\", cdrTGA, cdrCurrentPage, cdrRGBColorImage, 512, 512, 72, 72)\nf.Finish",
+   "equivalents": {
+    "PS": "TargaSaveOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IWEBPExport",
+   "id": "class:IWEBPExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWEBPLib/IWEBPExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's WebP export filter, answered by the object Document.ExportBitmap(..., cdrWEBP) returns: lossy or lossless coding (Lossiness), a quality amount, a compression ratio and whether transparency is kept; Finish writes the .webp. How QualityAdvancedAmount and CompressionRatio interact is not documented in the harvest.",
+   "use_for": [
+    "web and social images with smaller files than JPEG or PNG",
+    "transparent web graphics (WebP keeps alpha)",
+    "site hero images and thumbnails batch-exported from CorelDRAW pages"
+   ],
+   "avoid": [
+    "clients or older software that cannot open WebP: export JPEG or PNG",
+    "print: use PDF or TIFF"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportBitmap(FileName, cdrWEBP (= 825), Range, ImageType, Width, Height, ResolutionX, ResolutionY, AntiAliasingType, Dithered, Transparent, ...) returns an ICorelExportFilter whose run-time object is the WebP filter (coclass WEBPExport); set these properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Lossiness",
+     "use": "switches lossy against lossless coding (which value means lossy is unverified; read the default back)"
+    },
+    {
+     "name": "QualityAdvancedAmount",
+     "use": "quality amount for lossy coding (double; scale not in the harvest, read the default back)"
+    },
+    {
+     "name": "CompressionRatio",
+     "use": "compression ratio / effort (double; meaning unverified)"
+    },
+    {
+     "name": "Transparency",
+     "use": "keep the alpha channel in the .webp"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .webp"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the WebP settings back to their defaults (unverified)"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the WebP export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "Transparency only has something to keep when ExportBitmap was called with Transparent:=True and an RGB ImageType (unverified)",
+    "QualityAdvancedAmount and CompressionRatio are doubles with no harvested range: read the defaults and change one at a time (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\hero.webp\", cdrWEBP, cdrCurrentPage, cdrRGBColorImage, 1920, 1080, 72, 72, cdrNormalAntiAliasing)\nDebug.Print f.Lossiness, f.QualityAdvancedAmount, f.CompressionRatio\nf.Transparency = False\nf.Finish",
+   "equivalents": {
+    "AI": "ExportOptionsWebP"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "QualityAdvancedAmount: removed the guessed 'likely 0-100' range, which is not in the harvest"
+   }
+  },
+  {
+   "name": "WEBPExport",
+   "id": "class:WEBPExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWEBPLib/WEBPExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's WebP export filter (FilterWEBPLib). No members of its own: its default interface IWEBPExport holds Lossiness, QualityAdvancedAmount, CompressionRatio and Transparency. It is the run-time object behind the filter ExportBitmap(..., cdrWEBP) returns.",
+   "use_for": [
+    "recognising the WebP filter object (CLSID / CastTo target) when inspecting an ExportBitmap result",
+    "scripted WebP export for web images"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportBitmap with cdrWEBP",
+    "recipients that cannot open WebP: export JPEG or PNG"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IWEBPExport. Scripts get an instance from ActiveDocument.ExportBitmap(path, cdrWEBP, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "Lossiness",
+     "use": "on IWEBPExport: lossy or lossless"
+    },
+    {
+     "name": "QualityAdvancedAmount",
+     "use": "on IWEBPExport: quality amount"
+    },
+    {
+     "name": "CompressionRatio",
+     "use": "on IWEBPExport: compression ratio (meaning unverified)"
+    },
+    {
+     "name": "Transparency",
+     "use": "on IWEBPExport: keep alpha"
+    },
+    {
+     "name": "Finish",
+     "use": "on IWEBPExport: writes the file"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IWEBPExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\thumb.webp\", cdrWEBP, cdrCurrentPage, cdrRGBColorImage, 640, 360, 72, 72)\nf.Finish",
+   "equivalents": {
+    "AI": "ExportOptionsWebP"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "EMFExport",
+   "id": "class:EMFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWMFLib/EMFExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's Enhanced Metafile (EMF) export filter (FilterWMFLib, which also holds the WMF filter). Its default interface IEMFExport has only the generic filter members, so EMF export has no scriptable settings of its own. It is the run-time object behind ExportEx(..., cdrEMF).",
+   "use_for": [
+    "recognising the EMF filter object when inspecting an ExportEx result",
+    "scripted vector clip-art export for Microsoft Office documents"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportEx with cdrEMF",
+    "web: export SVG; print: export PDF"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IEMFExport. Scripts get an instance from ActiveDocument.ExportEx(path, cdrEMF (= 1300), ...) and call Finish.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "on IEMFExport: writes the .emf"
+    },
+    {
+     "name": "Reset",
+     "use": "on IEMFExport: default settings (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "on IEMFExport: read-only, the filter has a dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "on IEMFExport: modal options dialog"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "on IEMFExport: hidden read-only string; purpose not documented"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IEMFExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\chart.emf\", cdrEMF, cdrSelection)\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IEMFExport",
+   "id": "class:IEMFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWMFLib/IEMFExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's EMF (Windows Enhanced Metafile) export filter. Beyond the generic export filter members (Reset, Finish, HasDialog, ShowDialog) it has no settings: unlike IWMFExport there is no text-as-curves or header switch, so a script controls the output only through the ExportEx arguments.",
+   "use_for": [
+    "vector logos, charts and diagrams placed in Word, PowerPoint or other Windows apps that read metafiles",
+    "a vector hand-off to legacy Windows software that does not import SVG or PDF"
+   ],
+   "avoid": [
+    "web: export SVG",
+    "print and press: export PDF; EMF drops or flattens advanced fills, transparency and effects (unverified)",
+    "software that reads only the older WMF format: use the WMF filter (IWMFExport)"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportEx(FileName, cdrEMF (= 1300), Range, Options) returns an ICorelExportFilter whose run-time object is the EMF filter (coclass EMFExport); call Finish to write it.",
+   "key_members": [
+    {
+     "name": "Finish",
+     "use": "writes the .emf"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the filter settings back to defaults (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the EMF export dialog (modal); what is chosen there has no named property on this interface"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "hidden read-only string; purpose not documented, do not build on it"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "there is nothing filter-specific to set: Range and the Options struct of ExportEx are the only scriptable levers",
+    "fountain fills, transparency and lens effects have no clean EMF form; check the file in the target app (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\diagram.emf\", cdrEMF, cdrSelection)\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unharvested '16-bit' figure from avoid; ShowDialog no longer claims the dialog's settings are unreadable (hidden ExternalSettings may carry them); summary and gotcha say 'scriptable' levers"
+   }
+  },
+  {
+   "name": "IWMFExport",
+   "id": "class:IWMFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWMFLib/IWMFExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's WMF (the older, pre-EMF Windows Metafile) export filter, answered by the object Document.ExportEx(..., cdrWMF) returns. Its own settings are TextAsCurves (text written as outlines) and PlaceableHeader (adds the placeable header that carries the drawing's bounds and scale); Finish writes the .wmf.",
+   "use_for": [
+    "vector clip art for old Windows / Office software that reads only WMF",
+    "simple flat logos for legacy sign-making or embroidery software that imports WMF"
+   ],
+   "avoid": [
+    "modern Office and Windows apps: use the EMF filter (IEMFExport)",
+    "artwork with gradients, transparency or many curves: WMF approximates them; export EMF, SVG or PDF (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportEx(FileName, cdrWMF (= 1294), Range, Options) returns an ICorelExportFilter whose run-time object is the WMF filter (coclass WMFExport); set the properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "TextAsCurves",
+     "use": "write text as outlines so the receiving app needs no font"
+    },
+    {
+     "name": "PlaceableHeader",
+     "use": "write the placeable header (bounds and units) most importers need to size the WMF; turn off only for software that rejects it"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .wmf"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the WMF settings back to their defaults (unverified)"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the WMF export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "the WMF format has no Bezier curves, gradients or transparency: curves become polylines and fountain fills become bands (unverified)",
+    "without PlaceableHeader many apps place the graphic at the wrong size (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.wmf\", cdrWMF, cdrSelection)\nf.TextAsCurves = True\nf.PlaceableHeader = True\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary and gotcha: removed the unharvested '16-bit' figure"
+   }
+  },
+  {
+   "name": "WMFExport",
+   "id": "class:WMFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWMFLib/WMFExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's Windows Metafile (WMF) export filter (FilterWMFLib). No members of its own: its default interface IWMFExport carries TextAsCurves and PlaceableHeader. It is the run-time object behind the filter ExportEx(..., cdrWMF) returns.",
+   "use_for": [
+    "recognising the WMF filter object when inspecting an ExportEx result",
+    "scripted WMF export for legacy software"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportEx with cdrWMF",
+    "modern Windows / Office targets: use the EMF filter"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IWMFExport. Scripts get an instance from ActiveDocument.ExportEx(path, cdrWMF, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "TextAsCurves",
+     "use": "on IWMFExport: text as outlines"
+    },
+    {
+     "name": "PlaceableHeader",
+     "use": "on IWMFExport: write the placeable header"
+    },
+    {
+     "name": "Finish",
+     "use": "on IWMFExport: writes the file"
+    },
+    {
+     "name": "Reset",
+     "use": "on IWMFExport: default settings (unverified)"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "on IWMFExport: modal options dialog"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IWMFExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.wmf\", cdrWMF, cdrSelection)\nf.PlaceableHeader = True\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the unharvested '16-bit' figure"
+   }
+  },
+  {
+   "name": "IWPGExport",
+   "id": "class:IWPGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWPGLib/IWPGExport",
+   "status": "current",
+   "summary": "Settings interface of CorelDRAW's WPG (WordPerfect Graphics) export filter, answered by the object Document.ExportEx(..., cdrWPG) returns: the WPG version (1 or 2), the colour mode (16 or 256 colours) and whether text is written as curves; Finish writes the .wpg. A legacy format kept for WordPerfect Office.",
+   "use_for": [
+    "graphics for WordPerfect documents and other legacy software that imports WPG"
+   ],
+   "avoid": [
+    "anything modern: use EMF for Office, SVG for web, PDF for print",
+    "full-colour artwork: the colour mode is limited to 16 or 256 colours (wpgColors16 / wpgColors256)"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. ActiveDocument.ExportEx(FileName, cdrWPG (= 1287), Range, Options) returns an ICorelExportFilter whose run-time object is the WPG filter (coclass WPGExport); set the properties late-bound, then call Finish.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "WpgVersion: wpgVersion1 (0) or wpgVersion2 (1); version 2 is the later WordPerfect format"
+    },
+    {
+     "name": "ColorMode",
+     "use": "WpgColorMode: wpgColors16 (0) or wpgColors256 (1)"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "write text as outlines so no font is needed"
+    },
+    {
+     "name": "Finish",
+     "use": "writes the .wpg"
+    },
+    {
+     "name": "Reset",
+     "use": "puts the WPG settings back to their defaults (unverified)"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "opens the WPG export dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object",
+    "colours are reduced to 16 or 256: gradients and photos band heavily (unverified)",
+    "ShowDialog opens the filter's modal options dialog and blocks the COM call until a person closes it: never call it in an unattended run",
+    "Python win32com: an early-bound (gencache / EnsureDispatch) result is wrapped as ICorelExportFilter and rejects the filter-specific names with AttributeError; set them late-bound, e.g. win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\clip.wpg\", cdrWPG, cdrSelection)\nf.Version = 1      ' wpgVersion2\nf.ColorMode = 1    ' wpgColors256\nf.TextAsCurves = True\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "WPGExport",
+   "id": "class:WPGExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterWPGLib/WPGExport",
+   "status": "current",
+   "summary": "Creatable COM class of CorelDRAW's WordPerfect Graphics export filter (FilterWPGLib). No members of its own: its default interface IWPGExport carries Version, ColorMode and TextAsCurves. It is the run-time object behind the filter ExportEx(..., cdrWPG) returns.",
+   "use_for": [
+    "recognising the WPG filter object when inspecting an ExportEx result",
+    "scripted WPG export for WordPerfect documents"
+   ],
+   "avoid": [
+    "creating it yourself to export: get it from ActiveDocument.ExportEx with cdrWPG",
+    "modern targets: use EMF, SVG or PDF"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (cancreate) whose default interface is IWPGExport. Scripts get an instance from ActiveDocument.ExportEx(path, cdrWPG, ...) and set its properties late-bound.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "on IWPGExport: WPG 1 or 2"
+    },
+    {
+     "name": "ColorMode",
+     "use": "on IWPGExport: 16 or 256 colours"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "on IWPGExport: text as outlines"
+    },
+    {
+     "name": "Finish",
+     "use": "on IWPGExport: writes the file"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "on IWPGExport: modal options dialog"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own: every property is on its default interface IWPGExport, and scripts normally receive an instance from the export call instead of creating one",
+    "an instance made with CreateObject / CoCreateInstance is not tied to a document or file name, so it has nothing to export (unverified)",
+    "nothing is written until Finish is called: ExportBitmap / ExportEx only set the export up and hand back this filter object"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\clip.wpg\", cdrWPG, cdrSelection)\nf.Finish",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IFitObjectsToPathDS",
+   "id": "class:IFitObjectsToPathDS",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FitObjectsToPathLib/IFitObjectsToPathDS",
+   "status": "needs_input",
+   "summary": "Data source behind CorelDRAW's Fit Objects to Path docker, which places the selected objects (or extra copies of them) along a selected path. It holds the docker's options (arrange-by and even-gap choices, rotation choice and centre, anchor corner, extra copies, spin and angle jitter, keep originals, group after) and the doFitObjectsToPath command. It is a UI binding, not a document object; several option meanings below are read from the member names and are unverified.",
+   "use_for": [
+    "icons, dots or letters spaced evenly around a circle or along a curve (badges, seals, wreaths, clock faces)",
+    "border and frame ornaments repeated along a path",
+    "scattered confetti, leaves or stars along a curve with angle jitter"
+   ],
+   "avoid": [
+    "text along a path: use Text > Fit Text to Path (IVGText.FitToPath) instead",
+    "a repeat that must stay live and re-editable: a blend attached to the path keeps editing open (unverified)",
+    "unattended runs without the right selection: it needs the objects plus one path selected and reports problems through its own error box"
+   ],
+   "confidence": "medium",
+   "how": "Not reachable from Application / Document properties. CorelDRAW's UI framework registers it as a data source for the docker; a script reaches it through Application.FrameWork.Application.DataContext.GetDataSource(\"FitObjectsToPathDS\"), which returns an ICUIDataSourceProxy: read and write the options with GetProperty / SetProperty and run InvokeMethod(\"doFitObjectsToPath\"). That name is not in the type library but is the one the docker binds to in Draw\\UIConfig\\DrawUI.xml (*Bind(DataSource=FitObjectsToPathDS;...)); whether the instance exists before the docker has been opened is unverified.",
+   "key_members": [
+    {
+     "name": "doFitObjectsToPath",
+     "use": "runs the fit on the current selection with the current options"
+    },
+    {
+     "name": "invalidSelection",
+     "use": "read-only: true when the current selection cannot be fitted; the docker disables its apply button while it is true (DrawUI.xml)"
+    },
+    {
+     "name": "selectionTargetType",
+     "use": "read-only string describing the selected target (unverified)"
+    },
+    {
+     "name": "selectionCount",
+     "use": "read-only: count of selected objects, as a string"
+    },
+    {
+     "name": "ArrangeByXmlItem",
+     "use": "current 'arrange by' choice, a list-item id from ArrangeByXmlItems (unverified)"
+    },
+    {
+     "name": "ArrangeByXmlItems",
+     "use": "read-only XML list of the arrange-by choices"
+    },
+    {
+     "name": "EvenGapsXmlItem",
+     "use": "current spacing choice, a list-item id from EvenGapsXmlItems (unverified)"
+    },
+    {
+     "name": "RotateChoiceXmlItem",
+     "use": "how each object is turned along the path, an id from RotateChoiceXmlItems (unverified)"
+    },
+    {
+     "name": "CenterOfRotationXmlItem",
+     "use": "the point each object turns around, an id from CenterOfRotationXmlItems (unverified)"
+    },
+    {
+     "name": "AnchorCornerActiveLocation",
+     "use": "which anchor point of each object sits on the path (int; mapping unverified)"
+    },
+    {
+     "name": "ExtraCopies",
+     "use": "how many extra copies to place along the path"
+    },
+    {
+     "name": "SpreadUniformlyOnSubpaths",
+     "use": "spread the objects across every subpath of a compound path"
+    },
+    {
+     "name": "clockwise",
+     "use": "direction of the progressive rotation / spin; the docker enables it only when rotateFactorUsed or spinFactorUsed is true (DrawUI.xml), so it is not the direction of travel along the path"
+    },
+    {
+     "name": "IgnoreSourceAngle",
+     "use": "ignore the objects' current rotation when placing them (unverified)"
+    },
+    {
+     "name": "rotateFactor",
+     "use": "progressive rotation angle (double); its docker spinner is enabled only when rotateFactorUsed is true (unit unverified)"
+    },
+    {
+     "name": "spinFactor",
+     "use": "spin angle (double); its docker spinner is enabled only when spinFactorUsed is true (unit unverified)"
+    },
+    {
+     "name": "angleJitter",
+     "use": "random angle variation per object (double); its docker spinner is enabled only when jitterUsed is true (unit unverified)"
+    },
+    {
+     "name": "KeepOriginals",
+     "use": "leave the source objects in place and fit copies"
+    },
+    {
+     "name": "GroupAfter",
+     "use": "group the fitted objects when done"
+    },
+    {
+     "name": "ErrorBoxDetails",
+     "use": "text of the docker's error box after a failed fit"
+    }
+   ],
+   "gotchas": [
+    "a UI-binding interface: no Application or Document property returns it; reach it through the framework data context by its registered name FitObjectsToPathDS (from DrawUI.xml, not the type library)",
+    "it works on the current selection: select the objects and the path first and check invalidSelection before invoking",
+    "the *XmlItem properties take the id of a list choice, not an index: read the matching *XmlItems list first (unverified)",
+    "rotateFactor / spinFactor / angleJitter only apply when their *Used flags are true; those flags are read-only here and most likely follow the RotateChoiceXmlItem choice (unverified)",
+    "failures go to the docker's own error box (ErrorBoxCaption, ErrorBoxDetails, ErrorBoxOK); an unattended run can stall on it (unverified)",
+    "OnHelp opens the help viewer: never call it from a pipeline",
+    "DrawUI.xml also binds a PlaceByXmlItem / PlaceByXmlItems combo that this type library does not declare; it may still answer GetProperty by name (unverified)"
+   ],
+   "example": "Set ds = Application.FrameWork.Application.DataContext.GetDataSource(\"FitObjectsToPathDS\")  ' name from DrawUI.xml\nIf Not ds.GetProperty(\"invalidSelection\") Then\n    ds.SetProperty \"ExtraCopies\", 11\n    ds.SetProperty \"GroupAfter\", True\n    ds.InvokeMethod \"doFitObjectsToPath\"\nEnd If",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "clockwise was described as direction of travel along the path, but DrawUI.xml enables it only with rotateFactorUsed / spinFactorUsed, so it is the rotation / spin direction; data-source name FitObjectsToPathDS confirmed from DrawUI.xml (how, gotcha, example no longer 'unverified'); invalidSelection and the *Used enable logic now cite DrawUI.xml; added the undeclared PlaceByXmlItem binding as a gotcha"
+   }
+  },
+  {
+   "name": "Application",
+   "id": "class:FontManager.Application",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FontManager/Application",
+   "status": "current",
+   "summary": "Top-level COM application object of Corel Font Manager, the font browsing and installing companion app of CorelDRAW Graphics Suite 2024. Its default interface IFontManagerApplication only gives app information (version, paths, UI language), window visibility, the UI framework and Quit; there is no member to list, install or activate fonts.",
+   "use_for": [
+    "checking from a setup script that Corel Font Manager is installed and which build it is",
+    "showing, hiding or closing Font Manager around an automated job"
+   ],
+   "avoid": [
+    "installing or activating fonts in a pipeline: there is no font API here; install fonts through Windows and let CorelDRAW pick them up",
+    "reading which fonts a CorelDRAW document uses: inspect the document's text through the CorelDRAW object model"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass (appobject, cancreate) of the Font Manager server; members live on IFontManagerApplication (and it also implements ICUIApplication). Created by COM activation of its CLSID {95C70001-1911-4773-92D8-F74A94C20DBC}; the ProgID is not in the type library, but the registry maps this CLSID to CorelFontManager.Application (versioned CorelFontManager.Application.25) with LocalServer32 FontManager.exe /Automation, so it runs as a separate process.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "on IFontManagerApplication: verbose version description"
+    },
+    {
+     "name": "VersionMajor",
+     "use": "on IFontManagerApplication: major TLB version number"
+    },
+    {
+     "name": "Path",
+     "use": "on IFontManagerApplication: full path of the Corel Font Manager folder"
+    },
+    {
+     "name": "Visible",
+     "use": "on IFontManagerApplication: show or hide the window"
+    },
+    {
+     "name": "FrameWork",
+     "use": "on IFontManagerApplication: UI framework object (dockers, command bars)"
+    },
+    {
+     "name": "Quit",
+     "use": "on IFontManagerApplication: closes Font Manager"
+    }
+   ],
+   "gotchas": [
+    "has no members of its own in the type library: look at IFontManagerApplication",
+    "Quit closes the app for every client, including a person who has it open",
+    "activation starts a separate Font Manager process (LocalServer32 FontManager.exe /Automation); a script that never calls Quit may leave it running (unverified)"
+   ],
+   "example": "Set fm = CreateObject(\"CorelFontManager.Application\")  ' ProgID from the registry\nDebug.Print fm.Version, fm.Path\nfm.Quit",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "ProgID CorelFontManager.Application and the out-of-process server confirmed from this machine's registry; how, gotcha and example no longer mark them unverified"
+   }
+  },
+  {
+   "name": "IFontManagerApplication",
+   "id": "class:IFontManagerApplication",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FontManager/IFontManagerApplication",
+   "status": "hidden",
+   "summary": "Main interface of the Corel Font Manager application object (flagged hidden in the type library). It exposes only read-only app facts (Name, Version and its major / minor / build numbers, Path, SetupPath, ProgramPath, LanguagePath, UILanguageCode), the Visible switch, the FrameWork UI object and Quit; no font collection, install or activation members exist.",
+   "use_for": [
+    "version and install-path checks for Corel Font Manager in a setup or health-check script",
+    "finding Font Manager's program and language folders",
+    "hiding or closing Font Manager after a job"
+   ],
+   "avoid": [
+    "font installation or activation: no API here; use Windows font installation",
+    "driving the Font Manager UI through FrameWork in unattended runs: that is UI automation and can stall on dialogs"
+   ],
+   "confidence": "medium",
+   "how": "Default interface of the FontManager Application coclass; any reference to the running Font Manager application object (COM activation, or the Application property of its own objects) answers these members. CreateObject(\"CorelFontManager.Application\") (ProgID from the registry) starts or attaches to it.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "verbose description of the Font Manager version"
+    },
+    {
+     "name": "VersionMajor",
+     "use": "major version number of Font Manager's TLB"
+    },
+    {
+     "name": "VersionMinor",
+     "use": "minor version number of the TLB"
+    },
+    {
+     "name": "VersionBuild",
+     "use": "build number"
+    },
+    {
+     "name": "Name",
+     "use": "application name"
+    },
+    {
+     "name": "Path",
+     "use": "full path of the Corel Font Manager folder"
+    },
+    {
+     "name": "SetupPath",
+     "use": "full path of the main setup folder"
+    },
+    {
+     "name": "ProgramPath",
+     "use": "full path of the Programs folder"
+    },
+    {
+     "name": "LanguagePath",
+     "use": "path of the language-specific data files"
+    },
+    {
+     "name": "UILanguageCode",
+     "use": "language code of the UI"
+    },
+    {
+     "name": "Visible",
+     "use": "get or set whether the window is shown"
+    },
+    {
+     "name": "FrameWork",
+     "use": "UI framework object (ICUIFrameWork): dockers, command bars, dialogs"
+    },
+    {
+     "name": "Application",
+     "use": "the application object itself"
+    },
+    {
+     "name": "Quit",
+     "use": "closes Corel Font Manager"
+    }
+   ],
+   "gotchas": [
+    "flagged hidden in the type library: object browsers and some early-binding tools skip it, but late-bound calls work (unverified)",
+    "Quit closes Font Manager for every client, including a person using it",
+    "Visible = False hides the window; the process keeps running until Quit (unverified)",
+    "FrameWork is the only door to the UI, and it is UI automation, not a font API"
+   ],
+   "example": "Set fm = CreateObject(\"CorelFontManager.Application\")  ' ProgID from the registry\nDebug.Print fm.Name, fm.VersionMajor, fm.VersionBuild\nDebug.Print fm.ProgramPath\nfm.Visible = False\nfm.Quit",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "ProgID confirmed from this machine's registry; how names it and the example no longer marks it unverified"
+   }
+  }
+ ]
+}

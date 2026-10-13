@@ -1,0 +1,805 @@
+{
+ "cards": [
+  {
+   "name": "Diffuse Glow",
+   "id": "diffuseGlow",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Diffuse Glow",
+   "status": "current",
+   "summary": "Filter Gallery Distort filter that makes the image look shot through a soft diffusion filter: a glow in the current Background colour (white by default) is spread through the image with see-through grain. Clear Amount decides how far down the tones the glow reaches: high values keep it near the brightest areas, while at Clear Amount 5 (the demo) even the darkest photo areas lift from about RGB 59 to 104 and the colours turn pastel, so the whole frame reads as a faded, grainy, milky haze. A dark Background colour gives a smoky haze instead.",
+   "use_for": [
+    "dreamy, romantic or nostalgic poster and wedding-photo look with glowing highlights",
+    "fake bloom / halation on a video still or product shot for a soft-focus glamour feel",
+    "ethereal glow behind a portrait or event photo used as a backdrop for headline type",
+    "grainy faded-film texture when stacked as a Smart Filter at reduced opacity",
+    "a faded, milky pastel backdrop behind headline type (low Clear Amount washes the whole photo)"
+   ],
+   "avoid": [
+    "Hidden in Filter > Distort by default (harvest menu_visible false): reach it through Filter/Filter Gallery, a script, or Preferences > Plug-ins > Show all Filter Gallery groups and names.",
+    "Forgetting the background colour: the glow takes the background swatch, so check it (set white for a classic bloom) before running it or the script.",
+    "Already bright, low-contrast photos: highlights wash out to flat white; raise Clear Amount or lower Glow Amount, or build the bloom from a Gaussian-blurred copy set to Screen for a cleaner result.",
+    "Small type or fine linework: grain and glow eat thin strokes; mask the effect off text.",
+    "CMYK, Lab, Duotone or other modes: the harvest lists only Grayscale and RGB as supported, so convert a copy first.",
+    "keeping shadows and contrast: at Clear Amount 5 the glow lifted the whole image, shadows included, into a milky haze; raise Clear Amount (15 default) to keep the glow nearer the highlights"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort/Diffuse Glow"
+   },
+   "look": [
+    "soft glow",
+    "diffusion filter",
+    "bloom",
+    "dreamy",
+    "ethereal",
+    "glowing highlights",
+    "halation",
+    "white haze",
+    "grainy glow",
+    "soft focus",
+    "washed out",
+    "pastel",
+    "milky haze",
+    "faded"
+   ],
+   "params": [
+    {
+     "name": "graininess",
+     "does": "Graininess: amount of see-through noise sprinkled through the glow",
+     "typical": "6 default; 0 for a clean glow, 6-10 for a gritty film look"
+    },
+    {
+     "name": "glowAmount",
+     "does": "Glow Amount: strength and spread of the background-colour glow in the light areas",
+     "typical": "10 default; 5-15"
+    },
+    {
+     "name": "clearAmount",
+     "does": "Clear Amount: how much of the image is left clear of glow; higher keeps the glow to the very brightest areas",
+     "typical": "15 default; 5 washes the whole frame into a milky pastel haze (plate render); 15-20 keeps the glow nearer the highlights"
+    }
+   ],
+   "demo_settings": {
+    "graininess": 8,
+    "glowAmount": 12,
+    "clearAmount": 5
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Filter Gallery",
+    "Edit/Fade",
+    "Filter/Blur/Gaussian Blur"
+   ],
+   "scripting": "var c = new SolidColor(); c.rgb.hexValue = \"FFFFFF\"; app.backgroundColor = c; // the glow takes the background colour\nvar s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"graininess\"), 8); d.putInteger(s(\"glowAmount\"), 12); d.putInteger(s(\"clearAmount\"), 5); executeAction(s(\"diffuseGlow\"), d, DialogModes.NO); // keys left out fall back to the last-used values",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "359 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); avoid: dropped the unharvested '8 bits/channel' clause from the colour-mode entry. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_filter/d1a588622f95.png",
+    "note": "White haze with fine grain over the whole frame, but the dark areas did not stay put: the darkest photo areas lift from about 59 to 104, the wall from 163 to 224, saturation falls from 73 to 24, so at Clear Amount 5 the glow washes out the entire image, not only its light areas. Summary, look, use_for, avoid and the Clear Amount typical rewritten to the frame.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Re-opened the frame and sampled it: dark photo areas 59 -> 104, wall 163 -> 224, strip pastel, fine grain everywhere. Plate check: the plate has a full tonal range (black band, dark areas, ramp), so 'dark areas stay put' was testable and failed; the cause is the demo's low Clear Amount (5), which is the filter's real behaviour, not a harness fault. Rewrite checked against the frame; demo kept (it is in range and shows the effect strongly)."
+    }
+   }
+  },
+  {
+   "name": "Displace",
+   "id": "displace",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Displace",
+   "status": "needs_input",
+   "summary": "Shifts every pixel sideways and up/down by an amount read from a separate displacement-map PSD: mid grey leaves a pixel in place, darker and lighter values push it one way or the other (first map channel = horizontal, second = vertical), so the image appears to wrap over the map's folds, bricks, fabric or ripples. Without a map file it cannot run; the harvest did not execute it because a headless call with no map wedged Photoshop.",
+   "use_for": [
+    "wrapping a flag, logo or type onto fabric folds, crumpled paper, a brick wall or a T-shirt mock-up (map = blurred greyscale copy of the surface)",
+    "water / heat-haze / glass refraction using a ripple or noise texture as the map",
+    "glitch and slice offsets with a map of hard horizontal grey bands",
+    "conforming a pattern or texture to a body or product surface in compositing"
+   ],
+   "avoid": [
+    "Running it with no map file, headless: the harvest call wedged Photoshop for 128 s and left every command 'not currently available' until a restart. Always pass displaceFile pointing to an existing flattened .psd.",
+    "The map must be a saved Photoshop (.psd) file, not the open layer itself; save a blurred greyscale copy first (sharp maps give torn, jagged results; blur the map 2-10 px).",
+    "Large scale values tear the image and smear edge pixels; keep 5-20 for conform-to-surface work and choose Repeat Edge Pixels for photos.",
+    "If you only need a regular wave or a random ripple, Filter/Distort/Wave or Filter/Distort/Ripple need no map file."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Distort/Displace"
+   },
+   "look": [
+    "displacement map",
+    "wrap to surface",
+    "fabric folds",
+    "conform texture",
+    "wrinkled",
+    "flag wrap",
+    "refraction",
+    "glitch offset",
+    "distorted texture"
+   ],
+   "params": [
+    {
+     "name": "horizontalScale",
+     "does": "Horizontal Scale %: how far the map's first channel pushes pixels left/right; range not harvested",
+     "typical": "5-20 for wrapping, 50+ for glitch"
+    },
+    {
+     "name": "verticalScale",
+     "does": "Vertical Scale %: how far the map pushes pixels up/down (second channel, or the only channel of a greyscale map); range not harvested",
+     "typical": "same as horizontal for an even wrap"
+    },
+    {
+     "name": "displacementMap",
+     "does": "Displacement Map: how a map of a different size is fitted to the layer",
+     "typical": "stretchToFit for a surface photo; tile for a small repeating texture"
+    },
+    {
+     "name": "undefinedArea",
+     "does": "Undefined Areas: what fills edges that pixels moved away from",
+     "typical": "repeatEdgePixels for photos; wrapAround for seamless patterns"
+    },
+    {
+     "name": "displaceFile",
+     "does": "Path to the displacement-map .psd (required)",
+     "typical": "a flattened greyscale .psd blurred 2-10 px"
+    }
+   ],
+   "enum_labels": {
+    "displacementMap": {
+     "stretchToFit": "Stretch To Fit",
+     "tile": "Tile"
+    },
+    "undefinedArea": {
+     "wrapAround": "Wrap Around",
+     "repeatEdgePixels": "Repeat Edge Pixels"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Blur/Gaussian Blur",
+    "Image/Mode/Grayscale",
+    "Filter/Distort/Wave"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"horizontalScale\"), 15); d.putInteger(s(\"verticalScale\"), 15); d.putEnumerated(s(\"displacementMap\"), s(\"displacementMap\"), s(\"stretchToFit\")); d.putEnumerated(s(\"undefinedArea\"), s(\"undefinedArea\"), s(\"repeatEdgePixels\")); d.putPath(s(\"displaceFile\"), new File(\"~/maps/surface_map.psd\")); executeAction(s(\"displace\"), d, DialogModes.NO); // untested by the harvest; never send it without displaceFile (wedges Photoshop)",
+   "scriptable": "partial",
+   "non_destructive": "not probed: the harvest's smart-filter probe skipped Displace because a call with no map file wedges Photoshop; the scripted call on a plain pixel layer is destructive",
+   "cost": "not measured: the harvest never ran it",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the unharvested '(128)' mid-grey value; params: dropped the unharvested '100% = up to 128 px' conversion and the '10 is the usual dialog value' default (the harvest never ran Displace, so no default or range exists); non_destructive true -> 'not probed' (the later harvest smart-filter probe skipped it); cost: dropped the unharvested 'usually light once the map is loaded'. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: needs a displacement-map PSD (status needs_input); the harvest found a headless call without a map wedges Photoshop.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "name": "Glass",
+   "id": "glass",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Glass",
+   "status": "current",
+   "summary": "Filter Gallery Distort filter that makes the image look as if seen through a pane of textured glass: the picture is refracted by a texture (frosted, glass blocks, tiny lenses or canvas), so edges break up into wobbly, bumpy shapes while the colours stay the same. Distortion sets how far pixels shift, Smoothness how rounded the refraction is, Scaling the size of the glass pattern.",
+   "use_for": [
+    "frosted bathroom / privacy glass look over a photo behind headline type",
+    "glass-block window effect for a retro or architectural poster",
+    "obscuring faces or details while keeping colours and composition (a stylish alternative to pixelate)",
+    "textured background plate for an event or social graphic"
+   ],
+   "avoid": [
+    "Hidden in Filter > Distort by default (harvest menu_visible false): reach it through Filter/Filter Gallery, a script, or Preferences > Plug-ins > Show all Filter Gallery groups and names.",
+    "Text that must stay readable: even low Distortion breaks letter edges; mask it off or apply under the type.",
+    "Very large images: Scaling tops out at 200 (harvested max), so at 4K+ the pattern can read as fine noise; raise Scaling or work on a downsized copy.",
+    "Brick, Burlap and Sandstone in the textureType enum are the shared Texturizer textures; the Glass dialog offers Blocks, Canvas, Frosted and Tiny Lens, so stick to those.",
+    "CMYK, Lab, Duotone or other modes: the harvest lists only Grayscale and RGB as supported, so convert a copy first."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort/Glass",
+    "CDR": "Effects/Creative/Glass Block"
+   },
+   "look": [
+    "frosted glass",
+    "glass block",
+    "textured glass",
+    "refraction",
+    "privacy glass",
+    "shower glass",
+    "bumpy distortion",
+    "tiny lens"
+   ],
+   "params": [
+    {
+     "name": "distort",
+     "does": "Distortion: how far the texture shifts pixels; higher = more broken-up image",
+     "typical": "5 default; 10-20 for an obvious glass look"
+    },
+    {
+     "name": "smoothness",
+     "does": "Smoothness: rounds the refraction; low = sharp, fragmented edges, high = soft, liquid warps",
+     "typical": "3 default; 3-8"
+    },
+    {
+     "name": "textureType",
+     "does": "Texture: the glass surface pattern (dialog: Blocks, Canvas, Frosted, Tiny Lens)",
+     "typical": "texTypeFrosted (default) or texTypeBlocks"
+    },
+    {
+     "name": "scaling",
+     "does": "Scaling %: size of the glass pattern",
+     "typical": "100 default; 150-200 on full HD and larger"
+    },
+    {
+     "name": "invertTexture",
+     "does": "Invert: swaps raised and sunken parts of the texture",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "distort": 15,
+    "smoothness": 3,
+    "textureType": "texTypeBlocks",
+    "scaling": 150,
+    "invertTexture": false
+   },
+   "enum_labels": {
+    "textureType": {
+     "texTypeBrick": "Brick",
+     "texTypeBurlap": "Burlap",
+     "texTypeCanvas": "Canvas",
+     "texTypeSandstone": "Sandstone",
+     "texTypeBlocks": "Blocks",
+     "texTypeFrosted": "Frosted",
+     "texTypeTinyLens": "Tiny Lens"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Filter Gallery",
+    "Edit/Fade",
+    "Filter/Blur/Gaussian Blur"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"distort\"), 15); d.putInteger(s(\"smoothness\"), 3); d.putEnumerated(s(\"textureType\"), s(\"textureType\"), s(\"texTypeBlocks\")); d.putInteger(s(\"scaling\"), 150); d.putBoolean(s(\"invertTexture\"), false); executeAction(s(\"glass\"), d, DialogModes.NO); // keys left out fall back to the last-used values",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "229 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); avoid: dropped the unharvested '8 bits/channel' clause from the colour-mode entry; avoid: replaced the unharvested 'texture is in pixels' unit claim with the harvested Scaling max 200. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/170fd7e84a1b.png",
+    "note": "Glass-block refraction grid over the whole frame: edges break into wobbly bumpy shapes in a square block pattern, colours kept.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Ocean Ripple",
+   "id": "oceanRipple",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Ocean Ripple",
+   "status": "current",
+   "summary": "Filter Gallery Distort filter that adds small, randomly spaced ripples across the whole image, so it looks as if seen under a rippling water surface: edges and lines wobble irregularly, colours are unchanged. Ripple Size sets how big the ripples are, Ripple Magnitude how far they push pixels.",
+   "use_for": [
+    "underwater or pool-reflection look for a summer, travel or beverage poster",
+    "reflection in water: flip a copy of the scene below a horizon and ripple it",
+    "dreamy or dizzy distortion for a music / nightlife flyer background",
+    "breaking up the edges of a photo used as a textured backdrop"
+   ],
+   "avoid": [
+    "Hidden in Filter > Distort by default (harvest menu_visible false): reach it through Filter/Filter Gallery, a script, or Preferences > Plug-ins > Show all Filter Gallery groups and names.",
+    "Large images: Ripple Size tops out at 15 (harvested max), so on 4K+ files the ripples can look like fine noise; use Filter/Distort/Ripple (Large) or Filter/Distort/Wave for bigger waves.",
+    "Readable text and faces: ripples wobble letter edges and features; mask them off.",
+    "Regular, even waves: this is random by design; use Filter/Distort/Wave for controlled waves.",
+    "CMYK, Lab, Duotone or other modes: the harvest lists only Grayscale and RGB as supported, so convert a copy first."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort/Ocean Ripple"
+   },
+   "look": [
+    "underwater",
+    "water ripple",
+    "pool reflection",
+    "wobbly",
+    "rippled",
+    "wet glass",
+    "liquid distortion"
+   ],
+   "params": [
+    {
+     "name": "rippleSize",
+     "does": "Ripple Size: size and spacing of the ripples",
+     "typical": "9 default; 10-15 on full HD"
+    },
+    {
+     "name": "rippleMagnitude",
+     "does": "Ripple Magnitude: how far each ripple displaces pixels",
+     "typical": "9 default; 12-20 for an obvious water look"
+    }
+   ],
+   "demo_settings": {
+    "rippleSize": 12,
+    "rippleMagnitude": 18
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Filter Gallery",
+    "Filter/Distort/Glass",
+    "Filter/Blur/Motion Blur"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"rippleSize\"), 12); d.putInteger(s(\"rippleMagnitude\"), 18); executeAction(s(\"oceanRipple\"), d, DialogModes.NO); // keys left out fall back to the last-used values",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "139 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); avoid: dropped the unharvested '8 bits/channel' clause from the colour-mode entry; avoid: dropped the unharvested 'ripple size is in pixels' unit claim (kept the harvested max 15). Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/3afb22a7f1d9.png",
+    "note": "Small random ripples wobble every edge as if under rippling water; colours unchanged (the strip's blocks are mixed only by displacement).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Pinch",
+   "id": "pinch",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Pinch",
+   "status": "current",
+   "summary": "Squeezes the image inside an ellipse fitted to the selection (or the whole layer) toward its centre, like a concave funhouse mirror; a negative Amount does the opposite and bulges the centre outward. The corners outside the ellipse stay untouched.",
+   "use_for": [
+    "caricature / funny-face edits: pinch a head or nose with an elliptical selection",
+    "slimming or tightening a product or logo detail inside a selection",
+    "implosion or 'sucked into the centre' backgrounds for gaming and hype graphics",
+    "a quick bulge (negative Amount) for a magnifier or button highlight"
+   ],
+   "avoid": [
+    "Whole-frame 16:9 layers: the ellipse follows the frame, so the warp is wide and oval; draw a circular selection for a round pinch.",
+    "Readable type in the centre: it gets squeezed out of shape; apply below the text layer.",
+    "Large changes to real people in news or documentary work: this is a misleading body edit.",
+    "Stronger, controllable warps: use Filter/Liquify (Pucker / Bloat tools); for a pure outward bulge Filter/Distort/Spherize gives a rounder lens.",
+    "Matching it in Illustrator: the listed equivalent Effect/Warp/Fisheye bulges at a positive Bend (like Spherize); use a negative Bend there to pinch."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Warp/Fisheye",
+    "CDR": "Effects/3D Effects/Pinch/Punch"
+   },
+   "look": [
+    "pinch",
+    "squeeze",
+    "implode",
+    "concave",
+    "funhouse mirror",
+    "suck in",
+    "bulge",
+    "caricature"
+   ],
+   "params": [
+    {
+     "name": "amount",
+     "does": "Amount %: positive pulls the centre inward (pinch), negative pushes it outward (bulge)",
+     "typical": "50 default; 70-100 or -50 to -100"
+    }
+   ],
+   "demo_settings": {
+    "amount": 100
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Distort/Spherize",
+    "Filter/Liquify",
+    "Edit/Fade"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"amount\"), 100); executeAction(s(\"pinch\"), d, DialogModes.NO); // acts on the active selection if there is one",
+   "scriptable": "yes",
+   "non_destructive": "yes on a Smart Object: the harvest applied it as a Smart Filter that stores amount (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); pass every parameter, because an empty descriptor opened the dialog on the smart object even under DialogModes.NO. The scripted call on a plain pixel layer is destructive",
+   "cost": "412 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); non_destructive true -> qualified string citing the harvest's later smart-filter probe (stored keys, and that an empty descriptor opens the dialog on a smart object even under DialogModes.NO); avoid: added that the AI equivalent Effect/Warp/Fisheye only pinches with a negative Bend (its own card: positive Bend magnifies the centre), so the mapping is not read as a same-direction match. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/fae6410335cf.png",
+    "note": "Content inside the fitted ellipse is pulled toward the centre: the colour strip and ramp bow up into the middle and the centre shrinks while the corners stay put.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Polar Coordinates",
+   "id": "polar",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Polar Coordinates",
+   "status": "current",
+   "summary": "Remaps the image between rectangular and polar coordinates. Rectangular to Polar bends the frame into a circle (the top edge collapses to the centre, the bottom edge wraps around the outside, left and right edges meet in a seam): the classic 'tiny planet' or radial look. Polar to Rectangular unrolls a circular image into straight bands.",
+   "use_for": [
+    "tiny-planet / little-planet image from a wide panorama (make the canvas square first, flip it so the ground ends up in the middle)",
+    "sunburst and radial-ray backgrounds from vertical stripes for sale banners, retro and comic posters",
+    "radial speed-burst: Polar to Rectangular, rotate 90°, Filter/Stylize/Wind, rotate back, Rectangular to Polar",
+    "unrolling circular text or a round badge into a straight strip for editing"
+   ],
+   "avoid": [
+    "Non-square layers: the result is squashed into an oval that fills the frame; resize or crop to a square first.",
+    "Visible seam: the left and right edges meet in a seam running out from the centre; make them match (or clone the seam) before converting.",
+    "Faces and readable text: they get stretched into arcs; use it on scenery, stripes and textures."
+   ],
+   "confidence": "high",
+   "look": [
+    "tiny planet",
+    "little planet",
+    "radial",
+    "circular wrap",
+    "sunburst",
+    "polar warp",
+    "radial burst",
+    "unroll"
+   ],
+   "params": [
+    {
+     "name": "convert",
+     "does": "Convert: which way to remap",
+     "typical": "rectToPolar for tiny planets and sunbursts; polarToRect to unroll"
+    }
+   ],
+   "demo_settings": {
+    "convert": "rectToPolar"
+   },
+   "enum_labels": {
+    "convert": {
+     "rectToPolar": "Rectangular to Polar",
+     "polarToRect": "Polar to Rectangular"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Image/Image Size",
+    "Filter/Stylize/Wind",
+    "Image/Image Rotation"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putEnumerated(s(\"convert\"), s(\"convert\"), s(\"rectToPolar\")); executeAction(s(\"polar\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes on a Smart Object: the harvest applied it as a Smart Filter that stores convert (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); pass every parameter, because an empty descriptor opened the dialog on the smart object even under DialogModes.NO. The scripted call on a plain pixel layer is destructive",
+   "cost": "1174 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed; the slowest filter in this batch",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); non_destructive true -> qualified string citing the harvest's later smart-filter probe (stored keys, and that an empty descriptor opens the dialog on a smart object even under DialogModes.NO); avoid: the seam position 'at the top' is not in the harvest; now only says it runs out from the centre. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/29e909f30aa1.png",
+    "note": "The frame is bent into a ring: the top of the plate collapses into the centre, the colour strip, ramp and type wrap around the outside, and left and right edges meet in a seam at twelve o'clock, the tiny-planet look.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Ripple",
+   "id": "ripple",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Ripple",
+   "status": "current",
+   "summary": "Creates an undulating pattern across the image, like ripples on the surface of a pond: straight edges and stripes turn wavy and wobbly while colours stay the same. Amount sets how strong the ripples are (the sign flips their direction), Size picks small, medium or large ripples.",
+   "use_for": [
+    "water reflection: flip a copy of the scene under a horizon line and ripple it",
+    "wavy, melting or psychedelic type and stripe backgrounds for music and event posters",
+    "rough, hand-made wobble on straight graphic edges",
+    "dream-sequence or flashback distortion on a still"
+   ],
+   "avoid": [
+    "Controlled or regular waves: Ripple has only three sizes; use Filter/Distort/Wave for wavelength and amplitude control.",
+    "Large frames with Small size: the ripples stay small next to the frame and read as noise; choose Large on full HD and up.",
+    "Readable text: wavy letters lose legibility; ripple a copy or mask it."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Zig Zag",
+    "CDR": "Effects/Distort/Ripple"
+   },
+   "look": [
+    "wavy",
+    "rippled",
+    "pond ripple",
+    "watery",
+    "wobbly edges",
+    "water reflection",
+    "psychedelic",
+    "melting"
+   ],
+   "params": [
+    {
+     "name": "amount",
+     "does": "Amount %: strength of the ripples; negative values ripple the other way",
+     "typical": "100 default; 300-700 for an obvious wave"
+    },
+    {
+     "name": "rippleSize",
+     "does": "Size: ripple wavelength",
+     "typical": "mediumQuality default; large on full HD"
+    }
+   ],
+   "demo_settings": {
+    "amount": 600,
+    "rippleSize": "large"
+   },
+   "enum_labels": {
+    "rippleSize": {
+     "small": "Small",
+     "mediumQuality": "Medium",
+     "large": "Large"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Distort/Wave",
+    "Filter/Distort/Ocean Ripple",
+    "Edit/Transform/Flip Vertical"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"amount\"), 600); d.putEnumerated(s(\"rippleSize\"), s(\"rippleSize\"), s(\"large\")); executeAction(s(\"ripple\"), d, DialogModes.NO);",
+   "scriptable": "yes",
+   "non_destructive": "yes on a Smart Object: the harvest applied it as a Smart Filter that stores amount + rippleSize (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); pass every parameter, because an empty descriptor opened the dialog on the smart object even under DialogModes.NO. The scripted call on a plain pixel layer is destructive",
+   "cost": "654 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); non_destructive true -> qualified string citing the harvest's later smart-filter probe (stored keys, and that an empty descriptor opens the dialog on a smart object even under DialogModes.NO); avoid: dropped the unharvested 'pixel-sized' unit claim. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/b3ee86cf8805.png",
+    "note": "Every edge and stripe turns into strong, jagged large waves (Amount 600, Large), colours unchanged.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Shear",
+   "id": "shear",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Shear",
+   "status": "needs_input",
+   "summary": "Bends the image sideways along a curve you draw in the dialog's grid: each row is shifted left or right by the curve's offset at that height, so a bowed curve gives a C-bend and an S-curve a wavy S-bend; the edges pushed off one side wrap around or repeat. With the default straight line it does nothing, so it needs the curve (shearPoints, a list of points) as input.",
+   "use_for": [
+    "bending a banner, flag or stripe graphic into a gentle S-curve",
+    "curving a column of type or a photo strip for a playful layout",
+    "seamless wavy patterns from stripes with Wrap Around",
+    "vertical bending: rotate the layer 90°, shear, rotate back"
+   ],
+   "avoid": [
+    "Expecting a visible result from a flat setting: undefinedArea alone changes nothing; the curve (shearPoints) has to be built as an ActionList, and the harvest did not verify its coordinate scale (default straight line = points (0,1) and (0,128)).",
+    "Out-of-range scripted values: the harvest's range probe with 1e6 values wedged Photoshop for 236 s; keep points inside the dialog grid.",
+    "Precise envelope-style bending: use Edit/Transform/Warp or Filter/Liquify, which are easier to control and preview.",
+    "Photos with Wrap Around: content pushed off one side reappears on the other; choose Repeat Edge Pixels or work on a larger canvas."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Distort/Shear"
+   },
+   "look": [
+    "S-bend",
+    "curved warp",
+    "bend",
+    "wavy stretch",
+    "flag wave",
+    "curved skew"
+   ],
+   "params": [
+    {
+     "name": "shearPoints",
+     "does": "Shear Points: list of curve points (objects with horizontal offset and vertical position) that the image follows",
+     "typical": "harvested default (0,1)-(0,128) = straight, no effect; add a middle point with a horizontal offset to bend"
+    },
+    {
+     "name": "undefinedArea",
+     "does": "Undefined Areas: Wrap Around moves pixels pushed off one side to the other; Repeat Edge Pixels smears the edge",
+     "typical": "wrapAround (default) for patterns; repeatEdgePixels for photos"
+    },
+    {
+     "name": "shearSt",
+     "does": "Spline Control Start: harvested integer whose effect is unclear (probing it was skipped); leave it out",
+     "typical": "0 (harvested default)"
+    },
+    {
+     "name": "sharpenEdges",
+     "does": "Spline Control End: harvested integer (key collides with sharpenEdges) whose effect is unclear; leave it out",
+     "typical": "1 (harvested default)"
+    }
+   ],
+   "enum_labels": {
+    "undefinedArea": {
+     "wrapAround": "Wrap Around",
+     "repeatEdgePixels": "Repeat Edge Pixels"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Image/Image Rotation",
+    "Edit/Transform/Warp",
+    "Filter/Distort/Wave"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); var l = new ActionList(); function pt(h, v) { var p = new ActionDescriptor(); p.putDouble(s(\"horizontal\"), h); p.putDouble(s(\"vertical\"), v); l.putObject(s(\"paint\"), p); } pt(0, 1); pt(40, 64); pt(0, 128); // middle-point offset is a guess: the harvest did not verify the grid scale\nd.putList(s(\"shearPoints\"), l); d.putEnumerated(s(\"undefinedArea\"), s(\"undefinedArea\"), s(\"repeatEdgePixels\")); executeAction(s(\"shear\"), d, DialogModes.NO);",
+   "scriptable": "partial",
+   "non_destructive": true,
+   "cost": "691 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed). Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Untested: no frame: needs the shearPoints curve drawn in its dialog (status needs_input); with the default straight line it does nothing.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Checked: id absent from gallery/ps_filter/index.json, listed in gallery/ps_filter/not_rendered.json; a harness limit (no scripted route or required input), not a filter fault; status 'needs_input' kept."
+    }
+   }
+  },
+  {
+   "name": "Spherize",
+   "id": "spherize",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Spherize",
+   "status": "current",
+   "summary": "Wraps the image over a sphere inside an ellipse fitted to the selection (or whole layer): a positive Amount bulges the centre toward the viewer like a fisheye or crystal ball, a negative one sinks it inward. Mode can restrict the bend to a horizontal or vertical cylinder; corners outside the ellipse are untouched.",
+   "use_for": [
+    "fisheye / crystal-ball / bubble look on a circular selection for badges and stickers",
+    "bulging headline type or a logo for a cartoon, comic or hype poster",
+    "cylinder wrap (Horizontal Only) for mocking up a label on a can or bottle",
+    "funny big-head or big-eye edits with an elliptical selection"
+   ],
+   "avoid": [
+    "Whole 16:9 frames: the bulge stretches into a wide oval; draw a circular selection for a round sphere.",
+    "Wanting a stronger bulge than ±100: run it twice or use Filter/Distort/Pinch with a negative Amount on top.",
+    "Real lens correction or a true wide-angle look: use Filter/Lens Correction or Filter/Adaptive Wide Angle.",
+    "Readable text in the centre: it gets magnified and curved; keep type on its own layer."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Warp/Fisheye",
+    "CDR": "Effects/3D Effects/Sphere"
+   },
+   "look": [
+    "bulge",
+    "fisheye",
+    "sphere wrap",
+    "convex",
+    "bubble",
+    "crystal ball",
+    "magnify",
+    "cylinder wrap"
+   ],
+   "params": [
+    {
+     "name": "amount",
+     "does": "Amount %: positive bulges outward, negative pinches inward",
+     "typical": "100 for an obvious bulge; 30-60 subtle"
+    },
+    {
+     "name": "spherizeMode",
+     "does": "Mode: Normal = sphere, Horizontal/Vertical Only = cylinder bend along one axis",
+     "typical": "normal; horizontalOnly for a can or bottle label"
+    }
+   ],
+   "demo_settings": {
+    "amount": 100,
+    "spherizeMode": "normal"
+   },
+   "enum_labels": {
+    "spherizeMode": {
+     "normal": "Normal",
+     "horizontalOnly": "Horizontal Only",
+     "verticalOnly": "Vertical Only"
+    }
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Distort/Pinch",
+    "Filter/Render/Lens Flare",
+    "Layer/Layer Style/Bevel & Emboss"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"amount\"), 100); d.putEnumerated(s(\"spherizeMode\"), s(\"spherizeMode\"), s(\"normal\")); executeAction(s(\"spherize\"), d, DialogModes.NO); // acts on the active selection if there is one",
+   "scriptable": "yes",
+   "non_destructive": "yes on a Smart Object: the harvest applied it as a Smart Filter that stores amount + spherizeMode (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); pass every parameter, because an empty descriptor opened the dialog on the smart object even under DialogModes.NO. The scripted call on a plain pixel layer is destructive",
+   "cost": "277 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); non_destructive true -> qualified string citing the harvest's later smart-filter probe (stored keys, and that an empty descriptor opens the dialog on a smart object even under DialogModes.NO); pairs_with: Filter/Render/Lighting Effects is not in the PS 27.4.0 harvest; replaced with Filter/Render/Lens Flare (crystal-ball highlight). Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/dc24b0987b93.png",
+    "note": "The centre bulges toward the viewer inside the fitted ellipse like a crystal ball, with the strip curving round its rim and the corners left as they were.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Twirl",
+   "id": "twirl",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Distort/Twirl",
+   "status": "current",
+   "summary": "Spins the image around the centre of the layer or selection, rotating pixels near the centre much more than those near the edge, so straight lines curl into a whirlpool or spiral; the corners stay put. Angle sets how far the centre turns (its sign sets the direction).",
+   "use_for": [
+    "hypnotic swirl / vortex backgrounds for music, gaming and hype graphics",
+    "whirlpool transitions and 'portal' effects on stills and thumbnails",
+    "swirled sunburst: run it on a Polar Coordinates burst",
+    "abstract marbled textures from stripes or colour blocks"
+   ],
+   "avoid": [
+    "Readable type or faces near the centre: they get spun out of recognition; mask or apply below.",
+    "Very high angles on detailed photos: the centre turns to smeared mush; 200-500 usually reads best.",
+    "Freehand local swirls: use Filter/Liquify (Twirl tool) for brush control."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Twist",
+    "CDR": "Effects/Distort/Swirl"
+   },
+   "look": [
+    "swirl",
+    "twirl",
+    "whirlpool",
+    "vortex",
+    "spiral",
+    "hypnotic",
+    "portal",
+    "twist"
+   ],
+   "params": [
+    {
+     "name": "angle",
+     "does": "Angle in degrees: how far the centre is turned; sign = direction",
+     "typical": "50 default; 200-500 for an obvious swirl"
+    }
+   ],
+   "demo_settings": {
+    "angle": 400
+   },
+   "pairs_with": [
+    "Filter/Convert for Smart Filters",
+    "Filter/Distort/Polar Coordinates",
+    "Filter/Liquify",
+    "Filter/Blur/Radial Blur"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"angle\"), 400); executeAction(s(\"twirl\"), d, DialogModes.NO); // acts on the active selection if there is one",
+   "scriptable": "yes",
+   "non_destructive": "yes on a Smart Object: the harvest applied it as a Smart Filter that stores angle (harvest/ps/ps_filter.json extra.smart_filter, probed after this batch was cut); pass every parameter, because an empty descriptor opened the dialog on the smart object even under DialogModes.NO. The scripted call on a plain pixel layer is destructive",
+   "cost": "747 ms on the 480x270 harvest test layer; full HD (16x the pixels) was not timed",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/moderate' label and the 'several times that on full HD' extrapolation (full HD is 16x the 480x270 test layer and was not timed); non_destructive true -> qualified string citing the harvest's later smart-filter probe (stored keys, and that an empty descriptor opens the dialog on a smart object even under DialogModes.NO); summary: the clockwise / counter-clockwise sign mapping is not in the harvest; now only says the sign sets the direction. Everything else checked against the batch (keys, defaults, ranges, enums, invoke, demo in range, AI/CDR equivalents exist via pgd.py items) and left as is."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/8ff307a4c71e.png",
+    "note": "Pixels near the centre spin into a whirlpool spiral while the corners stay put.",
+    "rerender": false
+   }
+  }
+ ]
+}

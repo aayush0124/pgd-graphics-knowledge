@@ -1,0 +1,2146 @@
+{
+ "cards": [
+  {
+   "name": "ICUIDataContext",
+   "id": "class:ICUIDataContext",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDataContext",
+   "status": "current",
+   "summary": "Data context of CorelDRAW's UI data-binding framework (the XML-defined dockers and dialogs): a named registry of data-source objects that UI controls bind to, plus a call that opens a dialog bound to it.",
+   "use_for": [
+    "custom docker or add-on UI whose controls bind to script data",
+    "checking which categories a context supports (HasCategory) before binding add-on UI to it"
+   ],
+   "avoid": [
+    "drawing or document automation: it is UI plumbing only, use the Document / Shape API",
+    "unattended pipelines that would call ShowDialog: it opens a dialog and presumably waits for it (unverified)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Reach the top-level context with Application.FrameWork.Application.DataContext (ICUIApplication.DataContext); CreateChildDataContext makes a temporary child. Add-ons put their objects in with AddDataSource and fetch them with GetDataSource; ShowDialog opens a dialog by GUID against this context.",
+   "key_members": [
+    {
+     "name": "CreateChildDataContext",
+     "use": "temporary child context, optionally limited to a comma-separated category list"
+    },
+    {
+     "name": "Categories",
+     "use": "comma-separated list of the categories this context implements"
+    },
+    {
+     "name": "HasCategory",
+     "use": "True when the context supports one category"
+    },
+    {
+     "name": "AddDataSource",
+     "use": "add a named data-source object; returns its ICUIDataSourceProxy"
+    },
+    {
+     "name": "GetDataSource",
+     "use": "proxy of a data source by name"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "show a dialog by GUID bound to this context; returns a Boolean (modal, unverified)"
+    }
+   ],
+   "gotchas": [
+    "ShowDialog presumably blocks the COM call until a person closes the dialog (unverified; it returns a Boolean)",
+    "dialog GUIDs and built-in data-source names are not in the type library; they come from the workspace XML (unverified)",
+    "a child from CreateChildDataContext is temporary; what you add to it presumably disappears with it (unverified)"
+   ],
+   "example": "Dim ctx As Object, p As Object\nSet ctx = Application.FrameWork.Application.DataContext\nDebug.Print ctx.Categories\nIf ctx.HasCategory(\"MyAddon\") Then Set p = ctx.GetDataSource(\"MyAddonDS\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "ShowDialog modality was stated as fact, now marked unverified; use_for said HasCategory checks data-source registration, reworded to categories"
+   }
+  },
+  {
+   "name": "ICUIDataSourceFactory",
+   "id": "class:ICUIDataSourceFactory",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDataSourceFactory",
+   "status": "current",
+   "summary": "Factory interface the UI framework calls to create an add-on's data-source object when a bound control first needs it; a script gets one by wrapping its own factory object with ICUIApplication.CreateDataSourceFactory.",
+   "use_for": [
+    "registering an add-on data source that is created lazily when its docker opens"
+   ],
+   "avoid": [
+    "one-off scripts: add the object directly with DataContext.AddDataSource instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Set f = Application.FrameWork.Application.CreateDataSourceFactory(myFactoryObject), then Application.FrameWork.Application.RegisterDataSource \"MyDS\", f. The framework calls f.CreateDataSource(name, proxy); your object returns the data source and keeps the proxy for UpdateListeners.",
+   "key_members": [
+    {
+     "name": "CreateDataSource",
+     "use": "called by the framework with the source name and its ICUIDataSourceProxy; returns the data-source object"
+    }
+   ],
+   "gotchas": [
+    "you do not call CreateDataSource yourself; the framework does",
+    "call ICUIApplication.UnregisterDataSource when the add-on unloads, or the framework may keep a dead object (unverified)",
+    "whether a VBA class module works as the wrapped factory object is unverified; .NET add-ons are the usual host (unverified)"
+   ],
+   "example": "Dim cui As Object, f As Object\nSet cui = Application.FrameWork.Application\nSet f = cui.CreateDataSourceFactory(New MyDSFactory) ' exposes CreateDataSource\ncui.RegisterDataSource \"MyDS\", f, \"MyAddon\", False",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIDataSourceProxy",
+   "id": "class:ICUIDataSourceProxy",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDataSourceProxy",
+   "status": "current",
+   "summary": "Handle the UI framework gives a data source so it can talk back: tell bound controls which properties changed, and get, set or invoke data-source members by name.",
+   "use_for": [
+    "refreshing a custom docker after the script changes its values",
+    "reading or setting an add-on data source's properties from another macro"
+   ],
+   "avoid": [
+    "changing document content: it only moves values between script objects and UI controls"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Returned by DataContext.AddDataSource / GetDataSource and passed as Proxy to a factory's CreateDataSource. Keep it in the data source and call UpdateListeners with the names of the properties you just changed.",
+   "key_members": [
+    {
+     "name": "UpdateListeners",
+     "use": "notify bound controls; one comma-separated string of property names"
+    },
+    {
+     "name": "GetProperty",
+     "use": "read a data-source property by name"
+    },
+    {
+     "name": "SetProperty",
+     "use": "write a data-source property by name"
+    },
+    {
+     "name": "InvokeMethod",
+     "use": "run a data-source event handler by name"
+    },
+    {
+     "name": "Name",
+     "use": "the data source's registered name"
+    },
+    {
+     "name": "Application",
+     "use": "the ICUIApplication object"
+    }
+   ],
+   "gotchas": [
+    "controls do not refresh on their own: skip UpdateListeners and the docker shows stale values",
+    "UpdateListeners takes one comma-separated string, not an array",
+    "InvokeMethod passes no arguments (only MethodName is harvested)"
+   ],
+   "example": "Dim p As Object\nSet p = Application.FrameWork.Application.DataContext.GetDataSource(\"MyDS\")\np.SetProperty \"Caption\", \"Ready\"\nDebug.Print p.GetProperty(\"Caption\")\np.UpdateListeners \"Caption\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIDockHost",
+   "id": "class:ICUIDockHost",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDockHost",
+   "status": "current",
+   "summary": "One node of a frame window's docking layout: a horizontal or vertical split holding dock items (document tab groups or nested dock hosts), into which views can be inserted or split.",
+   "use_for": [
+    "arranging two document views side by side for comparison",
+    "reading the workspace layout before taking screenshots"
+   ],
+   "avoid": [
+    "changing a layout in a CorelDRAW session someone else is using",
+    "docker panels: show or hide them with FrameWork.ShowDocker / HideDocker"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Start at Application.FrameWork.MainFrameWindow.RootDockHost (or FrameWindow.DockHosts) and walk Children / ParentDockHost. InsertView and InsertViewHost move a view or a tab group into this host at Index; the cuiDockOperation argument picks a plain insert or a split.",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "identifier of the host"
+    },
+    {
+     "name": "Orientation",
+     "use": "cuiDockHostHorizontal or cuiDockHostVertical (read-only)"
+    },
+    {
+     "name": "Children",
+     "use": "ICUIDockItems in this host"
+    },
+    {
+     "name": "ParentDockHost",
+     "use": "the host this one sits in"
+    },
+    {
+     "name": "DockItem",
+     "use": "this host seen as an item of its parent"
+    },
+    {
+     "name": "InsertView",
+     "use": "dock a view window here; returns the new view host"
+    },
+    {
+     "name": "InsertViewHost",
+     "use": "dock a whole tab group here"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle of the host (ICUIScreenRect)"
+    }
+   ],
+   "gotchas": [
+    "Orientation is read-only: change the layout by inserting with a split operation",
+    "InsertView returns the view host it created; InsertViewHost returns nothing",
+    "this rearranges the user's workspace; restore it or work only in a session you own"
+   ],
+   "example": "Dim root As Object\nSet root = Application.FrameWork.MainFrameWindow.RootDockHost\nroot.InsertView ActiveWindow.ViewWindow, 1, cuiDockOperationSplitBottomRight\nDebug.Print root.Orientation, root.Children.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIDockHosts",
+   "id": "class:ICUIDockHosts",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDockHosts",
+   "status": "current",
+   "summary": "Collection of all dock hosts (layout split nodes) owned by one frame window.",
+   "use_for": [
+    "listing a window's layout nodes",
+    "finding a dock host by its ID"
+   ],
+   "avoid": [
+    "looking for documents: walk FrameWindow.ViewHosts or the Documents collection instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.FrameWork.MainFrameWindow.DockHosts (ICUIFrameWindow.DockHosts). Index with Item, look up by ID with Find, or loop with For Each.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of dock hosts"
+    },
+    {
+     "name": "Item",
+     "use": "dock host by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each"
+    },
+    {
+     "name": "Find",
+     "use": "dock host by ID string"
+    },
+    {
+     "name": "First",
+     "use": "first dock host"
+    },
+    {
+     "name": "Last",
+     "use": "last dock host"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)",
+    "Find takes the host's ID string, not a caption"
+   ],
+   "example": "Dim h As Object\nFor Each h In Application.FrameWork.MainFrameWindow.DockHosts\n  Debug.Print h.ID, h.Orientation, h.Children.Count\nNext h",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIDockItem",
+   "id": "class:ICUIDockItem",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDockItem",
+   "status": "current",
+   "summary": "One child slot inside a dock host: either a document tab group (view host) or a nested dock host, with its index, relative size and screen position.",
+   "use_for": [
+    "resizing the split between two document panes",
+    "walking the layout tree generically"
+   ],
+   "avoid": [
+    "sizing docker panels or the application window: use the frame window's Position instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "From DockHost.Children.Item(i), ViewHost.DockItem or DockHost.DockItem. Check Type (cuiDockItemDockHost / cuiDockItemViewHost) and then read ViewHost or DockHost. RelativeSize is writable.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cuiDockItemDockHost or cuiDockItemViewHost"
+    },
+    {
+     "name": "ViewHost",
+     "use": "the tab group, when Type is a view host"
+    },
+    {
+     "name": "DockHost",
+     "use": "the nested split, when Type is a dock host"
+    },
+    {
+     "name": "Index",
+     "use": "position within the parent dock host"
+    },
+    {
+     "name": "RelativeSize",
+     "use": "share of the parent's space relative to siblings (writable)"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle (ICUIScreenRect)"
+    },
+    {
+     "name": "ID",
+     "use": "identifier of the item"
+    }
+   ],
+   "gotchas": [
+    "only one of ViewHost / DockHost applies; check Type first (the other is presumably Nothing, unverified)",
+    "RelativeSize is a proportion against siblings, not pixels"
+   ],
+   "example": "Dim it As Object\nFor Each it In Application.FrameWork.MainFrameWindow.RootDockHost.Children\n  If it.Type = cuiDockItemViewHost Then it.RelativeSize = 50\nNext it",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIDockItems",
+   "id": "class:ICUIDockItems",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIDockItems",
+   "status": "current",
+   "summary": "Collection of the immediate children of one dock host (each a view host or a nested dock host).",
+   "use_for": [
+    "walking one level of the docking layout"
+   ],
+   "avoid": [
+    "a flat list of every view: use FrameWindow.ViewHosts"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "ICUIDockHost.Children, e.g. Application.FrameWork.MainFrameWindow.RootDockHost.Children.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of items"
+    },
+    {
+     "name": "Item",
+     "use": "item by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each"
+    },
+    {
+     "name": "Find",
+     "use": "item by ID string"
+    },
+    {
+     "name": "First",
+     "use": "first item"
+    },
+    {
+     "name": "Last",
+     "use": "last item"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)",
+    "only immediate children; recurse through DockHost.Children for nested splits"
+   ],
+   "example": "Dim kids As Object\nSet kids = Application.FrameWork.MainFrameWindow.RootDockHost.Children\nDebug.Print kids.Count, kids.First.Type, kids.Last.Index",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIFrameWindow",
+   "id": "class:ICUIFrameWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIFrameWindow",
+   "status": "current",
+   "summary": "A top-level CorelDRAW window (the main frame or a floating frame made by CreateFrameWindowForView): caption, min/max/restore state, Windows handle, tiling, and the view and dock hosts it owns.",
+   "use_for": [
+    "restoring a minimized CorelDRAW before screenshots or UI automation",
+    "getting the HWND to target PostMessage / UI Automation instead of global keystrokes",
+    "tiling open documents for a side-by-side check"
+   ],
+   "avoid": [
+    "closing documents: close the Document, not the frame",
+    "any Close call in a CorelDRAW session that holds documents you did not open"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.FrameWork.MainFrameWindow, or Application.FrameWork.FrameWindows.Item(i).",
+   "key_members": [
+    {
+     "name": "Caption",
+     "use": "window title text"
+    },
+    {
+     "name": "State",
+     "use": "cuiWindowStateRestored / Maximized / Minimized"
+    },
+    {
+     "name": "Restore",
+     "use": "restore position and size"
+    },
+    {
+     "name": "Maximize",
+     "use": "maximize the window"
+    },
+    {
+     "name": "Minimize",
+     "use": "minimize the window"
+    },
+    {
+     "name": "Activate",
+     "use": "bring this frame to the front"
+    },
+    {
+     "name": "IsActive",
+     "use": "True when this frame is active"
+    },
+    {
+     "name": "IsMainFrame",
+     "use": "True for the main application frame"
+    },
+    {
+     "name": "Handle",
+     "use": "Windows handle (HWND) of the window"
+    },
+    {
+     "name": "TileViews",
+     "use": "tile contained views; True = horizontally (default), False = vertically"
+    },
+    {
+     "name": "CombineViews",
+     "use": "put all views back into one tab group"
+    },
+    {
+     "name": "ViewHosts",
+     "use": "tab groups in this frame"
+    },
+    {
+     "name": "DockHosts",
+     "use": "layout split nodes in this frame"
+    },
+    {
+     "name": "RootDockHost",
+     "use": "top-level layout node"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle (ICUIScreenRect)"
+    },
+    {
+     "name": "Close",
+     "use": "close the window and every view in it"
+    },
+    {
+     "name": "ID",
+     "use": "identifier of the frame"
+    }
+   ],
+   "gotchas": [
+    "Close closes the window and all its views; on the main frame that can take down documents you do not own",
+    "a minimized frame makes screenshots come back blank; check State and Restore first",
+    "Handle is typed long; HWND values fit in 32 bits on Windows, so it is usable on the 64-bit app",
+    "Position may be a read-only rectangle; whether editing it moves the window is unverified"
+   ],
+   "example": "Dim w As Object\nSet w = Application.FrameWork.MainFrameWindow\nDebug.Print w.Caption, w.Handle, w.State\nIf w.State = cuiWindowStateMinimized Then w.Restore\nw.TileViews False",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIFrameWindows",
+   "id": "class:ICUIFrameWindows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIFrameWindows",
+   "status": "current",
+   "summary": "Collection of CorelDRAW's top-level frame windows (the main frame plus any floating document frames).",
+   "use_for": [
+    "finding floating frames created by tearing off a document tab",
+    "listing every window handle"
+   ],
+   "avoid": [
+    "listing documents: use Application.Documents"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.FrameWork.FrameWindows (ICUIFrameWork.FrameWindows).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of frame windows"
+    },
+    {
+     "name": "Item",
+     "use": "frame by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each"
+    },
+    {
+     "name": "Find",
+     "use": "frame by ID string"
+    },
+    {
+     "name": "First",
+     "use": "first frame"
+    },
+    {
+     "name": "Last",
+     "use": "last frame"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)",
+    "the main frame is in the list too; test IsMainFrame before closing anything"
+   ],
+   "example": "Dim w As Object\nFor Each w In Application.FrameWork.FrameWindows\n  Debug.Print w.ID, w.Caption, w.IsMainFrame\nNext w",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIFrameWork",
+   "id": "class:ICUIFrameWork",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIFrameWork",
+   "status": "hidden",
+   "summary": "Root of CorelDRAW's UI framework: command bars, main menu, status bar, dockers, dialogs, message boxes, warnings, frame windows, the task manager and the Automation object that runs commands by GUID.",
+   "use_for": [
+    "running a menu command by GUID (Automation.InvokeItem) when the DOM has no call for it",
+    "showing or hiding a docker from a macro",
+    "getting the main window's handle via MainFrameWindow"
+   ],
+   "avoid": [
+    "unattended runs that would reach ShowMessageBox (it waits for a button) or ShowDialog (may wait, unverified)",
+    "document edits that the Document / Shape API already covers"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.FrameWork (IVGApplication.FrameWork). The interface is flagged hidden in VGCoreAuto.tlb, so the VBA Object Browser hides it unless hidden members are shown; late-bound calls still reach it.",
+   "key_members": [
+    {
+     "name": "Automation",
+     "use": "ICUIAutomation (hidden, described as internal): InvokeItem runs a command by GUID"
+    },
+    {
+     "name": "ShowDocker",
+     "use": "show a docker by GUID"
+    },
+    {
+     "name": "HideDocker",
+     "use": "hide a docker by GUID"
+    },
+    {
+     "name": "IsDockerVisible",
+     "use": "True when the docker is shown"
+    },
+    {
+     "name": "AddDocker",
+     "use": "add a custom docker from a .NET assembly"
+    },
+    {
+     "name": "RemoveDocker",
+     "use": "remove a custom docker"
+    },
+    {
+     "name": "MainFrameWindow",
+     "use": "the main ICUIFrameWindow"
+    },
+    {
+     "name": "FrameWindows",
+     "use": "all frame windows"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "show a dialog by GUID (returns nothing; HideDialog closes it)"
+    },
+    {
+     "name": "HideDialog",
+     "use": "hide a dialog by GUID"
+    },
+    {
+     "name": "ShowMessageBox",
+     "use": "message box; returns the clicked button (modal)"
+    },
+    {
+     "name": "GetWarning",
+     "use": "ICUIWarning for a warning ID"
+    },
+    {
+     "name": "TaskManager",
+     "use": "run tasks on the UI thread or in background"
+    },
+    {
+     "name": "ImportWorkspace",
+     "use": "import a workspace file"
+    },
+    {
+     "name": "CommandBars",
+     "use": "collection of command bars"
+    },
+    {
+     "name": "MainMenu",
+     "use": "the main menu bar"
+    },
+    {
+     "name": "StatusBar",
+     "use": "the status bar"
+    },
+    {
+     "name": "Application",
+     "use": "the ICUIApplication object"
+    },
+    {
+     "name": "CreateFrameWindowForView",
+     "use": "float a view in a new frame window"
+    }
+   ],
+   "gotchas": [
+    "flagged hidden: absent from the Object Browser by default but reachable as Application.FrameWork",
+    "ICUIAutomation is itself flagged hidden and its type-library description reads 'Internal Automation - Do not use'; InvokeItem works in practice (the CDR menu harvest is invoked through it) but has no documented contract",
+    "ShowMessageBox blocks the COM call until a person answers; whether ShowDialog blocks is unverified (it has a HideDialog pair)",
+    "docker, dialog and command GUIDs are not in the type library; take them from the workspace XML (unverified)",
+    "ImportWorkspace changes the user's workspace (unverified whether it switches the active one at once)",
+    "Name's description says get/set but the harvest marks it read-only"
+   ],
+   "example": "Dim fw As Object\nSet fw = Application.FrameWork\nDebug.Print fw.MainFrameWindow.Caption, fw.FrameWindows.Count\nfw.Automation.InvokeItem \"a604992c-e7a6-4a72-85c1-4fcf0ec8ff77\"   ' Edit > Select All > Objects (GUID from the CDR menu harvest)",
+   "review": {
+    "by": "adversarial",
+    "changes": "added gotcha that Automation is hidden and described 'Internal Automation - Do not use'; FrameWork.ShowDialog (void, has HideDialog) was called modal, now unverified; example used placeholder GUIDs, now a real InvokeItem GUID from the CDR menu harvest"
+   }
+  },
+  {
+   "name": "ICUIImageList",
+   "id": "class:ICUIImageList",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIImageList",
+   "status": "current",
+   "summary": "Keyed list of icons or images that the UI data-binding framework feeds to controls, for example the icons in a custom docker's list box.",
+   "use_for": [
+    "icons for a custom docker or add-on UI"
+   ],
+   "avoid": [
+    "putting an image into the drawing: use Layer.ImportEx or Layer.CreateBitmap"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.FrameWork.Application.CreateImageList (ICUIApplication.CreateImageList), or the creatable ImageList coclass. AddImage takes a key and a file name, byte array or stream.",
+   "key_members": [
+    {
+     "name": "AddImage",
+     "use": "add an image from a file path, byte array or stream, optionally capped at MaxSize; returns success"
+    },
+    {
+     "name": "AddBitmap",
+     "use": "add an ICUIBitmapImage under a key"
+    },
+    {
+     "name": "ImageExists",
+     "use": "True when a key is present"
+    },
+    {
+     "name": "RemoveImage",
+     "use": "remove one key; returns success"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "clear the list"
+    },
+    {
+     "name": "ImageKeys",
+     "use": "array of keys"
+    },
+    {
+     "name": "ImageCount",
+     "use": "number of images"
+    }
+   ],
+   "gotchas": [
+    "AddImage and RemoveImage report failure through their Boolean result; check it (whether they also raise is unverified)",
+    "ImageCount's description says 'returns all the images' but it is a Long count",
+    "MaxSize 0 presumably means no size cap (unverified)"
+   ],
+   "example": "Dim il As Object\nSet il = Application.FrameWork.Application.CreateImageList\nIf Not il.AddImage(\"logo\", \"C:\\icons\\logo.png\", 32) Then Debug.Print \"load failed\"\nDebug.Print il.ImageCount, il.ImageExists(\"logo\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIScreenRect",
+   "id": "class:ICUIScreenRect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIScreenRect",
+   "status": "current",
+   "summary": "A screen rectangle in pixels with edges, size and centre, plus geometry helpers (move, resize, offset, inflate, union, intersect, hit test); returned as the Position of windows, views and dock items.",
+   "use_for": [
+    "reading where CorelDRAW's window or a document view sits on screen before a capture",
+    "computing click points or crop boxes for UI automation from window geometry"
+   ],
+   "avoid": [
+    "document geometry: shapes use document units through Shape.GetBoundingBox, not screen pixels"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Read Position on ICUIFrameWindow, ICUIViewWindow, ICUIViewHost, ICUIDockHost or ICUIDockItem, or make one with Application.FrameWork.Application.CreateScreenRect(Left, Top, Width, Height).",
+   "key_members": [
+    {
+     "name": "Left",
+     "use": "left edge"
+    },
+    {
+     "name": "Top",
+     "use": "top edge"
+    },
+    {
+     "name": "Width",
+     "use": "width"
+    },
+    {
+     "name": "Height",
+     "use": "height"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal centre"
+    },
+    {
+     "name": "CenterY",
+     "use": "vertical centre"
+    },
+    {
+     "name": "SetPosition",
+     "use": "set left, top, width and height in one call"
+    },
+    {
+     "name": "Resize",
+     "use": "set width and height"
+    },
+    {
+     "name": "Move",
+     "use": "move the top-left corner"
+    },
+    {
+     "name": "Offset",
+     "use": "shift by dx, dy"
+    },
+    {
+     "name": "Inflate",
+     "use": "grow each side by an amount"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "hit test for a point"
+    },
+    {
+     "name": "Union",
+     "use": "rectangle covering both"
+    },
+    {
+     "name": "Intersect",
+     "use": "overlap of both"
+    },
+    {
+     "name": "IsEmpty",
+     "use": "True for an empty rectangle"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "True when edits will fail"
+    },
+    {
+     "name": "GetCopy",
+     "use": "detached editable copy"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy position and size from another rectangle"
+    }
+   ],
+   "gotchas": [
+    "rectangles from window Position can be read-only: edit a GetCopy",
+    "values are screen pixels; on a scaled (high-DPI) display they may not match physical pixels (unverified)"
+   ],
+   "example": "Dim r As Object\nSet r = Application.FrameWork.MainFrameWindow.Position.GetCopy\nr.Inflate -10, -10, -10, -10\nDebug.Print r.Left, r.Top, r.Width, r.Height, r.IsPointInside(r.CenterX, r.CenterY)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIStatusText",
+   "id": "class:ICUIStatusText",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIStatusText",
+   "status": "current",
+   "summary": "Small UI object holding a caption string and an optional bitmap, made by ICUIApplication.CreateStatusText. It presumably feeds status or label text with an icon to bound UI controls; which control consumes it is not confirmed.",
+   "use_for": [
+    "status text with an icon inside a custom add-on UI (unverified consumer)"
+   ],
+   "avoid": [
+    "progress or messages in an automated run: log from the script instead",
+    "text in the drawing: use Layer.CreateArtisticText"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Application.FrameWork.Application.CreateStatusText, then SetCaptionText and SetBitmap.",
+   "key_members": [
+    {
+     "name": "SetCaptionText",
+     "use": "set the caption text"
+    },
+    {
+     "name": "SetBitmap",
+     "use": "set an ICUIBitmapImage icon"
+    }
+   ],
+   "gotchas": [
+    "creating one does not by itself show anything on screen (unverified); it has to be handed to a bound control"
+   ],
+   "example": "Dim st As Object\nSet st = Application.FrameWork.Application.CreateStatusText\nst.SetCaptionText \"Exporting 3 of 12\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIWarning",
+   "id": "class:ICUIWarning",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIWarning",
+   "status": "current",
+   "summary": "One of CorelDRAW's 'don't show this again' warning dialogs: its ID, title, text, an Enabled switch, and a call that shows it only when enabled.",
+   "use_for": [
+    "switching off a specific warning that would otherwise stop a batch macro",
+    "showing your own add-on warning that users can suppress"
+   ],
+   "avoid": [
+    "general message boxes: use FrameWork.ShowMessageBox",
+    "leaving warnings disabled after the run: restore Enabled"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.FrameWork.GetWarning(warningID) (ICUIFrameWork.GetWarning).",
+   "key_members": [
+    {
+     "name": "Enabled",
+     "use": "False suppresses the warning (writable)"
+    },
+    {
+     "name": "ID",
+     "use": "unique warning ID"
+    },
+    {
+     "name": "Title",
+     "use": "dialog title"
+    },
+    {
+     "name": "Text",
+     "use": "message shown to the user"
+    },
+    {
+     "name": "Description",
+     "use": "description of the warning"
+    },
+    {
+     "name": "DoWarningDialog",
+     "use": "show the warning if enabled; returns the clicked button"
+    }
+   ],
+   "gotchas": [
+    "warning IDs are not listed in the type library",
+    "Enabled = False presumably persists like ticking 'don't show again' (unverified); set it back when done",
+    "DoWarningDialog is modal when the warning is enabled; flags are Windows MB_ values and the result a Windows button id",
+    "the meaning of GetWarning's bHidden argument is not documented in the harvest"
+   ],
+   "example": "Dim w As Object\nSet w = Application.FrameWork.GetWarning(\"<warning id>\")\nDebug.Print w.Title, w.Enabled\nw.Enabled = False   ' restore to True after the batch",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIRunningBackgroundTask",
+   "id": "class:ICUIRunningBackgroundTask",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIRunningBackgroundTask",
+   "status": "current",
+   "summary": "Handle to a task started with TaskManager.RunInBackground: abort it, wait for it, change its priority, or finalize it once it is done.",
+   "use_for": [
+    "long add-on jobs (scans, file checks) that should not freeze the UI"
+   ],
+   "avoid": [
+    "plain VBA macros: CorelDRAW's object model is normally driven from the UI thread",
+    "WaitUntilDone on the UI thread for a task that needs the UI thread"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Returned by Application.FrameWork.TaskManager.RunInBackground(priority, task). Inherits TryAbort from ICUIRunningTask.",
+   "key_members": [
+    {
+     "name": "TryAbort",
+     "use": "stop it from starting or ask it to quit early; does not block"
+    },
+    {
+     "name": "WaitUntilDone",
+     "use": "block until the task completes"
+    },
+    {
+     "name": "Reprioritize",
+     "use": "change priority (cuiTaskPriority)"
+    },
+    {
+     "name": "FinalizeIfDone",
+     "use": "finalize if complete; returns True when finalized; does not block"
+    }
+   ],
+   "gotchas": [
+    "cuiTaskPriority values are out of order: kMaybeLater 0, kLater 1, kASAP 3, kSoon 4",
+    "WaitUntilDone blocks the calling thread; on the UI thread with a task that calls RunOnUIThread it would deadlock (unverified)",
+    "the task object must implement ICUIBackgroundTask; doing that from a VBA class is unverified"
+   ],
+   "example": "Dim t As Object\nSet t = Application.FrameWork.TaskManager.RunInBackground(kSoon, New MyBgTask)\nIf Not t.FinalizeIfDone Then t.Reprioritize kASAP",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIRunningTask",
+   "id": "class:ICUIRunningTask",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIRunningTask",
+   "status": "current",
+   "summary": "Base handle for a running UI-framework task; its one call asks the task not to start, or to quit early.",
+   "use_for": [
+    "cancelling a queued or running add-on task"
+   ],
+   "avoid": [
+    "waiting for or finalizing background work: use ICUIRunningBackgroundTask, which adds those calls"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "You get the derived ICUIRunningBackgroundTask from Application.FrameWork.TaskManager.RunInBackground; this is its base.",
+   "key_members": [
+    {
+     "name": "TryAbort",
+     "use": "prevent start or request an early quit; returns at once"
+    }
+   ],
+   "gotchas": [
+    "TryAbort does not wait: the task may still be running when it returns"
+   ],
+   "example": "Dim t As Object\nSet t = Application.FrameWork.TaskManager.RunInBackground(kMaybeLater, New MyBgTask)\nt.TryAbort   ' returns at once; the task may still be finishing",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUITask",
+   "id": "class:ICUITask",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUITask",
+   "status": "current",
+   "summary": "Interface you implement for a unit of work that TaskManager.RunOnUIThread executes on CorelDRAW's main UI thread; its single method is called by the framework.",
+   "use_for": [
+    "add-on code on a worker thread that must touch the document safely on the UI thread"
+   ],
+   "avoid": [
+    "ordinary macros, which already run on the UI thread"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Implement it in your own class, then pass an instance to Application.FrameWork.TaskManager.RunOnUIThread.",
+   "key_members": [
+    {
+     "name": "RunTask",
+     "use": "called by the framework to do the work; never call it yourself"
+    }
+   ],
+   "gotchas": [
+    "do not call RunTask yourself; the task manager does",
+    "RunOnUIThread blocks until RunTask finishes",
+    "implementing it from a VBA class module (Implements ICUITask) is unverified; .NET add-ons can implement it"
+   ],
+   "example": "' class module MyUITask\nImplements ICUITask\nPrivate Sub ICUITask_RunTask()\n  Debug.Print \"on the UI thread\"\nEnd Sub\n' caller: Application.FrameWork.TaskManager.RunOnUIThread New MyUITask",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUITaskManager",
+   "id": "class:ICUITaskManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUITaskManager",
+   "status": "current",
+   "summary": "CorelDRAW's task scheduler: runs a task on the main UI thread (blocking) or queues one in the background with a priority and returns a handle to it.",
+   "use_for": [
+    "add-ons that do heavy work off the UI thread and post results back"
+   ],
+   "avoid": [
+    "simple macros: call the object model directly"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.FrameWork.TaskManager (ICUIFrameWork.TaskManager).",
+   "key_members": [
+    {
+     "name": "RunOnUIThread",
+     "use": "run an ICUITask on the UI thread; blocks until complete"
+    },
+    {
+     "name": "RunInBackground",
+     "use": "queue an ICUIBackgroundTask at a cuiTaskPriority; returns ICUIRunningBackgroundTask"
+    }
+   ],
+   "gotchas": [
+    "the task objects must implement ICUITask / ICUIBackgroundTask; from VBA that is unverified",
+    "cuiTaskPriority values are out of order: kMaybeLater 0, kLater 1, kASAP 3, kSoon 4",
+    "touching the document object model from a background task is presumably unsafe; hand it back via RunOnUIThread (unverified)"
+   ],
+   "example": "Dim tm As Object, bg As Object\nSet tm = Application.FrameWork.TaskManager\ntm.RunOnUIThread New MyUITask                     ' Implements ICUITask\nSet bg = tm.RunInBackground(kLater, New MyBgTask)  ' Implements ICUIBackgroundTask\nbg.WaitUntilDone",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIViewHost",
+   "id": "class:ICUIViewHost",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIViewHost",
+   "status": "current",
+   "summary": "A tab group of view windows (document tabs) inside the docking layout, with its views, parent dock host and screen position.",
+   "use_for": [
+    "listing which documents share one tab group",
+    "merging tab groups back together"
+   ],
+   "avoid": [
+    "switching the active document: Document.Activate or ViewWindow.Activate is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "ICUIViewWindow.ViewHost (e.g. ActiveWindow.ViewWindow.ViewHost), FrameWindow.ViewHosts, or DockItem.ViewHost.",
+   "key_members": [
+    {
+     "name": "Views",
+     "use": "ICUIViewWindows in this group"
+    },
+    {
+     "name": "DockHost",
+     "use": "the dock host it sits in"
+    },
+    {
+     "name": "DockItem",
+     "use": "this group seen as a dock item"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle"
+    },
+    {
+     "name": "InsertView",
+     "use": "move a view into this group at an index"
+    },
+    {
+     "name": "InsertViewHost",
+     "use": "move all views of another group into this one"
+    },
+    {
+     "name": "ID",
+     "use": "identifier of the group"
+    }
+   ],
+   "gotchas": [
+    "InsertViewHost moves every view of the other group; the emptied group presumably disappears (unverified)"
+   ],
+   "example": "Dim vh As Object, v As Object\nSet vh = ActiveWindow.ViewWindow.ViewHost\nFor Each v In vh.Views\n  Debug.Print v.Index, v.Title\nNext v",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIViewHosts",
+   "id": "class:ICUIViewHosts",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIViewHosts",
+   "status": "current",
+   "summary": "Collection of all view hosts (document tab groups) owned by one frame window.",
+   "use_for": [
+    "counting tab groups before tiling or combining views"
+   ],
+   "avoid": [
+    "listing documents: Application.Documents is the document list"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.FrameWork.MainFrameWindow.ViewHosts (ICUIFrameWindow.ViewHosts).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of view hosts"
+    },
+    {
+     "name": "Item",
+     "use": "view host by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each"
+    },
+    {
+     "name": "Find",
+     "use": "view host by ID string"
+    },
+    {
+     "name": "First",
+     "use": "first view host"
+    },
+    {
+     "name": "Last",
+     "use": "last view host"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)"
+   ],
+   "example": "Dim vh As Object\nFor Each vh In Application.FrameWork.MainFrameWindow.ViewHosts\n  Debug.Print vh.ID, vh.Views.Count\nNext vh",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIViewWindow",
+   "id": "class:ICUIViewWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIViewWindow",
+   "status": "current",
+   "summary": "The UI-side window (a document tab) that hosts one application view: its title, kind, tab index, screen position, activate and close calls, and a link back to the application view object.",
+   "use_for": [
+    "finding a document tab's screen rectangle for a capture",
+    "floating a document into its own frame"
+   ],
+   "avoid": [
+    "zoom or scroll: use the document window's ActiveView",
+    "closing documents you did not open"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "IVGWindow.ViewWindow (e.g. ActiveWindow.ViewWindow) or ViewHost.Views.Item(i).",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "tab title"
+    },
+    {
+     "name": "Kind",
+     "use": "type of application view hosted"
+    },
+    {
+     "name": "Description",
+     "use": "tooltip text"
+    },
+    {
+     "name": "Index",
+     "use": "tab index in its view host"
+    },
+    {
+     "name": "ViewHost",
+     "use": "the tab group it is in"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle"
+    },
+    {
+     "name": "Activate",
+     "use": "make it the active view"
+    },
+    {
+     "name": "Close",
+     "use": "close the view"
+    },
+    {
+     "name": "AppView",
+     "use": "application-side view object (IDispatch)"
+    },
+    {
+     "name": "ID",
+     "use": "identifier of the view"
+    }
+   ],
+   "gotchas": [
+    "Close on the last view of a modified document may raise a save prompt, which is modal (unverified)",
+    "AppView is a plain IDispatch; that it is the CorelDRAW Window object is unverified"
+   ],
+   "example": "Dim vw As Object\nSet vw = ActiveWindow.ViewWindow\nDebug.Print vw.Title, vw.Kind, vw.Index\nApplication.FrameWork.CreateFrameWindowForView vw   ' float it in its own frame",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ICUIViewWindows",
+   "id": "class:ICUIViewWindows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ICUIViewWindows",
+   "status": "current",
+   "summary": "Collection of the view windows (document tabs) inside one view host.",
+   "use_for": [
+    "looping over the tabs of one tab group"
+   ],
+   "avoid": [
+    "every open document regardless of layout: use Application.Documents or Application.Windows"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "ICUIViewHost.Views, e.g. ActiveWindow.ViewWindow.ViewHost.Views.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of views"
+    },
+    {
+     "name": "Item",
+     "use": "view by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each"
+    },
+    {
+     "name": "Find",
+     "use": "view by ID string"
+    },
+    {
+     "name": "First",
+     "use": "first view"
+    },
+    {
+     "name": "Last",
+     "use": "last view"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)"
+   ],
+   "example": "Dim vs As Object\nSet vs = ActiveWindow.ViewWindow.ViewHost.Views\nDebug.Print vs.Count, vs.First.Title, vs.Last.Title\nvs.First.Activate",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IImportCropHandler",
+   "id": "class:IImportCropHandler",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IImportCropHandler",
+   "status": "current",
+   "summary": "Callback interface you implement to choose the crop rectangle of a bitmap while it is being imported; CorelDRAW calls its Crop method with the file's size and resolution.",
+   "use_for": [
+    "importing photos cropped by a rule (centre square, fixed aspect) per file in a batch"
+   ],
+   "avoid": [
+    "a fixed crop for every file: the StructImportOptions CropLeft / CropTop / CropWidth / CropHeight properties need no handler (unverified that they apply on their own)",
+    "cropping already placed bitmaps: use a PowerClip or Bitmap.Crop"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Make a class that implements it, assign an instance to StructImportOptions.CropHandler (Application.CreateStructImportOptions) with Mode = cdrImportCrop, and pass the options to Layer.ImportEx. Crop receives IStructImportCropOptions: read FileName, ImageWidth, ImageHeight, DpiX, DpiY and set Left, Top, Width, Height.",
+   "key_members": [
+    {
+     "name": "Crop",
+     "use": "called with IStructImportCropOptions; set the crop box and return True to go on (return meaning unverified)"
+    }
+   ],
+   "gotchas": [
+    "the handler only runs when the import mode is cdrImportCrop (unverified)",
+    "units of Left / Top / Width / Height are presumably image pixels (unverified)",
+    "implementing it from a VBA class is unverified"
+   ],
+   "example": "' class CropToSquare: Implements IImportCropHandler; its Crop sets\n'   o.Left = 0: o.Top = 0: o.Width = o.ImageHeight: o.Height = o.ImageHeight\nDim opt As Object\nSet opt = Application.CreateStructImportOptions\nopt.Mode = cdrImportCrop\nSet opt.CropHandler = New CropToSquare\nActiveLayer.ImportEx(\"C:\\img\\photo.jpg\", cdrAutoSense, opt).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IImportResampleHandler",
+   "id": "class:IImportResampleHandler",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IImportResampleHandler",
+   "status": "current",
+   "summary": "Callback interface you implement to set the pixel size or resolution a bitmap is resampled to while it is being imported; CorelDRAW calls its Resample method per file.",
+   "use_for": [
+    "batch-importing large photos downsampled to a print resolution (e.g. 300 dpi) chosen per file"
+   ],
+   "avoid": [
+    "one fixed size for all files: the StructImportOptions ResampleWidth / ResampleHeight / ResampleDpiX / ResampleDpiY properties need no handler (unverified that they apply on their own)",
+    "resampling already placed bitmaps: use Bitmap.Resample"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Implement it in a class, assign it to StructImportOptions.ResampleHandler with Mode = cdrImportResample, then call Layer.ImportEx. Resample receives IStructImportResampleOptions with FileName and writable Width, Height, DpiX, DpiY.",
+   "key_members": [
+    {
+     "name": "Resample",
+     "use": "called with IStructImportResampleOptions; set size / dpi and return True to go on (return meaning unverified)"
+    }
+   ],
+   "gotchas": [
+    "the handler only runs when the import mode is cdrImportResample (unverified)",
+    "implementing it from a VBA class is unverified"
+   ],
+   "example": "' class To300dpi: Implements IImportResampleHandler; its Resample sets o.DpiX = 300: o.DpiY = 300\nDim opt As Object\nSet opt = Application.CreateStructImportOptions\nopt.Mode = cdrImportResample\nSet opt.ResampleHandler = New To300dpi\nActiveLayer.ImportEx(\"C:\\img\\photo.tif\", cdrAutoSense, opt).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Image",
+   "id": "class:Image",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Image",
+   "status": "current",
+   "summary": "Creatable class for a raw bitmap pixel buffer (RGB, CMYK, grayscale and other image types) that scripts can create, read and paint, then turn into a bitmap object on a layer.",
+   "use_for": [
+    "generating procedural bitmaps (gradients, noise, halftone dots) inside CorelDRAW",
+    "reading pixel colours of a placed bitmap for sampling or QC",
+    "building an alpha mask to pair with a bitmap"
+   ],
+   "avoid": [
+    "vector artwork: use shapes",
+    "heavy image editing: Corel PHOTO-PAINT or Photoshop are the right tools"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on its default interface IVGImage (Type, Width, Height, Pixel, FillArea, FlipArea, Blit, Tiles, GetCopy, ReadOnly). Get one from Document.CreateImage(ImageType, Width, Height, FillColor) or from Bitmap.Image / Bitmap.ImageAlpha; place it with Layer.CreateBitmap / CreateBitmap2 or write it back with Bitmap.SetImageData.",
+   "key_members": [
+    {
+     "name": "IVGImage",
+     "use": "default interface that carries every member of Image"
+    }
+   ],
+   "gotchas": [
+    "per-pixel Pixel reads are one COM call each; use Tiles and PixelData for whole-image work",
+    "an image taken from an existing bitmap may be read-only (check ReadOnly); edit a GetCopy and write it back with Bitmap.SetImageData (unverified)",
+    "Blit's MergeMode uses cdrMergeMode (normal, multiply, screen ...), not a Photoshop blend mode name"
+   ],
+   "example": "Dim img As Object\nSet img = ActiveDocument.CreateImage(cdrRGBColorImage, 256, 256, CreateRGBColor(255, 255, 255))\nimg.FillArea 0, 0, 128, 256, CreateRGBColor(230, 30, 40)\nActiveLayer.CreateBitmap2 0, 0, 2, 2, img",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ImageList",
+   "id": "class:ImageList",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ImageList",
+   "status": "current",
+   "summary": "Creatable class for a keyed list of icons used by the UI data-binding framework (for example icons in a custom docker's list).",
+   "use_for": [
+    "icons for custom add-on UI"
+   ],
+   "avoid": [
+    "images in the drawing: use Layer.ImportEx or the Image class"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on its default interface ICUIImageList (AddImage, AddBitmap, ImageExists, RemoveImage, RemoveAll, ImageKeys, ImageCount). Usually made with Application.FrameWork.Application.CreateImageList.",
+   "key_members": [
+    {
+     "name": "ICUIImageList",
+     "use": "default interface that carries every member of ImageList"
+    }
+   ],
+   "gotchas": [
+    "creating it with New from VBA (cancreate flag) is unverified; CreateImageList is the safe route"
+   ],
+   "example": "Dim il As Object\nSet il = Application.FrameWork.Application.CreateImageList\nil.AddImage \"ok\", \"C:\\icons\\ok.png\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ImageTile",
+   "id": "class:ImageTile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ImageTile",
+   "status": "current",
+   "summary": "Creatable class for one rectangular tile of an Image's pixel buffer, exposing its raw bytes for fast bulk reads and writes.",
+   "use_for": [
+    "fast pixel processing of a whole bitmap (threshold, colour swap, procedural fill)"
+   ],
+   "avoid": [
+    "a few pixels: Image.Pixel is simpler",
+    "photo editing: use Corel PHOTO-PAINT or Photoshop"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on its default interface IVGImageTile (Left, Top, Right, Bottom, Width, Height, BytesPerTile, BytesPerLine, BytesPerPixel, PixelData, ReadOnly). Get tiles from Image.Tiles.",
+   "key_members": [
+    {
+     "name": "IVGImageTile",
+     "use": "default interface that carries every member of ImageTile"
+    }
+   ],
+   "gotchas": [
+    "rows can be padded: step through PixelData by BytesPerLine, not Width x BytesPerPixel",
+    "PixelData is a copied byte array; edits apply only when you assign it back (unverified)",
+    "byte order inside a pixel (RGB or BGR) is not stated; test with a known colour (unverified)",
+    "tiles of a read-only image are presumably read-only too; check the tile ReadOnly flag (unverified)"
+   ],
+   "example": "Dim img As Object\nSet img = ActiveDocument.CreateImage(cdrRGBColorImage, 256, 256)\nDim t As Object, px() As Byte\nFor Each t In img.Tiles\n  px = t.PixelData\n  ' edit px here; one row = t.BytesPerLine bytes\n  t.PixelData = px\nNext t",
+   "review": {
+    "by": "adversarial",
+    "changes": "example used an undefined img, now created with Document.CreateImage; read-only inheritance marked unverified"
+   }
+  },
+  {
+   "name": "ImageTiles",
+   "id": "class:ImageTiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ImageTiles",
+   "status": "current",
+   "summary": "Creatable class for the collection of pixel tiles that make up one Image buffer (the harvest's description repeats ImageTile's, but this is the collection).",
+   "use_for": [
+    "looping over every tile of a bitmap for bulk pixel work"
+   ],
+   "avoid": [
+    "single-pixel reads: use Image.Pixel"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on its default interface IVGImageTiles (Count, Item, First, Last, _NewEnum). Reached as Image.Tiles.",
+   "key_members": [
+    {
+     "name": "IVGImageTiles",
+     "use": "default interface that carries every member of ImageTiles"
+    }
+   ],
+   "gotchas": [
+    "the harvested member descriptions of IVGImageTiles are copy-pasted from ImageTile (Count says 'position of the tile's top edge'); go by the types",
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)"
+   ],
+   "example": "Dim img As Object, tiles As Object\nSet img = ActiveDocument.CreateImage(cdrRGBColorImage, 256, 256)\nSet tiles = img.Tiles\nDebug.Print tiles.Count, tiles.First.Width, tiles.Last.Bottom",
+   "review": {
+    "by": "adversarial",
+    "changes": "example used an undefined img, now created with Document.CreateImage"
+   }
+  },
+  {
+   "name": "ImportFilter",
+   "id": "class:ImportFilter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ImportFilter",
+   "status": "current",
+   "summary": "Creatable class for an import filter and its settings: the object Layer.ImportEx returns, which can show the filter's options dialog and must be finished to complete the import.",
+   "use_for": [
+    "placing logos, photos, PDFs or AI files into a CorelDRAW layout from a script",
+    "batch-building catalogue pages from a folder of images"
+   ],
+   "avoid": [
+    "opening a file as its own document: use Application.OpenDocument",
+    "ShowDialog in unattended runs: modal"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "PlacedItems",
+    "PS": "File/Place Embedded"
+   },
+   "how": "Members live on its default interface ICorelImportFilter (Reset, Finish, HasDialog, ShowDialog), which is flagged hidden. Get it from ActiveLayer.ImportEx(FileName, Filter, Options), with options from Application.CreateStructImportOptions.",
+   "key_members": [
+    {
+     "name": "ICorelImportFilter",
+     "use": "default interface that carries every member of ImportFilter"
+    }
+   ],
+   "gotchas": [
+    "the import is not complete until Finish is called on the returned object",
+    "HasDialog is a read-only Boolean saying whether the filter has an options dialog; ShowDialog(hWnd) opens it and presumably blocks the COM call (unverified)",
+    "ICorelImportFilter is flagged hidden, so its members do not show in the Object Browser by default"
+   ],
+   "example": "Dim opt As Object, flt As Object\nSet opt = Application.CreateStructImportOptions\nopt.MaintainLayers = True\nSet flt = ActiveLayer.ImportEx(\"C:\\art\\logo.ai\", cdrAutoSense, opt)\nflt.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha said HasDialog opens the options dialog (it is a read-only Boolean), fixed; AI equivalent File/Place... replaced by the scripting counterpart PlacedItems (both exist)"
+   }
+  },
+  {
+   "name": "INT_PTR",
+   "id": "class:INT_PTR",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/INT_PTR",
+   "status": "current",
+   "summary": "Type alias for a pointer-sized integer (int64 in the 64-bit type library). It only appears as the return type of the internal IPDFSettingsInternal._GetSettings; there is no object behind it.",
+   "use_for": [
+    "reading type signatures: recognising raw-pointer values"
+   ],
+   "avoid": [
+    "anything a design script does: it is a typedef, not a class"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Not reached at all; it is a type name inside VGCoreAuto.tlb (also declared in CdrPDFVBA and CdrPrn).",
+   "key_members": [
+    {
+     "name": "int64",
+     "use": "alias_of: the underlying 64-bit integer type"
+    }
+   ],
+   "gotchas": [
+    "a value of this type is a raw native pointer; it means nothing to VBA or Python COM code"
+   ],
+   "example": "' no members; seen only in signatures, e.g.\n' IPDFSettingsInternal._GetSettings() As INT_PTR",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPDFSettingsInternal",
+   "id": "class:IPDFSettingsInternal",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPDFSettingsInternal",
+   "status": "unusable",
+   "summary": "Internal IUnknown-based interface whose only member hands back a raw pointer to the native PDF settings; it is plumbing behind the PDF export, not a scripting interface.",
+   "use_for": [
+    "nothing for design scripts"
+   ],
+   "avoid": [
+    "PDF export settings: use Document.PDFSettings (IPDFVBASettings)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Inherits IUnknown and is not dispatchable, so late-bound VBA / Python COM cannot call it.",
+   "key_members": [
+    {
+     "name": "_GetSettings",
+     "use": "returns an INT_PTR raw pointer to internal settings"
+    }
+   ],
+   "gotchas": [
+    "not dispatchable (inherits IUnknown, no 'dispatchable' flag): late-bound calls fail",
+    "the returned value is a native pointer; dereferencing it from a script is impossible"
+   ],
+   "example": "' use the public interface instead:\nActiveDocument.PDFSettings.pdfVersion = pdfVersionPDFX4",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPDFVBASettings",
+   "id": "class:IPDFVBASettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPDFVBASettings",
+   "status": "current",
+   "summary": "Settings for File > Publish to PDF on one document: page range, PDF version (PDF/X, PDF/A), colour mode and profile, font embedding, bitmap compression and downsampling, bleed and printer marks, spot handling, overprints and encryption, plus saving and loading PDF styles.",
+   "use_for": [
+    "print-ready PDF/X-4 export of posters, packaging and brochures with bleed and crop marks",
+    "small web or email PDFs with JPEG compression and downsampling",
+    "password-protected client proofs"
+   ],
+   "avoid": [
+    "raster output (PNG / JPG previews): use Document.Export or ExportBitmap",
+    "ShowDialog in unattended runs: modal"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "PDFSaveOptions",
+    "PS": "PDFSaveOptions"
+   },
+   "how": "ActiveDocument.PDFSettings (IVGDocument.PDFSettings); set properties, then call ActiveDocument.PublishToPDF(path).",
+   "key_members": [
+    {
+     "name": "Reset",
+     "use": "back to defaults before building a setting set"
+    },
+    {
+     "name": "Load",
+     "use": "load a saved PDF style by name"
+    },
+    {
+     "name": "Save",
+     "use": "save the current settings as a style"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the Publish to PDF dialog (modal)"
+    },
+    {
+     "name": "PublishRange",
+     "use": "pdfWholeDocument / pdfCurrentPage / pdfSelection / pdfPageRange"
+    },
+    {
+     "name": "PageRange",
+     "use": "page list such as \"1-3,5\", used with pdfPageRange"
+    },
+    {
+     "name": "pdfVersion",
+     "use": "compatibility: pdfVersion12 ... pdfVersion17_Acrobat9, PDF/X-1, X-1a, X-3, X-4, PDF/A-1b"
+    },
+    {
+     "name": "ColorMode",
+     "use": "pdfRGB / pdfCMYK / pdfGrayscale / pdfNative"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "convert text to curves"
+    },
+    {
+     "name": "EmbedFonts",
+     "use": "embed document fonts"
+    },
+    {
+     "name": "BitmapCompression",
+     "use": "pdfNone / pdfLZW / pdfJPEG / pdfZIP / pdfJP2"
+    },
+    {
+     "name": "JPEGQualityFactor",
+     "use": "JPEG compression level"
+    },
+    {
+     "name": "DownsampleColor",
+     "use": "downsample colour bitmaps"
+    },
+    {
+     "name": "ColorResolution",
+     "use": "target dpi for colour bitmaps"
+    },
+    {
+     "name": "IncludeBleed",
+     "use": "add bleed around pages"
+    },
+    {
+     "name": "Bleed",
+     "use": "bleed amount"
+    },
+    {
+     "name": "CropMarks",
+     "use": "add crop marks"
+    },
+    {
+     "name": "OutputSpotColorsAs",
+     "use": "keep spots or convert to RGB / CMYK / gray"
+    },
+    {
+     "name": "Overprints",
+     "use": "preserve overprints"
+    },
+    {
+     "name": "EncryptType",
+     "use": "none / standard / AES / AES-256"
+    }
+   ],
+   "gotchas": [
+    "PageRange is used only when PublishRange = pdfPageRange",
+    "Bleed's description says 'tens of micron'; CorelDRAW's internal unit is 0.1 micron, so check the unit on a test export (unverified)",
+    "EmbedFilename (string) and EmbedFile (bool) have their descriptions swapped in the type library; go by the types",
+    "SpotColors and ConvertSpotColors are hidden members; use OutputSpotColorsAs",
+    "settings stay on the document between exports (unverified); call Reset first for a predictable result",
+    "ShowDialog blocks the COM call until a person closes it"
+   ],
+   "example": "With ActiveDocument.PDFSettings\n  .Reset\n  .PublishRange = pdfPageRange\n  .PageRange = \"1-2\"\n  .pdfVersion = pdfVersionPDFX4\n  .IncludeBleed = True\nEnd With\nActiveDocument.PublishToPDF \"C:\\out\\poster.pdf\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintDocument",
+   "id": "class:IPrnVBAPrintDocument",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintDocument",
+   "status": "hidden",
+   "summary": "Opaque, hidden handle for one document inside a multi-document print job; the type library declares no members on it.",
+   "use_for": [
+    "passing a document to PrintJob.AddDocument (the parameter type)"
+   ],
+   "avoid": [
+    "reading anything from it: it has no members; use the CorelDRAW Document instead"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Appears as the parameter type of PrintJob.AddDocument and as PrintJob.Documents.Item; flagged hidden.",
+   "key_members": [
+    {
+     "name": "IDispatch",
+     "use": "only inherited dispatch plumbing; no members of its own"
+    }
+   ],
+   "gotchas": [
+    "no members: treat it as an opaque token",
+    "that PrintJob.AddDocument accepts a normal CorelDRAW Document for this parameter is unverified"
+   ],
+   "example": "Application.PrintJob.AddDocument ActiveDocument, \"1\"   ' passes the document as IPrnVBAPrintDocument",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintDocuments",
+   "id": "class:IPrnVBAPrintDocuments",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintDocuments",
+   "status": "hidden",
+   "summary": "Hidden collection of the documents queued in the application's multi-document print job.",
+   "use_for": [
+    "checking how many documents a print job holds before PrintOut"
+   ],
+   "avoid": [
+    "adding documents: use PrintJob.AddDocument"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.PrintJob.Documents (IPrnVBAPrintJob.Documents).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of documents in the job"
+    },
+    {
+     "name": "Item",
+     "use": "one queued document (hidden member)"
+    }
+   ],
+   "gotchas": [
+    "Item is itself a hidden member and returns the member-less IPrnVBAPrintDocument, so there is little to read from it",
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)"
+   ],
+   "example": "With Application.PrintJob\n  .Clear\n  .AddDocument ActiveDocument\n  Debug.Print .Documents.Count\nEnd With",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrinter",
+   "id": "class:IPrnVBAPrinter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrinter",
+   "status": "hidden",
+   "summary": "One installed printer as CorelDRAW sees it: name, driver, port, default / ready state, PostScript and colour capability, its properties dialog and the page-size matching switch.",
+   "use_for": [
+    "picking a colour PostScript device for proofs",
+    "checking a printer is ready before a batch print"
+   ],
+   "avoid": [
+    "PDF output: use Document.PublishToPDF",
+    "ShowDialog in unattended runs: modal"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Printer"
+   },
+   "how": "ActiveDocument.PrintSettings.Printer (writable), Application.Printers.Item(i) or Application.Printers.Default. Flagged hidden.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "printer name, as used by PrintSettings.SelectPrinter"
+    },
+    {
+     "name": "Type",
+     "use": "driver name"
+    },
+    {
+     "name": "Default",
+     "use": "True for the Windows default printer"
+    },
+    {
+     "name": "Ready",
+     "use": "True when the printer reports ready"
+    },
+    {
+     "name": "Port",
+     "use": "port name"
+    },
+    {
+     "name": "Description",
+     "use": "description string"
+    },
+    {
+     "name": "PostScriptEnabled",
+     "use": "True for a PostScript printer"
+    },
+    {
+     "name": "ColorEnabled",
+     "use": "True when colour output is enabled"
+    },
+    {
+     "name": "PageSizeMatchingSupported",
+     "use": "page size matching switch (writable)"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the driver's Printer Properties dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "Type is the driver name, not an enum",
+    "ShowDialog opens the driver dialog and blocks the COM call",
+    "Ready only reflects what the driver reports; a network printer can say ready and still fail (unverified)"
+   ],
+   "example": "Dim p As Object\nSet p = Application.Printers.Default\nIf p.Ready And p.ColorEnabled Then ActiveDocument.PrintSettings.SelectPrinter p.Name",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrinters",
+   "id": "class:IPrnVBAPrinters",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrinters",
+   "status": "hidden",
+   "summary": "Hidden collection of the printers installed in Windows, with the system default printer.",
+   "use_for": [
+    "listing printers to choose a proofing device",
+    "finding the default printer"
+   ],
+   "avoid": [
+    "changing the Windows default printer: not possible here"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.Printers (IVGApplication.Printers).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of installed printers"
+    },
+    {
+     "name": "Item",
+     "use": "printer by index"
+    },
+    {
+     "name": "Default",
+     "use": "the Windows default printer"
+    }
+   ],
+   "gotchas": [
+    "Item index base is not stated in the type library; CorelDRAW collections are normally 1-based (unverified here)",
+    "it has no Find or name lookup; loop and compare Name"
+   ],
+   "example": "Dim i As Long\nFor i = 1 To Application.Printers.Count\n  Debug.Print Application.Printers.Item(i).Name\nNext i\nDebug.Print Application.Printers.Default.Name",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintJob",
+   "id": "class:IPrnVBAPrintJob",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintJob",
+   "status": "hidden",
+   "summary": "The application-wide multi-document print job: queue documents (or page ranges of them), reach the job's print settings, and send everything to the printer in one go.",
+   "use_for": [
+    "printing several documents or page ranges as one job",
+    "batch proof printing"
+   ],
+   "avoid": [
+    "a single document: ActiveDocument.PrintSettings.PrintOut is simpler",
+    "PDF output: use Document.PublishToPDF"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.PrintJob (IVGApplication.PrintJob). Clear it, AddDocument each document with an optional page range, adjust Settings (IPrnVBAPrintSettings), then PrintOut. Flagged hidden.",
+   "key_members": [
+    {
+     "name": "Clear",
+     "use": "empty the job"
+    },
+    {
+     "name": "AddDocument",
+     "use": "queue a document, optionally only a page range"
+    },
+    {
+     "name": "Settings",
+     "use": "IPrnVBAPrintSettings of the job"
+    },
+    {
+     "name": "Documents",
+     "use": "queued documents"
+    },
+    {
+     "name": "Pages",
+     "use": "queued pages"
+    },
+    {
+     "name": "PrintOut",
+     "use": "send the job to the printer"
+    },
+    {
+     "name": "AddPage",
+     "use": "queue a single page (hidden member)"
+    }
+   ],
+   "gotchas": [
+    "PrintOut sends the job to the printer (presumably without a dialog, unverified), on real paper; for tests set Settings.PrintToFile = True and Settings.FileName",
+    "the job is application-wide (Application.PrintJob) and may still hold earlier additions (unverified); call Clear first",
+    "AddDocument is typed for IPrnVBAPrintDocument; passing a CorelDRAW Document is unverified",
+    "AddPage is a hidden member"
+   ],
+   "example": "With Application.PrintJob\n  .Clear\n  .AddDocument ActiveDocument, \"1-2\"\n  .Settings.PrintToFile = True\n  .Settings.FileName = \"C:\\out\\job.prn\"\n  .PrintOut\nEnd With",
+   "review": {
+    "by": "adversarial",
+    "changes": "PrintOut 'no dialog' and the job keeping earlier additions were stated as fact; marked unverified"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintLayout",
+   "id": "class:IPrnVBAPrintLayout",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintLayout",
+   "status": "hidden",
+   "summary": "Hidden print-layout settings of a document: how the page is placed on the printer sheet (as in document, fit, centred, corners, custom), bleed limit, and tiling of oversized pages with tiling marks and overlap.",
+   "use_for": [
+    "fitting an A3 poster onto an A4 proof sheet",
+    "tiling a large banner across several sheets",
+    "limiting bleed on printed proofs"
+   ],
+   "avoid": [
+    "imposition of several pages per sheet: not covered by this interface",
+    "PDF bleed: use PDFSettings.IncludeBleed / Bleed"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "PrintCoordinateOptions"
+   },
+   "how": "ActiveDocument.PrintSettings.Layout (IPrnVBAPrintSettings.Layout).",
+   "key_members": [
+    {
+     "name": "Placement",
+     "use": "PrnPlaceType: prnPlaceAsInDocument, prnPlaceFitToPage, prnPlaceCenterPage ... prnPlaceCustom"
+    },
+    {
+     "name": "UseBleedLimit",
+     "use": "turn the bleed limit on"
+    },
+    {
+     "name": "BleedLimit",
+     "use": "bleed amount kept around the page"
+    },
+    {
+     "name": "PrintTiledPages",
+     "use": "split a large page across printer sheets"
+    },
+    {
+     "name": "PrintTilingMarks",
+     "use": "print tiling marks"
+    },
+    {
+     "name": "TileOverlap",
+     "use": "overlap between tiles"
+    }
+   ],
+   "gotchas": [
+    "BleedLimit and TileOverlap are doubles in an unstated unit, presumably document units (unverified)",
+    "bleed only prints if the artwork already extends past the page edge",
+    "prnPlaceCustom needs offsets this interface does not expose (unverified)"
+   ],
+   "example": "With ActiveDocument.PrintSettings.Layout\n  .Placement = prnPlaceFitToPage\n  .UseBleedLimit = True\n  .BleedLimit = 0.125\nEnd With",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintOptions",
+   "id": "class:IPrnVBAPrintOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintOptions",
+   "status": "hidden",
+   "summary": "Hidden miscellaneous print options of a document: which object types print (vectors, bitmaps, text), colour mode and colour profile, text in black, fountain steps, whole-page rasterizing, bitmap downsampling, and the job information sheet contents.",
+   "use_for": [
+    "fast grayscale or text-only proofs",
+    "rasterizing complex transparency for a problem printer",
+    "suppressing the job information sheet in batch prints"
+   ],
+   "avoid": [
+    "PDF export settings: use Document.PDFSettings",
+    "leaving PrintVectors / PrintBitmaps / PrintText off after a proof: later prints silently drop those objects"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "ActiveDocument.PrintSettings.Options (IPrnVBAPrintSettings.Options).",
+   "key_members": [
+    {
+     "name": "ColorMode",
+     "use": "PrnColorMode: prnModeFullColor / prnModeGrayscale / prnModeBlack"
+    },
+    {
+     "name": "ObjectsColorMode",
+     "use": "colour mode all objects are output in"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "apply the ICC profile while printing"
+    },
+    {
+     "name": "PreservePureBlack",
+     "use": "keep pure black in colour conversions"
+    },
+    {
+     "name": "PrintVectors",
+     "use": "include vector objects"
+    },
+    {
+     "name": "PrintBitmaps",
+     "use": "include bitmaps"
+    },
+    {
+     "name": "PrintText",
+     "use": "include text"
+    },
+    {
+     "name": "TextInBlack",
+     "use": "print all text in black"
+    },
+    {
+     "name": "MarksToPage",
+     "use": "keep printer marks inside the page area"
+    },
+    {
+     "name": "FountainSteps",
+     "use": "default steps for fountain fills"
+    },
+    {
+     "name": "RasterizePage",
+     "use": "rasterize each page before sending"
+    },
+    {
+     "name": "RasterizeResolution",
+     "use": "resolution of that rasterization"
+    },
+    {
+     "name": "DownsampleColor",
+     "use": "downsample colour bitmaps"
+    },
+    {
+     "name": "ColorResolution",
+     "use": "colour bitmap downsampling resolution"
+    },
+    {
+     "name": "JobInformation",
+     "use": "print the job information sheet"
+    }
+   ],
+   "gotchas": [
+    "PrintVectors / PrintBitmaps / PrintText = False drop those objects without warning; set them back",
+    "RasterizeResolution matters only when RasterizePage = True",
+    "BitmapColorMode is a hidden member; ObjectsColorMode is the visible switch (relationship unverified)",
+    "settings live on the document's PrintSettings; PrintSettings.Reset gives a clean start"
+   ],
+   "example": "With ActiveDocument.PrintSettings.Options\n  .ColorMode = prnModeGrayscale\n  .PrintBitmaps = False\n  .JobInformation = False\nEnd With",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPrnVBAPrintPage",
+   "id": "class:IPrnVBAPrintPage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IPrnVBAPrintPage",
+   "status": "hidden",
+   "summary": "Opaque, hidden handle for one page queued in a print job; the type library declares no members on it.",
+   "use_for": [
+    "counting or passing pages of a print job (PrintJob.Pages, PrintJob.AddPage)"
+   ],
+   "avoid": [
+    "reading page content or size: use the CorelDRAW Page object"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Returned by PrintJob.Pages.Item(i) and taken by the hidden PrintJob.AddPage; flagged hidden.",
+   "key_members": [
+    {
+     "name": "IDispatch",
+     "use": "only inherited dispatch plumbing; no members of its own"
+    }
+   ],
+   "gotchas": [
+    "no members: treat it as an opaque token",
+    "AddPage, the call that takes it, is itself a hidden member"
+   ],
+   "example": "Debug.Print Application.PrintJob.Pages.Count   ' Pages.Item(i) returns IPrnVBAPrintPage",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

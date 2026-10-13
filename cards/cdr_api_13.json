@@ -1,0 +1,2209 @@
+{
+ "cards": [
+  {
+   "name": "IVGEffectTwisterDistortion",
+   "id": "class:IVGEffectTwisterDistortion",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectTwisterDistortion",
+   "status": "current",
+   "summary": "Settings object of a Twister distortion (Distort tool, Twister mode): its single Angle property sets how far the shape is wound around the distortion centre, turning the outline into a pinwheel / swirl whose arms wrap further the larger the angle.",
+   "use_for": [
+    "swirl and pinwheel ornaments from a star or polygon",
+    "twisted logo marks and psychedelic badge backgrounds",
+    "re-tuning the twist amount of an existing Twister distortion in a batch"
+   ],
+   "avoid": [
+    "subtle bends or arcs of text: use an envelope or Fit Text To Path instead",
+    "shapes that must keep exact geometry for cutting or CNC: convert the result to curves and check node count first"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. Shape.CreateTwisterDistortion(OriginX, OriginY, Angle) returns an Effect; Effect.Distortion.Twister is this object (an existing one is found through Shape.Effects.DistortionEffects). The centre lives on the parent IVGEffectDistortion (OriginX / OriginY, CenterDistortion).",
+   "key_members": [
+    {
+     "name": "Angle",
+     "use": "total twist in degrees (double); larger values wrap the arms further around the centre"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGEffectDistortion: Type, OriginX / OriginY, CenterDistortion"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "the twist centre is not on this object: move it with Parent.OriginX / OriginY or Parent.CenterDistortion",
+    "the UI splits the amount into complete rotations + additional degrees; whether Angle above 360 adds whole turns and a negative Angle reverses the direction is (unverified)",
+    "the distortion is live on the control shape: the curve you see is the effect result, and editing the original shape re-runs it (unverified)",
+    "a shape with few nodes twists coarsely; add nodes or use a polygon / star with many points for a smooth swirl (unverified)"
+   ],
+   "example": "Dim s As Shape, eff As Effect\nSet s = ActiveLayer.CreatePolygon2(100, 100, 40, 8, , 15, True)\nSet eff = s.CreateTwisterDistortion(100, 100, 270)\neff.Distortion.CenterDistortion\neff.Distortion.Twister.Angle = 540",
+   "equivalents": {
+    "AI": "Live Twist",
+    "PS": "twirl"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGEffectZipperDistortion",
+   "id": "class:IVGEffectZipperDistortion",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEffectZipperDistortion",
+   "status": "current",
+   "summary": "Settings object of a Zipper distortion (Distort tool, Zipper mode): it adds saw-tooth zigzags along the outline, with Amplitude (tooth height) and Frequency (tooth count) plus Random, Smooth (rounded waves instead of points) and Local (teeth strongest near the distortion centre) switches.",
+   "use_for": [
+    "jagged comic burst and explosion shapes",
+    "torn-paper or electric edges on a badge",
+    "wavy scalloped borders with Smooth on",
+    "rough hand-made edges on a sticker outline"
+   ],
+   "avoid": [
+    "clean even scallops for a print border: use a polygon / star or Blend instead; Zipper teeth are laid out per segment, so uneven node spacing gives uneven teeth (unverified)",
+    "cut contours for a plotter: the result has many nodes; simplify before export"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. Shape.CreateZipperDistortion(OriginX, OriginY, Amplitude, Frequency, Random, Smooth, Local) returns an Effect; Effect.Distortion.Zipper is this object. The centre (which matters for Local) is on the parent IVGEffectDistortion.",
+   "key_members": [
+    {
+     "name": "Amplitude",
+     "use": "tooth height (long); no range in the harvest"
+    },
+    {
+     "name": "Frequency",
+     "use": "how many teeth (long); no range in the harvest; teeth appear to be laid out per segment between nodes (unverified)"
+    },
+    {
+     "name": "Random",
+     "use": "irregular tooth sizes for a rough, hand-torn edge"
+    },
+    {
+     "name": "Smooth",
+     "use": "round the teeth into waves instead of sharp points"
+    },
+    {
+     "name": "Local",
+     "use": "teeth strongest near the distortion centre, fading outward"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGEffectDistortion: OriginX / OriginY, CenterDistortion"
+    }
+   ],
+   "gotchas": [
+    "Amplitude and Frequency are bare longs with no harvested range; read a value back after setting it rather than assuming the property-bar limits",
+    "Local depends on where the distortion centre is (Parent.OriginX / OriginY); a centre outside the shape makes most of the edge flat (unverified)",
+    "high Frequency on a small shape gives dense noise and a very heavy curve",
+    "the distortion is live: the visible outline is the effect result of the control shape (unverified)"
+   ],
+   "example": "Dim s As Shape, eff As Effect\nSet s = ActiveLayer.CreateEllipse2(100, 100, 50, 50)\nSet eff = s.CreateZipperDistortion(100, 100, 40, 12)\neff.Distortion.Zipper.Smooth = False\neff.Distortion.Zipper.Random = True",
+   "equivalents": {
+    "AI": "Live Zig Zag"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the 0-100 Amplitude / Frequency ranges (not in the batch) from key_members and gotchas"
+   }
+  },
+  {
+   "name": "IVGEllipse",
+   "id": "class:IVGEllipse",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEllipse",
+   "status": "current",
+   "summary": "Properties of a native ellipse object (Shape.Type = cdrEllipseShape): whether it is a closed ellipse, an open arc or a pie wedge, its start / end angles and direction, centre and two radii.",
+   "use_for": [
+    "pie-chart wedges and donut-chart segments",
+    "arc gauges and progress rings for infographics",
+    "resizing circles from data without converting them to curves",
+    "badges and seals built from exact circles"
+   ],
+   "avoid": [
+    "shapes already converted to curves: Shape.Ellipse no longer applies; edit the Curve instead",
+    "variable-width rings: use two ellipses combined or a thick outline on an arc"
+   ],
+   "confidence": "high",
+   "how": "Shape.Ellipse on an ellipse shape. Create one with ActiveLayer.CreateEllipse2(CenterX, CenterY, Radius1, Radius2) or CreateEllipse(Left, Top, Right, Bottom); check Shape.Type = cdrEllipseShape before touching .Ellipse.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrEllipseType: cdrEllipse (0) closed, cdrArc (1) open arc, cdrPie (2) wedge"
+    },
+    {
+     "name": "StartAngle",
+     "use": "start angle of the arc / pie in degrees"
+    },
+    {
+     "name": "EndAngle",
+     "use": "end angle of the arc / pie in degrees"
+    },
+    {
+     "name": "Clockwise",
+     "use": "direction the arc runs from StartAngle to EndAngle"
+    },
+    {
+     "name": "CenterX",
+     "use": "centre X in document units"
+    },
+    {
+     "name": "CenterY",
+     "use": "centre Y in document units"
+    },
+    {
+     "name": "HRadius",
+     "use": "horizontal radius"
+    },
+    {
+     "name": "VRadius",
+     "use": "vertical radius"
+    },
+    {
+     "name": "SetCenterPosition",
+     "use": "move the centre in one call"
+    },
+    {
+     "name": "SetRadius",
+     "use": "set both radii (VRadius optional: omit for a circle)"
+    },
+    {
+     "name": "GetRadius",
+     "use": "returns both radii through ByRef arguments"
+    }
+   ],
+   "gotchas": [
+    "GetCenterPosition and GetRadius return through ByRef doubles: from VBA pass Double variables; from Python (pywin32) the ByRef values come back as the call's returned tuple, not in the arguments (unverified); reading CenterX / CenterY / HRadius / VRadius is simpler",
+    "Shape.Ellipse only exists while the shape is a native ellipse (cdrEllipseShape); after Convert To Curves it fails (unverified)",
+    "angles are in degrees; 0 deg pointing to 3 o'clock and counter-clockwise increase is the CorelDRAW convention (unverified)",
+    "coordinates use the document unit (ActiveDocument.Unit), not points or pixels",
+    "on a rotated or skewed ellipse HRadius / VRadius are the radii before the transform (unverified)"
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveLayer.CreateEllipse2(100, 100, 40, 40)\ns.Ellipse.Type = cdrPie\ns.Ellipse.StartAngle = 90\ns.Ellipse.EndAngle = 210\ns.Ellipse.SetRadius 45",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "rewrote the ByRef gotcha: it claimed the values cannot come back from Python / late-bound COM, which is wrong for pywin32 with type info; now hedged"
+   }
+  },
+  {
+   "name": "IVGEPS",
+   "id": "class:IVGEPS",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGEPS",
+   "status": "current",
+   "summary": "Properties of a placed EPS object (Shape.Type = cdrEPSShape): an EPS imported as a placeable file whose PostScript is kept intact and shown on screen only through its preview bitmap; exposes the PostScript data, the preview, a crop (clipping) envelope, the link path and DCS plate files.",
+   "use_for": [
+    "auditing placed EPS logos in a print file (link path, DCS plates)",
+    "pulling the PostScript of a placed EPS for archiving or re-use",
+    "resetting a cropped EPS back to its full bounding box"
+   ],
+   "avoid": [
+    "editing the artwork: the EPS stays a sealed PostScript object; import it as editable (interpreted PostScript) or open it to get curves",
+    "screen or web output: only the preview renders on screen; convert it to a bitmap or re-import the file as editable PostScript first"
+   ],
+   "confidence": "medium",
+   "how": "Shape.EPS on a placed EPS shape (check Shape.Type = cdrEPSShape first). The object comes from importing an EPS as a placeable file rather than as editable PostScript.",
+   "key_members": [
+    {
+     "name": "PreviewBitmap",
+     "use": "the screen preview bitmap embedded in the EPS"
+    },
+    {
+     "name": "Data",
+     "use": "the EPS stream as a byte array"
+    },
+    {
+     "name": "DataAsString",
+     "use": "the EPS stream as a string (PostScript text)"
+    },
+    {
+     "name": "CropEnvelope",
+     "use": "curve of the current clipping path"
+    },
+    {
+     "name": "CropEnvelopeModified",
+     "use": "True when the clip was changed from the original rectangle"
+    },
+    {
+     "name": "ResetCropEnvelope",
+     "use": "restore the rectangular clip"
+    },
+    {
+     "name": "BoundingBoxPath",
+     "use": "curve of the EPS's original bounding box"
+    },
+    {
+     "name": "LinkFileName",
+     "use": "path of the linked EPS file"
+    },
+    {
+     "name": "DCSFileNames",
+     "use": "file names of the separation plates of a DCS EPS"
+    }
+   ],
+   "gotchas": [
+    "what shows on screen is PreviewBitmap, not the PostScript: a missing or low-res preview looks wrong on screen but may print correctly",
+    "DataAsString on an EPS with a binary preview header (DOS EPS with TIFF / WMF) contains non-text bytes; use Data for an exact copy (unverified)",
+    "LinkFileName is harvested as writable although documented as 'Returns'; relinking by setting it is (unverified)",
+    "DCSFileNames is empty unless the EPS is a DCS file (unverified)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.FindShapes(Type:=cdrEPSShape)\n  Debug.Print s.EPS.LinkFileName, s.EPS.CropEnvelopeModified\n  If s.EPS.CropEnvelopeModified Then s.EPS.ResetCropEnvelope\nNext s",
+   "equivalents": {
+    "AI": "PlacedItem"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: replaced \"convert to curves / bitmap\" (a placed EPS is not converted to curves) with convert to bitmap or re-import as editable"
+   }
+  },
+  {
+   "name": "IVGExtrudeVanishingPoint",
+   "id": "class:IVGExtrudeVanishingPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGExtrudeVanishingPoint",
+   "status": "current",
+   "summary": "The vanishing point of an extrude effect: the point the extruded depth recedes toward. Sets whether it is locked to the shape, locked to the page or shared with other extrudes, its X / Y position, and lists the extrudes that share it.",
+   "use_for": [
+    "one consistent perspective across several extruded letters or objects (shared vanishing point)",
+    "3D-style headline lettering whose depth points at a chosen spot",
+    "batch re-aiming the depth direction of extruded logos"
+   ],
+   "avoid": [
+    "real 3D renders or materials: extrude is a 2D pseudo-3D effect; use a 3D app or Illustrator's 3D effect",
+    "parallel (isometric) extrudes where the depth should not converge: pick a parallel extrude type instead of moving the point (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Effect.Extrude.VanishingPoint, where the Effect comes from Shape.CreateExtrude(Type, VPType, VPX, VPY, ...) or Shape.Effects.ExtrudeEffect on an existing extrude.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrExtrudeVPType: cdrVPLockedToShape (0), cdrVPLockedToPage (1), cdrVPShared (2)"
+    },
+    {
+     "name": "PositionX",
+     "use": "vanishing point X"
+    },
+    {
+     "name": "PositionY",
+     "use": "vanishing point Y"
+    },
+    {
+     "name": "Share",
+     "use": "share the vanishing point of another extrude (Source); returns True on success"
+    },
+    {
+     "name": "Effects",
+     "use": "the extrude effects that share this vanishing point"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGEffectExtrude that owns it"
+    }
+   ],
+   "gotchas": [
+    "with cdrVPLockedToShape the point moves with the shape, so PositionX / PositionY may be measured relative to the shape rather than the page (unverified)",
+    "cdrVPShared is reached by calling Share(Source) with another extrude; assigning Type = cdrVPShared directly is (unverified)",
+    "on the parallel extrude types (cdrExtrudeBackParallel / cdrExtrudeFrontParallel) the point sets the depth direction, not a convergence point (unverified)"
+   ],
+   "example": "Dim a As Shape, b As Shape, ea As Effect, eb As Effect\nSet a = ActivePage.FindShape(\"Letter1\"): Set b = ActivePage.FindShape(\"Letter2\")\nSet ea = a.CreateExtrude(cdrExtrudeSmallBack, cdrVPLockedToPage, 150, 300)\nSet eb = b.CreateExtrude(cdrExtrudeSmallBack, cdrVPLockedToPage, 150, 300)\neb.Extrude.VanishingPoint.Share ea.Extrude\nDebug.Print ea.Extrude.VanishingPoint.Effects.Count",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGFill",
+   "id": "class:IVGFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFill",
+   "status": "current",
+   "summary": "The fill of a shape, text range, text frame, table cell or font properties: reports the fill type and applies or reads uniform, fountain (gradient), pattern, texture, PostScript and hatch fills, or removes the fill.",
+   "use_for": [
+    "brand-colour fills on generated shapes and text",
+    "applying gradients, patterns and hatch fills in a batch",
+    "copying one object's fill to many (GetCopy / CopyAssign)",
+    "checking which fill type an object carries before export"
+   ],
+   "avoid": [
+    "outlines / strokes: that is Shape.Outline",
+    "whole-object transparency: use Shape.Transparency (fountain fills also carry per-node Opacity, see FountainColor)",
+    "unattended runs: UserAssign opens a modal fill dialog"
+   ],
+   "confidence": "high",
+   "how": "Shape.Fill (also TextRange.Fill, TextFrame.Fill, table Cell.Fill). An unattached fill comes from Document.CreateFill / CreateUniformFill or Fill.GetCopy and is applied with CopyAssign.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrFillType: cdrNoFill 0, cdrUniformFill 1, cdrFountainFill 2, cdrPostscriptFill 3, cdrTextureFill 8, cdrPatternFill 9, cdrHatchFill 10"
+    },
+    {
+     "name": "ApplyUniformFill",
+     "use": "solid fill from a Color"
+    },
+    {
+     "name": "UniformColor",
+     "use": "the solid colour of a uniform fill"
+    },
+    {
+     "name": "ApplyFountainFill",
+     "use": "gradient: start / end colour, type, angle, steps, edge pad, midpoint, blend type, centre offset; returns the FountainFill"
+    },
+    {
+     "name": "Fountain",
+     "use": "the FountainFill of a fountain-filled object"
+    },
+    {
+     "name": "ApplyPatternFill",
+     "use": "vector / bitmap / two-colour pattern"
+    },
+    {
+     "name": "ApplyTextureFill",
+     "use": "texture from a texture library by name"
+    },
+    {
+     "name": "ApplyPostscriptFill",
+     "use": "PostScript fill by index or name"
+    },
+    {
+     "name": "ApplyHatchFill",
+     "use": "preset hatch from a hatch library"
+    },
+    {
+     "name": "ApplyCustomHatchFill",
+     "use": "hatch built from angle, spacing, line width and colour"
+    },
+    {
+     "name": "Hatch",
+     "use": "the HatchFill of a hatch-filled object"
+    },
+    {
+     "name": "ApplyNoFill",
+     "use": "remove the fill"
+    },
+    {
+     "name": "GetCopy",
+     "use": "unattached copy of the fill"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy another fill's properties onto this one"
+    },
+    {
+     "name": "CompareWith",
+     "use": "True when two fills are the same"
+    },
+    {
+     "name": "UserAssign",
+     "use": "opens the fill dialog for the user (modal)"
+    }
+   ],
+   "gotchas": [
+    "Type is read-only: change the kind of fill with an Apply* method, not by assignment",
+    "reading Fountain / Pattern / Texture / Hatch on a fill of another type gives nothing usable or raises an error; test Type first (unverified)",
+    "setting UniformColor on a shape that has no fill may not turn the fill on; call ApplyUniformFill (unverified)",
+    "GetCopy is detached: edits to it do not reach the shape until you CopyAssign it back",
+    "UserAssign shows a modal dialog and blocks the COM call until a person closes it"
+   ],
+   "example": "Dim s As Shape, t As Shape\nSet s = ActiveLayer.CreateRectangle2(0, 0, 100, 60)\ns.Fill.ApplyUniformFill CreateRGBColor(230, 57, 70)\nIf s.Fill.Type = cdrUniformFill Then Debug.Print s.Fill.UniformColor.HexValue\nSet t = ActiveLayer.CreateEllipse2(150, 30, 30)\nt.Fill.CopyAssign s.Fill",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped \"callout\" (no callout class has a Fill in the harvest), added font properties (IVGStructFontProperties.Fill); avoid: transparency line no longer denies per-node fountain opacity"
+   }
+  },
+  {
+   "name": "IVGFillMetadata",
+   "id": "class:IVGFillMetadata",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFillMetadata",
+   "status": "current",
+   "summary": "Descriptive metadata for a fill saved to or loaded from a fill file: title, description, keywords, subject, copyright and category (each a multi-language string), plus read-only creator tool, creation / modification dates and document / instance IDs.",
+   "use_for": [
+    "tagging fills saved into a shared fill library so they can be searched",
+    "reading the title / copyright of a fill file before using it in client work"
+   ],
+   "avoid": [
+    "document-level metadata (title, keywords of the .cdr): that is Document metadata, not this object"
+   ],
+   "confidence": "medium",
+   "how": "Created with Application.CreateFillMetadata, filled in, then passed to StyleFill.SaveFill(FileName, Metadata); StyleFill.LoadFill(FileName, Metadata) reads it back. StyleFill comes from Shape.Style.Fill.",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "LocalizableString: the fill's title"
+    },
+    {
+     "name": "Description",
+     "use": "LocalizableString: description"
+    },
+    {
+     "name": "Keywords",
+     "use": "LocalizableString: search keywords"
+    },
+    {
+     "name": "Subject",
+     "use": "LocalizableString: subject"
+    },
+    {
+     "name": "Copyright",
+     "use": "LocalizableString: copyright notice"
+    },
+    {
+     "name": "Category",
+     "use": "LocalizableString: library category"
+    },
+    {
+     "name": "CreatorTool",
+     "use": "read-only: application that made the fill file"
+    },
+    {
+     "name": "CreationDate",
+     "use": "read-only: creation date"
+    },
+    {
+     "name": "ModificationDate",
+     "use": "read-only: last modification date"
+    },
+    {
+     "name": "DocumentID",
+     "use": "read-only: ID shared by the fill and its derivatives"
+    },
+    {
+     "name": "InstanceID",
+     "use": "read-only: ID of this fill file instance"
+    },
+    {
+     "name": "DerivedFrom",
+     "use": "read-only: IDs of the fills this one is derived from"
+    }
+   ],
+   "gotchas": [
+    "the text properties are read-only object references: write the text through them (Title.DefaultLangString = ...), not by assigning Title",
+    "CreatorTool, dates and IDs are read-only; they are presumably stamped when the fill file is saved (unverified)",
+    "which fill types SaveFill accepts (fountain, pattern, texture, hatch) is (unverified)"
+   ],
+   "example": "Dim md As FillMetadata, s As Shape\nSet s = ActiveShape\nSet md = CreateFillMetadata\nmd.Title.DefaultLangString = \"Sunset gradient\"\nmd.Keywords.DefaultLangString = \"orange, warm, sky\"\ns.Style.Fill.SaveFill \"C:\\fills\\sunset.fill\", md",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGFontList",
+   "id": "class:IVGFontList",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFontList",
+   "status": "current",
+   "summary": "Read-only list of the font names CorelDRAW knows about (Application.FontList): a 1-based collection of strings with Count and For Each support.",
+   "use_for": [
+    "checking a brand or Devanagari font is installed before building text",
+    "picking a fallback font in an automated layout",
+    "logging the fonts available on a render machine"
+   ],
+   "avoid": [
+    "font details such as styles, foundry or file path: this list only gives names",
+    "installing fonts: install them in Windows, then call Application.ForceUpdateFontTable to refresh the list"
+   ],
+   "confidence": "high",
+   "how": "Application.FontList; loop with For Each or Item(1..Count). Each item is a font name string.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of fonts in the list"
+    },
+    {
+     "name": "Item",
+     "use": "font name at a 1-based index (string)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each over the names"
+    },
+    {
+     "name": "Application",
+     "use": "owning application"
+    },
+    {
+     "name": "Parent",
+     "use": "parent object"
+    }
+   ],
+   "gotchas": [
+    "Item is 1-based and returns a name string, not a font object",
+    "fonts installed while CorelDRAW is running can be missing until Application.ForceUpdateFontTable is called (the harvest describes it as picking up newly installed fonts immediately)",
+    "names are the family names CorelDRAW shows in its font list; match them case-insensitively and expect style variants to be folded in (unverified)"
+   ],
+   "example": "Dim f As Variant, found As Boolean\nFor Each f In FontList\n  If LCase(f) = \"noto sans devanagari\" Then found = True\nNext f\nDebug.Print FontList.Count, found",
+   "equivalents": {
+    "PS": "class:TextFonts",
+    "AI": "class:TextFonts"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "ForceUpdateFontTable gotcha no longer marked unverified (the harvest describes it); avoid names the refresh call"
+   }
+  },
+  {
+   "name": "IVGFountainColor",
+   "id": "class:IVGFountainColor",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFountainColor",
+   "status": "current",
+   "summary": "One colour node of a fountain fill (gradient stop): its position along the gradient, colour, opacity, the midpoint toward the next node and the blend type used from it.",
+   "use_for": [
+    "recolouring gradient stops to brand colours in a batch",
+    "adding fade-to-transparent stops for glows and overlays (Opacity)",
+    "moving stops to tighten or widen a colour band"
+   ],
+   "avoid": [
+    "changing the whole gradient type, angle or spread: that is the parent FountainFill"
+   ],
+   "confidence": "medium",
+   "how": "FountainFill.Colors(i), Colors.First or Colors.Last, where FountainFill is Shape.Fill.Fountain (or Shape.Transparency.Fountain).",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "the node colour (read / assign a Color)"
+    },
+    {
+     "name": "Position",
+     "use": "read-only node position along the gradient (long; the scale is not in the harvest, read a node back)"
+    },
+    {
+     "name": "Move",
+     "use": "move the node to a new position"
+    },
+    {
+     "name": "Opacity",
+     "use": "node opacity (byte)"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint position between this node and the next"
+    },
+    {
+     "name": "BlendType",
+     "use": "cdrFountainFillBlendType from this node: direct, rainbow CW / CCW, custom"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the node from the gradient"
+    }
+   ],
+   "gotchas": [
+    "Position is read-only: use Move(NewPosition)",
+    "the first and last nodes are the gradient ends and cannot be deleted or moved away from the ends (unverified)",
+    "Opacity is a byte: whether 255 or 100 means fully opaque is (unverified); read a node back after setting it",
+    "edit a node's colour in place with Color.RGBAssign / CMYKAssign; whether assigning a Color object to Color copies it or keeps a link is (unverified)"
+   ],
+   "example": "Dim ff As FountainFill\nSet ff = ActiveShape.Fill.Fountain\nff.Colors.First.Color.RGBAssign 255, 120, 0\nff.Colors.Last.Color.RGBAssign 90, 0, 140\nff.Colors.First.MidPoint = 35",
+   "equivalents": {
+    "AI": "GradientStop"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Position: removed the \"0-100 in the UI\" range (not in the batch)"
+   }
+  },
+  {
+   "name": "IVGFountainColors",
+   "id": "class:IVGFountainColors",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFountainColors",
+   "status": "current",
+   "summary": "The node list of a fountain fill or fountain transparency: count, indexed access to each colour node, the first (start) and last (end) nodes, and Add / AddGrayLevel to insert new nodes at a position.",
+   "use_for": [
+    "building multi-stop gradients (sunset, chrome, rainbow) from code",
+    "reading every stop of a gradient to recolour it",
+    "grey-level stops for a fountain transparency fade"
+   ],
+   "avoid": [
+    "setting the gradient type, angle or spread: use the parent FountainFill"
+   ],
+   "confidence": "medium",
+   "how": "FountainFill.Colors, where FountainFill is Shape.Fill.Fountain, the result of Fill.ApplyFountainFill, or Shape.Transparency.Fountain.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of nodes"
+    },
+    {
+     "name": "Item",
+     "use": "node by index (documented as base 1)"
+    },
+    {
+     "name": "First",
+     "use": "the start node"
+    },
+    {
+     "name": "Last",
+     "use": "the end node"
+    },
+    {
+     "name": "Add",
+     "use": "insert a node with a Color at a Position"
+    },
+    {
+     "name": "AddGrayLevel",
+     "use": "insert a grey-level node (presumably for fountain transparency, unverified)"
+    },
+    {
+     "name": "GrayLevel",
+     "use": "grey level of a node by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the nodes"
+    }
+   ],
+   "gotchas": [
+    "Item is documented as base 1, but older CorelDRAW versions counted only the middle nodes and addressed the start as 0 and the end as Count + 1; use First / Last for the ends (unverified)",
+    "Add's Position is a long whose scale is not in the harvest; read First.Position / Last.Position to learn it before adding nodes (unverified)",
+    "GrayLevel / AddGrayLevel are presumably for fountain transparencies, where nodes are grey levels rather than colours (unverified)"
+   ],
+   "example": "Dim ff As FountainFill\nSet ff = ActiveShape.Fill.ApplyFountainFill(CreateRGBColor(255, 200, 0), CreateRGBColor(200, 0, 80))\nff.Colors.Add CreateRGBColor(255, 90, 0), 45\nff.Colors.Add CreateRGBColor(120, 0, 120), 80\nDebug.Print ff.Colors.Count",
+   "equivalents": {
+    "AI": "GradientStops"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the 0-100 Position scale (not in the batch); marked the transparency reading of GrayLevel / AddGrayLevel as unverified"
+   }
+  },
+  {
+   "name": "IVGFountainFill",
+   "id": "class:IVGFountainFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGFountainFill",
+   "status": "current",
+   "summary": "A fountain (gradient) fill or fountain transparency: linear, radial, conical or square type, its start / end handles, angle, colour nodes, steps, edge pad, midpoint, blend type, spread (pad / reflect / repeat), scale, skew, smooth blending and per-node transparency.",
+   "use_for": [
+    "brand gradients on backgrounds, buttons and lettering",
+    "radial glows and spotlights",
+    "conical metallic / chrome effects",
+    "repeating or reflected gradient stripes (SpreadMethod)",
+    "fade-out masks via a fountain transparency"
+   ],
+   "avoid": [
+    "mesh-like free-form colour blending: use the Mesh Fill tool",
+    "gradients along a stroke: CorelDRAW fountain fills fill the interior only"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Fill.ApplyFountainFill(StartColor, EndColor, Type, Angle, Steps, EdgePad, MidPoint, BlendType, CenterOffsetX, CenterOffsetY) returns it; Shape.Fill.Fountain reads an existing one; Shape.Transparency.Fountain is the transparency version.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrFountainFillType: linear 1, radial 2, conical 3, square 4"
+    },
+    {
+     "name": "Colors",
+     "use": "the colour nodes (FountainColors)"
+    },
+    {
+     "name": "StartColor",
+     "use": "start colour"
+    },
+    {
+     "name": "EndColor",
+     "use": "end colour"
+    },
+    {
+     "name": "SetAngle",
+     "use": "set the gradient angle (Angle is read-only)"
+    },
+    {
+     "name": "Angle",
+     "use": "read-only current angle"
+    },
+    {
+     "name": "StartX",
+     "use": "start handle X"
+    },
+    {
+     "name": "StartY",
+     "use": "start handle Y"
+    },
+    {
+     "name": "EndX",
+     "use": "end handle X"
+    },
+    {
+     "name": "EndY",
+     "use": "end handle Y"
+    },
+    {
+     "name": "SpreadMethod",
+     "use": "pad (0), reflect (1) or repeat (2) beyond the handles"
+    },
+    {
+     "name": "Steps",
+     "use": "number of colour bands"
+    },
+    {
+     "name": "SetEdgePad",
+     "use": "set the edge pad (EdgePad is read-only)"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint of a two-colour gradient"
+    },
+    {
+     "name": "BlendType",
+     "use": "direct, rainbow CW / CCW, custom"
+    },
+    {
+     "name": "CenterOffsetX",
+     "use": "radial / conical centre offset, % of object width"
+    },
+    {
+     "name": "CenterOffsetY",
+     "use": "radial / conical centre offset, % of object height"
+    },
+    {
+     "name": "Anisotropic",
+     "use": "non-uniform (elliptical) scaling of the gradient (unverified)"
+    },
+    {
+     "name": "SmoothBlend",
+     "use": "smooth colour blending"
+    },
+    {
+     "name": "MakeOpaque",
+     "use": "strip per-node transparency"
+    },
+    {
+     "name": "IsTransparent",
+     "use": "read-only: some node has transparency"
+    }
+   ],
+   "gotchas": [
+    "Angle and EdgePad are read-only even though EdgePad's description says 'sets': use SetAngle / SetEdgePad",
+    "there is no elliptical enum value; an elliptical gradient is a radial one with Anisotropic / End2X / End2Y set (unverified)",
+    "Steps controls banding: a low value gives visible stripes; ApplyFountainFill's default Steps of 0 means the default smooth setting (unverified)",
+    "GetTransformations returns through ByRef doubles: from Python (pywin32) the ByRef values come back as the call's returned tuple, not in the arguments (unverified)",
+    "the same object type is returned by Shape.Transparency.Fountain; there the nodes act as transparency levels rather than visible colours (unverified)"
+   ],
+   "example": "Dim s As Shape, ff As FountainFill\nSet s = ActiveLayer.CreateRectangle2(0, 0, 210, 297)\nSet ff = s.Fill.ApplyFountainFill(CreateRGBColor(255, 90, 0), CreateRGBColor(110, 0, 160), cdrLinearFountainFill, 90)\nff.Colors.Add CreateRGBColor(255, 210, 0), 40\nff.SpreadMethod = cdrFountainFillSpreadMethodReflect\nff.SetAngle 60",
+   "equivalents": {
+    "AI": "GradientColor",
+    "PS": "Layer/New Fill Layer/Gradient"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "GetTransformations gotcha claimed Python cannot read ByRef values (wrong for pywin32 with type info), now hedged; transparency-node gotcha marked unverified"
+   }
+  },
+  {
+   "name": "IVGGMSMacro",
+   "id": "class:IVGGMSMacro",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGMSMacro",
+   "status": "current",
+   "summary": "One macro (public Sub) inside a loaded GMS (VBA) module: its name plus Run, Edit (opens the VBA editor) and Delete (removes the Sub from the module).",
+   "use_for": [
+    "running a known pipeline macro by name from an outside script",
+    "listing a module's macros to check an install"
+   ],
+   "avoid": [
+    "passing arguments or getting a return value: use GMSManager.RunMacro",
+    "unattended runs: Edit opens the VBA editor and Delete changes the module's code"
+   ],
+   "confidence": "medium",
+   "how": "Application.GMSManager.Projects(\"<module>\").Macros(\"<name or index>\").",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "macro name"
+    },
+    {
+     "name": "Run",
+     "use": "execute the macro (no arguments)"
+    },
+    {
+     "name": "Edit",
+     "use": "open the VBA editor at this macro"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the Sub from the module's code"
+    }
+   ],
+   "gotchas": [
+    "Delete removes the code itself, not a shortcut: the module becomes Dirty and the Sub is gone once saved",
+    "Run takes no parameters; to pass arguments use GMSManager.RunMacro(ModuleName, MacroName, Parameters)",
+    "a macro that opens a form or MsgBox blocks the calling COM call until a person answers it",
+    "needs the VBA component of CorelDRAW installed; without it the GMS collections are empty or fail (unverified)"
+   ],
+   "example": "Dim m As GMSMacro\nFor Each m In GMSManager.Projects(\"PipelineTools\").Macros\n  Debug.Print m.Name\nNext m\nGMSManager.Projects(\"PipelineTools\").Macros(\"BuildPoster\").Run",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGGMSMacros",
+   "id": "class:IVGGMSMacros",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGMSMacros",
+   "status": "current",
+   "summary": "The macros of one GMS (VBA) module: Count, lookup by index or name, For Each, and Create to add a new empty macro.",
+   "use_for": [
+    "checking a pipeline module exposes the macro a runner expects",
+    "listing available macros for a menu or log"
+   ],
+   "avoid": [
+    "running with arguments: use GMSManager.RunMacro"
+   ],
+   "confidence": "medium",
+   "how": "GMSProject.Macros, e.g. Application.GMSManager.Projects(\"<module>\").Macros.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of macros in the module"
+    },
+    {
+     "name": "Item",
+     "use": "macro by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the macros"
+    },
+    {
+     "name": "Create",
+     "use": "add a new empty macro (Sub) with a name"
+    }
+   ],
+   "gotchas": [
+    "only parameterless public Subs are expected to appear, like the Macros dialog (unverified)",
+    "Create edits the module's source: the project becomes Dirty and is saved on exit (unverified)",
+    "a locked or password-protected module may not list its macros (unverified)"
+   ],
+   "example": "Dim p As GMSProject\nSet p = GMSManager.Projects(\"PipelineTools\")\nDebug.Print p.Macros.Count\nIf p.Macros.Count > 0 Then Debug.Print p.Macros(1).Name",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGGMSManager",
+   "id": "class:IVGGMSManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGMSManager",
+   "status": "current",
+   "summary": "Entry point to CorelDRAW's VBA macro modules (GMS files): the shared and per-user GMS folders, the collection of loaded modules, and RunMacro, which runs a macro with arguments and returns its result.",
+   "use_for": [
+    "driving a heavy VBA macro from an outside pipeline (Python COM) with arguments",
+    "installing / locating a pipeline's .gms module",
+    "running house macros (imposition, export presets) in batch"
+   ],
+   "avoid": [
+    "simple object edits that the COM object model can do directly: calling them from the pipeline avoids VBA entirely"
+   ],
+   "confidence": "high",
+   "how": "Application.GMSManager.",
+   "key_members": [
+    {
+     "name": "RunMacro",
+     "use": "run a macro in a GMS module with an array of parameters; returns a variant"
+    },
+    {
+     "name": "Projects",
+     "use": "the loaded GMS modules"
+    },
+    {
+     "name": "GMSPath",
+     "use": "the shared (all users) GMS folder"
+    },
+    {
+     "name": "UserGMSPath",
+     "use": "the GMS folder in the user profile"
+    }
+   ],
+   "gotchas": [
+    "RunMacro is usually called as RunMacro(\"<GMS project>\", \"<Module>.<Sub>\", Array(...)): the second argument includes the code module name (unverified)",
+    "Parameters is a ByRef SAFEARRAY of variants and not optional: pass an empty Array() when the macro takes none; from Python a tuple or list should marshal to it (unverified)",
+    "RunMacro blocks until the macro returns; a MsgBox, form or modal dialog inside it hangs the COM caller",
+    "a module copied into GMSPath / UserGMSPath is only picked up on the next start unless it is loaded with Projects.Load (unverified)"
+   ],
+   "example": "Dim r As Variant\nDebug.Print GMSManager.UserGMSPath\nr = GMSManager.RunMacro(\"PipelineTools\", \"Module1.BuildPoster\", Array(\"C:\\jobs\\poster.json\", 300))\nDebug.Print r",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "Parameters gotcha: the Python tuple claim is now marked unverified and notes the argument is ByRef / required"
+   }
+  },
+  {
+   "name": "IVGGMSProject",
+   "id": "class:IVGGMSProject",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGMSProject",
+   "status": "current",
+   "summary": "One loaded GMS (VBA project) module: its name, display name, file location, macros, dirty / locked / password flags, and Unload to drop it from memory.",
+   "use_for": [
+    "checking which file a pipeline module was loaded from",
+    "unloading a module before replacing its .gms file",
+    "detecting locked or password-protected modules before scripting them"
+   ],
+   "avoid": [
+    "deleting the module file: Unload only removes it from memory"
+   ],
+   "confidence": "medium",
+   "how": "GMSManager.Projects(\"<name or index>\"), or the result of Projects.Load / Projects.Create.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "module name (settable)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "name shown in the VBA editor"
+    },
+    {
+     "name": "Macros",
+     "use": "the macros in this module"
+    },
+    {
+     "name": "Unload",
+     "use": "unload the module from memory"
+    },
+    {
+     "name": "FullFileName",
+     "use": "full path of the .gms file"
+    },
+    {
+     "name": "FilePath",
+     "use": "folder of the .gms file"
+    },
+    {
+     "name": "FileName",
+     "use": "file name of the .gms"
+    },
+    {
+     "name": "Dirty",
+     "use": "module has unsaved changes"
+    },
+    {
+     "name": "Locked",
+     "use": "module is locked for viewing"
+    },
+    {
+     "name": "PasswordProtected",
+     "use": "module has a password"
+    }
+   ],
+   "gotchas": [
+    "Unload does not delete the .gms file; it is loaded again on the next start if it sits in a GMS folder (unverified)",
+    "setting Dirty = False does not save anything; it only clears the flag (unverified)",
+    "Locked / PasswordProtected modules can be run but not read or edited (unverified)"
+   ],
+   "example": "Dim p As GMSProject\nFor Each p In GMSManager.Projects\n  Debug.Print p.Name, p.FullFileName, p.Locked\nNext p",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGGMSProjects",
+   "id": "class:IVGGMSProjects",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGMSProjects",
+   "status": "current",
+   "summary": "The collection of loaded GMS (VBA) modules: Count, lookup by index or name, For Each, Load to load a .gms file, and Create to make a new empty module.",
+   "use_for": [
+    "loading a pipeline's .gms at run time before calling RunMacro",
+    "checking a module is installed",
+    "creating a scratch module for generated macros"
+   ],
+   "avoid": [
+    "running code: use GMSManager.RunMacro or GMSMacro.Run once the module is loaded"
+   ],
+   "confidence": "medium",
+   "how": "Application.GMSManager.Projects.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of loaded modules"
+    },
+    {
+     "name": "Item",
+     "use": "module by index or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the modules"
+    },
+    {
+     "name": "Load",
+     "use": "load a .gms file (CopyFile copies it into the GMS folder, ForAllUsers picks the shared folder)"
+    },
+    {
+     "name": "Create",
+     "use": "create a new empty module, optionally for all users"
+    }
+   ],
+   "gotchas": [
+    "Item by name raises an error when the module is not loaded; loop with For Each to test first (unverified)",
+    "Load with CopyFile = True copies the file into the GMS folder so it also loads on later starts (unverified)",
+    "ForAllUsers writes to the shared GMS folder under Program Files, which needs write rights there (unverified)"
+   ],
+   "example": "Dim p As GMSProject\nSet p = GMSManager.Projects.Load(\"E:\\tools\\PipelineTools.gms\", False)\nDebug.Print GMSManager.Projects.Count, p.Name",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGGrid",
+   "id": "class:IVGGrid",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGrid",
+   "status": "current",
+   "summary": "The document grid: whether it is visible, dot or line style, whether objects snap to it, and its spacing / frequency.",
+   "use_for": [
+    "setting a modular layout grid before interactive design work",
+    "a print or pixel grid for icon and signage layouts",
+    "turning the grid off before taking previews"
+   ],
+   "avoid": [
+    "guides at specific positions: create guidelines instead",
+    "positioning scripted objects: script coordinates are exact and do not need snapping"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.Grid (one grid per document).",
+   "key_members": [
+    {
+     "name": "Visible",
+     "use": "show or hide the grid"
+    },
+    {
+     "name": "Type",
+     "use": "cdrGridType: cdrGridDot (0) or cdrGridLine (1)"
+    },
+    {
+     "name": "Snap",
+     "use": "snap objects to the grid while drawing / moving"
+    },
+    {
+     "name": "SpacingX",
+     "use": "horizontal distance between grid lines"
+    },
+    {
+     "name": "SpacingY",
+     "use": "vertical distance between grid lines"
+    },
+    {
+     "name": "SetFrequency",
+     "use": "set grid lines per unit horizontally and vertically"
+    },
+    {
+     "name": "Parent",
+     "use": "the Document"
+    }
+   ],
+   "gotchas": [
+    "frequency (lines per unit) and spacing (distance between lines) are two views of the same setting; set one of them (unverified)",
+    "SetFrequency is described as 'gets or sets' but is a method that only sets",
+    "spacing is in document units (ActiveDocument.Unit) (unverified)",
+    "Snap only affects interactive drawing; coordinates passed to Create* calls are not snapped (unverified)"
+   ],
+   "example": "With ActiveDocument.Grid\n  .Type = cdrGridLine\n  .SpacingX = 5\n  .SpacingY = 5\n  .Snap = True\n  .Visible = True\nEnd With",
+   "equivalents": {
+    "PS": "Edit/Preferences/Guides, Grid & Slices",
+    "AI": "Edit/Preferences/Guides & Grid..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGGuide",
+   "id": "class:IVGGuide",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGGuide",
+   "status": "current",
+   "summary": "A guideline object (Shape.Type = cdrGuidelineShape): horizontal, vertical or slanted, with read-only points, angle and page-centre intercepts, and SetPoints / SetPointAndAngle to move or rotate it.",
+   "use_for": [
+    "bleed, margin and safe-area guides on print templates",
+    "column guides for a layout grid",
+    "slanted guides for angled typography"
+   ],
+   "avoid": [
+    "a full regular grid: use the document Grid",
+    "visible lines in the artwork: guides do not print, draw lines instead"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Guide on a guideline shape. Create guides with Layer.CreateGuide(x1, y1, x2, y2) or Layer.CreateGuideAngle(x, y, Angle), usually on ActivePage.GuidesLayer; find them with GuidesLayer.Shapes.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrGuideType: horizontal (0), vertical (1), slanted (2)"
+    },
+    {
+     "name": "SetPoints",
+     "use": "move / rotate by two points"
+    },
+    {
+     "name": "SetPointAndAngle",
+     "use": "move / rotate by a point and slope angle"
+    },
+    {
+     "name": "Point1X",
+     "use": "first point X (read-only)"
+    },
+    {
+     "name": "Point1Y",
+     "use": "first point Y (read-only)"
+    },
+    {
+     "name": "Point2X",
+     "use": "second point X (read-only)"
+    },
+    {
+     "name": "Point2Y",
+     "use": "second point Y (read-only)"
+    },
+    {
+     "name": "Angle",
+     "use": "read-only slope angle"
+    },
+    {
+     "name": "Preset",
+     "use": "read-only: guide comes from a guideline preset"
+    },
+    {
+     "name": "MakeEditable",
+     "use": "turn a preset guide into an editable one"
+    },
+    {
+     "name": "InterceptX",
+     "use": "X where it crosses the horizontal axis through the page centre"
+    },
+    {
+     "name": "InterceptY",
+     "use": "Y where it crosses the vertical axis through the page centre"
+    },
+    {
+     "name": "CenterX",
+     "use": "X of the guide point closest to the page centre"
+    },
+    {
+     "name": "CenterY",
+     "use": "Y of the guide point closest to the page centre"
+    }
+   ],
+   "gotchas": [
+    "all position properties are read-only: move a guide with SetPoints or SetPointAndAngle",
+    "GetPoints / GetPointAndAngle return through ByRef arguments: from Python (pywin32) the ByRef values come back as the call's returned tuple, not in the arguments (unverified); reading Point1X..Point2Y is simpler",
+    "preset guides must be made editable (MakeEditable) before they can be moved (unverified)",
+    "guides on the master page's guides layer show on every page; ones on a page's GuidesLayer show only there (unverified)"
+   ],
+   "example": "Dim g As Shape\nSet g = ActivePage.GuidesLayer.CreateGuide(0, 3, 100, 3)\nDebug.Print g.Guide.Type, g.Guide.Point1Y\ng.Guide.SetPointAndAngle 50, 10, 0",
+   "equivalents": {
+    "PS": "class:Guide"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "ByRef gotcha claimed the values are unreadable from Python / late-bound COM (wrong for pywin32 with type info); now hedged"
+   }
+  },
+  {
+   "name": "IVGHatchFill",
+   "id": "class:IVGHatchFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchFill",
+   "status": "current",
+   "summary": "A hatch fill: one or more sets of parallel lines (each an IVGHatchPattern with angle, spacing, shift, origin and line style) over an optional background colour, with overall scale, rotation and skew; can come from a hatch library or be built line set by line set.",
+   "use_for": [
+    "cross-hatching and section patterns for technical and architectural drawings",
+    "engraving / woodcut-style shading on illustrations",
+    "line-pattern backgrounds that stay vector and print crisply",
+    "laser-engraving and plotter line fills"
+   ],
+   "avoid": [
+    "photo or texture looks: use a bitmap pattern or texture fill",
+    "very fine spacing on large areas: huge line counts slow redraw and export (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Fill.ApplyHatchFill(LibraryName, HatchNameOrIndex, ...) for a library hatch, Shape.Fill.ApplyCustomHatchFill(Angle, Spacing, ...) for a custom one (both return this object), or Shape.Fill.Hatch on an existing hatch fill.",
+   "key_members": [
+    {
+     "name": "Patterns",
+     "use": "the line sets of the hatch"
+    },
+    {
+     "name": "AddPattern",
+     "use": "add a line set: angle, spacing, shift, origin, width, colour, style, dash length, pen width"
+    },
+    {
+     "name": "BackColor",
+     "use": "background colour (Nothing = none)"
+    },
+    {
+     "name": "SetNoBackColor",
+     "use": "make the background transparent"
+    },
+    {
+     "name": "HasBackground",
+     "use": "read-only: hatch has an opaque background"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "extra rotation of the whole hatch"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "extra skew of the whole hatch"
+    },
+    {
+     "name": "SetFillScale",
+     "use": "overall spacing scale"
+    },
+    {
+     "name": "SetLineScale",
+     "use": "overall line-thickness scale"
+    },
+    {
+     "name": "FillScaleX",
+     "use": "horizontal scale"
+    },
+    {
+     "name": "FillScaleY",
+     "use": "vertical scale"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "hatch scales / rotates with the object"
+    },
+    {
+     "name": "ScaleLinesWithShape",
+     "use": "line thickness scales with the object"
+    },
+    {
+     "name": "UseWorldCoordinates",
+     "use": "align hatches across separate objects so lines continue"
+    },
+    {
+     "name": "Select",
+     "use": "switch to another hatch from a library"
+    },
+    {
+     "name": "AddToLibrary",
+     "use": "save this hatch into a library"
+    },
+    {
+     "name": "LibraryName",
+     "use": "read-only: library it came from"
+    },
+    {
+     "name": "HatchName",
+     "use": "read-only: its name in the library"
+    },
+    {
+     "name": "IsFromLibrary",
+     "use": "read-only: unmodified library hatch"
+    }
+   ],
+   "gotchas": [
+    "BackColor = Nothing means no background; SetNoBackColor does the same without needing a Nothing assignment from Python",
+    "turn UseWorldCoordinates on when several touching objects must share one continuous hatch",
+    "spacing and widths are in document units, and how Width differs from PenWidth in AddPattern is (unverified)",
+    "IsFromLibrary turns False as soon as any setting is changed, so LibraryName / HatchName then describe only the origin"
+   ],
+   "example": "Dim s As Shape, h As HatchFill\nSet s = ActiveLayer.CreateRectangle2(0, 0, 80, 50)\nSet h = s.Fill.ApplyCustomHatchFill(45, 3)\nh.AddPattern -45, 3\nh.SetNoBackColor\nh.UseWorldCoordinates = True",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGHatchFills",
+   "id": "class:IVGHatchFills",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchFills",
+   "status": "current",
+   "summary": "The hatch fills stored in one hatch library: Count, lookup by name or index, For Each and Find; each item is returned as a general Fill object.",
+   "use_for": [
+    "listing the hatches a library offers",
+    "finding a named hatch before applying it"
+   ],
+   "avoid": [
+    "applying a hatch directly: use Shape.Fill.ApplyHatchFill(LibraryName, HatchNameOrIndex)"
+   ],
+   "confidence": "medium",
+   "how": "HatchLibrary.Fills, e.g. ActiveDocument.HatchLibraries.DefaultLibrary.Fills.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of hatches in the library"
+    },
+    {
+     "name": "Item",
+     "use": "hatch by name or index, returned as a Fill"
+    },
+    {
+     "name": "Find",
+     "use": "hatch by name; Nothing when missing"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the hatches"
+    }
+   ],
+   "gotchas": [
+    "items come back as Fill, not HatchFill: read Fill.Hatch for the hatch properties",
+    "Find returns Nothing instead of raising an error; Item with a missing name raises (unverified)",
+    "the parent HatchLibrary.Fills is described as 'returns the number of hatch fills' but returns this collection"
+   ],
+   "example": "Dim f As Fill\nFor Each f In ActiveDocument.HatchLibraries.DefaultLibrary.Fills\n  Debug.Print f.Hatch.HatchName\nNext f",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGHatchLibraries",
+   "id": "class:IVGHatchLibraries",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchLibraries",
+   "status": "current",
+   "summary": "All hatch-fill libraries available to a document: Count, lookup by name or index, Find, For Each, plus the default library and the last-selected (active) one.",
+   "use_for": [
+    "discovering library names to pass to ApplyHatchFill",
+    "picking the default hatch library in a template script"
+   ],
+   "avoid": [
+    "applying hatches: use Shape.Fill.ApplyHatchFill"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.HatchLibraries.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of hatch libraries"
+    },
+    {
+     "name": "Item",
+     "use": "library by name or index"
+    },
+    {
+     "name": "Find",
+     "use": "library by name; Nothing when missing"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the libraries"
+    },
+    {
+     "name": "DefaultLibrary",
+     "use": "the default hatch library"
+    },
+    {
+     "name": "ActiveLibrary",
+     "use": "the library last selected in the UI"
+    }
+   ],
+   "gotchas": [
+    "ActiveLibrary follows the UI's last choice, so it differs between machines and sessions; scripts should name the library",
+    "match on HatchLibrary.Name (English) rather than DisplayName (translated) for scripts that run on localised installs (unverified)"
+   ],
+   "example": "Dim lib As HatchLibrary\nFor Each lib In ActiveDocument.HatchLibraries\n  Debug.Print lib.Name, lib.Fills.Count\nNext lib\nDebug.Print ActiveDocument.HatchLibraries.DefaultLibrary.Name",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGHatchLibrary",
+   "id": "class:IVGHatchLibrary",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchLibrary",
+   "status": "current",
+   "summary": "One hatch-fill library: its English and translated names, its hatch fills, index, whether it is active in the UI, and Activate to make it the active library.",
+   "use_for": [
+    "reading the library name to pass to ApplyHatchFill",
+    "browsing a library's hatches"
+   ],
+   "avoid": [
+    "applying a hatch: use Shape.Fill.ApplyHatchFill with this library's Name"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.HatchLibraries(\"<name or index>\"), DefaultLibrary / ActiveLibrary, or HatchFill.Library.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "English library name (use in scripts)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "translated name shown in the UI"
+    },
+    {
+     "name": "Fills",
+     "use": "the hatch fills in this library"
+    },
+    {
+     "name": "Index",
+     "use": "position in the libraries collection"
+    },
+    {
+     "name": "Active",
+     "use": "read-only: library is active in the UI"
+    },
+    {
+     "name": "Activate",
+     "use": "make it the active library in the UI"
+    }
+   ],
+   "gotchas": [
+    "Fills is described as 'the number of hatch fills' but returns the HatchFills collection",
+    "Activate only changes the UI selection; it does not apply anything to the selection (unverified)"
+   ],
+   "example": "Dim lib As HatchLibrary\nSet lib = ActiveDocument.HatchLibraries.DefaultLibrary\nActiveShape.Fill.ApplyHatchFill lib.Name, 1",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGHatchPattern",
+   "id": "class:IVGHatchPattern",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchPattern",
+   "status": "current",
+   "summary": "One set of parallel lines inside a hatch fill: line angle, spacing, origin, shift (absolute or as a percent of the dash length) and the line's outline (width, colour, dash style), with SetProperties for several at once and Reset to defaults.",
+   "use_for": [
+    "tuning cross-hatch density and angle for shading",
+    "dashed or coloured hatch lines for technical legends",
+    "offsetting line sets to build brick or herringbone-style hatches"
+   ],
+   "avoid": [
+    "adding a line set: that is HatchFill.AddPattern",
+    "solid colour areas: use a uniform fill"
+   ],
+   "confidence": "medium",
+   "how": "HatchFill.Patterns(i) or the result of HatchFill.AddPattern(...), where HatchFill is Shape.Fill.Hatch.",
+   "key_members": [
+    {
+     "name": "Angle",
+     "use": "angle of the lines"
+    },
+    {
+     "name": "Spacing",
+     "use": "distance between lines"
+    },
+    {
+     "name": "Shift",
+     "use": "extra sideways shift of successive lines"
+    },
+    {
+     "name": "ShiftPercent",
+     "use": "the shift as a percent of the dash-dot length"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal start of the first line"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical start of the first line"
+    },
+    {
+     "name": "SetOrigin",
+     "use": "set both origin values"
+    },
+    {
+     "name": "Outline",
+     "use": "line properties: width, colour, dash style (read-only reference, edit through it)"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set angle, spacing, shift, origin, width, colour, style, dash length and pen width in one call"
+    },
+    {
+     "name": "Reset",
+     "use": "reset this line set to defaults"
+    },
+    {
+     "name": "Delete",
+     "use": "remove this line set"
+    },
+    {
+     "name": "Index",
+     "use": "position in the hatch"
+    }
+   ],
+   "gotchas": [
+    "Outline is a read-only reference: change the line through it (Outline.Width, Outline.Color), not by assigning a new Outline",
+    "GetOrigin returns through ByRef arguments; read OriginX / OriginY from late-bound COM or Python",
+    "Shift only shows on dashed lines: on solid lines a sideways shift does not change the look (unverified)",
+    "Spacing is in document units (unverified)"
+   ],
+   "example": "Dim p As HatchPattern\nSet p = ActiveShape.Fill.Hatch.Patterns(1)\np.Angle = 30\np.Spacing = 2.5\np.Outline.Width = 0.25\np.Outline.Color.RGBAssign 40, 40, 40",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGHatchPatterns",
+   "id": "class:IVGHatchPatterns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGHatchPatterns",
+   "status": "current",
+   "summary": "The line sets of one hatch fill: Count, indexed access, For Each, and Reset, which removes all but one line set and resets it to defaults.",
+   "use_for": [
+    "looping over every line set to restyle a hatch",
+    "clearing a hatch back to one simple line set before rebuilding it"
+   ],
+   "avoid": [
+    "adding line sets: use HatchFill.AddPattern"
+   ],
+   "confidence": "medium",
+   "how": "HatchFill.Patterns, where HatchFill is Shape.Fill.Hatch.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of line sets"
+    },
+    {
+     "name": "Item",
+     "use": "line set by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the line sets"
+    },
+    {
+     "name": "Reset",
+     "use": "keep one line set and reset it to defaults"
+    }
+   ],
+   "gotchas": [
+    "Reset is destructive: every line set but one is deleted",
+    "Item's index base is not stated in the harvest; HatchPattern.Index tells you the number a set reports (unverified)"
+   ],
+   "example": "Dim p As HatchPattern\nFor Each p In ActiveShape.Fill.Hatch.Patterns\n  p.Outline.Width = 0.2\nNext p",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGImage",
+   "id": "class:IVGImage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGImage",
+   "status": "current",
+   "summary": "Raw pixel image behind a bitmap object (or created in memory): colour mode, width / height in pixels, per-pixel colour, tile access to the raw bytes, and Blit / FillArea / FlipArea to draw into it.",
+   "use_for": [
+    "generating procedural textures, noise or pixel art and placing them as bitmaps",
+    "sampling colours from a placed photo to build a palette",
+    "compositing bitmaps in memory before placing them",
+    "building an alpha mask for a generated bitmap"
+   ],
+   "avoid": [
+    "photo editing (levels, blur, retouching): use the bitmap effects or Photoshop",
+    "per-pixel loops over large images through Pixel: read Tiles(i).PixelData in bulk"
+   ],
+   "confidence": "medium",
+   "how": "Shape.Bitmap.Image (colour) or Shape.Bitmap.ImageAlpha (transparency) of a bitmap shape; a new one from ActiveDocument.CreateImage(ImageType, Width, Height, FillColor). Place one with Layer.CreateBitmap / CreateBitmap2 / CreateBitmapRect, or write back into a bitmap with Bitmap.SetImageData.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "read-only cdrImageType colour mode (e.g. cdrRGBColorImage 4, cdrCMYKColorImage 5)"
+    },
+    {
+     "name": "Width",
+     "use": "width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "height in pixels"
+    },
+    {
+     "name": "Pixel",
+     "use": "colour of one pixel (x, y), read-only"
+    },
+    {
+     "name": "Tiles",
+     "use": "tiles of raw pixel bytes for bulk read / write"
+    },
+    {
+     "name": "Blit",
+     "use": "copy (and scale) a rectangle from another image, with optional merge mode"
+    },
+    {
+     "name": "FillArea",
+     "use": "fill a rectangle with a colour"
+    },
+    {
+     "name": "FlipArea",
+     "use": "flip a rectangle horizontally, vertically or both"
+    },
+    {
+     "name": "GetCopy",
+     "use": "a modifiable copy"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "read-only: image cannot be modified"
+    }
+   ],
+   "gotchas": [
+    "the image of an existing bitmap may be ReadOnly: edit GetCopy and write it back with Bitmap.SetImageData (unverified)",
+    "Pixel is one COM call per pixel and very slow; read and write Tiles(i).PixelData instead",
+    "coordinates are pixels; whether y = 0 is the top row is (unverified)",
+    "colour and alpha are separate images (Bitmap.Image and Bitmap.ImageAlpha)"
+   ],
+   "example": "Dim img As Image, s As Shape\nSet img = ActiveDocument.CreateImage(cdrRGBColorImage, 256, 256, CreateRGBColor(255, 255, 255))\nimg.FillArea 0, 0, 128, 128, CreateRGBColor(230, 57, 70)\nimg.FillArea 128, 128, 128, 128, CreateRGBColor(29, 53, 87)\nSet s = ActiveLayer.CreateBitmap2(0, 0, 50, 50, img)",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGImageTile",
+   "id": "class:IVGImageTile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGImageTile",
+   "status": "current",
+   "summary": "One rectangular tile of an image's raw pixel memory: its bounds in the image, size, byte layout (bytes per pixel, per line, per tile) and the pixel bytes themselves, readable and (unless read-only) writable as a byte array.",
+   "use_for": [
+    "fast bulk reading of bitmap pixels (colour sampling, histograms)",
+    "fast bulk writing of generated pixels (noise, gradients, halftone dots)"
+   ],
+   "avoid": [
+    "single-pixel lookups: Image.Pixel is simpler",
+    "images marked ReadOnly: write into a GetCopy instead"
+   ],
+   "confidence": "medium",
+   "how": "Image.Tiles(i), Tiles.First / Tiles.Last, where Image is Shape.Bitmap.Image or ActiveDocument.CreateImage(...).",
+   "key_members": [
+    {
+     "name": "PixelData",
+     "use": "the tile's raw pixel bytes (read / write as a byte array)"
+    },
+    {
+     "name": "BytesPerPixel",
+     "use": "bytes per pixel; use it with BytesPerLine to index PixelData"
+    },
+    {
+     "name": "BytesPerLine",
+     "use": "bytes per row of the tile, including any padding"
+    },
+    {
+     "name": "BytesPerTile",
+     "use": "total bytes in the tile"
+    },
+    {
+     "name": "Left",
+     "use": "left edge in the image"
+    },
+    {
+     "name": "Top",
+     "use": "top edge in the image"
+    },
+    {
+     "name": "Right",
+     "use": "right edge"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottom edge"
+    },
+    {
+     "name": "Width",
+     "use": "tile width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "tile height in pixels"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "read-only: tile cannot be modified"
+    }
+   ],
+   "gotchas": [
+    "index rows with BytesPerLine, not Width * BytesPerPixel: rows can be padded (unverified)",
+    "PixelData returns a copy: change the array and assign it back (tile.PixelData = arr) for the change to land (unverified)",
+    "the channel order inside a pixel (RGB vs BGR) is not in the harvest (unverified)",
+    "a big image is split into several tiles; loop over all of Image.Tiles rather than assuming one"
+   ],
+   "example": "Dim img As Image, t As ImageTile, b() As Byte, i As Long\nSet img = ActiveShape.Bitmap.Image.GetCopy\nFor Each t In img.Tiles\n  b = t.PixelData\n  For i = 0 To UBound(b): b(i) = 255 - b(i): Next i\n  t.PixelData = b\nNext t\nActiveShape.Bitmap.SetImageData img",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "BytesPerPixel: removed the invented \"e.g. 3 for RGB\" value"
+   }
+  },
+  {
+   "name": "IVGImageTiles",
+   "id": "class:IVGImageTiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGImageTiles",
+   "status": "current",
+   "summary": "The tiles that make up an image's pixel memory: Count, indexed access, For Each, and the first and last tile.",
+   "use_for": [
+    "walking every tile to read or write a whole bitmap's pixels in bulk"
+   ],
+   "avoid": [
+    "single-pixel reads: use Image.Pixel"
+   ],
+   "confidence": "medium",
+   "how": "Image.Tiles, where Image is Shape.Bitmap.Image or ActiveDocument.CreateImage(...).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tiles"
+    },
+    {
+     "name": "Item",
+     "use": "tile by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the tiles"
+    },
+    {
+     "name": "First",
+     "use": "first tile"
+    },
+    {
+     "name": "Last",
+     "use": "last tile"
+    }
+   ],
+   "gotchas": [
+    "the harvested member descriptions are copy-paste errors (Count says 'position of the tile's top edge'); trust the types, not the text",
+    "Item's index base is not stated; For Each avoids the question (unverified)"
+   ],
+   "example": "Dim t As ImageTile, n As Long\nFor Each t In ActiveShape.Bitmap.Image.Tiles\n  n = n + t.Width * t.Height\nNext t\nDebug.Print n",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGLayer",
+   "id": "class:IVGLayer",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGLayer",
+   "status": "current",
+   "summary": "A layer on a page (or the master page): its name, visibility, printability, editability and master status, the shapes on it, and the factory methods that create every kind of object (rectangles, ellipses, polygons, text, curves, bitmaps, guides, dimensions, symbols, connectors) and import files onto it.",
+   "use_for": [
+    "building a whole layout from code: background, artwork and text layers",
+    "non-printing layers for notes, die-lines or guides",
+    "master layers for headers, footers and watermarks on every page",
+    "importing logos and photos onto a named layer",
+    "finding shapes by name inside a template"
+   ],
+   "avoid": [
+    "moving objects between layers: that is Shape.MoveToLayer, not a layer method",
+    "grouping: a layer is not a group; use Shape groups for things that move together"
+   ],
+   "confidence": "high",
+   "how": "ActiveLayer, ActivePage.ActiveLayer, ActivePage.Layers(\"name\"), ActivePage.CreateLayer(\"name\"), Shape.Layer; special layers via Page.GuidesLayer / DesktopLayer / GridLayer.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "layer name"
+    },
+    {
+     "name": "Shapes",
+     "use": "shapes on the layer"
+    },
+    {
+     "name": "Activate",
+     "use": "make it the active layer"
+    },
+    {
+     "name": "Visible",
+     "use": "show / hide"
+    },
+    {
+     "name": "Printable",
+     "use": "include in printing"
+    },
+    {
+     "name": "Editable",
+     "use": "lock / unlock"
+    },
+    {
+     "name": "Master",
+     "use": "master layer shown on every page"
+    },
+    {
+     "name": "CreateRectangle2",
+     "use": "rectangle from x, y (bottom-left), width, height and corner radii"
+    },
+    {
+     "name": "CreateEllipse2",
+     "use": "ellipse from centre and radii"
+    },
+    {
+     "name": "CreatePolygon2",
+     "use": "polygon / star from centre, radius and sides"
+    },
+    {
+     "name": "CreateArtisticText",
+     "use": "artistic text at left / baseline with font, size, style"
+    },
+    {
+     "name": "CreateParagraphText",
+     "use": "paragraph text frame from a rectangle"
+    },
+    {
+     "name": "CreateCurve",
+     "use": "shape from a Curve object"
+    },
+    {
+     "name": "CreateBitmap2",
+     "use": "bitmap shape from an Image"
+    },
+    {
+     "name": "CreateGuide",
+     "use": "guideline through two points"
+    },
+    {
+     "name": "ImportEx",
+     "use": "import a file and get the import filter (options, then Finish)"
+    },
+    {
+     "name": "Import",
+     "use": "import a file with default options"
+    },
+    {
+     "name": "FindShape",
+     "use": "first shape by name / type / static ID"
+    },
+    {
+     "name": "FindShapes",
+     "use": "all matching shapes as a ShapeRange"
+    },
+    {
+     "name": "MoveAbove",
+     "use": "restack above another layer"
+    },
+    {
+     "name": "MoveBelow",
+     "use": "restack below another layer"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the layer and its shapes"
+    },
+    {
+     "name": "IsSpecialLayer",
+     "use": "guides, desktop or grid layer"
+    }
+   ],
+   "gotchas": [
+    "coordinates use the document unit (ActiveDocument.Unit) with the y axis pointing up from the page's bottom-left by default (unverified)",
+    "CreateRectangle takes Left, Top, Right, Bottom and corner roundness as long (a percentage, unverified), while CreateRectangle2 takes x, y, width, height and corner radii as doubles",
+    "layer loops can meet the special layers (guides, desktop, grid), e.g. over Page.AllLayers; skip them with IsSpecialLayer (which collections include them is unverified)",
+    "creating or pasting onto a layer whose Editable is False fails or lands elsewhere (unverified)",
+    "Import returns nothing; ImportEx returns the import filter so options can be set before Finish (the imported shapes are then the active selection, unverified)",
+    "Delete removes every shape on the layer with it"
+   ],
+   "example": "Dim lyr As Layer, t As Shape\nSet lyr = ActivePage.CreateLayer(\"Headline\")\nlyr.CreateRectangle2 0, 0, 210, 297, 0, 0, 0, 0\nSet t = lyr.CreateArtisticText(20, 250, \"MONSOON SALE\", , , \"Arial\", 48)\nt.Name = \"headline\"\nlyr.Printable = True",
+   "equivalents": {
+    "AI": "class:Layer"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "Printable no longer claims to control export; CreateRectangle \"percent\" marked unverified; special-layer loop gotcha hedged; ImportEx no longer claimed to return the imported shapes (it returns ICorelImportFilter)"
+   }
+  },
+  {
+   "name": "IVGLayers",
+   "id": "class:IVGLayers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGLayers",
+   "status": "current",
+   "summary": "The layers of a page (or spread): Count, lookup by index or name, Find by name, For Each, and the top and bottom layers of the stack.",
+   "use_for": [
+    "finding a template's named layer (\"Text\", \"Background\") before filling it",
+    "looping every layer to hide, lock or make non-printing",
+    "reading the stacking order"
+   ],
+   "avoid": [
+    "creating a layer: that is Page.CreateLayer",
+    "reordering: use Layer.MoveAbove / MoveBelow"
+   ],
+   "confidence": "high",
+   "how": "ActivePage.Layers (page layers) or ActivePage.AllLayers (also master layers); Spread.Layers / AllLayers on a spread.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "layer by index (base 1) or name"
+    },
+    {
+     "name": "Find",
+     "use": "layer by name"
+    },
+    {
+     "name": "Count",
+     "use": "number of layers"
+    },
+    {
+     "name": "Top",
+     "use": "topmost layer"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottommost layer"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "For Each over the layers"
+    },
+    {
+     "name": "Parent",
+     "use": "the Page"
+    }
+   ],
+   "gotchas": [
+    "Page.Layers and Page.AllLayers differ: AllLayers also lists the master layers (guides, desktop, grid and shared master layers) (unverified)",
+    "Item by a missing name raises an error; Find returns Nothing (unverified)",
+    "the index order of Item relative to the stacking order is not stated; use Top / Bottom and Layer.Above / Below (unverified)"
+   ],
+   "example": "Dim lyr As Layer\nFor Each lyr In ActivePage.AllLayers\n  If Not lyr.IsSpecialLayer Then Debug.Print lyr.Name, lyr.Visible, lyr.Printable\nNext lyr\nSet lyr = ActivePage.Layers.Find(\"Text\")",
+   "equivalents": {
+    "AI": "class:Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGLocalizableString",
+   "id": "class:IVGLocalizableString",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGLocalizableString",
+   "status": "current",
+   "summary": "A text value stored in several languages at once (used for fill and document metadata such as title, keywords, copyright): get and set the default string or the string for a given language, and list or clear the languages present.",
+   "use_for": [
+    "writing English and Hindi titles / keywords into fill or document metadata",
+    "reading metadata text in the user's language with a fallback"
+   ],
+   "avoid": [
+    "plain text in the artwork: that is a text Shape, not this object"
+   ],
+   "confidence": "medium",
+   "how": "Not created on its own: it is a property of FillMetadata (Title, Description, Keywords, Subject, Copyright, Category) and of Document metadata (LocalizableTitle, LocalizableKeywords, LocalizableNotes and similar).",
+   "key_members": [
+    {
+     "name": "DefaultLangString",
+     "use": "the default-language text (read / write)"
+    },
+    {
+     "name": "SetLangString",
+     "use": "set the text for one language"
+    },
+    {
+     "name": "GetLangString",
+     "use": "text for one language, falling back to default or any language"
+    },
+    {
+     "name": "HasLangString",
+     "use": "is there text for this language"
+    },
+    {
+     "name": "GetLanguages",
+     "use": "array of languages that have text"
+    },
+    {
+     "name": "HasDefaultLangString",
+     "use": "a default string is set"
+    },
+    {
+     "name": "HasDefaultLangStringOnly",
+     "use": "only a default string is set"
+    },
+    {
+     "name": "HasNonDefaultLangStrings",
+     "use": "there are other languages besides the default"
+    },
+    {
+     "name": "IsEmpty",
+     "use": "no text in any language"
+    },
+    {
+     "name": "Clear",
+     "use": "remove all languages"
+    }
+   ],
+   "gotchas": [
+    "the language code format CorelDRAW expects (\"en-US\", \"EN\", a three-letter code) is not in the harvest; read GetLanguages from an existing value first (unverified)",
+    "GetLangString silently falls back to the default or another language, so it never tells you a translation is missing; check HasLangString",
+    "IsEmpty's harvested description ('True if there is at least language string set') reads inverted; treat True as empty (unverified)"
+   ],
+   "example": "Dim md As FillMetadata\nSet md = CreateFillMetadata\nmd.Title.DefaultLangString = \"Festival gradient\"\nDebug.Print md.Title.IsEmpty, md.Title.HasDefaultLangStringOnly",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGMathUtils",
+   "id": "class:IVGMathUtils",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGMathUtils",
+   "status": "current",
+   "summary": "Geometry helper object: creates points, vectors, point ranges and transform matrices (identity, rotation, translation, scale, segment-to-segment), and computes interpolation, midpoints, line intersections, distances, closest points, best-fit lines and random numbers.",
+   "use_for": [
+    "placing objects along a line or between two anchors (Interpolate, MidPoint)",
+    "radial and rotated layouts with rotation matrices applied through Shape.ApplyTransformMatrix",
+    "snapping a label to the nearest point of a leader line",
+    "randomised confetti / pattern scatter with GetRandomReal"
+   ],
+   "avoid": [
+    "curve-level geometry (offsets, booleans, path lengths): use Curve and Shape methods instead"
+   ],
+   "confidence": "medium",
+   "how": "Application.Math or ActiveDocument.Math. Points come from CreatePoint(x, y); matrices are applied with Shape.ApplyTransformMatrix.",
+   "key_members": [
+    {
+     "name": "CreatePoint",
+     "use": "new Point (x, y)"
+    },
+    {
+     "name": "CreateVector",
+     "use": "new Vector (x, y)"
+    },
+    {
+     "name": "CreatePointRange",
+     "use": "empty point list (for FitLineToPoints)"
+    },
+    {
+     "name": "Interpolate",
+     "use": "point at fraction t between S and E"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint of two points"
+    },
+    {
+     "name": "IntersectLineSegments",
+     "use": "intersection of two segments; True if they cross, the point comes back through ByRef ppVal"
+    },
+    {
+     "name": "IntersectInfiniteLines",
+     "use": "intersection of two infinite lines"
+    },
+    {
+     "name": "DistanceToLineSegment",
+     "use": "distance from a point to a segment"
+    },
+    {
+     "name": "ClosestPointToLineSegment",
+     "use": "nearest point on a segment"
+    },
+    {
+     "name": "DistanceToInfiniteLine",
+     "use": "distance from a point to an infinite line"
+    },
+    {
+     "name": "ClosestPointToInfiniteLine",
+     "use": "nearest point on an infinite line"
+    },
+    {
+     "name": "FitLineToPoints",
+     "use": "best-fit line (origin + direction) through a point range"
+    },
+    {
+     "name": "GetRandomReal",
+     "use": "random double between low and high"
+    },
+    {
+     "name": "GetRandomInteger",
+     "use": "random integer between low and high"
+    },
+    {
+     "name": "CreateRotationTransformMatrix",
+     "use": "rotation matrix about an optional origin"
+    },
+    {
+     "name": "CreateScaleTransformMatrix",
+     "use": "scale matrix about an optional origin"
+    },
+    {
+     "name": "CreateTranslationTransformMatrix",
+     "use": "move matrix"
+    },
+    {
+     "name": "CreateIdentityTransformMatrix",
+     "use": "identity matrix"
+    },
+    {
+     "name": "CreateLineSegmentTransformMatrix",
+     "use": "matrix that maps one segment onto another"
+    }
+   ],
+   "gotchas": [
+    "the Intersect* methods return True / False and hand the intersection back through the ByRef ppVal argument (pass a Point variable; the method sets it); from Python (pywin32) the ByRef values come back as the call's returned tuple, not in the arguments (unverified)",
+    "DistanceToLineSegment and ClosestPointToLineSegment fall back to the nearest endpoint when the perpendicular misses the segment",
+    "rotation Angle is in degrees and origins in document units (unverified)",
+    "FitLineToPoints returns through its ByRef Origin and Direction arguments; from Python (pywin32) the ByRef values come back as the call's returned tuple, not in the arguments (unverified)"
+   ],
+   "example": "Dim m As MathUtils, s As Shape, i As Long\nSet m = ActiveDocument.Math\nSet s = ActiveShape\nFor i = 1 To 5\n  s.Duplicate.ApplyTransformMatrix m.CreateRotationTransformMatrix(i * 60, s.CenterX, s.CenterY)\nNext i",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "Intersect* gotcha said ppVal must be pre-created with CreatePoint; it is a ByRef out pointer the method sets, now described that way and hedged for Python"
+   }
+  }
+ ]
+}

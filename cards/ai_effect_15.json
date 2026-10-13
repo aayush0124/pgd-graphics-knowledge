@@ -1,0 +1,829 @@
+{
+ "cards": [
+  {
+   "name": "Bas Relief",
+   "id": "Live PSAdapter_plugin_BsRl",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Bas Relief",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that turns the artwork into a low-relief carving lit from one side: dark areas take one tone and light areas the other, so in Illustrator the result is a grey stone-like surface where shape edges read as raised ridges with a highlight on one side and a shadow on the other.",
+   "use_for": [
+    "carved-stone or plaque look for a logo or emblem on a poster",
+    "faux coin, medal or seal artwork",
+    "embossed monochrome background texture built from a pattern or illustration",
+    "quick sculpted-relief preview of a vector mark before modelling it properly"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Real raised 3D lettering with depth and colour: use Effect > 3D and Materials > Inflate or Extrude & Bevel instead.",
+    "Anything that must stay crisp and scalable (logos for print, small type): the result is a raster at the Document Raster Effects resolution, not vector.",
+    "Flat single-colour fills: the scripted harvest render (fallback settings) turned the flat red probe into a plain grey ramp, dark at the top to light at the bottom, with no carved edges (Effect_Sketch_Bas_Relief.png); it needs shapes, type or tonal detail to carve.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Bas Relief",
+    "CDR": "Effects/Texture/Relief Sculpture"
+   },
+   "look": [
+    "bas relief",
+    "carved",
+    "stone relief",
+    "embossed",
+    "sculpted",
+    "plaque",
+    "engraved",
+    "grey relief"
+   ],
+   "params": [
+    {
+     "name": "Detail",
+     "does": "how much fine edge detail is carved into the relief; high keeps small shapes and type edges",
+     "typical": "13 (harvest dialog value) for crisp carving, low values for a soft blobby relief"
+    },
+    {
+     "name": "Smoothness",
+     "does": "smooths the carved surface; higher removes small ridges and noise",
+     "typical": "1-3 for sharp carving, higher for a softened cast look"
+    },
+    {
+     "name": "Light Direction",
+     "does": "side the light comes from; decides which edges get the highlight and which the shadow",
+     "typical": "Top Left or Top for a natural carved read; Bottom (harvest value) looks inverted/debossed"
+    }
+   ],
+   "demo_settings": {
+    "Detail": 13,
+    "Smoothness": 2,
+    "Light Direction": "Top Left"
+   },
+   "enum_labels": {
+    "Light Direction": {
+     "LDBt": "Bottom",
+     "LDBL": "Bottom Left",
+     "LDLf": "Left",
+     "LDTL": "Top Left",
+     "LDTp": "Top",
+     "LDTR": "Top Right",
+     "LDRg": "Right",
+     "LDBR": "Bottom Right"
+    }
+   },
+   "pairs_with": [
+    "Effect > Texture > Grain for a rough stone surface",
+    "an extra fill set to Multiply in the Appearance panel to tint the relief",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_BsRl\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Detail / Smoothness / Light Direction live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 11.008, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_BsRl'), which opens the 'Bas Relief (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents); avoid: added what the probe render shows (flat red fill -> plain dark-top/light-bottom grey ramp, no carving)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/0acba5ec56b1.png",
+    "note": "The photo becomes a grey stone-like low relief lit from the top left, every edge a raised ridge with a highlight on one side and a shadow on the other (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Chalk & Charcoal",
+   "id": "Live PSAdapter_plugin_ChlC",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Chalk & Charcoal",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that redraws the artwork as a chalk-and-charcoal drawing: shadows become coarse black diagonal charcoal strokes, highlights white chalk, and midtones a flat mid-grey paper tone drawn with grainy chalk; in Illustrator the result is greyscale.",
+   "use_for": [
+    "hand-drawn chalkboard or sketchbook treatment of an illustration",
+    "gritty grey sketch background behind a headline",
+    "rough concept-art look for a placed photo inside a layout"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Small type and fine detail: the coarse strokes eat it.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog.",
+    "flat vector fills: on the flat vector plate at Charcoal 10 / Chalk 10 / Pressure 3 every fill, the light orange box included, came out solid black with no chalk or charcoal strokes; it needs a photo or textured art (the photo plate at 6 / 6 / 1 shows the real drawing)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Chalk & Charcoal"
+   },
+   "look": [
+    "chalk",
+    "charcoal",
+    "sketch",
+    "hand-drawn",
+    "grey paper",
+    "grainy strokes",
+    "drawing",
+    "chalkboard"
+   ],
+   "params": [
+    {
+     "name": "Charcoal Area",
+     "does": "how much of the darker tonal range is drawn as black charcoal strokes",
+     "typical": "6 (harvest) balanced; 10-15 for a heavier, darker drawing"
+    },
+    {
+     "name": "Chalk Area",
+     "does": "how much of the lighter tonal range is drawn as white chalk",
+     "typical": "6 (harvest) balanced; raise for brighter, chalkier highlights"
+    },
+    {
+     "name": "Stroke Pressure",
+     "does": "darkness and contrast of the strokes; low is faint, high is bold and graphic",
+     "typical": "1 (harvest) faint; 2-4 for visible strokes"
+    }
+   ],
+   "demo_settings": {
+    "Charcoal Area": 6,
+    "Chalk Area": 6,
+    "Stroke Pressure": 1
+   },
+   "pairs_with": [
+    "Effect > Texture > Grain for extra paper tooth",
+    "an extra fill set to Multiply to tint the grey paper",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_ChlC\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Charcoal Area / Chalk Area / Stroke Pressure live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 10.598, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_ChlC'), which opens the 'Chalk & Charcoal (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/5fc441bf4374.png",
+    "note": "At Charcoal 6 / Chalk 6 / Pressure 1 (the re-rendered dialog values) the photo is redrawn in grey: shadows in dark grainy charcoal, highlights in white chalk, midtones a flat grey paper tone (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes; demo_settings restored to the values the frame was rendered with, and the old all-black vector-plate frame is now a flat-fill card fact.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Charcoal",
+   "id": "Live PSAdapter_plugin_Chrc",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Charcoal",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that redraws the artwork as a smudged, posterized charcoal drawing: major edges are drawn boldly and midtones sketched with diagonal strokes, black charcoal on white paper in Illustrator.",
+   "use_for": [
+    "charcoal sketch treatment of a placed photo or detailed illustration",
+    "hand-drawn storyboard or concept-sketch look",
+    "rough black-and-white editorial illustration style"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Flat, light or evenly coloured shapes: with the fallback settings the scripted harvest render turned the whole red/blue probe blank white; extreme Light/Dark Balance values wash the art out or flood it black.",
+    "Logos and small type: edges become smudged and lose shape.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Charcoal",
+    "CDR": "Effects/Art Strokes/Charcoal"
+   },
+   "look": [
+    "charcoal",
+    "sketch",
+    "smudged",
+    "drawing",
+    "black and white",
+    "diagonal strokes",
+    "hand-drawn",
+    "posterized"
+   ],
+   "params": [
+    {
+     "name": "Charcoal Thickness",
+     "does": "width of the charcoal strokes",
+     "typical": "1 (harvest) fine; 2-4 for chunky, obvious strokes"
+    },
+    {
+     "name": "Detail",
+     "does": "how much image detail is kept in the drawing",
+     "typical": "3-5 for a readable sketch"
+    },
+    {
+     "name": "Light/Dark Balance",
+     "does": "shifts how much of the image becomes charcoal versus white paper",
+     "typical": "around 50 (harvest) balanced; push it to darken or lighten the whole drawing"
+    }
+   ],
+   "demo_settings": {
+    "Charcoal Thickness": 3,
+    "Detail": 5,
+    "Light/Dark Balance": 50
+   },
+   "pairs_with": [
+    "Effect > Texture > Grain or Texturizer for paper tooth",
+    "an extra fill set to Multiply to keep the original colours under the strokes",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Chrc\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Charcoal Thickness / Detail / Light/Dark Balance live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 19.897, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Chrc'), which opens the 'Charcoal (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/f094d8a5efc0.png",
+    "note": "The photo is redrawn as a smudged, posterized black-charcoal drawing on white paper: bold major edges and diagonal strokes in the midtones (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Chrome",
+   "id": "Live PSAdapter_plugin_Chrm",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Chrome",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that renders the artwork as polished liquid chrome: tones turn into swirling grey reflective highlights and shadows, colour and most shape detail are lost. Flat fills give almost nothing to reflect (the harvest probe became flat mid-grey), so it shows best on gradients, textures or placed photos.",
+   "use_for": [
+    "abstract liquid-metal background texture",
+    "chrome or mercury swirl plate behind a title",
+    "metallic texture to clip inside type or shapes with a clipping mask"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Chrome lettering or logos that must keep their shape: the effect melts outlines; use gradients, Effect > 3D and Materials > Extrude & Bevel or Inflate with a metal material from the 3D and Materials panel, or layer styles in Photoshop instead.",
+    "Flat-colour vector art: the result is dull uniform grey.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Chrome"
+   },
+   "look": [
+    "chrome",
+    "liquid metal",
+    "polished silver",
+    "metallic",
+    "mercury",
+    "reflective",
+    "molten",
+    "steel"
+   ],
+   "params": [
+    {
+     "name": "Detail",
+     "does": "how much of the original's tonal detail becomes reflective ripples",
+     "typical": "4 (harvest) medium; higher for busier reflections"
+    },
+    {
+     "name": "Smoothness",
+     "does": "smooths the metal surface; higher gives broader, glossier swirls",
+     "typical": "7 (harvest) glossy; low values look noisy"
+    }
+   ],
+   "demo_settings": {
+    "Detail": 6,
+    "Smoothness": 4
+   },
+   "pairs_with": [
+    "a gradient or texture fill underneath so there are tones to reflect",
+    "an extra fill set to Overlay or Color to tint the chrome (gold, blue steel)",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Chrm\"><Dict data=\"I dataSize 52 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Detail / Smoothness live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 10.305, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Chrm'), which opens the 'Chrome (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents); avoid: 'Effect > 3D and Materials > Materials' is not a menu item (harvest has Extrude & Bevel, Revolve, Inflate, Rotate); now Extrude & Bevel / Inflate with a metal material from the panel"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/ea1069f1090f.png",
+    "note": "The photo turns into swirling grey liquid-chrome highlights and shadows with colour and most detail lost (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), the polished chrome look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Conté Crayon",
+   "id": "Live PSAdapter_plugin_CntC",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Conté Crayon",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that imitates dense dark and pure white Conté crayon on textured paper: dark areas are drawn in the dark crayon, light areas in the light one, with a paper texture (Canvas at harvest) embossed through; in Illustrator it is black and white over grey.",
+   "use_for": [
+    "traditional crayon or life-drawing look on a placed photo or illustration",
+    "textured artisanal poster or packaging background",
+    "softening a flat vector illustration into a drawn, papery feel"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop. (Photoshop's version draws in the current foreground/background colours, so a sepia foreground gives sepia crayon; CorelDRAW's Conté Crayon has Sanguine, Bistre and Sepia options; Illustrator's draws in black and white.)",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Crisp graphics and small type: the texture and crayon grain blur edges.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Conté Crayon",
+    "CDR": "Effects/Art Strokes/Conté Crayon"
+   },
+   "look": [
+    "conte crayon",
+    "crayon",
+    "chalk drawing",
+    "textured paper",
+    "canvas texture",
+    "hand-drawn",
+    "pastel",
+    "grainy"
+   ],
+   "params": [
+    {
+     "name": "Foreground Level",
+     "does": "strength of the dark crayon; higher pushes more of the image to dark strokes",
+     "typical": "11 (harvest) strong; 8-14 typical"
+    },
+    {
+     "name": "Background Level",
+     "does": "strength of the light crayon in the highlights",
+     "typical": "7 (harvest); lower it to let more grey paper show"
+    },
+    {
+     "name": "Texture Type",
+     "does": "paper texture embossed into the result; harvested value 'TxCa' (Canvas); other texture codes were not harvested",
+     "typical": "leave at TxCa"
+    },
+    {
+     "name": "Scaling",
+     "does": "size of the paper texture",
+     "typical": "100 (harvest); 150-200 for an obvious weave"
+    },
+    {
+     "name": "Relief",
+     "does": "depth of the texture emboss",
+     "typical": "4 (harvest) subtle; 10-20 clearly textured"
+    },
+    {
+     "name": "Light Direction",
+     "does": "light angle on the texture relief",
+     "typical": "Top (harvest) or Top Left"
+    },
+    {
+     "name": "Invert Texture",
+     "does": "swaps raised and sunken parts of the texture",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "Foreground Level": 12,
+    "Background Level": 6,
+    "Scaling": 150,
+    "Relief": 12,
+    "Light Direction": "Top Left"
+   },
+   "enum_labels": {
+    "Light Direction": {
+     "LDBt": "Bottom",
+     "LDBL": "Bottom Left",
+     "LDLf": "Left",
+     "LDTL": "Top Left",
+     "LDTp": "Top",
+     "LDTR": "Top Right",
+     "LDRg": "Right",
+     "LDBR": "Bottom Right"
+    }
+   },
+   "pairs_with": [
+    "an extra fill set to Multiply to bring the colours back under the crayon",
+    "Effect > Texture > Texturizer for a different paper",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_CntC\"><Dict data=\"I dataSize 129 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but the level, texture and light settings live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 8.581, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_CntC'), which opens the 'Cont^e Crayon (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents); avoid: sepia/sanguine note rewritten: Photoshop uses the foreground/background colours, the Sanguine/Bistre/Sepia choices are CorelDRAW's (harvested CDR params)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/f8eb5492e11f.png",
+    "note": "The photo is drawn in dark and light crayon over grey with a canvas texture embossed through (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Graphic Pen",
+   "id": "Live PSAdapter_plugin_GraP",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Graphic Pen",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that redraws the artwork with fine, linear ink strokes in one direction: dark areas fill with dense black strokes and light areas stay white paper, like a pen hatching or engraving; output is black and white in Illustrator.",
+   "use_for": [
+    "pen-and-ink or engraving look on a placed photo or portrait",
+    "newsprint / editorial illustration texture",
+    "directional hatched background for a poster"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Flat dark fills: they become a noisy mass of short strokes (seen on the harvest probe); it reads best on images with tonal range.",
+    "True vector hatching for print or cutting: the strokes are pixels; draw hatching with strokes or a pattern swatch instead.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Graphic Pen",
+    "CDR": "Effects/Art Strokes/Pen & Ink"
+   },
+   "look": [
+    "ink",
+    "pen strokes",
+    "hatching",
+    "engraving",
+    "diagonal lines",
+    "sketch",
+    "newsprint",
+    "black and white"
+   ],
+   "params": [
+    {
+     "name": "Stroke Length",
+     "does": "length of each ink stroke; long strokes read as hatching, short ones as grain",
+     "typical": "4 (harvest) grainy; 10-15 for clear hatched lines"
+    },
+    {
+     "name": "Light/Dark Balance",
+     "does": "how much of the image turns to ink versus paper; extremes flood the image with ink or blank it",
+     "typical": "around 50 for balance (harvest had 100)"
+    },
+    {
+     "name": "Stroke Direction",
+     "does": "angle of the strokes",
+     "typical": "Right Diagonal (harvest) classic; Vertical or Horizontal for a print-screen feel"
+    }
+   ],
+   "demo_settings": {
+    "Stroke Length": 15,
+    "Light/Dark Balance": 50,
+    "Stroke Direction": "Right Diagonal"
+   },
+   "enum_labels": {
+    "Stroke Direction": {
+     "SDRD": "Right Diagonal",
+     "SDHz": "Horizontal",
+     "SDLD": "Left Diagonal",
+     "SDVt": "Vertical"
+    }
+   },
+   "pairs_with": [
+    "an extra fill set to Multiply to put colour under the ink",
+    "Effect > Texture > Grain for a rougher printed feel",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_GraP\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Stroke Length / Light/Dark Balance / Stroke Direction live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 9.685, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_GraP'), which opens the 'Graphic Pen (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/5c12829ef3ce.png",
+    "note": "The photo is redrawn with fine right-diagonal ink strokes, dense black in the dark areas and white paper in the light ones (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), the pen-hatching look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Halftone Pattern",
+   "id": "Live PSAdapter_plugin_HlfS",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Halftone Pattern",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that simulates a halftone screen in two tones while keeping the tonal range: the artwork becomes a black-and-white pattern of dots, concentric circles or lines whose weight follows the original lightness.",
+   "use_for": [
+    "retro comic or pop-art dot texture on an illustration",
+    "screen-print / newsprint look on a placed photo",
+    "line-screen or concentric-ring background for a poster"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop. For coloured CMYK-style dots use Effect > Pixelate > Color Halftone.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Real print screening or scalable vector dots: the pattern is raster; build vector halftones with a dot pattern or blends.",
+    "Large Size values on small objects: the pattern cells swallow the shape.",
+    "Flat single-colour fills with small cells: the scripted harvest render (fallback settings) turned the flat red probe into a flat near-black tone with no visible dots (Effect_Sketch_Halftone_Pattern.png); raise Size until the cells read at the output size.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Halftone Pattern",
+    "CDR": "Bitmaps/Mode/Black and White (1-bit)"
+   },
+   "look": [
+    "halftone",
+    "dots",
+    "comic",
+    "pop art",
+    "screen print",
+    "newsprint",
+    "line screen",
+    "concentric circles"
+   ],
+   "params": [
+    {
+     "name": "Size",
+     "does": "size of the dot / line / ring cells",
+     "typical": "1 (harvest) tiny; 6-10 for clearly visible dots"
+    },
+    {
+     "name": "Contrast",
+     "does": "how hard the pattern is; high values give pure black-and-white cells",
+     "typical": "5 (harvest) soft; 15-30 for a graphic print look"
+    },
+    {
+     "name": "Pattern Type",
+     "does": "Dot for a dot screen, Line for horizontal lines, Circle for concentric rings",
+     "typical": "Dot (harvest)"
+    }
+   ],
+   "demo_settings": {
+    "Size": 8,
+    "Contrast": 20,
+    "Pattern Type": "Dot"
+   },
+   "enum_labels": {
+    "Pattern Type": {
+     "ScrC": "Circle",
+     "ScrD": "Dot",
+     "ScrL": "Line"
+    }
+   },
+   "pairs_with": [
+    "an extra fill set to Multiply or Screen to tint the pattern",
+    "Effect > Pixelate > Color Halftone when coloured dots are wanted",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_HlfS\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Size / Contrast / Pattern Type live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 9.153, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_HlfS'), which opens the 'Halftone Pattern (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents); equivalents.CDR: Effects/Color Transform/Halftone is a CMYK colour halftone (Cyan/Magenta/Yellow/Black angles) = Color Halftone's counterpart; now Bitmaps/Mode/Black and White (1-bit), whose Halftone method gives the same two-tone dot/line screen (on a bitmap, destructively); avoid: added what the probe render shows (flat near-black, no visible dots)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/29a1c5fe9fdc.png",
+    "note": "The photo becomes a two-tone black-and-white dot screen whose dot weight follows the original lightness (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Note Paper",
+   "id": "Live PSAdapter_plugin_NtPr",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Note Paper",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that makes the artwork look built from handmade paper: it simplifies the image and combines an emboss with paper grain, so dark areas read as holes cut in a top sheet revealing the layer below; greyscale in Illustrator.",
+   "use_for": [
+    "handmade-paper or letterpress stationery look",
+    "paper-cut / layered paper craft treatment of simple shapes",
+    "subtle embossed paper background texture"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Detailed artwork and type: the simplification and grain wipe out fine detail.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Note Paper"
+   },
+   "look": [
+    "note paper",
+    "handmade paper",
+    "embossed paper",
+    "paper cut",
+    "letterpress",
+    "grainy",
+    "debossed",
+    "craft"
+   ],
+   "params": [
+    {
+     "name": "Image Balance",
+     "does": "tonal split point between the top paper and the 'holes'; moves how much of the art reads as cut out",
+     "typical": "25 (harvest) balanced"
+    },
+    {
+     "name": "Graininess",
+     "does": "amount of paper grain",
+     "typical": "10 (harvest); 12-16 clearly grainy"
+    },
+    {
+     "name": "Relief",
+     "does": "depth of the emboss on the paper edges",
+     "typical": "11 (harvest); 15-20 strong"
+    }
+   ],
+   "demo_settings": {
+    "Image Balance": 25,
+    "Graininess": 14,
+    "Relief": 18
+   },
+   "pairs_with": [
+    "an extra fill set to Multiply or Color to tint the paper",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_NtPr\"><Dict data=\"I dataSize 84 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Image Balance / Graininess / Relief live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 12.92, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_NtPr'), which opens the 'Note Paper (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/ec39754df8fe.png",
+    "note": "The photo is simplified into embossed handmade paper with grain, the darker shapes reading as cut sheets raised or sunk against the lighter paper (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), as the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Photocopy",
+   "id": "Live PSAdapter_plugin_Phtc",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Photocopy",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that simulates a photocopy: large dark areas are copied only around their edges and midtones fall away to solid black or white. The harvest probe (red rectangle, blue stroke) became a white box with a black outline, which is the typical result on flat vector art.",
+   "use_for": [
+    "xerox / zine / punk-flyer look on a placed photo",
+    "high-contrast black-and-white outline treatment of an illustration",
+    "gritty photocopied texture for a gig poster"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Solid colour areas you want to keep solid: they hollow out to outlines; use Threshold-like art (Image Trace in Black and White mode) instead.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Sketch/Photocopy"
+   },
+   "look": [
+    "photocopy",
+    "xerox",
+    "zine",
+    "punk flyer",
+    "black and white",
+    "high contrast",
+    "outlines",
+    "copier"
+   ],
+   "params": [
+    {
+     "name": "Detail",
+     "does": "how much detail survives around edges",
+     "typical": "7 (harvest); 10-15 for more retained detail"
+    },
+    {
+     "name": "Darkness",
+     "does": "how dark and heavy the copied edges and shadows are",
+     "typical": "8 (harvest); 15-25 bolder"
+    }
+   ],
+   "demo_settings": {
+    "Detail": 10,
+    "Darkness": 20
+   },
+   "pairs_with": [
+    "Effect > Texture > Grain for copier noise",
+    "an extra fill set to Multiply to put a colour behind the copy",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Phtc\"><Dict data=\"I dataSize 52 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Detail / Darkness live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 18.979, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Phtc'), which opens the 'Photocopy (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/876746f6e2e5.png",
+    "note": "Dark areas are copied only around their edges as black outlines and the midtones fall away to white (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), the photocopy look the card describes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Plaster",
+   "id": "Live PSAdapter_plugin_Plst",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Sketch/Plaster",
+   "status": "current",
+   "summary": "Photoshop Effect (Filter Gallery, Sketch) that moulds the artwork out of 3D plaster: dark areas are raised and light areas sunken, lit from one side, giving a glossy, blobby relief; in Illustrator it is greyscale (the harvest's flat red probe went solid black: on flat fills it only remaps brightness, Illustrator's own result).",
+   "use_for": [
+    "molten or moulded-plaster abstract texture",
+    "liquid / clay relief treatment of bold shapes for a poster background",
+    "sculpted-surface look on a placed photo"
+   ],
+   "avoid": [
+    "Colour is discarded: in Illustrator the Sketch effects draw in black and white (every harvest render of the red/blue probe came out greyscale). To keep colour, apply it to an extra fill in the Appearance panel and set that fill to Multiply or Overlay, or colour the result in Photoshop.",
+    "Greyed out in CMYK documents: the Photoshop (Filter Gallery) effects need an RGB document (File > Document Color Mode > RGB). From Adobe's documentation, not tested by the harvest, whose probes all ran in new RGB documents.",
+    "Logos and type: edges melt into blobs; for a clean raised look use Effect > 3D and Materials > Inflate.",
+    "Image Balance at an extreme: the whole object floods to black or white.",
+    "Scripted pipelines that need chosen values: applyEffect cannot send this effect's settings (they sit in a binary descriptor); use a saved Graphic Style, the menu command plus its dialog, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Sketch/Plaster"
+   },
+   "look": [
+    "plaster",
+    "molded",
+    "3D relief",
+    "liquid",
+    "blobby",
+    "clay",
+    "embossed",
+    "glossy"
+   ],
+   "params": [
+    {
+     "name": "Image Balance",
+     "does": "tonal split that decides which areas are raised versus sunken",
+     "typical": "around 20-30 balanced (harvest had 40)"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how rounded and melted the relief is; high values are smoother blobs",
+     "typical": "2-5 for detail, 15 (harvest) very smooth"
+    },
+    {
+     "name": "Light Direction",
+     "does": "side the light comes from on the relief",
+     "typical": "Top (harvest) or Top Left"
+    }
+   ],
+   "demo_settings": {
+    "Image Balance": 25,
+    "Smoothness": 3,
+    "Light Direction": "Top"
+   },
+   "enum_labels": {
+    "Light Direction": {
+     "LPBt": "Bottom",
+     "LPBL": "Bottom Left",
+     "LPLf": "Left",
+     "LPTL": "Top Left",
+     "LPTp": "Top",
+     "LPTR": "Top Right",
+     "LPRg": "Right",
+     "LPBr": "Bottom Right"
+    }
+   },
+   "pairs_with": [
+    "an extra fill set to Overlay or Multiply to tint the plaster",
+    "a gradient underneath so there are tones to mould",
+    "Effect > Document Raster Effects Settings (set 300 ppi for print before judging texture size)"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Plst\"><Dict data=\"I dataSize 68 I PrevDres 300 B go 1\"/></LiveEffect>') applies the live effect, but Image Balance / Smoothness / Light Direction live in the binary 'data' descriptor that Dict data cannot carry, so a scripted apply renders with whatever settings the plug-in falls back to (harvest render check: it did change the probe, mean diff 13.579, but not with chosen values). For chosen values: select the item and app.executeMenuCommand('Live PSAdapter_plugin_Plst'), which opens the 'Plaster (100%)' dialog with the last-used values and needs OK; or build the look once by hand, save it as a Graphic Style and apply it with doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to edit); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "medium: rasterizes the object at the Document Raster Effects resolution (PrevDres 300 recorded) through the Filter Gallery; slows redraw on large artwork",
+   "review": {
+    "by": "adversarial",
+    "changes": "CMYK avoid line marked as documentation, not harvest-tested (all probes ran in RGB documents)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/8e394cc68d9e.png",
+    "note": "The photo is moulded into a glossy, blobby relief: the dark areas merge into solid black raised shapes with lit rims over smooth grey sunken areas (maximum chroma 0: pure greyscale, as the Sketch colour-discard avoid line says), the plaster look the card describes.",
+    "rerender": false
+   }
+  }
+ ]
+}

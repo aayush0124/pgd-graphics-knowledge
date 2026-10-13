@@ -1,0 +1,290 @@
+{
+ "cards": [
+  {
+   "name": "Selection Tool",
+   "id": "Adobe Select Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Select Tool",
+   "status": "current",
+   "summary": "Illustrator's main black-arrow tool: selects whole objects and groups and moves, scales and rotates them through their bounding box. It works on whole objects and never edits individual anchor points or segments (that is the Direct Selection Tool), though a non-proportional scale through the bounding box does stretch the art.",
+   "how": "Click an object to select it (a click on a group selects the whole group); Shift-click adds or removes objects; drag a marquee across objects to select everything it touches. Drag a selection to move it, Shift-drag to constrain to 45-degree steps, Alt-drag to drag out a copy. Drag a bounding-box handle to scale (Shift keeps proportions, Alt scales from the centre); hover just outside a corner handle and drag to rotate. Double-click a group to enter isolation mode; press Enter (or double-click the tool) for the numeric Move dialog. Holding Ctrl while another tool is active switches to the last-used selection tool temporarily.",
+   "shortcut": "V",
+   "scriptable": "yes",
+   "script_api": "The harvest has no invoke for this tool: the live check (app.selectTool(id), then app.getSelectedToolName()) raised Illustrator error 1346458189 ('PARM'), so even activating it by script is unconfirmed. What the tool does is fully reachable in the DOM: set pageItem.selected = true or app.activeDocument.selection = [items] to select, then pageItem.translate(dx, dy), pageItem.position = [x, y], pageItem.resize(sx, sy) and pageItem.rotate(angle) to move, scale and rotate; app.executeMenuCommand(\"selectall\") / (\"deselectall\") for Select > All / Deselect.",
+   "use_for": [
+    "picking up and positioning logo parts, icons and text blocks on a poster or social post layout",
+    "scaling a finished illustration or badge proportionally to fit an artboard",
+    "dragging out quick copies of an element (Alt-drag) for repeated layout items",
+    "selecting several objects before aligning them or applying a colour"
+   ],
+   "avoid": [
+    "to move or edit individual anchor points or path segments: use the Direct Selection Tool (A)",
+    "to select one object inside a group without entering isolation mode: use the Group Selection Tool",
+    "for exact numeric placement or size: type values in the Properties / Transform panel instead of dragging",
+    "relying on app.selectTool for this id in a script: the harvest's live check of it raised a PARM error"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "moveTool",
+    "CDR": "Toolbox/Pick Tools/Pick"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'artwork is not reshaped' was wrong for non-proportional bounding-box scaling; now says it transforms whole objects without editing anchor points (earlier pass: script_api/avoid: PARM error attributed to the selectTool + getSelectedToolName check as the batch states, not to selectTool alone; scriptable partial -> yes (selecting, moving, scaling, rotating are all DOM calls, as the card's own script_api says; same standard as PS Move Tool and the AI Rotate/Scale tools))"
+   }
+  },
+  {
+   "name": "Live Paint Bucket",
+   "id": "Adobe Planar Paintbucket Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shape Builder Tool",
+   "status": "current",
+   "summary": "Colours the regions (faces) and line segments (edges) of a Live Paint group the way you would colour a drawing book: every area enclosed by crossing paths can take its own fill, even where no single closed path surrounds it. Clicking plain selected paths turns them into a Live Paint group first.",
+   "how": "Select the paths (line art, overlapping shapes) and click inside a region with the tool, or make the group first with Object > Live Paint > Make. Hover to see the face highlighted, then click to fill it with the current fill colour; drag across several faces to fill them in one stroke, double-click to flood across neighbouring faces that are not separated by a stroked edge, triple-click to fill every face that has the same fill. Hold Shift to switch to painting edges (strokes) instead of faces. The left/right arrow keys step through the swatches shown above the cursor; Alt-click samples a colour from the artwork. Double-click the tool for Live Paint Bucket Options (Paint Fills, Paint Strokes, Cursor Swatch Preview, highlight colour/width). If a fill leaks, small gaps in the drawing are the cause: set Object > Live Paint > Gap Options.",
+   "shortcut": "K",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Planar Paintbucket Tool\"). Face-by-face colouring cannot be scripted: a Live Paint group reaches the DOM only as an opaque PluginItem. A script can make the group with app.executeMenuCommand(\"Make Planet X\") (Object > Live Paint > Make) and flatten it with app.executeMenuCommand(\"Expand Planet X\") (pairing with Object > Live Paint > Expand inferred, not confirmed); to colour regions by script, build closed paths for the regions (for example group them first with app.executeMenuCommand(\"group\") (Pathfinder effects belong on a group; an ungrouped selection triggers a warning), then Effect > Pathfinder > Divide via app.executeMenuCommand(\"Live Pathfinder Divide\") then app.executeMenuCommand(\"expandStyle\")) and set each path's fillColor.",
+   "use_for": [
+    "colouring traced or hand-drawn line art (cartoons, mascots, colouring-book style illustrations)",
+    "filling the overlap regions of a logo or Venn-style graphic with different colours without cutting shapes",
+    "flat colour for a stylised icon set drawn as open strokes",
+    "quick colour variations of an illustration while the line work stays editable"
+   ],
+   "avoid": [
+    "regions that each need their own effect or transparency: effects and opacity apply to the whole Live Paint group; Expand the group or build real shapes with Shape Builder",
+    "line art with open gaps: fills leak or refuse to apply until Gap Options closes them",
+    "very complex groups (thousands of paths): Live Paint gets slow; expand or simplify first",
+    "when you only need to recolour whole objects: set the fill with the Selection Tool and the Swatches panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Fill Tools/Smart Fill",
+    "PS": "bucketTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: dropped the unsupported claim that Live Paint cannot take gradients/patterns; kept the real limit (effects and transparency apply to the whole group) (earlier pass: script_api: Expand Planet X pairing marked unconfirmed (its own card is needs_input); script_api: group step added before Live Pathfinder Divide)"
+   }
+  },
+  {
+   "name": "Live Paint Selection",
+   "id": "Adobe Planar Face Select Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shape Builder Tool",
+   "status": "current",
+   "summary": "Selects individual faces (filled regions) and edges (segments between crossings) inside a Live Paint group, so their fill or stroke can be changed, or deleted to open up the drawing. It does not select ordinary objects.",
+   "how": "Click a face or an edge of a Live Paint group to select it (selected faces show a dotted pattern); Shift-click adds or removes; drag a marquee to select several; double-click a face to select all connected faces not separated by a painted edge, triple-click selects every face/edge with the same fill or stroke in the group. With faces selected, pick a colour in the Swatches, Color or Properties panel to refill them, or press Delete to remove them (the face becomes empty). Double-click the tool for its options (Select Fills, Select Strokes, highlight colour/width).",
+   "shortcut": "Shift+L",
+   "scriptable": "no",
+   "script_api": "Activation only: app.selectTool(\"Adobe Planar Face Select Tool\"). Faces and edges of a Live Paint group are not exposed to scripting (the group is a PluginItem), so they cannot be selected or recoloured by script. Workaround: expand the group with app.executeMenuCommand(\"Expand Planet X\") (Object > Live Paint > Expand; pairing inferred, not confirmed) and work on the resulting paths (pathItem.fillColor, pathItem.remove()).",
+   "use_for": [
+    "recolouring every region of one colour in a Live Paint illustration in one go (triple-click)",
+    "removing unwanted strokes between coloured regions of traced line art",
+    "deleting a face to punch an opening into a Live Paint drawing"
+   ],
+   "avoid": [
+    "on art that is not a Live Paint group: it selects nothing; use the Selection or Direct Selection Tool",
+    "to add colour to empty regions: the Live Paint Bucket is faster",
+    "when the art will be handed off to people without Illustrator: expand the Live Paint group first"
+   ],
+   "confidence": "high",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (earlier pass: script_api: Expand Planet X pairing marked unconfirmed; how: double-click selects connected faces not separated by a painted edge (same-fill/stroke selection is the triple-click))"
+   }
+  },
+  {
+   "name": "Shape Builder",
+   "id": "Adobe Shape Builder Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shape Builder Tool",
+   "status": "current",
+   "summary": "Builds new shapes from overlapping selected shapes by dragging across their regions: regions you drag through merge into one path, Alt-dragged regions and edges are deleted, and a click on a single region splits it out as its own shape. The result is ordinary paths, not a live effect.",
+   "how": "Select the overlapping shapes, then hover with the tool to see each region highlighted. Drag from one region into others to merge them (the merged shape takes the style of the object where the drag started); Shift-drag draws a rectangular marquee that merges every region it touches. Hold Alt and click or drag to delete regions or stray edges. Click a single region to cut it out as a separate path. Double-click the tool for Shape Builder Tool Options: Gap Detection and gap length, Consider Open Filled Path as Closed, In Merge Mode Clicking Stroke Splits the Path, Pick Color From (Color Swatches / Artwork), Selection (Freeform / Straight Line) and the highlight settings.",
+   "shortcut": "Shift+M",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Shape Builder Tool\"); drags cannot be scripted. The same geometry comes from Pathfinder by script: on the selected shapes group them first with app.executeMenuCommand(\"group\") (Pathfinder effects belong on a group; an ungrouped selection triggers a warning), then run app.executeMenuCommand(\"Live Pathfinder Add\") (merge) or (\"Live Pathfinder Divide\") (split into regions), then app.executeMenuCommand(\"expandStyle\") to turn the result into paths, then remove unwanted pieces with pageItem.remove().",
+   "use_for": [
+    "constructing a logo mark or icon from circles and rectangles (merge some regions, delete others)",
+    "cutting a letterform or badge out of overlapping geometric shapes",
+    "cleaning up overlapping vector shapes into single, print-ready paths",
+    "making custom ribbon, cloud or speech-bubble shapes from simple primitives"
+   ],
+   "avoid": [
+    "when whole shapes simply need uniting or subtracting: the Pathfinder panel (Unite, Minus Front) is one click and repeatable",
+    "when the original shapes must stay editable: use Effect > Pathfinder or a compound shape instead, Shape Builder rewrites the paths",
+    "on line art that needs colouring rather than new paths: use the Live Paint Bucket",
+    "on hundreds of tiny overlapping regions: highlighting gets slow and it is easy to merge the wrong region; use Pathfinder Divide and delete pieces"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Fill Tools/Smart Fill"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none (earlier pass: script_api: group step added before Live Pathfinder Add/Divide)"
+   }
+  },
+  {
+   "name": "Adobe Corner Join Tool",
+   "id": "Adobe Corner Join Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shaper Tool",
+   "status": "current",
+   "summary": "Probably the toolbar's Join Tool: the harvest found no display name for this id, but it is the last tool in the Shaper flyout, where Illustrator keeps the Join Tool. If so, scrubbing over the place where two open path ends meet or cross joins them into one path with a corner, trimming the ends that overshoot and extending ends that fall short.",
+   "how": "Select the open paths (or just work over them), then scrub (drag a short zig-zag) across the spot where the two path ends meet, overlap or nearly meet. Overlapping ends are trimmed back to the crossing and joined as a corner; ends that stop short are extended until they meet. Works on open paths only. The harvest could not tie this id to a name or shortcut, so check the tooltip in the Shaper flyout before relying on this description.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Corner Join Tool\"). The scrub gesture cannot be scripted. Closest scripted result: select the two end points (or two open paths) and run app.executeMenuCommand(\"join\") (Object > Path > Join, which connects ends with a straight segment or merges coincident points) or app.executeMenuCommand(\"avgAndJoin\") (Average & Join; both ids are paired to their menu items by shortcut, not confirmed by execution); trimming overshoots needs the path's pathPoints rewritten with pathItem.setEntirePath().",
+   "use_for": [
+    "closing sketchy corners where hand-drawn or Pencil strokes overshoot each other",
+    "tidying traced line art so outline paths become continuous before filling",
+    "joining two open paths into one corner without hunting for the exact end points"
+   ],
+   "avoid": [
+    "when you are not sure which tool this id is: confirm the tooltip first (the harvest has no name for it)",
+    "on closed shapes: there are no open ends to join; use Shape Builder or Pathfinder",
+    "when a smooth (not cornered) connection is wanted: use Object > Path > Join and adjust the handles, or redraw with the Pen Tool"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Join Curves"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: join / avgAndJoin pairing marked unconfirmed (their own cards are needs_input)"
+   }
+  },
+  {
+   "name": "Path Eraser Tool",
+   "id": "Adobe Freehand Erase Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shaper Tool",
+   "status": "current",
+   "summary": "Removes the part of a selected path that you drag along, leaving the rest as open path pieces; it erases path length, not filled area. The harvest tied the name to this id by keyboard-shortcut dialog order only, but the tooltip string 'Path Eraser Tool' comes from the same sketching-tools plug-in as the Pencil and Smooth tools beside it.",
+   "how": "Select the path first (it only acts on selected paths), then drag along the stretch of path you want to remove; dragging across the path instead of along it gives unpredictable results. The erased part disappears and the path is split into open pieces at the ends of the drag. The harvest records no default shortcut, so pick it from the Shaper flyout.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Freehand Erase Tool\"). A script removes part of a path by editing its points instead: read pathItem.pathPoints, delete points with pathPoint.remove(), or rebuild the remaining piece with pathItem.setEntirePath(points) and set pathItem.closed = false.",
+   "use_for": [
+    "trimming a stray end off a Pencil or traced outline",
+    "opening a gap in an outline stroke (for example a broken-circle badge or a stylised line icon)",
+    "removing an unwanted segment from hand-drawn line art without switching to the Direct Selection Tool"
+   ],
+   "avoid": [
+    "to erase filled areas or cut through shapes: use the Eraser Tool or the Scissors / Knife tools",
+    "on unselected art: it does nothing until the path is selected",
+    "when the cut must be at an exact anchor point: use the Scissors Tool or delete the point with the Direct Selection Tool",
+    "trusting this card's name blindly: the harvest flags the name-to-id pairing as unconfirmed"
+   ],
+   "confidence": "medium",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (earlier pass: how: across-the-path drag softened to unpredictable (no evidence it does nothing))"
+   }
+  },
+  {
+   "name": "Pencil Tool",
+   "id": "Adobe Freehand Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shaper Tool",
+   "status": "current",
+   "summary": "Draws freehand vector paths that follow the mouse or stylus; Illustrator places the anchor points and smooths the result according to the Fidelity setting, giving a hand-drawn line made of editable Bezier curves.",
+   "how": "Drag to draw; release to end an open path, or end near the start point to close it. Hold Shift while drawing to constrain to 0/45/90 degrees and Alt to draw straight segments (when the Alt key is not set to toggle the Smooth Tool). Draw over or near a selected path to redraw that part of it, or continue from an end point to extend it. Double-click the tool for Pencil Tool Options: Fidelity (Accurate to Smooth), Fill New Pencil Strokes, Keep Selected, Option/Alt Key Toggles to Smooth Tool, Close Paths When Ends Are Within N pixels, Edit Selected Paths Within N pixels. The stroke uses the current stroke colour and weight.",
+   "shortcut": "N",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Freehand Tool\"). A freehand gesture cannot be recorded or replayed; a script draws the resulting path directly: var p = app.activeDocument.pathItems.add(); p.setEntirePath([[x1,y1],[x2,y2],...]); then set handles on p.pathPoints (leftDirection / rightDirection) for curves, plus p.stroked / p.strokeWidth / p.closed.",
+   "use_for": [
+    "sketchy hand-drawn lines, doodles and annotations on social graphics",
+    "quick organic shapes (leaves, blobs, clouds) that will be filled",
+    "tracing over a placed photo or sketch with a pen tablet",
+    "redrawing a section of an existing path by drawing over it"
+   ],
+   "avoid": [
+    "precise geometric or logo curves: use the Pen or Curvature Tool",
+    "brush-textured or calligraphic strokes: use the Paintbrush with an art/calligraphic brush, or the Blob Brush for filled shapes",
+    "mouse drawing at low Fidelity: produces many wobbly points; raise Fidelity toward Smooth or run Object > Path > Simplify",
+    "drawing near a selected path when you want a new one: it edits the selected path; deselect first or turn off Edit Selected Paths"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "freeformPenTool",
+    "CDR": "Toolbox/Curve Tools/Freehand"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Shaper Tool",
+   "id": "Adobe Shaper Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shaper Tool",
+   "status": "current",
+   "summary": "Turns rough gestures into clean geometry: a roughly drawn rectangle, circle/ellipse, triangle, polygon or line becomes a precise live shape, and scribbling over overlapping shapes merges or punches out regions, building an editable Shaper Group.",
+   "how": "Draw a rough shape in one stroke (rectangle, ellipse, triangle, hexagon-like polygon or straight line) and Illustrator replaces it with a clean live shape that keeps its corner/side widgets. To combine, overlap shapes and scribble (zig-zag) with the tool: a scribble inside one shape punches that area out, a scribble across the overlap punches out the overlap, and a scribble that runs between a shape's own area and the overlap merges the shapes (which way it goes depends on where the scribble starts; the merged area takes the colour of the start point). The shapes become a Shaper Group. Click a Shaper Group to select it, click again to reach individual faces or shapes (they stay editable and can be recoloured or moved); the arrow widget on a selected Shaper Group switches between face mode (recolour the merged result) and construction mode (move or edit the underlying shapes). Works best with a mouse drag or stylus in one continuous stroke.",
+   "shortcut": "Shift+N",
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Shaper Tool\"); gestures cannot be scripted. A script creates the clean shapes directly with app.activeDocument.pathItems.rectangle(top, left, width, height), .ellipse(...), .polygon(...), .star(...) and .roundedRectangle(...), and combines them: group them first with app.executeMenuCommand(\"group\") (Pathfinder effects belong on a group; an ungrouped selection triggers a warning), then app.executeMenuCommand(\"Live Pathfinder Add\") / (\"Live Pathfinder Subtract\") followed by app.executeMenuCommand(\"expandStyle\").",
+   "use_for": [
+    "blocking out a logo or icon layout quickly from basic shapes on a tablet or touch screen",
+    "drafting geometric illustrations where shapes must stay editable after combining",
+    "fast exploration of merged / cut-out shape ideas before committing with Shape Builder or Pathfinder"
+   ],
+   "avoid": [
+    "exact dimensions: draw with the Rectangle / Ellipse tools or type sizes in the Properties panel",
+    "free organic curves: the tool snaps gestures to basic shapes; use the Pencil or Pen Tool",
+    "final production art handed to other apps: expand the Shaper Group (Object > Expand) first",
+    "when a scribble keeps being read as a shape or vice versa: draw the combine scribble over the overlap, with clearly zig-zag strokes"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Drawing Tools/Smart Drawing"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none (earlier pass: how: scribble rules corrected (a scribble across the overlap punches it out; merging depends on where the scribble starts); script_api: group step added before Live Pathfinder Add/Subtract)"
+   }
+  },
+  {
+   "name": "Smooth Tool",
+   "id": "Adobe Freehand Smooth Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Shaper Tool",
+   "status": "current",
+   "summary": "Smooths the part of a selected path you drag along: kinks and jitter are evened out and anchor points are removed, so a shaky hand-drawn or traced line becomes a cleaner curve while keeping its overall shape.",
+   "how": "Select the path, then drag along (on or close to) the stretch you want smoothed; repeat passes smooth it further. Double-click the tool for Smooth Tool Options with a Fidelity slider (Accurate to Smooth) that sets how strongly each pass smooths. With the Pencil Tool, the Alt key can be set to toggle to the Smooth Tool temporarily. The harvest records no default shortcut.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Activation only: app.selectTool(\"Adobe Freehand Smooth Tool\"). Smoothing a stretch of path cannot be scripted, but a whole path can be simplified: select it and run app.executeMenuCommand(\"simplify menu item\") (Object > Path > Simplify..., opens its dialog/controls; id paired by its words, not confirmed by execution), or rewrite the points with pathItem.setEntirePath().",
+   "use_for": [
+    "cleaning a wobbly Pencil or mouse-drawn line in an illustration",
+    "evening out bumpy segments of an auto-traced logo or signature",
+    "reducing anchor points on hand-drawn shapes before handing art to print or a cutter"
+   ],
+   "avoid": [
+    "when every curve of a path needs reducing: Object > Path > Simplify does the whole path in one go",
+    "on precise geometric or logo corners: it rounds them off; edit points with the Direct Selection Tool instead",
+    "on unselected paths: it only acts on the current selection"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Edit Shape Tools/Smooth"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: simplify menu item pairing marked unconfirmed (its own card is needs_input)"
+   }
+  }
+ ]
+}

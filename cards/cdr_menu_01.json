@@ -1,0 +1,810 @@
+{
+ "cards": [
+  {
+   "name": "Bitmap Mask",
+   "id": "6268eac5-0cf7-4d43-a20a-aacc50b04562",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Bitmap Mask",
+   "status": "current",
+   "summary": "Shows or hides the Bitmap Mask docker (the bitmap color mask, also under Window > Dockers > Effects). In the docker you pick colors from a selected bitmap and either hide those colors (they become transparent) or show only them, with a tolerance slider deciding how close a pixel must be to match.",
+   "how": "Select a bitmap, open the docker, pick colors with the eyedropper (or edit a swatch), set the tolerance slider (0-100) for each, choose Hide selected or Show selected, then Apply. Masks can be saved and reloaded from the docker.",
+   "use_for": [
+    "dropping a flat white or solid-color background out of a product shot or scanned logo",
+    "knocking a single color out of a scanned stamp, signature or line drawing",
+    "keeping only the ink color of a scan for a one-color print"
+   ],
+   "avoid": [
+    "photos with soft, gradient or busy backgrounds: color matching leaves halos; cut out with a vector clipping path (PowerClip) or mask in PHOTO-PAINT instead",
+    "expecting the menu command to mask anything: it only toggles the docker, the masking happens on Apply"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Select/Color Range"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6268eac5-0cf7-4d43-a20a-aacc50b04562\") only toggles the docker's visibility (it is a check button bound to the docker). The harvest records no object-model call that applies a color mask.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Break Link",
+   "id": "4917fa89-5d27-40d3-85d3-a7fba5df93ed",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Break Link",
+   "status": "needs_input",
+   "summary": "Embeds an externally linked bitmap into the document, so the drawing no longer depends on the outside file. The image looks the same; only where its pixels live changes.",
+   "use_for": [
+    "packaging a .cdr for a client or print shop so no linked image goes missing",
+    "freezing a linked photo before the source file is moved, renamed or edited"
+   ],
+   "avoid": [
+    "files that must keep picking up edits to the source image: keep the link and use Update from Link",
+    "very large linked images when file size matters: embedding stores the image data inside the .cdr, so the file grows"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Smart Objects/Embed Linked",
+    "AI": "Window/Links"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4917fa89-5d27-40d3-85d3-a7fba5df93ed\"). Object-model equivalent (unverified): ActiveShape.Bitmap.ResolveLink (check ActiveShape.Bitmap.ExternallyLinked first). Disabled in every harvest state: it needs an externally linked bitmap selected.",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: dropped the unsupported 'grows by the full image size' figure"
+   }
+  },
+  {
+   "name": "Line Drawing",
+   "id": "5B036050-31B4-475c-9BB5-695071514D8A",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Centerline Trace/Line Drawing",
+   "status": "current",
+   "summary": "Centerline trace with the Line Drawing preset: converts a black-and-white sketch into unfilled curves that run down the middle of each drawn line (strokes with an outline width) rather than filled outline shapes.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK. Centerline traces produce stroked, unfilled curves, so line width is set by the outline, not by the traced shape.",
+   "use_for": [
+    "turning a scanned pencil or ink sketch into editable stroked vector lines",
+    "hand-drawn line illustrations that need uniform, re-styleable stroke widths",
+    "preparing sketches for plotters, cutters or engravers that follow single paths"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "artwork whose line weight varies on purpose (brush lettering, ink washes): centerline gives every line one width; use Outline Trace > Line Art instead",
+    "precise mechanical drawings with straight edges: Centerline Trace > Technical Illustration is tuned for those"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#Line Art"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"5B036050-31B4-475c-9BB5-695071514D8A\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceLineDrawing) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/how: 'single open curves / open paths' overclaimed (a drawn loop traces as a closed curve); now unfilled stroked curves; avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Technical Illustration",
+   "id": "1044C10B-0548-4e43-BFBE-BF9AD4EA3A08",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Centerline Trace/Technical Illustration",
+   "status": "current",
+   "summary": "Centerline trace with the Technical Illustration preset: converts a black-and-white technical drawing (thin, faint, mostly straight lines) into unfilled stroked curves along the middle of each line.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK. Centerline traces produce stroked, unfilled curves whose thickness comes from the outline width.",
+   "use_for": [
+    "vectorizing scanned blueprints, schematics and floor plans",
+    "redrawing technical diagrams so line widths can be standardised",
+    "single-path output for CNC, laser and plotter work from a line scan"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "freehand sketches: Centerline Trace > Line Drawing suits looser lines",
+    "filled shapes, logos or color art: use an Outline Trace preset"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#Technical Drawing"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1044C10B-0548-4e43-BFBE-BF9AD4EA3A08\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceTechnical) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/how: 'single open curves / open paths' overclaimed (a drawn loop traces as a closed curve); now unfilled stroked curves; avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Crop Bitmap",
+   "id": "b2f431a3-500e-4f5d-8fd5-c57a7b3d0c38",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Crop Bitmap",
+   "status": "current",
+   "summary": "Permanently discards the pixels of a bitmap that lie outside its clipping path (the boundary you shaped with the Shape tool), so the hidden area no longer travels in the file. What you see does not change; the bitmap's stored size shrinks.",
+   "use_for": [
+    "slimming a file after cropping a large photo to a small area with the Shape tool",
+    "handing over artwork where hidden image areas must not be recoverable"
+   ],
+   "avoid": [
+    "a crop you may still want to adjust: leave the shaped boundary as is (non-destructive) or use a PowerClip frame",
+    "bitmaps whose boundary was never reshaped: there is nothing hidden to discard (behavior on an unshaped bitmap is unverified)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Object/Crop Image",
+    "PS": "Image/Crop"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b2f431a3-500e-4f5d-8fd5-c57a7b3d0c38\"). Object-model equivalent (unverified): ActiveShape.Bitmap.Crop (harvested description: crops the bitmap to its clipping path); ActiveShape.Bitmap.CropEnvelopeModified tells whether there is anything to crop.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Edit Bitmap",
+   "id": "8c5788af-83c6-4ff7-bf11-ce603cf13c08",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Edit Bitmap",
+   "status": "current",
+   "summary": "Opens the selected bitmap in Corel PHOTO-PAINT for pixel editing; when you save and close it there, the edited image replaces the original in the CorelDRAW document.",
+   "how": "Select one bitmap and choose the command; PHOTO-PAINT launches with the image. Retouch, then save and close (Finish editing) to send it back. The menu item is hidden in sandboxed (Store) builds of CorelDRAW.",
+   "use_for": [
+    "retouching, cloning or healing a photo placed in a layout",
+    "pixel-level masking or painting that CorelDRAW's own bitmap tools cannot do"
+   ],
+   "avoid": [
+    "automated pipelines: it hands control to another application and waits for a person",
+    "simple tone or color fixes: Image Adjustment Lab or the Effects docker stay inside CorelDRAW"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Original",
+    "PS": "Layer/Smart Objects/Edit Contents"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"8c5788af-83c6-4ff7-bf11-ce603cf13c08\") launches PHOTO-PAINT with the bitmap; finishing the edit is manual. No object-model call does the round trip.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Image Adjustment Lab",
+   "id": "1aaa4018-7393-482f-82df-ee350929c4c3",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Image Adjustment Lab",
+   "status": "current",
+   "summary": "Opens the Image Adjustment Lab, a one-stop photo correction dialog for the selected bitmap: automatic adjustment, white / black point pickers and sliders for temperature, tint, saturation, brightness, contrast, highlights, shadows and midtones, with a histogram, snapshots and a single, split or multi-view before / after preview.",
+   "how": "Start with Auto adjust or the white-point / black-point eyedroppers, then fine-tune Temperature and Tint (color cast), Brightness / Contrast, Highlights / Shadows / Midtones and Saturation. Take snapshots to compare versions, step back with Undo / Redo, then OK.",
+   "use_for": [
+    "fixing color cast and exposure on product or event photos placed in a layout",
+    "quickly matching the warmth and contrast of several photos on one page",
+    "brightening shadows in a backlit portrait before printing"
+   ],
+   "avoid": [
+    "assuming the result is baked into the pixels, or that it stays editable, without checking: the lab is also offered as an editable effect in the Properties docker's effect list, and the harvest does not record which way this Bitmaps-menu route goes",
+    "heavy local retouching: use Edit Bitmap (PHOTO-PAINT)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Camera Raw Filter"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1aaa4018-7393-482f-82df-ee350929c4c3\") only opens the dialog. No harvested object-model call applies this lab: ActiveShape.Bitmap.ApplyBitmapEffect needs an effect command string, and none is harvested for it.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the dialog has a histogram, not a tone curve (DrawUI.xml MultiEffectDS bindings); how: 'Reset to original' is not a caption in this version (strings.xml), now Undo / Redo; avoid: the lab itself is also an editable effect in the Properties docker, so 'use the Effects docker instead' was wrong; script_api: the ApplyBitmapEffect command format is harvested, only a string for this lab is not"
+   }
+  },
+  {
+   "name": "Auto Inflate Bitmap",
+   "id": "aae3b767-8e13-4a6a-a4bc-011099dff7f2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Inflate Bitmap/Auto Inflate Bitmap",
+   "status": "current",
+   "summary": "Toggles the document preference that automatically enlarges a bitmap's canvas when a bitmap effect needs room beyond its edges (a blur, glow or distortion), so the effect is not clipped at the original border.",
+   "use_for": [
+    "blurs, glows and distortions on cut-out images that must spread past the edge",
+    "switching it off when an effect must stay exactly inside the image frame"
+   ],
+   "avoid": [
+    "toggling blind from a script: each call flips the state, so know the current state first",
+    "precise control of the margin: use Manually Inflate Bitmap"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"aae3b767-8e13-4a6a-a4bc-011099dff7f2\") flips the check button (two-way bound to the document preference AutoInflateBitmaps).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Manually Inflate Bitmap",
+   "id": "0a2d0181-85d8-4e8d-b0a5-92254e8d7dbc",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Inflate Bitmap/Manually Inflate Bitmap",
+   "status": "current",
+   "summary": "Adds empty pixels around one selected embedded bitmap (to a new pixel size or by a percentage of the original) so later bitmap effects have room to extend past the original edges.",
+   "how": "Select exactly one embedded bitmap (not externally linked, not DeviceN color), then enter the new width and height in pixels or as a percentage of the original (it can only grow), optionally keeping the aspect ratio, and OK.",
+   "use_for": [
+    "giving a cut-out product shot room for a soft glow or blur",
+    "padding an image before a distortion effect so the edges do not clip"
+   ],
+   "avoid": [
+    "externally linked bitmaps: the command is disabled; Break Link first",
+    "enlarging the picture content itself: use Resample"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Canvas Size"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"0a2d0181-85d8-4e8d-b0a5-92254e8d7dbc\") only opens the dialog. Object-model equivalent (unverified): ActiveShape.Bitmap.Inflate Width, Height (units not recorded in the harvest).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how/summary: there is no 'Inflate to' control (strings.xml); the dialog takes a new pixel width / height or a percentage, grow-only, with a keep-ratio option"
+   }
+  },
+  {
+   "name": "Black and White (1-bit)",
+   "id": "256c8079-fd98-4d81-8553-ec2c5eaf758f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/Black and White (1-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to 1-bit black and white: every pixel becomes pure black or white, with a chosen conversion method (threshold line art, dither patterns or halftone screen) deciding how gray tones are simulated.",
+   "how": "Pick the conversion method: Line Art (hard threshold), Ordered, Jarvis, Stucki or Floyd-Steinberg dithering, Halftone (screen type, angle, line size) or Cardinality-distribution. Set Intensity / Threshold and watch the preview, then OK.",
+   "use_for": [
+    "preparing scans for screen printing, rubber stamps, laser engraving or fax-style output",
+    "deliberate dither or halftone-dot looks for posters and zines",
+    "one-color line art that will be traced or colored by its fill"
+   ],
+   "avoid": [
+    "photos that need smooth tones: use Grayscale (8-bit)",
+    "anything you may need in color later: it throws away all tone information; convert a copy"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/Bitmap",
+    "AI": "Object/Rasterize..."
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"256c8079-fd98-4d81-8553-ec2c5eaf758f\") only opens the dialog. Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertToBW cdrRenderFloyd, Intensity:=100, Threshold:=128 (RenderType cdrRenderLineArt / Ordered / Jarvis / Stucki / Floyd / Halftone / Cardinality).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CMYK Color (32-bit)",
+   "id": "6ec34929-c4be-4f30-b12e-e10e5fde022f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/CMYK Color (32-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to CMYK color (4 channels, 32-bit) using the document's color management, so its colors are expressed in print inks; out-of-gamut RGB colors may look duller.",
+   "use_for": [
+    "preparing photos for offset or digital print workflows that require CMYK images",
+    "checking how a bright RGB image will dull once printed"
+   ],
+   "avoid": [
+    "screen, web or social output: stay in RGB",
+    "converting before all edits are done: some effects and RGB-only tools work better before conversion; keep an RGB original"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/CMYK Color",
+    "AI": "Edit/Edit Colors/Convert to CMYK"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6ec34929-c4be-4f30-b12e-e10e5fde022f\"). Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertTo cdrCMYKColorImage.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Duotone (8-bit)",
+   "id": "fa741d10-48f6-4a96-b2bc-9d6cc5f28f40",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/Duotone (8-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to a duotone: a grayscale image printed with one to four inks (monotone, duotone, tritone, quadtone), each ink's spread shaped by its own tone curve, giving a tinted, two-color-print look.",
+   "how": "Choose the type (Monotone, Duotone, Tritone, Quadtone), pick an ink color (often a spot color) for each, shape each ink's curve, and set overprint options; preview, then OK.",
+   "use_for": [
+    "two-color print jobs with a brand spot color plus black",
+    "warm sepia or cool cyan-black photo treatments for posters and covers",
+    "consistent tinted photo styling across a brochure"
+   ],
+   "avoid": [
+    "full-color output: duotone keeps only one tone channel",
+    "a quick tint on screen only: a lens or tint effect is faster and stays editable"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/Duotone"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"fa741d10-48f6-4a96-b2bc-9d6cc5f28f40\") only opens the dialog. Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertToDuotone Duotone (needs a Duotone settings object; ActiveShape.Bitmap.Duotone reads back the result).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Grayscale (8-bit)",
+   "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/Grayscale (8-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to 8-bit grayscale (256 gray levels), discarding all color.",
+   "use_for": [
+    "black-and-white photos for one-color print or newspapers",
+    "a neutral base before a duotone or a single-ink treatment",
+    "reducing file size of images that will print in black only"
+   ],
+   "avoid": [
+    "a black-and-white look you may want to undo: it discards color permanently; use a non-destructive effect or convert a copy",
+    "pure 1-bit art for stamps or engraving: use Black and White (1-bit)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/Grayscale",
+    "AI": "Edit/Edit Colors/Convert to Grayscale"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e27f34c1-5f80-4853-9c66-4fd464eab8f2\"). Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertTo cdrGrayscaleImage.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Lab Color (24-bit)",
+   "id": "e540b312-6881-432a-8888-7d74b65b7f33",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/Lab Color (24-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to Lab color (24-bit): lightness plus two color axes, a device-independent model with a gamut wide enough to hold both RGB and CMYK colors.",
+   "use_for": [
+    "an intermediate, device-independent master before converting for several outputs",
+    "color work that must not clip between RGB and CMYK gamuts"
+   ],
+   "avoid": [
+    "final delivery: most print and web workflows expect CMYK or RGB",
+    "routine layouts: the conversion adds a step without a visible benefit"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/Lab Color"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e540b312-6881-432a-8888-7d74b65b7f33\"). Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertTo cdrLABImage.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Paletted (8-bit)",
+   "id": "1c3e5c32-ac07-432e-9d94-330281e032c0",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/Paletted (8-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to an 8-bit paletted (indexed) image of at most 256 colors, chosen from a palette type, with optional dithering to fake the missing colors.",
+   "how": "Choose the palette (Uniform, Standard VGA, Adaptive, Optimized, Black body, Grayscale, System, web-safe or Custom), the number of colors, dithering (None, Ordered, Jarvis, Stucki, Floyd-Steinberg) and its intensity, smoothing, and optionally a color range to protect; preview, then OK.",
+   "use_for": [
+    "small GIF-style graphics or limited-palette web assets",
+    "posterized or retro low-color looks",
+    "reducing an image to a fixed set of colors before tracing or screen printing"
+   ],
+   "avoid": [
+    "photos for print: banding and dither noise; keep RGB or CMYK",
+    "smooth gradients: they band unless heavily dithered"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/Indexed Color"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"1c3e5c32-ac07-432e-9d94-330281e032c0\") only opens the dialog. Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertToPaletted cdrPaletteOptimized, cdrDitherFloyd, DitherIntensity:=100, NumColors:=256.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RGB Color (24-bit)",
+   "id": "b2394c63-9f7b-485a-82c9-3eab13bfbde2",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Mode/RGB Color (24-bit)",
+   "status": "current",
+   "summary": "Converts the selected bitmap to RGB color (24-bit), the screen color model. In the harvest it stayed disabled with the test bitmap selected, most likely because that bitmap was already RGB; it applies to grayscale, CMYK, Lab, paletted or 1-bit images.",
+   "use_for": [
+    "bringing grayscale, CMYK or paletted images back to RGB for screen, web or social output",
+    "unlocking effects and adjustments that work only on RGB images"
+   ],
+   "avoid": [
+    "expecting lost color back: converting a grayscale or 1-bit image to RGB does not restore color",
+    "print jobs that require CMYK images"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/RGB Color",
+    "AI": "Edit/Edit Colors/Convert to RGB"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b2394c63-9f7b-485a-82c9-3eab13bfbde2\"). Object-model equivalent (unverified): ActiveShape.Bitmap.ConvertTo cdrRGBColorImage. Disabled in every harvest state, most likely because the test bitmap was already RGB.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: stated the already-RGB reason as fact; now hedged like the summary (status current kept: an ordinary selection requirement, as for Combine / Group)"
+   }
+  },
+  {
+   "name": "Clipart",
+   "id": "AF57ED80-7C7B-4d27-9081-204086A21FCC",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/Clipart",
+   "status": "current",
+   "summary": "Outline trace with the Clipart preset: converts ready-made graphics of moderate detail and color count into filled vector shapes, a middle ground between the Logo and image presets.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK.",
+   "use_for": [
+    "vectorizing clip art, stickers, icons and cartoon-style illustrations",
+    "rebuilding a low-resolution graphic as scalable flat-color vector art"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "photographs: use Low Quality Image or High Quality Image",
+    "simple one- or two-color logos: Logo gives fewer, cleaner shapes"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#[Auto-Color]"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"AF57ED80-7C7B-4d27-9081-204086A21FCC\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceClipart) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Detailed Logo",
+   "id": "21129FEE-F5C2-41bc-9B04-CB5D39CB3974",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/Detailed Logo",
+   "status": "current",
+   "summary": "Outline trace with the Detailed Logo preset: converts a logo with fine detail and many colors into filled vector shapes, keeping small features that the plain Logo preset would merge away.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK.",
+   "use_for": [
+    "recreating a client's multi-color or badge-style logo from a bitmap",
+    "emblems, crests and labels with fine lines and small text"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "simple flat logos: Logo gives fewer nodes and cleaner shapes",
+    "logos with small text you can identify: retype it in the right font instead of relying on traced letterforms"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#16 Colors"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"21129FEE-F5C2-41bc-9B04-CB5D39CB3974\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceDetailedLogo) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "High Quality Image",
+   "id": "3298C91B-AE6F-4349-8D7B-F4E8E445131F",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/High Quality Image",
+   "status": "current",
+   "summary": "Outline trace with the High Quality Image preset: converts a detailed, high-quality photo into a large number of small filled vector shapes that keep fine detail, for a painterly but close-to-photo vector result.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK. Expect many colors and a heavy node count.",
+   "use_for": [
+    "vector poster art or large-format graphics from a sharp photo",
+    "stylized photo-realistic vector illustrations"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "files that must stay light or editable: the result can hold thousands of objects; try Low Quality Image or reduce colors",
+    "jobs where the photo can simply stay a bitmap"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#High Fidelity Photo"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"3298C91B-AE6F-4349-8D7B-F4E8E445131F\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceHighQualityImage) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Line Art",
+   "id": "465261A5-B978-4d76-A63C-6969CE51CCCA",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/Line Art",
+   "status": "current",
+   "summary": "Outline trace with the Line Art preset: converts black-and-white sketches and illustrations into filled black shapes that follow the outer edges of each line, so varying line thickness is kept.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK.",
+   "use_for": [
+    "inked comics, hand lettering and brush-pen drawings where line weight matters",
+    "scanned black-and-white illustrations for one-color print or vinyl cutting"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "output that needs single stroke paths (plotters, re-styleable widths): use Centerline Trace > Line Drawing",
+    "colored artwork: use Logo, Clipart or an image preset"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#Sketched Art"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"465261A5-B978-4d76-A63C-6969CE51CCCA\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceLineArt) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Logo",
+   "id": "F7B939CD-4816-4f93-860F-1439AB3B1C0C",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/Logo",
+   "status": "current",
+   "summary": "Outline trace with the Logo preset: converts a simple logo with little detail and few colors into a small number of clean, flat-color filled shapes.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK.",
+   "use_for": [
+    "recreating a simple logo from a low-resolution JPEG or screenshot",
+    "flat-color marks, icons and signage graphics"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "logos with fine detail or many colors: use Detailed Logo",
+    "logos with lettering in a known font: set the text as type rather than trusting traced letters"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#6 Colors"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"F7B939CD-4816-4f93-860F-1439AB3B1C0C\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceLogo) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Low Quality Image",
+   "id": "55A3AE58-B12A-4a2a-9FA7-655528DBEAF3",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Outline Trace/Low Quality Image",
+   "status": "current",
+   "summary": "Outline trace with the Low Quality Image preset: converts a photo where fine detail does not matter (or is not there) into fewer, larger filled shapes, giving a simplified, posterized vector picture.",
+   "how": "Opens PowerTRACE with this preset loaded. Choices that matter: Detail, Smoothing and Corner smoothness sliders; Remove background (detect automatically or pick a color, optionally from the entire image); Merge adjacent objects of the same color, Remove object overlap, Group objects by color; Delete original image; on the Colors tab the color mode and number of colors. Compare before/after in the preview and read the curve / node / color counts before OK.",
+   "use_for": [
+    "stylized poster or T-shirt art from an everyday photo",
+    "vectorizing low-resolution or soft photos where detail cannot be recovered anyway"
+   ],
+   "avoid": [
+    "a low-resolution or heavily compressed source: clean it first (Resample up, Remove JPEG Artifacts) or the trace inherits the noise",
+    "losing or doubling the original: Delete original image removes the bitmap (leave it off if you still need it); with it off the traced group lands on top of the bitmap, so hide or move one before judging the trace",
+    "photos whose fine detail must survive: use High Quality Image",
+    "flat graphics and logos: use Logo or Clipart"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "app.tracingPresetsList#Low Fidelity Photo"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"55A3AE58-B12A-4a2a-9FA7-655528DBEAF3\") only opens the PowerTRACE dialog. Object-model route (unverified): Set ts = ActiveShape.Bitmap.Trace(cdrTraceLowQualityImage) then adjust ts.Smoothing / ts.DetailLevelPercent / ts.SetColorCount and call ts.Finish (returns the traced ShapeRange).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the 'keeping the original by accident' line contradicted its own advice (switch off Delete original to keep the bitmap); now covers both losing it and the trace sitting on top of it"
+   }
+  },
+  {
+   "name": "Quick Trace",
+   "id": "d207991b-8963-4bdf-84a1-ed936d466d20",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Quick Trace",
+   "status": "current",
+   "summary": "Traces the selected bitmap in one step, without opening PowerTRACE, using the method chosen under Quick Trace method in Options (PowerTRACE settings); the vector result is placed as a group over the bitmap.",
+   "use_for": [
+    "a fast first-pass vectorization to judge whether a bitmap traces well",
+    "batch or scripted tracing where the default settings are good enough"
+   ],
+   "avoid": [
+    "results that need tuning (colors, detail, background removal): use an Outline Trace or Centerline Trace preset to open the dialog",
+    "photos and complex art: unpredictable node counts without a preview"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Make Image Tracing"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"d207991b-8963-4bdf-84a1-ed936d466d20\"). Object-model alternative with an explicit preset (unverified): ActiveShape.Bitmap.Trace(cdrTraceClipart).Finish; cdrTraceType has no quick-trace value, so name the preset you want.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'by default the last used' was unsupported, now the Options 'Quick Trace method' setting (strings.xml / VGPowerTraceSettingsDS); script_api: cdrTraceType has no quick value"
+   }
+  },
+  {
+   "name": "Remove JPEG Artifacts",
+   "id": "18ae168e-2d47-4321-804b-b260036861f1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Remove JPEG Artifacts",
+   "status": "current",
+   "summary": "Uses CorelDRAW's machine-learning model to clean JPEG compression damage (blocky tiles, ringing around edges, smeared color) from the selected bitmap, applied straight from the menu (the harvest records no dialog for it).",
+   "use_for": [
+    "rescuing a client logo or photo that arrived as a heavily compressed JPEG",
+    "cleaning an image before tracing it so the trace does not follow block noise",
+    "upgrading web-grabbed images before enlarging them for print"
+   ],
+   "avoid": [
+    "clean, high-quality images: nothing to fix and fine texture may soften",
+    "general sensor noise rather than compression blocks: use a noise-reduction effect"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Noise/Reduce Noise"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"18ae168e-2d47-4321-804b-b260036861f1\"). No object-model equivalent is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the '8x8' figure (not in the batch); the no-dialog claim now rests on the harvest's missing opens_dialog flag"
+   }
+  },
+  {
+   "name": "Resample",
+   "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Resample",
+   "status": "current",
+   "summary": "Changes the pixel dimensions and / or resolution of the selected bitmap, adding or removing pixels. When enlarging, machine-learning upsampling modes rebuild detail instead of just blurring it.",
+   "how": "Set width / height (in units or %) and horizontal / vertical resolution; keep Maintain aspect ratio and Identical values on for proportional changes. Pick the mode: Nearest neighbor (hard pixels), Bicubic (smooth), or, when upscaling, Illustration (flat art) or Photorealistic (photos), with a noise-reduction slider. Compare original and new size, then OK.",
+   "use_for": [
+    "enlarging a small logo or photo for print with ML upsampling",
+    "downsampling oversized photos to the output resolution to shrink the file",
+    "setting a consistent ppi on all images in a layout"
+   ],
+   "avoid": [
+    "simply showing an image smaller on the page: scaling the object keeps the pixels; resample only to change file size or resolution",
+    "scripted ML upscales: the object-model Resample has no Illustration / Photorealistic switch"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Image Size"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"f85cb8c1-b2a5-4f20-becd-be4918557275\") only opens the dialog. Object-model equivalent (unverified): ActiveShape.Bitmap.Resample Width, Height, AntiAlias:=True, ResolutionX, ResolutionY.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Straighten Image",
+   "id": "632996de-c938-44ad-8480-79dfbc70d584",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Straighten Image",
+   "status": "current",
+   "summary": "Opens the Straighten Image dialog to level a tilted photo: align a straightening bar with something that should be horizontal or vertical, fine-tune the rotation, correct perspective and lens distortion, then optionally crop away the slanted edges.",
+   "how": "Drag the straightening bar along a line in the photo (horizon, building edge) or type the angle; fine-tune rotation, horizontal / vertical perspective and distortion while watching the grid; tick Crop to remove the slanted edges (and resample to keep the size if offered), then OK.",
+   "use_for": [
+    "leveling horizons in travel and real-estate photos",
+    "squaring up photographed documents, signs and products shot at a slight angle",
+    "fixing converging verticals in architecture shots before a layout"
+   ],
+   "avoid": [
+    "scans of several photos on one bed: crop and straighten them one by one first",
+    "large rotations: it is built for small tilt corrections; rotate the object for big turns"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Lens Correction"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"632996de-c938-44ad-8480-79dfbc70d584\") only opens the dialog. No object-model equivalent is known; rotating the shape (ActiveShape.Rotate) only turns the frame, it does not crop or correct perspective.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Update from Link",
+   "id": "118cd7c2-e3f0-4b56-bc6e-248233303f50",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Bitmaps/Update from Link",
+   "status": "needs_input",
+   "summary": "Reloads an externally linked bitmap from its source file, so edits saved to that file show up in the drawing.",
+   "use_for": [
+    "refreshing a linked photo after it was retouched in PHOTO-PAINT or Photoshop",
+    "keeping a layout in sync with product shots that are still being updated"
+   ],
+   "avoid": [
+    "embedded bitmaps: there is no link to update (the command is disabled)",
+    "a moved or renamed source file: the update reads the stored path, so put the file back or point the link at the new file first (scripted: ActiveShape.Bitmap.LinkFileName is writable in the typelib, unverified); the live 2024 menus have no Links and Bookmarks docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Smart Objects/Update Modified Content",
+    "AI": "Update Link"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"118cd7c2-e3f0-4b56-bc6e-248233303f50\"). Object-model equivalent (unverified): ActiveShape.Bitmap.UpdateLink. Disabled in every harvest state: it needs an externally linked bitmap selected.",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.AI: Window/Links -> Update Link (the harvested Links-panel command that does the same job); avoid: the Links and Bookmarks docker is not in the live 2024 menus (only Links and Rollovers, for hyperlinks)"
+   }
+  }
+ ]
+}

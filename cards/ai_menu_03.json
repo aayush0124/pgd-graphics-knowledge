@@ -1,0 +1,868 @@
+{
+ "cards": [
+  {
+   "name": "Browse in Bridge...",
+   "id": "Adobe Bridge Browse",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Browse in Bridge...",
+   "status": "current",
+   "summary": "Launches Adobe Bridge (or brings it to the front if it is already running) so you can browse folders visually: thumbnails and previews of .ai, .pdf, .psd and image files, ratings, labels, keywords and batch renaming, then open or place files back in Illustrator. Bridge is a separate Creative Cloud app and has to be installed; the harvest recorded this item disabled when no document was open.",
+   "use_for": [
+    "picking the right logo or photo out of a large asset folder by thumbnail before placing it",
+    "keywording, rating or batch-renaming a client's artwork library",
+    "checking what dozens of .ai / .eps files look like without opening each one"
+   ],
+   "avoid": [
+    "automated pipelines: it only hands control to another app; open or place files by path with app.open / placedItems instead",
+    "machines without Bridge installed: the command has nothing to launch"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Browse in Bridge"
+   },
+   "shortcut": "Alt+Ctrl+O",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Adobe Bridge Browse\") (id paired by its shortcut, not confirmed by execution). It only launches Bridge; a script gains nothing from it.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Close",
+   "id": "close",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Close",
+   "status": "current",
+   "summary": "Closes the active document window. If it has unsaved changes Illustrator asks whether to save first.",
+   "use_for": [
+    "finishing a file after the final save or export",
+    "freeing memory between heavy documents in a long session"
+   ],
+   "avoid": [
+    "scripts: the menu command can raise the save prompt and stall the run; call close with an explicit SaveOptions value instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Close",
+    "CDR": "File/Close"
+   },
+   "shortcut": "Ctrl+W",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"close\") (id paired by its shortcut, not confirmed by execution); object model: app.activeDocument.close(SaveOptions.SAVECHANGES | DONOTSAVECHANGES | PROMPTTOSAVECHANGES) (harvested Document.close).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Close All",
+   "id": "closeAll",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Close All",
+   "status": "current",
+   "summary": "Closes every open document in one go, asking about each one that has unsaved changes.",
+   "use_for": [
+    "clearing the workspace at the end of a job or before a batch run",
+    "getting back to a clean state after opening many reference files"
+   ],
+   "avoid": [
+    "scripts: each unsaved document raises its own prompt; loop over app.documents and close each with an explicit SaveOptions value"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Close All",
+    "CDR": "File/Close All"
+   },
+   "shortcut": "Alt+Ctrl+W",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"closeAll\") (id paired by its shortcut, not confirmed by execution); object model (unverified): while (app.documents.length) app.documents[0].close(SaveOptions.DONOTSAVECHANGES);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CMYK Color",
+   "id": "doc-color-cmyk",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Document Color Mode/CMYK Color",
+   "status": "current",
+   "summary": "Switches the document color mode to CMYK: the colors in the artwork and swatches are converted to CMYK through the current color settings, and new colors are defined in CMYK. Saturated RGB colors outside the print gamut come out duller. Choosing it on a document that is already CMYK changes nothing.",
+   "use_for": [
+    "preparing artwork built in RGB for offset or digital print",
+    "picking colors inside the realistic print gamut for packaging, flyers or business cards",
+    "matching a printer's request for a CMYK file"
+   ],
+   "avoid": [
+    "switching back and forth: each conversion shifts colors and is not reversible (a 100 K black that went through RGB comes back as a four-color black); pick the mode once, ideally in File > New",
+    "screen-only work (web, social, video): stay in RGB, and the Effect Gallery effects are greyed out in CMYK documents",
+    "brand colors with specified CMYK builds: re-enter the official values instead of trusting the automatic conversion"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/CMYK Color"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"doc-color-cmyk\") (id paired by weak word alignment in the keyboard-shortcuts dialog, not confirmed by execution). Document.documentColorSpace is read-only (harvested), so this menu id is the only scripted switch; a new document can be created in CMYK with app.documents.add(DocumentColorSpace.CMYK, w, h).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RGB Color",
+   "id": "doc-color-rgb",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Document Color Mode/RGB Color",
+   "status": "current",
+   "summary": "Switches the document color mode to RGB: CMYK colors in the artwork and swatches are converted to RGB values and new colors are defined in RGB, which opens up the brighter screen gamut and the Effect Gallery effects that are greyed out in CMYK documents.",
+   "use_for": [
+    "repurposing a print layout for web banners, social posts or video graphics",
+    "unlocking Effect Gallery (Artistic, Sketch, Texture...) effects on artwork that started as a print file",
+    "screen work where neon or highly saturated colors must survive"
+   ],
+   "avoid": [
+    "files that are still going to press: converting to RGB and back loses the original CMYK builds (pure K text and lines become four-color black)",
+    "keeping one master for print and screen: duplicate the file (Save a Copy) and convert the copy"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Image/Mode/RGB Color"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"doc-color-rgb\") (id paired by weak word alignment in the keyboard-shortcuts dialog, not confirmed by execution). Document.documentColorSpace is read-only (harvested); for a new file use app.documents.add(DocumentColorSpace.RGB, w, h).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Document Setup...",
+   "id": "document",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Document Setup...",
+   "status": "current",
+   "summary": "Opens the Document Setup dialog for settings that belong to this file: units, bleed on each side, outline-mode and substituted-glyph display, transparency grid and simulated paper color, flattener preset and white-overprint handling, and type options such as language, quote style and superscript / subscript / small caps sizing. It does not set the page size; its Edit Artboards button switches to the Artboard tool for that.",
+   "how": "General: Units; Bleed Top / Bottom / Left / Right (the link icon makes all four the same); Edit Artboards; Show Images In Outline Mode; Highlight Substituted Glyphs (Highlight Substituted Fonts is in Preferences > Type in this version, not here); Transparency and Overprint Options: Grid Size, Grid Colors, Simulate Colored Paper, flattener Preset (Custom...), Discard White Overprint in Output; an Increase Canvas button where the large-canvas feature is enabled. Type: Language, Double Quotes and Single Quotes with Use Typographer's Quotes, Superscript and Subscript size and position, Small Caps size, and Export (Preserve Text Editability or Preserve Text Appearance) for legacy text.",
+   "use_for": [
+    "adding 3 mm bleed to a flyer or business card after it was started without it",
+    "switching units to mm or px for a print or screen job",
+    "previewing artwork on colored stock with Simulate colored paper",
+    "setting the hyphenation language and curly quotes for body copy"
+   ],
+   "avoid": [
+    "resizing the page: there is no width / height here; use Edit Artboards, the Artboard tool or the Artboards panel",
+    "changing color mode: that is File > Document Color Mode"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Layout/Document Options"
+   },
+   "shortcut": "Alt+Ctrl+P",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"document\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model (unverified): artboard size via doc.artboards[i].artboardRect; bleed only at creation through a DocumentPreset (documentBleedLink and the bleed offset) passed to app.documents.addDocument. doc.convertToLargeCanvas() (harvested Document method) converts the document to a large canvas, presumably what Increase Canvas does (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how/summary: 'highlight substituted fonts' is not in this dialog in 30.2 (IllustratorUI.aip puts Highlight Substituted Fonts in Preferences > Type; Document Setup has Highlight Substituted Glyphs); Small Caps has a size only, not a position; added the flattener Preset and the Increase Canvas button from the dialog resource; script_api: added the harvested doc.convertToLargeCanvas()"
+   }
+  },
+  {
+   "name": "Exit",
+   "id": "quit",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Exit",
+   "status": "current",
+   "summary": "Quits Illustrator, asking to save each open document that has unsaved changes. Enabled with or without a document.",
+   "use_for": [
+    "ending an unattended batch session to release memory",
+    "restarting a slow or misbehaving session after saving work"
+   ],
+   "avoid": [
+    "scripts with unsaved documents open: the save prompts stall the run; close them with SaveOptions.DONOTSAVECHANGES first",
+    "while another script or panel is still queued against the same Illustrator instance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Exit",
+    "CDR": "File/Exit"
+   },
+   "shortcut": "Ctrl+Q",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"quit\") (id paired by its shortcut, not confirmed by execution); object model: app.quit() (harvested Application.quit).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Export Selection...",
+   "id": "path:File/Export Selection...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Export Selection...",
+   "status": "needs_input",
+   "summary": "Exports only the selected objects as image files: the selection is added to the Asset Export panel and the Export for Screens dialog opens on its Assets tab, where you set formats and scales. Needs a selection; the harvest recorded it disabled with no document open.",
+   "how": "In the Export for Screens dialog that follows: tick the assets to export, pick the folder, add one row per scale (0.5x to 4x, or a fixed width / height / resolution) with a suffix and a format (PNG, JPG, SVG, PDF and others), optionally a file-name prefix and per-scale subfolders.",
+   "use_for": [
+    "pulling icons or a logo off a busy sheet as separate PNG / SVG files",
+    "exporting one illustration from a layout for a web page or social post",
+    "1x / 2x / 3x app or web assets from selected artwork"
+   ],
+   "avoid": [
+    "exporting whole pages: use Export for Screens on the Artboards tab or Export As",
+    "objects you export again and again: keep them in the Asset Export panel rather than reselecting each time"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "File/Export Docker/Add Selection",
+    "PS": "Layer/Export As"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 351. Object-model route (unverified): var a = doc.assets.addFromSelection(); var it = new ExportForScreensItemToExport(); it.artboards = ''; it.assets = [a.assetID]; doc.exportForScreens(Folder(path), ExportForScreensType.SE_PNG24, new ExportForScreensOptionsPNG24(), it, prefix). One file in one call: doc.exportSelectionAsPNG(File(path), new ExportOptionsPNG24()) or doc.exportSelectionAsAi(File(path)) (harvested Document methods; behaviour unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: added PS Layer/Export As (exports the selected layers as images at chosen scales and formats, the same job); script_api: added the harvested Document.exportSelectionAsPNG / exportSelectionAsAi"
+   }
+  },
+  {
+   "name": "Export As...",
+   "id": "export",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Export/Export As...",
+   "status": "current",
+   "summary": "Exports the document to another file format in a save dialog, then a format-specific options dialog: PNG, JPEG, SVG, Photoshop PSD, TIFF, AutoCAD DWG / DXF and other formats (the object model's ExportType also lists WebP and AVIF). With Use Artboards each artboard (all or a range) becomes its own file clipped to the artboard; without it the image covers all artwork. PDF is not here; it is Save As / Save a Copy.",
+   "how": "Pick the format and name; tick Use Artboards and choose All or a Range to export per artboard. Follow-up options by format: PNG resolution (72 / 150 / 300 ppi or other), anti-aliasing (art or type optimized), background (transparent, white, black); JPEG color model, quality and resolution; SVG styling, fonts, image embed or link, object IDs, decimal places, minify, responsive; PSD color model, resolution and Write Layers.",
+   "use_for": [
+    "a transparent PNG of a logo for a website or slide deck",
+    "a layered PSD for a retoucher or motion designer",
+    "a DWG / DXF of a plan or cut path for CAD or a laser cutter",
+    "a single-format export of each artboard of a multi-page layout"
+   ],
+   "avoid": [
+    "print-ready PDF: use Save As or Save a Copy with an Adobe PDF / PDF/X preset",
+    "many sizes or formats at once: Export for Screens does that in one pass",
+    "exporting without Use Artboards when stray objects sit off the artboard: they enlarge the exported image"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Export/Export As",
+    "CDR": "File/Export"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"export\") only opens the dialog (id paired by words in the keyboard-shortcuts dialog, not confirmed by execution). Object model: doc.exportFile(File(path), ExportType.PNG24, new ExportOptionsPNG24()) (harvested Document.exportFile; ExportType JPEG / PHOTOSHOP / SVG / PNG8 / PNG24 / GIF / AUTOCAD / TIFF / WOSVG / WEBP / AVIF); per-artboard clipping via the options' artBoardClipping and doc.artboards.setActiveArtboardIndex(i) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Export for Screens...",
+   "id": "exportForScreens",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Export/Export for Screens...",
+   "status": "current",
+   "summary": "Batch-exports artboards and / or the assets collected in the Asset Export panel in one pass, each at several scales and formats (PNG, JPG, SVG, PDF and the WebP / AVIF types the object model lists), into a chosen folder with suffixes, an optional prefix and sub-folders by scale or by format.",
+   "how": "Artboards tab: All, a Range, or Full Document, with Include Bleed and Include Artboard Fill. Assets tab: tick assets from the Asset Export panel. Export to a folder (Open Location after Export, Create Sub-folders by Scale or by Format). Formats: one row per output with scale (0.5x-4x, width, height or resolution), suffix and format; iOS / Android presets add the usual scale sets. Advanced settings per format sit behind the gear icon.",
+   "use_for": [
+    "app and web icon sets at 1x / 2x / 3x in PNG and SVG",
+    "exporting every artboard of a social carousel as numbered JPGs or PNGs",
+    "delivering a logo pack in PNG, SVG and PDF in one go"
+   ],
+   "avoid": [
+    "PSD or DWG / DXF output (not in its format list, and not in the scripting ExportForScreensType enum): use Export As",
+    "print-ready PDF with marks, bleed settings and PDF/X: use Save As / Save a Copy > Adobe PDF"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Export/Export As",
+    "CDR": "File/Export Docker/Add All Pages"
+   },
+   "shortcut": "Alt+Ctrl+E",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"exportForScreens\") only opens the dialog (confirmed by the 2026-10-04 audit). Object model: doc.exportForScreens(Folder(path), ExportForScreensType.SE_PNG24, new ExportForScreensOptionsPNG24(), itemToExport, prefix) with itemToExport = new ExportForScreensItemToExport() (artboards: 'all' or a range; assets: asset ids) (harvested members; behaviour unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: said Export for Screens does not offer TIFF, but its own UI resource (SmartExportUI.aip) carries a TIFF format item; now names PSD and DWG / DXF only; summary/how: sub-folders can be by scale or by format, and the Artboards tab also has Include Artboard Fill (dialog resource)"
+   }
+  },
+  {
+   "name": "Save for Web (Legacy)...",
+   "id": "Adobe AI Save For Web",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Export/Save for Web (Legacy)...",
+   "status": "current",
+   "summary": "Opens the legacy Save for Web dialog: optimise the artboard (or its slices) as GIF, JPEG, PNG-8, PNG-24 or WBMP with original / optimized / 2-up / 4-up previews, file-size readouts and palette, dithering, quality, transparency, matte and image-size controls. Adobe marks it legacy; Export for Screens and Export As are the maintained exporters.",
+   "how": "Pick a preset or a format. JPEG: quality and progressive. GIF / PNG-8: color reduction, number of colors, dither, transparency and matte. Image Size tab: width, height or percent and Clip to Artboard. With slices, the save step can write images only or HTML and images.",
+   "use_for": [
+    "squeezing a banner or email graphic under a file-size limit",
+    "a small-palette GIF or PNG-8 for email templates",
+    "comparing JPEG quality against file size side by side before export"
+   ],
+   "avoid": [
+    "SVG, WebP or multi-scale output: use Export As or Export for Screens",
+    "print or CMYK deliverables: it writes screen formats only"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Export/Save for Web",
+    "CDR": "File/Export For/Web"
+   },
+   "shortcut": "Alt+Shift+Ctrl+S",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Adobe AI Save For Web\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model (unverified): doc.exportFile(File(path), ExportType.JPEG / GIF / PNG8 / PNG24, new ExportOptionsJPEG() / ExportOptionsGIF() / ExportOptionsPNG8() / ExportOptionsPNG24()), whose options carry the same quality, color, dither, matte and transparency settings.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the format list left out WBMP, which the Save4Web.aip plugin still offers"
+   }
+  },
+  {
+   "name": "File Info...",
+   "id": "File Info",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/File Info...",
+   "status": "current",
+   "summary": "Opens the File Info dialog to read and edit the document's XMP metadata (title, author, description, keywords, copyright status and notice, plus IPTC, origin and raw XMP sections), which is stored inside the saved file.",
+   "how": "Fill Document Title, Author, Description, Keywords and the Copyright fields in the basic section; the other sections hold IPTC and origin data and the raw XMP. Metadata templates can be saved and imported from the dialog.",
+   "use_for": [
+    "embedding author and copyright in a logo or illustration handed to a client",
+    "keywords and titles for stock submissions",
+    "recording usage rights before a file is shared"
+   ],
+   "avoid": [
+    "protecting artwork: metadata is easily stripped and web exports may drop it; use a visible watermark or licence terms",
+    "per-object notes: use layer and object names instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/File Info",
+    "CDR": "File/Document Properties"
+   },
+   "shortcut": "Alt+Shift+Ctrl+I",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"File Info\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: read or write the whole packet with app.activeDocument.XMPString (harvested, writable; editing behaviour unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Invite to Edit...",
+   "id": "path:File/Invite to Edit...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Invite to Edit...",
+   "status": "current",
+   "summary": "Opens the Invite to Edit panel (the Creative Cloud share sheet) to invite people by email to the document with Can edit, Can edit & share or Can comment rights. A document that is not yet a cloud document has to be saved as one first (the panel says so). Collaborators open the same cloud document in their own Illustrator; whether two people can edit at the same moment is not shown by the installed strings. Needs sign-in and a connection; the harvest recorded it disabled with no document open.",
+   "use_for": [
+    "handing an editable master file to a teammate without emailing .ai copies",
+    "letting a colleague fix copy or colors in a shared brochure or deck"
+   ],
+   "avoid": [
+    "clients who only need to comment: use Share for Review",
+    "confidential or offline work: the file is stored in Adobe's cloud",
+    "partners without Illustrator: send a package (File > Package) or a PDF"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Invite to Edit"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 2147484373. No object-model call sends an invite; the harvested Document.saveToCloud(cloudPath) and isCloudDocument cover only the save-to-cloud prerequisite.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the first-person guess about turn-based editing; added what the installed share-sheet extension states (cloud document required first, Can edit / Can edit & share / Can comment rights); script_api: named the harvested saveToCloud / isCloudDocument; confidence medium -> high"
+   }
+  },
+  {
+   "name": "New from Template...",
+   "id": "newFromTemplate",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/New from Template...",
+   "status": "current",
+   "summary": "Opens a file dialog (starting in Illustrator's Templates folder) to choose an Illustrator template (.ait) and creates a new untitled document from it, with the template's artboards, layers, guides, swatches, styles, symbols and placeholder art. The template file itself stays unchanged.",
+   "how": "Pick the .ait file; the result is an untitled document, so the first Save asks for a new name.",
+   "use_for": [
+    "starting a branded social post, letterhead or business card from a house template",
+    "repeat print formats with fixed bleed, guides and swatches",
+    "packaging work that starts from a saved dieline"
+   ],
+   "avoid": [
+    "Adobe's preset sizes and online templates: use File > New",
+    "editing the template itself: open the new copy, change it and use Save as Template over the old .ait"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "File/New from Template"
+   },
+   "shortcut": "Shift+Ctrl+N",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"newFromTemplate\") only opens the file dialog (id paired by its shortcut, not confirmed by execution). Object model (unverified): app.open(File(\"path/to/template.ait\")), which should open the template as an untitled document.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "New...",
+   "id": "new",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/New...",
+   "status": "current",
+   "summary": "Opens the New Document dialog: choose a preset category (Mobile, Web, Print, Film & Video, Art & Illustration, recent or saved) or set width, height, units, orientation, number of artboards and bleed, and under Advanced Options the color mode, raster effects resolution and preview mode; creates an untitled document.",
+   "how": "Pick a preset or type the size and units; set Artboards and Bleed; open Advanced Options for Color Mode (CMYK for print, RGB for screen), Raster Effects (72 / 150 / 300 ppi) and Preview Mode. Save the settings as a preset with the save icon for repeat jobs.",
+   "use_for": [
+    "an A4 flyer in CMYK with 3 mm bleed",
+    "a 1080 x 1350 px RGB social post",
+    "a multi-artboard brand kit or icon set"
+   ],
+   "avoid": [
+    "scripted runs: the dialog blocks; create the document with app.documents.add or addDocument",
+    "picking the wrong color mode now: changing it later converts every color"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/New",
+    "CDR": "File/New"
+   },
+   "shortcut": "Ctrl+N",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"new\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: app.documents.add(DocumentColorSpace.CMYK, width, height, numArtboards, ...) with sizes in points, or app.documents.addDocument(startupPreset, DocumentPreset) to set units, bleed and raster resolution (harvested Documents methods).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Open...",
+   "id": "open",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Open...",
+   "status": "current",
+   "summary": "Opens the Open dialog to open Illustrator files and the other formats Illustrator reads (PDF, EPS, SVG, templates, and raster images such as JPEG, PNG or PSD) as their own documents. A raster image opens as a new document with the image embedded; a multi-page PDF asks which page to open.",
+   "use_for": [
+    "editing a client's logo delivered as .ai, .eps or .pdf",
+    "pulling vector artwork out of a PDF",
+    "opening an SVG from a developer to fix it"
+   ],
+   "avoid": [
+    "putting a file inside the current layout: use Place",
+    "scripted runs: the dialog blocks; call app.open with a File"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Open",
+    "CDR": "File/Open"
+   },
+   "shortcut": "Ctrl+O",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"open\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: app.open(File(path)) (harvested Application.open, optional documentColorSpace and options).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Package...",
+   "id": "Package Menu Item",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Package...",
+   "status": "current",
+   "summary": "Collects the saved document together with copies of its linked files and its fonts into one folder, with an optional report, so another designer or a print shop gets everything needed to open and output it.",
+   "how": "Choose the location and folder name. Options: Copy Links, Collect links in separate folder, Relink linked files to document, Copy Fonts (Except Adobe Fonts and non-Adobe CJK fonts), Create Report. An unsaved document must be saved first.",
+   "use_for": [
+    "handing a job with linked photos to a print shop",
+    "archiving a finished project with all its assets",
+    "passing an editable layout to another designer"
+   ],
+   "avoid": [
+    "artwork set in Adobe Fonts: they are not copied, so the recipient must activate them or the type must be outlined",
+    "a quick proof for a client: save a PDF instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Package"
+   },
+   "shortcut": "Alt+Shift+Ctrl+P",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Package Menu Item\") only opens the dialog (id paired by its shortcut, not confirmed by execution). The harvest records no object-model packaging call.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the font option was paraphrased with a different meaning ('some CJK fonts'); now the exact Package.aip label, Copy Fonts (Except Adobe Fonts and non-Adobe CJK fonts)"
+   }
+  },
+  {
+   "name": "Place...",
+   "id": "AI Place",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Place...",
+   "status": "current",
+   "summary": "Imports an external file into the current document: photos (JPEG, PNG, PSD, TIFF), artwork (PDF, AI, EPS, SVG) or text (TXT, RTF, Word). After the dialog the cursor is loaded; click to place at full size or drag to size it. Placed files are linked (kept external) or embedded, depending on the Link checkbox.",
+   "how": "Link: keep the file external and updatable (untick to embed). Template: place it on a dimmed, locked template layer for tracing. Replace: swap the selected placed item for the new file. Show Import Options: choose PDF page and crop box, PSD layer comps or layers as objects, or text import settings. Several files can be chosen and placed one after another.",
+   "use_for": [
+    "dropping a product photo into a flyer",
+    "bringing a client's PDF logo into a layout",
+    "a scanned sketch as a tracing template",
+    "body copy from a Word document"
+   ],
+   "avoid": [
+    "linked files when the .ai travels: package it (File > Package) or embed the images",
+    "very large photos: they slow the document; place a downsized copy",
+    "editing the file's own vectors: open it instead, or embed it first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Place Linked",
+    "CDR": "File/Import"
+   },
+   "shortcut": "Shift+Ctrl+P",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"AI Place\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: var p = doc.placedItems.add(); p.file = File(path); (linked; p.embed() embeds it) (harvested PlacedItems.add, PlacedItem.file / embed), or doc.groupItems.createFromFile(File(path)) for vector files.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Print...",
+   "id": "Print",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Print...",
+   "status": "current",
+   "summary": "Opens the Print dialog: printer and copies, which artboards, media size, orientation and scaling (fit or tile), plus sections for marks and bleed, composite or separations output, graphics, color management and transparency flattening.",
+   "how": "General: printer, copies, artboards All / Range or Ignore Artboards, media size, orientation, Do Not Scale / Fit to Page / Tile. Marks and Bleed: trim, registration and color bars, bleed. Output: Composite or Separations. Color Management and Advanced (overprint and flattener preset). Save the setup as a print preset.",
+   "use_for": [
+    "desk proofs of a layout at 100%",
+    "tiled poster proofs on office paper",
+    "printing separations to check spot colors and overprint"
+   ],
+   "avoid": [
+    "files for a print shop: send a PDF/X saved through Save As instead",
+    "unattended runs: the dialog blocks; call doc.print with PrintOptions"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Print",
+    "CDR": "File/Print"
+   },
+   "shortcut": "Ctrl+P",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Print\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: app.activeDocument.print(new PrintOptions()) (harvested Document.print; option fields unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Revert",
+   "id": "path:File/Revert",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Revert",
+   "status": "needs_input",
+   "summary": "Throws away every change since the last save and reloads the saved file, after a confirmation. It only works on a document that has been saved to disk and has unsaved changes (the harvest recorded it disabled with no document open), and it cannot be undone.",
+   "use_for": [
+    "abandoning a failed experiment and going back to the last save",
+    "resetting a working file between test runs"
+   ],
+   "avoid": [
+    "when some recent edits are worth keeping: step back with Undo instead, or restore a single version from Version History for cloud documents",
+    "untitled documents: there is no saved file to go back to"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Revert",
+    "CDR": "File/Revert"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 1920365172. Object-model route (unverified): var f = doc.fullName; doc.close(SaveOptions.DONOTSAVECHANGES); app.open(f);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save",
+   "id": "save",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Save",
+   "status": "current",
+   "summary": "Saves the active document to its current file in its current format. An untitled document opens the save dialog instead (with the choice between saving on the computer and as a cloud document). A file opened from PDF, EPS or SVG is written back in that format.",
+   "use_for": [
+    "checkpoints while working",
+    "storing the result at the end of a scripted edit to an existing .ai"
+   ],
+   "avoid": [
+    "untitled documents in a script: the save dialog blocks; use doc.saveAs with a File and options",
+    "keeping the original untouched: use Save a Copy",
+    "files opened from PDF or SVG that should become .ai: use Save As"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save",
+    "CDR": "File/Save"
+   },
+   "shortcut": "Ctrl+S",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"save\") (id paired by its shortcut, not confirmed by execution); object model: app.activeDocument.save() (harvested Document.save); for an untitled document use doc.saveAs(File(path), new IllustratorSaveOptions()).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save a Copy...",
+   "id": "saveacopy",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Save a Copy...",
+   "status": "current",
+   "summary": "Writes a copy of the document under a new name, place or format (Illustrator, Illustrator EPS, Illustrator Template, Adobe PDF, SVG) while the open document stays tied to its original file.",
+   "how": "Pick the format and name, then that format's options: Illustrator Options (version, font subsetting, PDF-compatible file, linked files, ICC profile, compression), Adobe PDF preset (High Quality Print, PDF/X-1a, PDF/X-4, Smallest File Size) with marks and bleed, or EPS options.",
+   "use_for": [
+    "a PDF proof for a client while you keep working in the .ai",
+    "a down-saved .ai for a partner on an older Illustrator version",
+    "a snapshot before a risky change"
+   ],
+   "avoid": [
+    "when you want to continue in the new file: use Save As",
+    "PNG, JPEG or web formats: use Export As or Export for Screens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save a Copy"
+   },
+   "shortcut": "Alt+Ctrl+S",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"saveacopy\") only opens the dialog (id paired by its shortcut, not confirmed by execution). The harvest records no save-a-copy call; doc.saveAs(File(path), options) writes the file too but re-points the open document to it (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save as Template...",
+   "id": "saveasTemplate",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Save as Template...",
+   "status": "current",
+   "summary": "Saves the document as an Illustrator template (.ait) with its artboards, layers, guides, swatches, styles, symbols and artwork, so File > New from Template can start untitled copies from it.",
+   "how": "Choose the name and folder (Illustrator's Templates folder by default) in the save dialog.",
+   "use_for": [
+    "house starter files for social posts, letterheads or packaging dielines",
+    "keeping bleed, guides and brand swatches consistent across a team"
+   ],
+   "avoid": [
+    "master files edited in place: a template always opens as an untitled copy",
+    "sharing only colors or logos: CC Libraries are lighter"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "File/Save as Template"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"saveasTemplate\") only opens the save dialog (id paired by weak word alignment in the keyboard-shortcuts dialog, not confirmed by execution). No dedicated object-model call is recorded; whether doc.saveAs(File(\"x.ait\"), new IllustratorSaveOptions()) writes a real template is unverified.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save As...",
+   "id": "saveas",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Save As...",
+   "status": "current",
+   "summary": "Saves the document under a new name, place or format (Illustrator, Illustrator EPS, Illustrator Template, Adobe PDF, SVG, SVG Compressed), after which the open document points at the new file. It can first ask whether to save to the computer or as a cloud document.",
+   "how": "Pick the format, then its options. Illustrator: version, font subsetting, Create PDF Compatible File, Include Linked Files, Embed ICC Profiles, Use Compression, save each artboard to a separate file. Adobe PDF: a preset such as PDF/X-1a or PDF/X-4, Preserve Illustrator Editing Capabilities, marks and bleeds.",
+   "use_for": [
+    "a print-ready PDF/X with bleed for the printer",
+    "turning an opened PDF or EPS into a native .ai",
+    "an editable PDF that reopens in Illustrator"
+   ],
+   "avoid": [
+    "keeping the working file where it is: use Save a Copy",
+    "web images or clean web SVG: use Export As or Export for Screens"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save As",
+    "CDR": "File/Save As"
+   },
+   "shortcut": "Shift+Ctrl+S",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"saveas\") only opens the dialog (id paired by its shortcut, not confirmed by execution). Object model: doc.saveAs(File(path), new IllustratorSaveOptions() | new PDFSaveOptions() | new EPSSaveOptions()) (harvested Document.saveAs and option classes; option fields unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save Selected Slices...",
+   "id": "path:File/Save Selected Slices...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Save Selected Slices...",
+   "status": "needs_input",
+   "summary": "Saves only the selected slices as optimised web images with their Save for Web (Legacy) settings. It belongs to the Save for Web plugin (Save4Web.aip), whose save dialog for it is titled Save Selected Slices. Needs slices made with the Slice tool or Object > Slice and selected; the harvest recorded it disabled with no document open. The dialog was not opened here.",
+   "use_for": [
+    "re-exporting only the changed button or banner slice of a sliced web mock-up"
+   ],
+   "avoid": [
+    "current asset workflows: use Export Selection or the Asset Export panel with Export for Screens",
+    "documents without slices: the command stays disabled"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 2147484311. No object-model slice export is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: tied the command to the Save4Web.aip plugin and its 'Save Selected Slices' dialog title from the installed binary, and named Object > Slice as the other way to make slices; confidence low -> medium"
+   }
+  },
+  {
+   "name": "Other Script...",
+   "id": "ai_browse_for_script",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Scripts/Other Script...",
+   "status": "current",
+   "summary": "Opens a file browser to pick and run a script (ExtendScript .jsx / .js) that is not installed in the File > Scripts menu. It runs once; nothing gets installed.",
+   "how": "Pick the script file; it runs against the current document and selection.",
+   "use_for": [
+    "running a one-off utility script (rename artboards, export layers, replace colors) without installing it",
+    "testing a script while writing it"
+   ],
+   "avoid": [
+    "scripts used every day: put them in Illustrator's Presets / Scripts folder so they appear in the menu",
+    "scripts from unknown sources: they get full file-system access"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Scripts/Browse",
+    "CDR": "Tools/Scripts/Run Script"
+   },
+   "shortcut": "Ctrl+F12",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"ai_browse_for_script\") only opens the file browser (id paired by its shortcut, not confirmed by execution). From a running script, $.evalFile(File(path)) runs another script file (ExtendScript; unverified here). From outside Illustrator, the COM-only Application.DoJavaScriptFile in the harvested COM type library runs a script file.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the harvested COM Application.DoJavaScriptFile route"
+   }
+  },
+  {
+   "name": "Search Adobe Stock...",
+   "id": "path:File/Search Adobe Stock...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Search Adobe Stock...",
+   "status": "current",
+   "summary": "Searches Adobe Stock for photos, vectors, illustrations and templates, so they can be licensed, or saved as watermarked previews, and placed. This install ships an in-app Adobe Stock panel (UXP extension StockPanel, panel label 'Adobe Stock') that has no Window menu entry in the harvest, so the command most likely opens that panel rather than the website in a browser; not executed here. Enabled with or without a document; needs a connection.",
+   "use_for": [
+    "finding a background photo or vector icon for a layout",
+    "a watermarked comp image while a client approves the design"
+   ],
+   "avoid": [
+    "final artwork with unlicensed previews: license the asset before delivery",
+    "offline machines"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "File/Search Adobe Stock"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 2147483657. No object-model call.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the first-person guess that it opens the browser contradicts the install, which ships an in-app Adobe Stock UXP panel with no other menu entry; now says it most likely opens that panel (unexecuted) and adds the batch's enabled-without-document state"
+   }
+  },
+  {
+   "name": "Share for Review...",
+   "id": "path:File/Share for Review...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Share for Review...",
+   "status": "current",
+   "summary": "Creates a review link: a preview of the artwork is uploaded to Creative Cloud and reviewers open the link in a browser, without Illustrator, to view and comment (access can be anyone with the link or invited people only, with an optional download permission); their comments come back into Illustrator's Comments panel. The document must first be saved as an Illustrator or PDF file. Needs sign-in and a connection; the harvest recorded it disabled with no document open.",
+   "use_for": [
+    "collecting client or stakeholder feedback pinned to spots on the artwork",
+    "review rounds on a logo or layout without emailing PDFs"
+   ],
+   "avoid": [
+    "teammates who need to edit: use Invite to Edit",
+    "confidential work that must not leave the machine: export a PDF and share it privately"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Share for Review"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 2147484374. No object-model call: the review link is created by an online panel.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: it uploads a preview of the artwork, not the file, and the document must first be saved as Illustrator or PDF (installed share-sheet strings); added the link-access and download options; confidence medium -> high"
+   }
+  },
+  {
+   "name": "Version History",
+   "id": "path:File/Version History",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "File/Version History",
+   "status": "current",
+   "summary": "Opens the Version History panel, which lists saved versions of a cloud document; you can preview a version, name it, mark it so it is kept permanently (unmarked versions past the retention limit are deleted) or revert to it. For a local file the panel shows 'Version history unavailable for local files' and offers Save as cloud document.",
+   "use_for": [
+    "going back to the version a client approved",
+    "recovering artwork that was deleted several saves ago",
+    "marking the milestone versions of a long project"
+   ],
+   "avoid": [
+    "local files you need restore points for: keep numbered copies with Save a Copy, or move the file to cloud documents",
+    "undoing a few recent steps: Undo is faster"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Version History"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id could be paired (harvest error); it runs only by its menu path / Win32 command 2147484381. No object-model call reads versions; the harvested Document.isCloudDocument tells whether a document has a version history at all.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: replaced the first-person 'not sure what it shows for a local file' with the panel's own text (unavailable for local files, Save as cloud document) and the actions its strings carry (preview, name, mark, revert); dropped 'open it as a separate document', which no installed string backs; script_api: named isCloudDocument; confidence medium -> high"
+   }
+  }
+ ]
+}

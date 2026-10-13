@@ -1,0 +1,886 @@
+{
+ "cards": [
+  {
+   "name": "Duotone",
+   "id": "1008",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Duotone",
+   "status": "needs_input",
+   "summary": "Converts a grayscale image to Duotone mode: the gray values are printed with one to four inks (monotone, duotone, tritone, quadtone), each ink with its own curve, giving the rich tinted look of a two-colour print job. Only available on an 8-bit Grayscale document; it was greyed out in every RGB scratch state tried.",
+   "how": "Type: Monotone, Duotone, Tritone or Quadtone. For each ink pick a colour (usually a Pantone spot from Color Libraries) and edit its curve to control where in the tonal range it prints; Overprint Colors previews how the inks mix. Presets ship for common black + spot pairs.",
+   "use_for": [
+    "two-colour poster or flyer printed with black plus one Pantone spot",
+    "warm sepia or cool cyan-black toned photo for a brochure or book cover",
+    "matching a brand spot colour in a single-image print ad"
+   ],
+   "avoid": [
+    "a duotone look for screen only: a Gradient Map adjustment layer keeps the file RGB and editable",
+    "starting from an RGB or 16-bit image: convert to 8-bit Image > Mode > Grayscale first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Mode/Duotone (8-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No confirmed script route. Candidate executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.ALL) with desc: to (T) = class Duotone (DtnI) was tried live on the RGB scratch document and opened a dialog titled 'Adobe Photoshop' that does not name the command; on a Grayscale document it should open Duotone Options (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api reworded to what the batch recorded (a dialog titled 'Adobe Photoshop', not a confirmed alert)"
+   }
+  },
+  {
+   "name": "Grayscale",
+   "id": "1007",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Grayscale",
+   "status": "current",
+   "summary": "Converts the document to Grayscale mode: the colour channels are replaced by one Gray channel, colour information is discarded and the working gray profile is assigned (observed: RGB sRGB -> Gray, Dot Gain 20%). The image looks like a plain black-and-white photo.",
+   "how": "In the UI a 'Discard color information?' alert appears (it points to Image > Adjustments > Black & White for more control); click Discard. No other settings.",
+   "use_for": [
+    "one-colour newspaper or newsletter ad that must be a true single-channel black file",
+    "preparing a photo for Duotone or Bitmap mode (both need Grayscale first)",
+    "laser engraving or single-ink screen-print artwork"
+   ],
+   "avoid": [
+    "a black-and-white look you may want to tune or undo: use a Black & White adjustment layer and keep RGB",
+    "files headed for screen or colour print: the colour is gone for good once saved"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Edit/Edit Colors/Convert to Grayscale",
+    "CDR": "Bitmaps/Mode/Grayscale (8-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: to (T) = class Grayscale (Grys); verified live on a scratch RGB document (channels Red,Green,Blue -> Gray). DOM (used live as setup by this harvest): app.activeDocument.changeMode(ChangeMode.GRAYSCALE).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Indexed Color",
+   "id": "1009",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Indexed Color",
+   "status": "current",
+   "summary": "Converts the image to 8-bit Indexed Color: every pixel is mapped to a colour table of at most 256 colours, giving a flat, posterised or dithered look and a single Index channel. Layers are flattened.",
+   "how": "Palette: Exact, System (Mac/Windows), Web, Uniform, Local or Master Perceptual / Selective / Adaptive, Custom or Previous; Colors sets how many entries; Forced adds black and white, primaries or web colours; Transparency and Matte handle transparent areas; Dither (None, Diffusion, Pattern, Noise) with Amount trades banding for grain. Image > Mode > Color Table edits the palette afterwards.",
+   "use_for": [
+    "pixel-art or retro game sprite with a fixed small palette",
+    "limited-colour artwork for screen printing or embroidery separations",
+    "GIF-style banner with a controlled colour count"
+   ],
+   "avoid": [
+    "photos that need further editing: most filters and adjustments are unavailable in Indexed mode",
+    "just exporting a small GIF or PNG-8: File > Export > Save for Web (Legacy) indexes on export and keeps the master RGB"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Mode/Paletted (8-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "var o = new IndexedConversionOptions(); o.palette = Palette.LOCALADAPTIVE; o.colors = 16; o.forced = ForcedColors.NONE; o.transparency = false; app.activeDocument.changeMode(ChangeMode.INDEXEDCOLOR, o); verified live (channels Red,Green,Blue -> Index).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Lab Color",
+   "id": "1052",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Lab Color",
+   "status": "current",
+   "summary": "Converts the document to Lab Color mode: the image is split into a Lightness channel and two colour channels (a = green-magenta, b = blue-yellow), device-independent so no ICC profile is kept. The picture looks the same; only the channel structure changes.",
+   "how": "No dialog. Work in the Channels panel: edit Lightness alone for tone and sharpening, or steepen a and b curves for stronger colour, then convert back to RGB or CMYK.",
+   "use_for": [
+    "sharpening or denoising only the Lightness channel of a product or portrait photo so colours do not halo",
+    "the 'Lab colour boost': steepening the a and b curves for punchy travel or food photos",
+    "a neutral in-between space when moving a file between very different RGB and CMYK profiles"
+   ],
+   "avoid": [
+    "final delivery files: web, print and most apps expect RGB or CMYK",
+    "repeated back-and-forth conversions: each one rounds values and can band smooth gradients"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Bitmaps/Mode/Lab Color (24-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: to (T) = class Lab color (LbCM); verified live on a scratch RGB document (channels Red,Green,Blue -> Lightness,a,b; profile dropped). DOM alternative (unverified): app.activeDocument.changeMode(ChangeMode.LAB).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Multichannel",
+   "id": "1014",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/Multichannel",
+   "status": "current",
+   "summary": "Converts the document to Multichannel mode: each channel becomes an independent 256-level grayscale channel with no colour model tying them together (observed: an RGB file became Cyan, Magenta and Yellow channels and lost its profile). Composite colour preview changes accordingly; layers are not supported.",
+   "how": "No dialog. Afterwards rename, recolour (Channel Options: ink colour and solidity) or delete channels in the Channels panel to build custom-ink separations.",
+   "use_for": [
+    "building custom spot-ink separations for screen printing or specialty packaging",
+    "turning a CMYK file into separate plate channels to edit or drop one ink",
+    "preparing a DCS 2.0 file for a spot-colour print workflow"
+   ],
+   "avoid": [
+    "ordinary photo or layout work: the layers are flattened and most adjustments and filters stop working",
+    "adding one spot colour to a normal file: add a Spot Channel from the Channels panel instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: to (T) = class Multichannel (MltC); verified live on a scratch RGB document (channels Red,Green,Blue -> Cyan,Magenta,Yellow). DOM alternative (unverified): app.activeDocument.changeMode(ChangeMode.MULTICHANNEL).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RGB Color",
+   "id": "1010",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Mode/RGB Color",
+   "status": "current",
+   "summary": "Converts the document to RGB Color mode using the working RGB space (observed: Grayscale Dot Gain 20% -> RGB sRGB IEC61966-2.1). A grayscale image still looks gray but now has Red, Green and Blue channels and can take colour.",
+   "how": "No dialog for a plain conversion; to land in a specific RGB space use Edit > Convert to Profile instead.",
+   "use_for": [
+    "colourising or tinting a black-and-white photo for a poster or social post",
+    "unlocking filters and adjustments that only run in RGB (many Filter Gallery and Neural Filters)",
+    "preparing a CMYK or grayscale asset for web and screen use"
+   ],
+   "avoid": [
+    "choosing the destination profile (Display P3, Adobe RGB): use Edit > Convert to Profile",
+    "expecting colour back after Grayscale: discarded colour is not restored, only the channels are"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "File/Document Color Mode/RGB Color",
+    "CDR": "Bitmaps/Mode/RGB Color (24-bit)"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('convertMode'), desc, DialogModes.NO) with desc: to (T) = class RGB color (RGBM); verified live on a scratch document first converted to Grayscale (channels Gray -> Red,Green,Blue; profile Dot Gain 20% -> sRGB IEC61966-2.1). DOM alternative (unverified): app.activeDocument.changeMode(ChangeMode.RGB).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api said the live test ran on an RGB document; it ran on a document converted to Grayscale first (batch setup)"
+   }
+  },
+  {
+   "name": "Reveal All",
+   "id": "1081",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Reveal All",
+   "status": "current",
+   "summary": "Enlarges the canvas just enough to show every pixel of every layer that hangs outside it (observed: a layer moved 300 px to the right grew the canvas from 400x300 to 500x300). Layers keep their content; on a Background layer the added area takes the background colour.",
+   "how": "No dialog.",
+   "use_for": [
+    "recovering parts of a layer that were dragged or scaled off the edge of a banner or poster",
+    "growing the canvas to fit a pasted image larger than the document"
+   ],
+   "avoid": [
+    "setting an exact canvas size or anchor: use Image > Canvas Size",
+    "removing empty borders: use Image > Trim"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Artboards/Fit to Artwork Bounds"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('revealAll'), new ActionDescriptor(), DialogModes.NO); verified live (size 400x300 -> 500x300). DOM alternative (unverified): app.activeDocument.revealAll().",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Trap",
+   "id": "1093",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Trap",
+   "status": "needs_input",
+   "summary": "Applies trapping to a CMYK document: lighter colours are spread slightly under darker neighbours (by the set width) so thin white gaps do not appear if the printing plates misregister. The change is a few pixels at colour edges and is barely visible on screen. Needs a CMYK document (greyed out in every RGB state); observed live, it flattened the layers into the Background.",
+   "how": "Width: the trap distance, in pixels, points or millimetres; ask the print shop for the value (often a fraction of a point).",
+   "use_for": [
+    "a CMYK flyer, label or packaging file with solid colours butting against each other, when the printer asks for trapping in the file"
+   ],
+   "avoid": [
+    "photos and continuous-tone images: trapping is for flat colour edges",
+    "most modern jobs: printers and RIPs usually trap at output, so ask before applying it yourself",
+    "layered masters: it flattens, so trap a copy"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Trap"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('trap'), desc, DialogModes.NO) with desc: Width (Wdth) = 2 (unit #Pxl); verified live on a CMYK scratch document (history state 'Trap'). DOM alternative (unverified): app.activeDocument.trap(2).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Trim",
+   "id": "1080",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Trim",
+   "status": "current",
+   "summary": "Crops the canvas down to the content by cutting away border areas that are transparent or that match a corner pixel's colour (observed: a 160x160 shape on a transparent 400x300 canvas trimmed to 160x160).",
+   "how": "Based On: Transparent Pixels, Top Left Pixel Color or Bottom Right Pixel Color; Trim Away: tick Top, Bottom, Left and Right to choose which sides are cut.",
+   "use_for": [
+    "trimming a cut-out product, logo or icon PNG to its edges before export",
+    "removing a flat white or solid-colour border from a scanned or exported image",
+    "making sticker or emoji assets that sit tight to their artwork"
+   ],
+   "avoid": [
+    "keeping a uniform margin: Trim leaves none, so add padding with Image > Canvas Size afterwards",
+    "anti-aliased or noisy borders: near-matching pixels are kept, so the crop may stop short"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Artboards/Fit to Artwork Bounds"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('trim'), desc, DialogModes.NO) with desc: trimBasedOn = enum trimBasedOn 'transparency', Top / Btom / Left / Rght = true; verified live (400x300 -> 160x160). DOM alternative (unverified): app.activeDocument.trim(TrimType.TRANSPARENT, true, true, true, true).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Data Sets",
+   "id": "7803",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Variables/Data Sets",
+   "status": "needs_input",
+   "summary": "Opens the Variables dialog on its Data Sets page, where named sets of values for the document's variables (text replacement, pixel replacement, visibility) are created, edited or imported from a text or CSV file, and previewed on the canvas. Greyed out in every scratch state: it needs variables defined first with Image > Variables > Define.",
+   "how": "Pick a data set from the list, step through sets with the arrows to preview, and edit each variable's value below; Import loads a comma- or tab-delimited file whose columns are the variable names. Output the results with File > Export > Data Sets as Files.",
+   "use_for": [
+    "batch name badges, certificates or event passes from a spreadsheet of names and photos",
+    "product cards or social posts in many variants from one template",
+    "localised banner sets where only the headline text changes"
+   ],
+   "avoid": [
+    "documents with no variables defined: define them first with Image > Variables > Define",
+    "complex per-variant layout changes: script the document instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Variables",
+    "CDR": "File/Print Merge/Create/load Print Merge"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; 7803 is a menuBarInfo command id, and the harvest audit found runMenuItem refuses those ids). Scripted alternative (unverified): loop over the rows of the data file, set textItem.contents on the text layers and save a copy per row.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api no longer claims 7803 itself was tried in runMenuItem (the audit tried other menuBarInfo ids)"
+   }
+  },
+  {
+   "name": "Define",
+   "id": "7802",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Image/Variables/Define",
+   "status": "current",
+   "summary": "Opens the Variables dialog on its Define page, where the selected layer is turned into a data-driven variable: Visibility (show or hide), Pixel Replacement (swap the image from a file) or Text Replacement (swap a text layer's string), each with a name used by data sets.",
+   "how": "Choose the Layer, tick the variable types it should carry and name them. Pixel Replacement adds Method (Fit, Fill, As Is, Conform), an alignment point and Clip to Bounding Box. Then switch to Data Sets to enter or import values.",
+   "use_for": [
+    "setting up a template for batch certificates, ID cards or price tags",
+    "turning a social-post design into a template whose headline and photo change per row of a spreadsheet"
+   ],
+   "avoid": [
+    "one-off edits: just edit the layer",
+    "variable data in vector layouts: Illustrator's Variables panel or CorelDRAW Print Merge suit those better"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Variables",
+    "CDR": "File/Print Merge/Create/load Print Merge"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('defineVariables')); verified live, it opens the 'Variables' dialog (the variables themselves are set by hand).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Bottom Edges",
+   "id": "1232",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Bottom Edges",
+   "status": "needs_input",
+   "summary": "Aligns the bottom edges of the selected layers to the lowest bottom edge among the selected layers. With an active selection it aligns the layers to the bottom of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "ground line of a product row or the baseline of a row of icons",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Vertical Align Bottom",
+    "CDR": "Object/Align and Distribute/Align Bottom"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSBottoms', alignToCanvas = false; verified live on two pixel layers (history state 'Align Bottom Edges'). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Horizontal Centers",
+   "id": "1236",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Horizontal Centers",
+   "status": "needs_input",
+   "summary": "Aligns the horizontal centres (moves layers sideways so they share one vertical centre line) of the selected layers to the horizontal centre of the selected layers' combined bounds (observed: x 150-330 -> 95-275 with another layer at 40-200). With an active selection it aligns the layers to the horizontal centre of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "stacked headline, subhead and button centred on one axis in a poster or card",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Horizontal Align Center",
+    "CDR": "Object/Align and Distribute/Align Centers Horizontally"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSCentersH', alignToCanvas = false; verified live on two pixel layers (x 150-330 -> 95-275). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "CDR equivalent was swapped: now Align Centers Horizontally (OnAlignHorzCentre, the pair of Center to Page Horizontally; typelib cdrAlignHCenter=3 sits with Left=1/Right=2, so it moves objects sideways like ADSCentersH)"
+   }
+  },
+  {
+   "name": "Left Edges",
+   "id": "1234",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Left Edges",
+   "status": "needs_input",
+   "summary": "Aligns the left edges of the selected layers to the leftmost left edge among the selected layers (observed: x 150 -> 40). With an active selection it aligns the layers to the left edge of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "flush-left text blocks and images on a slide or flyer grid",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Horizontal Align Left",
+    "CDR": "Object/Align and Distribute/Align Left"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSLefts', alignToCanvas = false; verified live on two pixel layers (x 150 -> 40). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Right Edges",
+   "id": "1235",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Right Edges",
+   "status": "needs_input",
+   "summary": "Aligns the right edges of the selected layers to the rightmost right edge among the selected layers. With an active selection it aligns the layers to the right edge of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "flush-right price tags, logos or captions on a layout",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Horizontal Align Right",
+    "CDR": "Object/Align and Distribute/Align Right"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSRights', alignToCanvas = false; verified live on two pixel layers (history state 'Align Right Edges'). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Top Edges",
+   "id": "1231",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Top Edges",
+   "status": "needs_input",
+   "summary": "Aligns the top edges of the selected layers to the highest top edge among the selected layers (observed: y 120 -> 40). With an active selection it aligns the layers to the top of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "a row of product photos or cards hanging from one top line",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Vertical Align Top",
+    "CDR": "Object/Align and Distribute/Align Top"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSTops', alignToCanvas = false; verified live on two pixel layers (y 120 -> 40). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Vertical Centers",
+   "id": "1233",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Align/Vertical Centers",
+   "status": "needs_input",
+   "summary": "Aligns the vertical centres (moves layers up or down so they share one horizontal centre line) of the selected layers to the vertical centre of the selected layers' combined bounds (observed: y 120-260 -> 80-220 with another layer at 40-200). With an active selection it aligns the layers to the vertical centre of the selection instead. Needs two or more layers selected, or one layer plus a selection.",
+   "use_for": [
+    "an icon and its label, or a logo row, centred on one horizontal line in a banner",
+    "snapping a single layer to a marquee selection (select an area, then align)"
+   ],
+   "avoid": [
+    "aligning to the canvas: Select > All first, then align (the layers snap to the full-canvas selection)",
+    "equal spacing between three or more layers: use Layer > Distribute",
+    "a locked layer or the Background: they do not move"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Align/Vertical Align Center",
+    "CDR": "Object/Align and Distribute/Align Centers Vertically"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSCentersV', alignToCanvas = false; verified live on two pixel layers (y 120-260 -> 80-220). alignToCanvas = true aligns to the canvas instead (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "CDR equivalent was swapped: now Align Centers Vertically (OnAlignVertCentre; typelib cdrAlignVCenter=12 sits with Top=4/Bottom=8, so it moves objects up or down like ADSCentersV)"
+   }
+  },
+  {
+   "name": "Bring Forward",
+   "id": "2712",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Arrange/Bring Forward",
+   "status": "current",
+   "summary": "Moves the selected layer one step up the stack, in front of the layer directly above it (inside its group). The harvest saw it greyed out in every scratch state (the active layer was already on top) and verified it live after selecting a lower layer; it is greyed out when the layer is already at the top of its stack.",
+   "use_for": [
+    "nudging a text or logo layer above a photo or shape it is hidden behind",
+    "fine-tuning overlap order in a collage or poster comp"
+   ],
+   "avoid": [
+    "moving a layer to the very top: use Bring to Front",
+    "the Background layer: it cannot be reordered until converted to a normal layer"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Arrange/Bring Forward",
+    "CDR": "Object/Order/Forward One"
+   },
+   "shortcut": "Ctrl+]",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('move'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), to (T) = reference Lyr ordinal 'Nxt '; verified live (history state 'Bring Forward'). DOM alternative (unverified): app.activeDocument.activeLayer.move(layerAbove, ElementPlacement.PLACEBEFORE).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary now records the batch observation: disabled in every scratch state, verified live after selecting a lower layer"
+   }
+  },
+  {
+   "name": "Bring to Front",
+   "id": "2711",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Arrange/Bring to Front",
+   "status": "current",
+   "summary": "Moves the selected layer to the top of its stack (the top of its group, or of the document), so it covers everything else there. The harvest saw it greyed out in every scratch state (the active layer was already on top) and verified it live after selecting a lower layer; it is greyed out when the layer is already on top.",
+   "use_for": [
+    "putting a headline, logo or call-to-action button above all imagery in a banner",
+    "bringing a watermark or frame layer to the very front"
+   ],
+   "avoid": [
+    "moving it out of its group: drag it in the Layers panel instead",
+    "a one-step change: use Bring Forward"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Arrange/Bring to Front",
+    "CDR": "Object/Order/To Front of Layer"
+   },
+   "shortcut": "Ctrl+Shift+]",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('move'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), to (T) = reference Lyr ordinal 'Frnt'; verified live (history state 'Bring To Front'). DOM alternative (unverified): app.activeDocument.activeLayer.move(parentDocumentOrGroup, ElementPlacement.PLACEATBEGINNING).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary now records the batch observation: disabled in every scratch state, verified live after selecting a lower layer"
+   }
+  },
+  {
+   "name": "Reverse",
+   "id": "2715",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Arrange/Reverse",
+   "status": "needs_input",
+   "summary": "Reverses the stacking order of the selected layers, so the top one goes to the bottom of that run and vice versa (observed live on two pixel layers: the active layer swapped). Needs two or more layers selected.",
+   "use_for": [
+    "flipping the order of a run of collage photos or cards that were placed back to front",
+    "reversing a sequence of frame layers before making an animation or contact sheet"
+   ],
+   "avoid": [
+    "moving just one layer: use Bring Forward or Send Backward",
+    "layers in different groups: reorder them in the Layers panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Order/Reverse Order"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('reverse'), desc, DialogModes.NO) with desc: null = reference to the target layers (Lyr); verified live (history state 'Reverse Layers').",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Send Backward",
+   "id": "2713",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Arrange/Send Backward",
+   "status": "current",
+   "summary": "Moves the selected layer one step down the stack, behind the layer directly below it (it never goes under the Background layer). Greyed out when the layer is already at the bottom.",
+   "use_for": [
+    "tucking a shadow, texture or shape layer behind a product cut-out",
+    "fine-tuning overlap order in a collage or poster comp"
+   ],
+   "avoid": [
+    "moving a layer to the very bottom: use Send to Back",
+    "putting a layer below the Background: convert the Background to a normal layer first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Arrange/Send Backward",
+    "CDR": "Object/Order/Back One"
+   },
+   "shortcut": "Ctrl+[",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('move'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), to (T) = reference Lyr ordinal 'Prvs'; verified live (history state 'Send Backward'). DOM alternative (unverified): app.activeDocument.activeLayer.move(layerBelow, ElementPlacement.PLACEAFTER).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Send to Back",
+   "id": "2714",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Arrange/Send to Back",
+   "status": "current",
+   "summary": "Moves the selected layer to the bottom of its stack (just above the Background layer, or the bottom of its group), so everything else covers it. Greyed out when the layer is already at the bottom.",
+   "use_for": [
+    "sending a background photo, colour fill or texture behind all text and graphics in a poster",
+    "placing a backdrop shape behind a product shot"
+   ],
+   "avoid": [
+    "replacing the Background layer itself: convert it to a normal layer first",
+    "a one-step change: use Send Backward"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Arrange/Send to Back",
+    "CDR": "Object/Order/To Back of Layer"
+   },
+   "shortcut": "Ctrl+Shift+[",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('move'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr), to (T) = reference Lyr ordinal 'Back'; verified live (history state 'Send To Back'). DOM alternative (unverified): app.activeDocument.activeLayer.move(parentDocumentOrGroup, ElementPlacement.PLACEATEND).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Subtract Front Shape",
+   "id": "3410",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Combine Shapes/Subtract Front Shape",
+   "status": "needs_input",
+   "summary": "Combines vector shapes: with two or more shape layers selected (or several path components of one shape layer selected with the Path Selection tool), it cuts the upper shapes out of the lowest one, leaving the bottom shape with holes or bites where the others overlapped it. The shapes stay editable vector paths in one shape layer. Greyed out in every scratch state tried, none of which held a shape layer (pixel, text, smart object and group states).",
+   "use_for": [
+    "cutting a crescent, keyhole or notch out of a vector badge or icon",
+    "knocking a letter or symbol out of a solid shape for a stencil-style logo"
+   ],
+   "avoid": [
+    "pixel, text or smart object layers: convert text with Type > Convert to Shape first; pixels cannot be combined this way",
+    "complex vector construction: Illustrator's Pathfinder or CorelDRAW Shaping give more control"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Subtract",
+    "CDR": "Object/Shaping/Back Minus Front"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; 3410 is a menuBarInfo command id, and the harvest audit found runMenuItem refuses those ids). For paths built by script, the same operation is SubPathInfo.operation = ShapeOperation.SHAPESUBTRACT before doc.pathItems.add(...) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the scratch states also held a smart object and a group, not only pixel/text layers; script_api no longer claims this id was tried in runMenuItem"
+   }
+  },
+  {
+   "name": "Subtract Shapes at Overlap",
+   "id": "3412",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Combine Shapes/Subtract Shapes at Overlap",
+   "status": "needs_input",
+   "summary": "Combines vector shapes: with two or more shape layers selected (or several path components of one shape layer selected with the Path Selection tool), it keeps the areas where the shapes do not overlap and cuts out the areas where they do (an exclude / XOR result). The shapes stay editable vector paths in one shape layer. Greyed out in every scratch state tried, none of which held a shape layer (pixel, text, smart object and group states).",
+   "use_for": [
+    "checkerboard or interlocking-ring icons where overlaps become transparent",
+    "knock-out effects in geometric logo marks"
+   ],
+   "avoid": [
+    "pixel, text or smart object layers: convert text with Type > Convert to Shape first; pixels cannot be combined this way",
+    "complex vector construction: Illustrator's Pathfinder or CorelDRAW Shaping give more control"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Exclude",
+    "CDR": "Object/Combine"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; 3412 is a menuBarInfo command id, and the harvest audit found runMenuItem refuses those ids). For paths built by script, the same operation is SubPathInfo.operation = ShapeOperation.SHAPEXOR before doc.pathItems.add(...) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the scratch states also held a smart object and a group, not only pixel/text layers; script_api no longer claims this id was tried in runMenuItem"
+   }
+  },
+  {
+   "name": "Unite Shapes",
+   "id": "3409",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Combine Shapes/Unite Shapes",
+   "status": "needs_input",
+   "summary": "Combines vector shapes: with two or more shape layers selected (or several path components of one shape layer selected with the Path Selection tool), it merges them into one outline covering their combined area. The shapes stay editable vector paths in one shape layer. Greyed out in every scratch state tried, none of which held a shape layer (pixel, text, smart object and group states).",
+   "use_for": [
+    "building a cloud, speech bubble or custom icon from simple circles and rectangles",
+    "joining separate vector parts of a logo into one shape with a single fill"
+   ],
+   "avoid": [
+    "pixel, text or smart object layers: convert text with Type > Convert to Shape first; pixels cannot be combined this way",
+    "complex vector construction: Illustrator's Pathfinder or CorelDRAW Shaping give more control"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Add",
+    "CDR": "Object/Shaping/Weld"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; 3409 is a menuBarInfo command id, and the harvest audit found runMenuItem refuses those ids). For paths built by script, the same operation is SubPathInfo.operation = ShapeOperation.SHAPEADD before doc.pathItems.add(...) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the scratch states also held a smart object and a group, not only pixel/text layers; script_api no longer claims this id was tried in runMenuItem"
+   }
+  },
+  {
+   "name": "Unite Shapes at Overlap",
+   "id": "3411",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Combine Shapes/Unite Shapes at Overlap",
+   "status": "needs_input",
+   "summary": "Combines vector shapes: with two or more shape layers selected (or several path components of one shape layer selected with the Path Selection tool), it keeps only the area where the shapes overlap and removes the rest (an intersect result). The shapes stay editable vector paths in one shape layer. Greyed out in every scratch state tried, none of which held a shape layer (pixel, text, smart object and group states).",
+   "use_for": [
+    "making a lens, leaf or segment shape from two overlapping circles",
+    "clipping a vector pattern to a frame shape for an icon or badge"
+   ],
+   "avoid": [
+    "pixel, text or smart object layers: convert text with Type > Convert to Shape first; pixels cannot be combined this way",
+    "complex vector construction: Illustrator's Pathfinder or CorelDRAW Shaping give more control"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Pathfinder/Intersect",
+    "CDR": "Object/Shaping/Intersect"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches; 3411 is a menuBarInfo command id, and the harvest audit found runMenuItem refuses those ids). For paths built by script, the same operation is SubPathInfo.operation = ShapeOperation.SHAPEINTERSECT before doc.pathItems.add(...) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the scratch states also held a smart object and a group, not only pixel/text layers; script_api no longer claims this id was tried in runMenuItem"
+   }
+  },
+  {
+   "name": "Copy CSS",
+   "id": "3439",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Copy CSS",
+   "status": "current",
+   "summary": "Copies CSS for the selected layer to the clipboard: for shape and text layers this includes size, position, fill or gradient colour, border, corner radius, font settings, opacity and layer-style shadows, ready to paste into a stylesheet. Nothing changes in the document.",
+   "how": "No dialog; paste the clipboard into a code editor. It was greyed out in the harvest's smart object, group and multi-layer states.",
+   "use_for": [
+    "handing a web developer exact colours, fonts and shadows of a button or card mock-up",
+    "checking the CSS values of a UI element designed in Photoshop"
+   ],
+   "avoid": [
+    "full page layouts: the CSS covers single layers, not responsive structure",
+    "pixel or photo layers: they yield little beyond size and position (export the image instead)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/CSS Properties (Deprecated)"
+   },
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No confirmed script route. Candidate executeAction(stringIDToTypeID('copyLayerCSS'), new ActionDescriptor(), DialogModes.NO) was tried live and failed with 'General Photoshop error ... the command \"Copy CSS\" is not currently available'.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Copy SVG",
+   "id": "3438",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Copy SVG",
+   "status": "current",
+   "summary": "Copies the selected layer to the clipboard as SVG markup, mainly useful for shape and text layers whose vector paths, fills and strokes become SVG elements that can be pasted into code or a web page. Nothing changes in the document. What exactly is written for pixel layers was not observed.",
+   "how": "No dialog; paste the clipboard into a code editor or an app that accepts SVG text.",
+   "use_for": [
+    "handing a simple vector icon or shape from a UI mock-up to a developer as inline SVG",
+    "getting the path data of a Photoshop shape into a web page quickly"
+   ],
+   "avoid": [
+    "exporting assets as files: use File > Export > Export As (SVG) or Quick Export",
+    "complex vector artwork: build and export it from Illustrator for cleaner SVG"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No confirmed script route. Candidate executeAction(stringIDToTypeID('copyLayerSVG'), new ActionDescriptor(), DialogModes.NO) was tried live and failed with 'General Photoshop error ... the command \"Copy SVG\" is not currently available'.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Create Clipping Mask",
+   "id": "2972",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Create Clipping Mask",
+   "status": "current",
+   "summary": "Clips the selected layer to the layer directly below it: the upper layer shows only inside the pixels (or shape, or text) of the base layer, and is indented with a down arrow in the Layers panel. Non-destructive; Release Clipping Mask undoes it.",
+   "use_for": [
+    "filling headline text with a photo or texture for a poster or thumbnail",
+    "confining an adjustment layer to one cut-out product so the background is untouched",
+    "placing a photo inside a shape frame on a social template"
+   ],
+   "avoid": [
+    "hiding parts of a layer by painting: use a layer mask",
+    "the bottom layer of a stack or the Background: there is nothing below to clip to"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Clipping Mask/Make",
+    "CDR": "Object/PowerClip/Place Inside Frame"
+   },
+   "shortcut": "Ctrl+Alt+G",
+   "scriptable": "yes",
+   "script_api": "executeAction(stringIDToTypeID('groupEvent'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr); verified live (layer became clipped). DOM alternative (unverified): app.activeDocument.activeLayer.grouped = true.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Hidden Layers",
+   "id": "2951",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "Layer/Delete/Hidden Layers",
+   "status": "needs_input",
+   "summary": "Deletes every hidden layer (eye turned off) in the document in one go, after a confirmation alert. Greyed out when the document has no hidden layers, as in every scratch state tried.",
+   "how": "A confirmation alert asks before deleting; there are no other settings.",
+   "use_for": [
+    "cleaning a layered comp of discarded alternatives before handing it to a client or printer",
+    "shrinking a PSD template's file size before sharing"
+   ],
+   "avoid": [
+    "keeping alternative versions for later: use Layer Comps or save a copy first",
+    "deleting only some hidden layers: select and delete them in the Layers panel"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No confirmed script route. Candidate executeAction(stringIDToTypeID('delete'), desc, DialogModes.NO) with desc: null = reference Lyr ordinal 'Hddn' failed live with 'the command \"Delete\" is not currently available' (the scratch document had no hidden layers). DOM alternative (unverified): loop over layers and call remove() on those with visible == false.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

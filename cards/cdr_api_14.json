@@ -1,0 +1,771 @@
+{
+ "cards": [
+  {
+   "name": "IVGMetadata",
+   "id": "class:IVGMetadata",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGMetadata",
+   "status": "current",
+   "summary": "The document-properties record of a CorelDRAW document (Document.Metadata): title, subject, author, keywords, notes, copyright, revision and language, plus the template fields (type, industry, sidedness, folds, designer notes) the template browser reads. It changes no artwork; it is what File > Document Properties shows and what is saved inside the .cdr.",
+   "use_for": [
+    "stamp title, author, copyright and keywords on every file a batch job saves (client deliverables, archive search)",
+    "tag a .cdr saved as a template with its type, industry, sidedness and folds so it sorts properly in the template browser",
+    "read the author / last author / revision of incoming files in an audit or file-intake script"
+   ],
+   "avoid": [
+    "metadata inside an exported PDF: the PDF export settings (PDFSettings) carry their own Author / Subject / Keywords (there is no Title setting there); set those on the export, do not rely on these being copied (unverified)",
+    "any visual change: nothing here touches the page; use the shape and page classes"
+   ],
+   "confidence": "medium",
+   "how": "One per document, reached as ActiveDocument.Metadata (IVGDocument.Metadata). Plain string properties (Title, Subject, Author, Keywords, Notes, Copyright, Template*) are read and written directly; the Localizable* properties and Category return IVGLocalizableString objects that hold one string per language (SetLangString / GetLangString / DefaultLangString). Changes live in the open document and reach disk only when the document is saved.",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "document title (string)"
+    },
+    {
+     "name": "Subject",
+     "use": "document subject (string)"
+    },
+    {
+     "name": "Author",
+     "use": "creator name (string)"
+    },
+    {
+     "name": "LastAuthor",
+     "use": "who edited the file last; described as 'returns', so treat it as informational even though it is not flagged read-only"
+    },
+    {
+     "name": "Keywords",
+     "use": "keyword string used by search / template browser"
+    },
+    {
+     "name": "Notes",
+     "use": "free-text notes"
+    },
+    {
+     "name": "Copyright",
+     "use": "copyright line"
+    },
+    {
+     "name": "Revision",
+     "use": "revision number (long)"
+    },
+    {
+     "name": "DocLanguage",
+     "use": "cdrTextLanguage the document is designed for, e.g. cdrLanguageNone (0), cdrArabic (1025)"
+    },
+    {
+     "name": "DocID",
+     "use": "unique ID string of the document contents"
+    },
+    {
+     "name": "TemplateType",
+     "use": "template type text (banner, poster ...)"
+    },
+    {
+     "name": "TemplateIndustry",
+     "use": "template target industry text"
+    },
+    {
+     "name": "TemplateSided",
+     "use": "template sidedness text (single or double)"
+    },
+    {
+     "name": "TemplateFolds",
+     "use": "number of folds, stored as a string"
+    },
+    {
+     "name": "TemplateDesignerNotes",
+     "use": "designer notes shown for a template"
+    },
+    {
+     "name": "LocalizableTitle",
+     "use": "per-language title (IVGLocalizableString)"
+    },
+    {
+     "name": "LocalizableKeywords",
+     "use": "per-language keywords (IVGLocalizableString)"
+    },
+    {
+     "name": "Category",
+     "use": "document category; only available as an IVGLocalizableString"
+    }
+   ],
+   "gotchas": [
+    "setting a property only changes the open document: call ActiveDocument.Save (or SaveAs) or the values are lost on close",
+    "the Localizable* properties and Category are read-only object references: you cannot assign a string to them, call SetLangString / DefaultLangString on the returned IVGLocalizableString instead",
+    "IVGLocalizableString.SetLangString takes the language as a string, not a cdrTextLanguage value; the expected code format is not in the harvest (unverified: probe GetLanguages on a file first)",
+    "TemplateFolds and TemplateSided are strings, not numbers or enums; use the exact wording the template dialog writes (unverified)",
+    "writing metadata probably marks the document modified (Dirty = True), which triggers a save prompt on close in an interactive session (unverified)"
+   ],
+   "example": "Dim md As Metadata\nSet md = ActiveDocument.Metadata\nmd.Title = \"Diwali sale poster A3\"\nmd.Author = \"Studio\"\nmd.Keywords = \"diwali; poster; A3\"\nmd.Copyright = \"(c) 2026 Studio\"\nActiveDocument.Save",
+   "equivalents": {
+    "PS": "class:DocumentInfo"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: PDF export settings have Author / Subject / Keywords, not Title (checked IPDFVBASettings in the harvest)"
+   }
+  },
+  {
+   "name": "IVGNode",
+   "id": "class:IVGNode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGNode",
+   "status": "current",
+   "summary": "One node (anchor point) of a CorelDRAW curve: its position, node type (cusp / smooth / symmetrical), its place in the subpath and the node-level edits the Shape tool offers on it: move, delete, break apart, join, connect, extend, average, and the fillet / chamfer / scallop corner treatments.",
+   "use_for": [
+    "round, bevel or scoop a single corner of a logo or badge outline (Fillet / Chamfer / Scallop)",
+    "move or snap one anchor point to an exact coordinate in a generated shape",
+    "close a gap between two open path ends (JoinWith / ConnectWith / ExtendSubPaths) after a trace or import",
+    "read node positions to measure or rebuild a path in another tool"
+   ],
+   "avoid": [
+    "editing many nodes at once: get an IVGNodeRange (Curve.Nodes.All or Nodes.Range) and call its batch methods instead of looping node by node",
+    "shapes that are still rectangles, ellipses, polygons or text: they have no editable nodes until ConvertToCurves (or use the shape's own corner-radius properties for rounded rectangles)"
+   ],
+   "confidence": "high",
+   "how": "Not created directly. Reach it from a curve shape: Shape.Curve.Nodes(i) (1-based), Curve.Nodes.First / Last, SubPath.StartNode / EndNode, Curve.FindNodeAtPoint(x, y), or from another node with Next / Previous. A node belongs to one curve (Parent) and one subpath (SubPath); positions are page coordinates in the document's unit (ActiveDocument.Unit).",
+   "key_members": [
+    {
+     "name": "PositionX",
+     "use": "X of the node on the page, read / write, document units"
+    },
+    {
+     "name": "PositionY",
+     "use": "Y of the node on the page, read / write, document units"
+    },
+    {
+     "name": "SetPosition",
+     "use": "set X and Y in one call"
+    },
+    {
+     "name": "Move",
+     "use": "shift by DeltaX, DeltaY (both optional, default 0)"
+    },
+    {
+     "name": "Type",
+     "use": "cdrNodeType: cdrCuspNode 0, cdrSmoothNode 1, cdrSymmetricalNode 2"
+    },
+    {
+     "name": "Index",
+     "use": "position inside its subpath (presumably 1-based like Nodes(i), unverified)"
+    },
+    {
+     "name": "AbsoluteIndex",
+     "use": "position inside the whole curve"
+    },
+    {
+     "name": "IsEnding",
+     "use": "True for the first or last node of its subpath (harvest wording; whether a closed subpath reports it is unverified)"
+    },
+    {
+     "name": "Next",
+     "use": "method: the following node"
+    },
+    {
+     "name": "Previous",
+     "use": "method: the preceding node"
+    },
+    {
+     "name": "Segment",
+     "use": "the segment that ends at this node"
+    },
+    {
+     "name": "NextSegment",
+     "use": "the segment that leaves this node"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the node; the path re-forms through its neighbours"
+    },
+    {
+     "name": "BreakApart",
+     "use": "split the path at this node into two unconnected end nodes"
+    },
+    {
+     "name": "JoinWith",
+     "use": "join this end node with another end node into one node"
+    },
+    {
+     "name": "ConnectWith",
+     "use": "connect this node to another one if possible (closes the gap with a segment, unverified)"
+    },
+    {
+     "name": "ExtendSubPaths",
+     "use": "extend two open subpaths until they meet; JoinPaths optional (default False)"
+    },
+    {
+     "name": "AveragePositionWith",
+     "use": "move this node and Node2 to their midpoint; JoinPaths optional"
+    },
+    {
+     "name": "Fillet",
+     "use": "round a cusp corner with Radius; returns True on success"
+    },
+    {
+     "name": "Chamfer",
+     "use": "bevel a corner with DistanceA / DistanceB; returns bool"
+    },
+    {
+     "name": "Scallop",
+     "use": "cut an inward round notch with Radius; returns bool"
+    }
+   ],
+   "gotchas": [
+    "node collections are 1-based and the numbering changes after Delete, BreakApart, Fillet, Chamfer or Scallop (one node becomes two): re-fetch nodes or walk the indices from the end, never keep stale Index values",
+    "Fillet / Chamfer / Scallop return a bool; expect False rather than an error when the node cannot take it (an end node, a smooth node, or a radius too big for the adjacent segments) and check the result (unverified)",
+    "the shape must be a curve: s.Curve on an unconverted rectangle, ellipse or artistic text gives no editable nodes; call s.ConvertToCurves first",
+    "positions follow ActiveDocument.Unit; set the unit at the start of the script or the numbers are in the user's last unit",
+    "GetPosition and GetPoint return through ByRef arguments; from Python win32com the values come back as the return tuple instead (unverified)",
+    "setting Type to smooth or symmetrical on a node between straight line segments may have no visible effect until the segments are curves (unverified)"
+   ],
+   "example": "Dim s As Shape, n As Node\nActiveDocument.Unit = cdrMillimeter\nSet s = ActiveShape\ns.ConvertToCurves\nSet n = s.Curve.Nodes(1)\nn.Move 5, 0\nIf Not n.IsEnding Then n.Fillet 3",
+   "equivalents": {
+    "PS": "class:PathPoint",
+    "AI": "class:PathPoint"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "IsEnding reworded to the harvest ('first or last of its subpath', not 'open subpath'); Index 1-based and the Fillet/Chamfer/Scallop False-on-failure gotcha marked unverified"
+   }
+  },
+  {
+   "name": "IVGNodeRange",
+   "id": "class:IVGNodeRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGNodeRange",
+   "status": "current",
+   "summary": "A working set of nodes from one curve that you edit together, like a Shape-tool node selection: move, stretch, rotate or skew them as a group, change their type, smooth or auto-reduce them, break or delete them, and fillet / chamfer / scallop all their corners in one call.",
+   "use_for": [
+    "round every corner of a converted logo or icon outline at once (Nodes.All then Fillet)",
+    "clean a traced or imported path by reducing redundant nodes (AutoReduce) or smoothing jagged ones (Smoothen)",
+    "move, rotate or skew just part of a shape (a subset of nodes) without touching the rest",
+    "drive or read the user's current node selection (Curve.Selection, CreateSelection)"
+   ],
+   "avoid": [
+    "transforming whole objects: use the shape's own Move / Rotate / Stretch / Skew, which work on any shape type without converting it to curves",
+    "nodes from different shapes: a range belongs to one curve (Parent); work shape by shape"
+   ],
+   "confidence": "high",
+   "how": "Get one from a curve: Curve.Nodes.All, Nodes.Range(Array(1, 3, 5)), Nodes.AllExcluding(Array(...)), Curve.Selection (the selected nodes), a segment range's NodeRange, or start empty with Application.CreateNodeRange and fill it with Add / AddRange. Then call the batch methods; read-only PositionX / PositionY / SizeWidth / SizeHeight / BoundingBox describe the extent of the nodes.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of nodes in the range"
+    },
+    {
+     "name": "Item",
+     "use": "node by 1-based index"
+    },
+    {
+     "name": "Add",
+     "use": "add one node"
+    },
+    {
+     "name": "AddRange",
+     "use": "add all nodes of another range"
+    },
+    {
+     "name": "Remove",
+     "use": "drop a node from the range by index (does not delete it from the curve)"
+    },
+    {
+     "name": "Delete",
+     "use": "delete all the nodes in the range from the curve"
+    },
+    {
+     "name": "Move",
+     "use": "shift by DeltaX, DeltaY; optional AnchorIndex (1) and ElasticMode (False)"
+    },
+    {
+     "name": "Stretch",
+     "use": "scale by RatioX / RatioY (single, default 1.0), optionally about StretchAnchorX/Y"
+    },
+    {
+     "name": "Rotate",
+     "use": "rotate by Angle, optionally about RotationCenterX/Y when UseCenterPoint is True"
+    },
+    {
+     "name": "Skew",
+     "use": "skew by AngleX / AngleY, optionally about SkewAnchorX/Y"
+    },
+    {
+     "name": "SetType",
+     "use": "set every node to a cdrNodeType (cusp 0, smooth 1, symmetrical 2)"
+    },
+    {
+     "name": "Type",
+     "use": "read-only common node type, cdrMixedNodes (3) when they differ"
+    },
+    {
+     "name": "Smoothen",
+     "use": "smooth the curve at these nodes by a long Smoothness amount"
+    },
+    {
+     "name": "AutoReduce",
+     "use": "remove / edit nodes within PrecisionMargin to simplify the curve"
+    },
+    {
+     "name": "BreakApart",
+     "use": "break the curve at every node in the range"
+    },
+    {
+     "name": "Fillet",
+     "use": "round all corners in the range with Radius"
+    },
+    {
+     "name": "Chamfer",
+     "use": "bevel all corners with DistanceA / DistanceB"
+    },
+    {
+     "name": "Scallop",
+     "use": "scallop all corners with Radius"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "make these nodes the Shape-tool node selection"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "IVGRect around the nodes"
+    }
+   ],
+   "gotchas": [
+    "Range / AllExcluding take a Variant array of 1-based indices: Array(1, 3) in VBA; from Python pass a list or tuple (unverified)",
+    "on the range Fillet / Chamfer / Scallop return nothing (void), unlike the IVGNode versions which return a bool; corners that cannot take the treatment are skipped silently (unverified)",
+    "after Delete, BreakApart or a corner treatment the curve's node numbering changes; build a fresh range from Curve.Nodes before the next edit",
+    "Rotate, Skew and Stretch default to not using the anchor arguments (UseCenterPoint / UseAnchorPoint False); pass True plus the coordinates to pivot around a specific point",
+    "Smoothness and PrecisionMargin ranges are not in the harvest: probe a small value first (PrecisionMargin is presumably in document units, unverified)",
+    "Remove takes an index into the range, not a node object; RemoveRange takes another range"
+   ],
+   "example": "Dim s As Shape, nr As NodeRange\nActiveDocument.Unit = cdrMillimeter\nSet s = ActiveShape\ns.ConvertToCurves\nSet nr = s.Curve.Nodes.All\nnr.SetType cdrCuspNode\nnr.Fillet 2\ns.Curve.Nodes.Range(Array(1, 2)).Move 0, 5",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: dropped the unsupported 'keep effects and fills intact' reason; shape transforms named for working without ConvertToCurves"
+   }
+  },
+  {
+   "name": "IVGNodes",
+   "id": "class:IVGNodes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGNodes",
+   "status": "current",
+   "summary": "The read-only collection of all nodes of a curve or of one subpath: count them, get one by 1-based index, iterate them with For Each, and turn all or some of them into an IVGNodeRange for batch edits.",
+   "use_for": [
+    "walk every anchor point of a path to read or export its coordinates",
+    "pick the nodes to edit (All, Range, AllExcluding) before a batch fillet, smooth or move",
+    "count nodes to judge how heavy a traced or imported path is"
+   ],
+   "avoid": [
+    "adding nodes: the collection has no Add; use SubPath.AddNodeAt or Segment.AddNodeAt",
+    "deleting while iterating with For Each: collect the nodes into a range first, or loop indices from Count down to 1"
+   ],
+   "confidence": "high",
+   "how": "Reached as Shape.Curve.Nodes (every node of the curve) or Curve.SubPaths(i).Nodes (one subpath). Item is the default member, so Nodes(1) works; First and Last are shortcuts; All / Range / AllExcluding return IVGNodeRange objects.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of nodes"
+    },
+    {
+     "name": "Item",
+     "use": "node by 1-based index (default member)"
+    },
+    {
+     "name": "First",
+     "use": "first node"
+    },
+    {
+     "name": "Last",
+     "use": "last node"
+    },
+    {
+     "name": "All",
+     "use": "IVGNodeRange with every node"
+    },
+    {
+     "name": "Range",
+     "use": "IVGNodeRange with the nodes at the given indices (Variant array)"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "IVGNodeRange with every node except the given indices"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enables For Each n In ...Nodes"
+    },
+    {
+     "name": "Parent",
+     "use": "the IVGCurve the nodes belong to (also for a subpath's collection)"
+    }
+   ],
+   "gotchas": [
+    "1-based (Item is 'in base 1'): Nodes(0) is out of range and presumably raises an error (unverified)",
+    "the collection is live: Count and the index of every later node change after a node is added, deleted, broken apart or filleted",
+    "Parent is typed IVGCurve even when the collection came from a subpath; use Node.SubPath to get the subpath",
+    "Range and AllExcluding need a Variant array (Array(1, 4) in VBA), not separate arguments"
+   ],
+   "example": "Dim n As Node\nActiveDocument.Unit = cdrMillimeter\nFor Each n In ActiveShape.Curve.Nodes\n  Debug.Print n.AbsoluteIndex, n.PositionX, n.PositionY, n.Type\nNext n\nDebug.Print ActiveShape.Curve.Nodes.Count",
+   "equivalents": {
+    "PS": "class:PathPoints",
+    "AI": "class:PathPoints"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha: Nodes(0) raising an index error marked unverified"
+   }
+  },
+  {
+   "name": "IVGObjectSnapPoint",
+   "id": "class:IVGObjectSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGObjectSnapPoint",
+   "status": "current",
+   "summary": "The object-specific part of a snap point whose type is cdrSnapPointObject: a single read-only Type that says which of the shape's object snap points it is (top, bottom, left or right). Exactly where the shape places these points is not in the harvest; they are presumably the side points connectors attach to (unverified).",
+   "use_for": [
+    "pick the top / bottom / left / right attachment point of a box before drawing a connector between two boxes in a scripted flow chart or org chart",
+    "identify which object point an existing connector end is glued to"
+   ],
+   "avoid": [
+    "corner or centre points: those are bounding-box snap points (Shape.SnapPoints.BBox with a cdrReferencePoint)",
+    "a point part-way along an edge or at a custom spot: use SnapPoints.Edge(SegmentIndex, SegmentOffset), SnapPoints.FindClosest or SnapPoints.AddUserSnapPoint (there is no node snap-point type in cdrPointType)"
+   ],
+   "confidence": "medium",
+   "how": "Not created directly. Get a snap point with Shape.SnapPoints.Object(cdrObjectPointTop) (or Bottom / Left / Right), then its .Object property returns this interface; for a generic IVGSnapPoint check SnapPoint.Type = cdrSnapPointObject (2) before reading .Object.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrObjectSnapPointType: cdrObjectPointTop 1, cdrObjectPointBottom 2, cdrObjectPointLeft 3, cdrObjectPointRight 4"
+    }
+   ],
+   "gotchas": [
+    "the only member is Type; position, movement and deletion live on the parent IVGSnapPoint (PositionX / PositionY / IsMovable ...)",
+    "SnapPoint.Object is only meaningful when SnapPoint.Type is cdrSnapPointObject; on other snap point types expect Nothing or an error (unverified)",
+    "not every shape type may expose all four object points; check that SnapPoints.Object(...) returned something before using it (unverified)"
+   ],
+   "example": "Dim a As SnapPoint, b As SnapPoint\nSet a = ActivePage.Shapes(1).SnapPoints.Object(cdrObjectPointBottom)\nSet b = ActivePage.Shapes(2).SnapPoints.Object(cdrObjectPointTop)\nDebug.Print a.Object.Type, b.Object.Type\nActiveLayer.CreateConnector a, b",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: replaced non-existent 'node snap points' with SnapPoints.Edge / FindClosest / AddUserSnapPoint"
+   }
+  },
+  {
+   "name": "IVGOLE",
+   "id": "class:IVGOLE",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOLE",
+   "status": "current",
+   "summary": "The OLE side of a shape that holds an embedded or linked Windows OLE object (an Excel sheet, a Word table, a chart): it reports the server program, class, link path and state, opens the object for editing in place or in its own window, runs OLE verbs, and refreshes a linked object from its source file.",
+   "use_for": [
+    "audit a file before print: list every OLE object, its ProgID and whether it is linked, embedded or static",
+    "refresh linked spreadsheets or charts (IsLinkUpToDate / UpdateLink) before exporting a price list or report",
+    "find links pointing at missing or moved files (LinkPath)"
+   ],
+   "avoid": [
+    "print or PDF artwork: an OLE object presumably renders from its cached picture and depends on the server app (unverified); paste or import the content as vectors (PDF, EMF, or native text and tables) instead",
+    "unattended scripts: Edit, Open, Activate and DoVerb start the server app's UI and can block"
+   ],
+   "confidence": "medium",
+   "how": "Reached as Shape.OLE on a shape whose Shape.Type is cdrOLEObjectShape (12). Read the properties to learn what the object is; call UpdateLink for linked objects; Edit / Open / Activate / DoVerb hand the object to its server application.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrOLEType: cdrOLEUnknown 0, cdrOLELinked 1, cdrOLEEmbedded 2, cdrOLEStatic 3"
+    },
+    {
+     "name": "ProgID",
+     "use": "program ID of the object's class, e.g. a spreadsheet or document type"
+    },
+    {
+     "name": "ClassID",
+     "use": "class ID (CLSID) string"
+    },
+    {
+     "name": "ServerName",
+     "use": "name of the application that serves the object"
+    },
+    {
+     "name": "FullName",
+     "use": "full object name"
+    },
+    {
+     "name": "ShortName",
+     "use": "short object name"
+    },
+    {
+     "name": "LinkPath",
+     "use": "file path of a linked object"
+    },
+    {
+     "name": "IsLinkUpToDate",
+     "use": "False when the linked source changed since the last update"
+    },
+    {
+     "name": "UpdateLink",
+     "use": "refresh a linked object from its source"
+    },
+    {
+     "name": "Modified",
+     "use": "True if the object was modified"
+    },
+    {
+     "name": "Edit",
+     "use": "edit the object in place (starts the server)"
+    },
+    {
+     "name": "Open",
+     "use": "edit the object in a separate server window"
+    },
+    {
+     "name": "Activate",
+     "use": "run the default double-click action"
+    },
+    {
+     "name": "Deactivate",
+     "use": "finish in-place / open editing"
+    },
+    {
+     "name": "DoVerb",
+     "use": "run an object-specific verb by VerbID (long)"
+    },
+    {
+     "name": "IsInPlaceActive",
+     "use": "True while being edited in place"
+    },
+    {
+     "name": "IsOpen",
+     "use": "True while being edited in a separate window"
+    },
+    {
+     "name": "IsServerRunning",
+     "use": "True if the server application is running"
+    }
+   ],
+   "gotchas": [
+    "Shape.OLE only makes sense when Shape.Type = cdrOLEObjectShape; check the type first, other shapes give Nothing or an error (unverified)",
+    "ActivePage.Shapes does not look inside groups; use ActivePage.Shapes.FindShapes(Type:=cdrOLEObjectShape) to find nested OLE objects",
+    "Edit, Open, Activate and DoVerb launch the server application and may show its window or a dialog; never call them in a headless batch, and pair Edit / Open with Deactivate",
+    "UpdateLink needs the source file at LinkPath and the server application installed; on a machine without it the call fails or keeps the stale picture (unverified)",
+    "DoVerb takes a bare long and the harvest lists no verb values; they are presumably the Windows OLEIVERB_* codes plus object-specific ones (unverified), so prefer Activate / Open / Edit, which need no ID",
+    "IsLinkUpToDate and LinkPath only apply to linked objects (Type = cdrOLELinked)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes.FindShapes(Type:=cdrOLEObjectShape)\n  Debug.Print s.OLE.ProgID, s.OLE.Type\n  If s.OLE.Type = cdrOLELinked Then\n    Debug.Print s.OLE.LinkPath\n    If Not s.OLE.IsLinkUpToDate Then s.OLE.UpdateLink\n  End If\nNext s",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "removed OLE verb numbers that are not in the batch (0/-1/-2/-3); cached-picture claim marked unverified; example reads LinkPath only for linked objects, matching its own gotcha"
+   }
+  },
+  {
+   "name": "IVGOnScreenCurve",
+   "id": "class:IVGOnScreenCurve",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOnScreenCurve",
+   "status": "current",
+   "summary": "A temporary XOR-drawn outline (line, rectangle, circle, point list or any IVGCurve) that a macro shows on top of the drawing window as visual feedback, the rubber-band preview a custom tool draws while dragging. It is not a shape: it is not in the document, not undoable, not printed or exported.",
+   "use_for": [
+    "live preview of the outline a custom VBA / add-in tool is about to create while the user drags",
+    "highlight a region or a path on screen during an interactive macro without adding objects to the file"
+   ],
+   "avoid": [
+    "anything that must end up in the artwork or an export: create real shapes (ActiveLayer.CreateRectangle, CreateCurve ...) instead",
+    "headless or batch runs: nobody sees it, and it adds nothing to the document"
+   ],
+   "confidence": "medium",
+   "how": "Created with Application.CreateOnScreenCurve, usually inside a custom tool's mouse handlers. Set the geometry with SetLine / SetRectangle / SetCircle / SetPoints / SetCurve, set the look with SetPen / SetNoPen and SetBrush / SetNoBrush, then Show; call Hide when done.",
+   "key_members": [
+    {
+     "name": "SetLine",
+     "use": "geometry: a line from x1,y1 to x2,y2"
+    },
+    {
+     "name": "SetRectangle",
+     "use": "geometry: rectangle with corners x1,y1 and x2,y2"
+    },
+    {
+     "name": "SetCircle",
+     "use": "geometry: circle from CenterX, CenterY, Radius"
+    },
+    {
+     "name": "SetPoints",
+     "use": "geometry: polyline through an IVGPointRange"
+    },
+    {
+     "name": "SetCurve",
+     "use": "geometry: any IVGCurve (e.g. a copy of a shape's curve)"
+    },
+    {
+     "name": "SetPen",
+     "use": "outline: Color (long), WidthInPixels, Style (cdrOnScreenCurvePenStyle: solid 0, dash 1, dot 2, dash-dot 3, dash-dot-dot 4, alternating dots 5)"
+    },
+    {
+     "name": "SetNoPen",
+     "use": "draw no outline"
+    },
+    {
+     "name": "SetBrush",
+     "use": "fill with a Color (long)"
+    },
+    {
+     "name": "SetNoBrush",
+     "use": "no fill"
+    },
+    {
+     "name": "Show",
+     "use": "draw it on screen"
+    },
+    {
+     "name": "Hide",
+     "use": "remove it from the screen"
+    }
+   ],
+   "gotchas": [
+    "it is XOR-drawn: the colour you set mixes with whatever is under it, so the on-screen colour is not exactly the one requested (unverified)",
+    "Color is a bare long; it is presumably a Windows COLORREF as returned by VBA's RGB() (red in the low byte), not a CorelDRAW Color object (unverified)",
+    "pen width is in screen pixels while the geometry is in document coordinates (unverified for the units of the coordinates)",
+    "Hide it (and release the object) before the macro or tool ends, or the outline can stay on screen until the window redraws (unverified)",
+    "nothing it draws is part of the document, so a render or export of the page will never show it"
+   ],
+   "example": "Dim oc As OnScreenCurve\nSet oc = Application.CreateOnScreenCurve\noc.SetPen RGB(255, 0, 0), 2, cdrOnScreenCurvePenDash\noc.SetNoBrush\noc.SetRectangle 0, 0, 100, 50\noc.Show\n' ... user feedback here ...\noc.Hide",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGOnScreenHandle",
+   "id": "class:IVGOnScreenHandle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOnScreenHandle",
+   "status": "current",
+   "summary": "A temporary XOR-drawn control handle a macro or custom tool places on the drawing window, with hit-testing (IsOnHandle) and hover highlighting (UpdateHotTracking / IsHotTracked) so the user can grab and drag it. Like the other on-screen objects it is screen feedback only, never part of the document.",
+   "use_for": [
+    "draggable control points for a custom tool (e.g. the radius or angle handle of a scripted shape generator)",
+    "show a marker at a computed position (a centre, an anchor) during an interactive macro"
+   ],
+   "avoid": [
+    "markers that must be printed or exported: create a real shape",
+    "batch scripts with no user at the screen"
+   ],
+   "confidence": "medium",
+   "how": "Created with Application.CreateOnScreenHandle. Place it with SetPosition(x, y), colour it with SetHandleColor, Show it; in the tool's mouse-move handler call UpdateHotTracking(MouseX, MouseY) and test IsOnHandle(MouseX, MouseY) to decide whether a press grabs it; Hide when done.",
+   "key_members": [
+    {
+     "name": "SetPosition",
+     "use": "put the handle at x, y"
+    },
+    {
+     "name": "SetHandleColor",
+     "use": "handle colour as a long"
+    },
+    {
+     "name": "Show",
+     "use": "draw the handle"
+    },
+    {
+     "name": "Hide",
+     "use": "remove the handle"
+    },
+    {
+     "name": "UpdateHotTracking",
+     "use": "update the hover highlight from the mouse position"
+    },
+    {
+     "name": "IsHotTracked",
+     "use": "read-only: the handle is currently highlighted"
+    },
+    {
+     "name": "IsOnHandle",
+     "use": "parameterised property: True if MouseX, MouseY falls on the handle"
+    }
+   ],
+   "gotchas": [
+    "IsOnHandle is a property that takes arguments (MouseX, MouseY); some late-bound callers (Python win32com) need it read as a method call or through the property getter (unverified)",
+    "mouse coordinates must be in the same space as SetPosition; tool callbacks hand document coordinates, so do not pass raw screen pixels (unverified)",
+    "the handle has no drag behaviour of its own: the tool must move it with SetPosition on every mouse move",
+    "Color is a bare long, presumably a VBA RGB() COLORREF, and XOR drawing alters the shown colour (unverified)"
+   ],
+   "example": "Dim h As OnScreenHandle\nSet h = Application.CreateOnScreenHandle\nh.SetHandleColor RGB(0, 120, 255)\nh.SetPosition 50, 50\nh.Show\nh.UpdateHotTracking 50.5, 50.5\nIf h.IsOnHandle(50.5, 50.5) Then Debug.Print \"grabbed\"\nh.Hide",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGOnScreenText",
+   "id": "class:IVGOnScreenText",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOnScreenText",
+   "status": "current",
+   "summary": "A temporary XOR-drawn text label a macro or custom tool shows on the drawing window, such as a live readout of a size, angle or distance next to the cursor; it can be aligned left / right / centre, anchored by fractional xRef / yRef, and nudged by a pixel offset. Screen feedback only, never part of the document.",
+   "use_for": [
+    "live measurement or angle readout beside the cursor in a custom drawing tool",
+    "short on-canvas hints during an interactive macro (\"click the second point\")"
+   ],
+   "avoid": [
+    "text that belongs in the artwork: create artistic or paragraph text shapes (ActiveLayer.CreateArtisticText)",
+    "long messages: use a form or the status bar; this is a one-line overlay"
+   ],
+   "confidence": "medium",
+   "how": "Created with Application.CreateOnScreenText. SetTextAndPosition sets text, position and optional alignment (cdrOnScreenTextAlign: cdrLeftOnScreenText 0, cdrRightOnScreenText 1, cdrCenterOnScreenText 2) with xRef / yRef anchors (default 0.5, 0.5); SetText and UpdatePosition change one part later; SetPixelOffset keeps it a fixed number of pixels off the point; Show / Hide.",
+   "key_members": [
+    {
+     "name": "SetTextAndPosition",
+     "use": "Text, x, y plus optional align (default 0), xRef (0.5), yRef (0.5)"
+    },
+    {
+     "name": "SetText",
+     "use": "change only the text"
+    },
+    {
+     "name": "UpdatePosition",
+     "use": "move it to x, y (e.g. on every mouse move)"
+    },
+    {
+     "name": "SetPixelOffset",
+     "use": "offset from the position in screen pixels (long x, y), keeps it clear of the cursor"
+    },
+    {
+     "name": "SetTextColor",
+     "use": "text colour as a long"
+    },
+    {
+     "name": "Show",
+     "use": "draw the text"
+    },
+    {
+     "name": "Hide",
+     "use": "remove the text"
+    }
+   ],
+   "gotchas": [
+    "SetPixelOffset is in screen pixels while x, y are drawing coordinates; the offset stays the same size at every zoom (unverified for the coordinate space)",
+    "xRef / yRef are presumably the fraction of the text box placed on the point (0.5, 0.5 = centred on it) (unverified)",
+    "XOR drawing: the label can be hard to read over busy artwork and its colour shifts with the background (unverified)",
+    "call Hide before the tool or macro ends, or the label can linger until the window redraws (unverified)"
+   ],
+   "example": "Dim t As OnScreenText\nSet t = Application.CreateOnScreenText\nt.SetTextColor RGB(0, 0, 0)\nt.SetTextAndPosition \"W 120 mm\", 100, 100, cdrLeftOnScreenText, 0, 0.5\nt.SetPixelOffset 12, 0\nt.Show\nt.SetText \"W 125 mm\"\nt.Hide",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

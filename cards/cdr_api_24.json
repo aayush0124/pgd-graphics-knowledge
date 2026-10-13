@@ -1,0 +1,2845 @@
+{
+ "cards": [
+  {
+   "name": "SymbolDefinition",
+   "id": "class:SymbolDefinition",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SymbolDefinition",
+   "status": "current",
+   "summary": "The master artwork of a symbol. One definition lives in a symbol library (the document's local library, or a linked external .csl library), and every instance placed on a page draws it, so editing the definition updates every instance at once.",
+   "use_for": [
+    "a logo, icon or seat/table marker repeated many times in a layout, where one edit must update every copy",
+    "keeping file size down when the same artwork repeats on many pages",
+    "checking linked library symbols for broken or out-of-date links before a file is handed off"
+   ],
+   "avoid": [
+    "art that must look different in each place: instances share one definition; use plain copies or groups, or revert one instance with Symbol.RevertToShapes",
+    "editing a definition that comes from an external library: it is linked, so BreakLink first or edit the source .csl"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Symbol"
+   },
+   "how": "Coclass; its members live on IVGSymbolDefinition. Get it from a library with ActiveDocument.SymbolLibrary.Symbols(\"Name\") (local) or Application.SymbolLibraries(i).Symbols(...) (external), or from a placed instance with Shape.Symbol.Definition. Create one by converting art with Shape.ConvertToSymbol / ShapeRange.ConvertToSymbol(\"Name\"); place instances with Layer.CreateSymbol(x, y, \"Name\").",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "get / set the symbol's name (the key used by Symbols(\"...\") and Layer.CreateSymbol)"
+    },
+    {
+     "name": "Description",
+     "use": "free-text description shown in the Symbols docker"
+    },
+    {
+     "name": "Type",
+     "use": "cdrSymbolType: cdrSymbolTypeSymbol, cdrSymbolTypeSprite or cdrSymbolTypeButton"
+    },
+    {
+     "name": "Editable",
+     "use": "True when the definition can be changed (test before editing)"
+    },
+    {
+     "name": "EnterEditMode",
+     "use": "open the definition for editing, like double-clicking an instance"
+    },
+    {
+     "name": "LeaveEditMode",
+     "use": "finish editing; every instance redraws"
+    },
+    {
+     "name": "InstanceCount",
+     "use": "how many instances the active document holds"
+    },
+    {
+     "name": "Instances",
+     "use": "those instances as an IVGShapeRange"
+    },
+    {
+     "name": "Linked",
+     "use": "True when it comes from an external library"
+    },
+    {
+     "name": "LinkLibraryPath",
+     "use": "path of that external library"
+    },
+    {
+     "name": "IsLinkBroken",
+     "use": "the external library is missing"
+    },
+    {
+     "name": "IsLinkUpdated",
+     "use": "the external library has a newer version"
+    },
+    {
+     "name": "UpdateLinks",
+     "use": "pull the newer version from the external library"
+    },
+    {
+     "name": "FixLink",
+     "use": "re-point a broken link to a library path"
+    },
+    {
+     "name": "BreakLink",
+     "use": "turn a linked definition into a local one"
+    },
+    {
+     "name": "NestedSymbols",
+     "use": "symbols used inside this one"
+    },
+    {
+     "name": "Duplicate",
+     "use": "copy the definition under a new name"
+    },
+    {
+     "name": "Copy",
+     "use": "copy to the clipboard (paste into another document with SymbolLibrary.Paste)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the definition from its library"
+    }
+   ],
+   "gotchas": [
+    "EnterEditMode switches the document into symbol-edit mode; always call LeaveEditMode afterwards, or the user is left inside the symbol editor (unverified what ActiveLayer points to while editing).",
+    "Linked definitions are not editable in place: check Editable, or BreakLink first (unverified that Editable is False for every linked symbol).",
+    "InstanceCount and Instances look at the current document only, not every open document.",
+    "Delete with instances still on the page may fail or take the instances with it (unverified); check InstanceCount first.",
+    "Sprite and Button types (cdrSymbolType) are legacy web/animation symbol types; ordinary symbols are cdrSymbolTypeSymbol (unverified: the type library only names the three values)."
+   ],
+   "example": "Set sh = ActiveSelectionRange.ConvertToSymbol(\"Logo\")\nSet def = sh.Symbol.Definition\ndef.Description = \"Brand mark master\"\nActiveLayer.CreateSymbol 2, 2, \"Logo\"\nDebug.Print def.Name, def.InstanceCount, def.Linked",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "marked the Sprite/Button 'legacy' claim unverified (the type library only names the values)"
+   }
+  },
+  {
+   "name": "SymbolDefinitions",
+   "id": "class:SymbolDefinitions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SymbolDefinitions",
+   "status": "current",
+   "summary": "A read-only list of symbol definitions: all the symbols in one library (SymbolLibrary.Symbols) or the sub-symbols nested inside one symbol (SymbolDefinition.NestedSymbols). Look a symbol up by index or name, or walk them all.",
+   "use_for": [
+    "listing every symbol in a document for an asset audit or a cleanup script",
+    "finding a symbol by name before placing it with Layer.CreateSymbol",
+    "checking which nested symbols a complex symbol depends on"
+   ],
+   "avoid": [
+    "creating symbols: there is no Add here; use ShapeRange.ConvertToSymbol or SymbolLibrary.Paste"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Symbols"
+   },
+   "how": "Coclass; members live on IVGSymbolDefinitions. Returned by IVGSymbolLibrary.Symbols (ActiveDocument.SymbolLibrary.Symbols for the local library) and IVGSymbolDefinition.NestedSymbols. Iterate with Count / Item or For Each.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "one IVGSymbolDefinition by index or by name (IndexOrName)"
+    },
+    {
+     "name": "Count",
+     "use": "number of definitions in the list"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the list"
+    }
+   ],
+   "gotchas": [
+    "Item accepts a name or an index; an unknown name probably raises an error rather than returning Nothing (unverified), so loop and compare Name when unsure.",
+    "Index base is not stated in the type library; CorelDRAW collections are normally base 1 (unverified here).",
+    "The list is read-only: no Add / Remove; deleting goes through SymbolDefinition.Delete or SymbolLibrary.PurgeUnusedSymbols."
+   ],
+   "example": "For Each d In ActiveDocument.SymbolLibrary.Symbols\n    Debug.Print d.Name, d.InstanceCount, d.Linked\nNext d\nSet logo = ActiveDocument.SymbolLibrary.Symbols.Item(\"Logo\")",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SymbolLibraries",
+   "id": "class:SymbolLibraries",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SymbolLibraries",
+   "status": "current",
+   "summary": "The external symbol libraries (.csl files) listed in the Symbols docker (Application.SymbolLibraries). A script can add one library file or a whole folder of them, then reach each library's symbols.",
+   "use_for": [
+    "loading a brand's shared icon library before a layout script places icons",
+    "registering a folder of .csl libraries on a new workstation",
+    "finding which library a linked symbol comes from"
+   ],
+   "avoid": [
+    "the document's own symbols: those are in ActiveDocument.SymbolLibrary, not in this collection"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGSymbolLibraries. Reach it with Application.SymbolLibraries. Add(FileName, CopyLocally) adds one .csl and returns its IVGSymbolLibrary; AddFromFolder(Folder, Recursive, CopyLocally) adds every library in a folder and returns how many were added.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "one IVGSymbolLibrary by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of external libraries"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the libraries"
+    },
+    {
+     "name": "Add",
+     "use": "add one .csl library file; CopyLocally (default False) presumably copies the file into the local library folder instead of using it in place (unverified)"
+    },
+    {
+     "name": "AddFromFolder",
+     "use": "add all libraries in a folder, optionally recursive; returns the count added"
+    }
+   ],
+   "gotchas": [
+    "Adding a library changes the Symbols docker for later sessions too (unverified that it persists).",
+    "With CopyLocally = False the library is presumably used in place, so symbols placed from it can break (SymbolDefinition.IsLinkBroken) if the .csl is moved later (unverified: the type library does not describe CopyLocally).",
+    "Which name Item(\"...\") matches (library Name vs file name) is not stated (unverified); compare SymbolLibrary.Name or FilePath in a loop to be safe."
+   ],
+   "example": "Set libs = Application.SymbolLibraries\nSet lib = libs.Add(\"D:\\Brand\\icons.csl\", False)\nDebug.Print libs.Count, lib.Name, lib.Symbols.Count\nn = libs.AddFromFolder(\"D:\\Brand\\Symbols\", True)\nDebug.Print n & \" libraries added\"",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "CopyLocally meaning was stated as fact; the type library gives only the name, so marked unverified in Add and the gotcha"
+   }
+  },
+  {
+   "name": "SymbolLibrary",
+   "id": "class:SymbolLibrary",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SymbolLibrary",
+   "status": "current",
+   "summary": "One symbol library: either the local library inside a document (ActiveDocument.SymbolLibrary), which holds that file's symbol definitions, or an external .csl library from Application.SymbolLibraries. It gives the library's symbols, name, path and read-only state.",
+   "use_for": [
+    "purging unused symbols from a template before handing it off",
+    "placing icons from a shared library with Layer.CreateSymbol(x, y, name, library)",
+    "copying a symbol between documents: SymbolDefinition.Copy, then Paste into the target document's library"
+   ],
+   "avoid": [
+    "deleting the local library: Delete works on external libraries only",
+    "writing to a library whose ReadOnly is True"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGSymbolLibrary. Local: ActiveDocument.SymbolLibrary. External: Application.SymbolLibraries(i) or the return value of SymbolLibraries.Add. Symbols lists its IVGSymbolDefinition objects.",
+   "key_members": [
+    {
+     "name": "Symbols",
+     "use": "the definitions in this library (IVGSymbolDefinitions)"
+    },
+    {
+     "name": "Name",
+     "use": "library name"
+    },
+    {
+     "name": "FilePath",
+     "use": "full path of the library file"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "True when the library cannot be changed"
+    },
+    {
+     "name": "PurgeUnusedSymbols",
+     "use": "remove symbols the current document does not use (local library only)"
+    },
+    {
+     "name": "Paste",
+     "use": "paste a symbol from the clipboard into this library, optionally renamed (local library only)"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the library (external libraries only)"
+    }
+   ],
+   "gotchas": [
+    "PurgeUnusedSymbols and Paste work on the local library only; Delete works on external libraries only (stated in the type library).",
+    "Whether Delete on an external library also deletes the .csl file on disk or only removes it from the list is not stated (unverified); assume the file may go.",
+    "To place a symbol from an external library pass the library as the 4th argument of Layer.CreateSymbol; without it the name is presumably looked up in the local library (unverified; Library defaults to 0 / Nothing)."
+   ],
+   "example": "Set loc = ActiveDocument.SymbolLibrary\nloc.PurgeUnusedSymbols\nDebug.Print loc.Name, loc.Symbols.Count\nSet ext = Application.SymbolLibraries.Item(1)\nActiveLayer.CreateSymbol 1, 1, ext.Symbols.Item(1).Name, ext",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "local-library fallback of CreateSymbol marked unverified"
+   }
+  },
+  {
+   "name": "SystemPrinters",
+   "id": "class:SystemPrinters",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/SystemPrinters",
+   "status": "current",
+   "summary": "The printers installed in Windows, as CorelDRAW's print engine sees them (Application.Printers), plus the system default printer. Each entry is a printer object with its name, port, PostScript and colour capability.",
+   "use_for": [
+    "choosing a PostScript-capable proof printer from a script before PrintOut",
+    "preflighting that the expected proof or plotter printer is installed before an automated print run"
+   ],
+   "avoid": [
+    "setting the job's printer by name: Document.PrintSettings.SelectPrinter(Name) is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass from the print engine (also in CdrPrn); members live on IPrnVBAPrinters. Reach it with Application.Printers. Item(n) and Default return IPrnVBAPrinter objects (Name, Port, Ready, PostScriptEnabled, ColorEnabled ...); assign one to ActiveDocument.PrintSettings.Printer.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of installed printers"
+    },
+    {
+     "name": "Item",
+     "use": "one printer by numeric index"
+    },
+    {
+     "name": "Default",
+     "use": "the Windows default printer"
+    }
+   ],
+   "gotchas": [
+    "Item takes a numeric index only (no name lookup) and the collection has no _NewEnum, so use a For i = 1 To Count loop rather than For Each (base 1 unverified).",
+    "The list is read when you ask; network printers that are offline may still be listed (check IPrnVBAPrinter.Ready) (unverified)."
+   ],
+   "example": "Set ps = Application.Printers\nFor i = 1 To ps.Count\n    Debug.Print ps.Item(i).Name, ps.Item(i).PostScriptEnabled\nNext i\nSet ActiveDocument.PrintSettings.Printer = ps.Default",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Text",
+   "id": "class:Text",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Text",
+   "status": "current",
+   "summary": "The text of one artistic or paragraph text shape (Shape.Text): its type, the whole story across linked frames, its frames, overflow state, find / replace, import / export and conversion between artistic and paragraph text.",
+   "use_for": [
+    "template fill: replace placeholder copy in poster, flyer or certificate text",
+    "detecting overflowing paragraph frames before export, then shrinking the text to fit",
+    "converting a headline between artistic and paragraph text, or fitting it to a path"
+   ],
+   "avoid": [
+    "character-level formatting: use Story (an IVGTextRange) or Range(...) for font, size, colour",
+    "non-text shapes: Shape.Text is only meaningful when Shape.Type is a text shape"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:TextItem",
+    "AI": "class:TextFrameItem"
+   },
+   "how": "Coclass; members live on IVGText. Reach it with Shape.Text on a text shape, e.g. after Layer.CreateArtisticText or Layer.CreateParagraphText. Story is the full text as an IVGTextRange; Range(Start, End) a slice; Frame / Frames the paragraph-text frames.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "cdrArtisticText, cdrParagraphText or the fitted-to-path variants"
+    },
+    {
+     "name": "IsArtisticText",
+     "use": "quick artistic-vs-paragraph test"
+    },
+    {
+     "name": "Story",
+     "use": "all text in all linked frames as an IVGTextRange"
+    },
+    {
+     "name": "Contents",
+     "use": "plain text string; Frames argument picks this frame / from here / all frames"
+    },
+    {
+     "name": "Range",
+     "use": "an IVGTextRange of characters Start..End"
+    },
+    {
+     "name": "Selection",
+     "use": "the text selected in the editor, as a range"
+    },
+    {
+     "name": "Frame",
+     "use": "the current text frame"
+    },
+    {
+     "name": "Frames",
+     "use": "all frames of the chain"
+    },
+    {
+     "name": "FramesInLink",
+     "use": "number of frames in the linked chain"
+    },
+    {
+     "name": "Overflow",
+     "use": "True when text does not fit the chain of frames"
+    },
+    {
+     "name": "FitTextToFrame",
+     "use": "resize the text so it fits the frame"
+    },
+    {
+     "name": "Find",
+     "use": "find a string; returns its position"
+    },
+    {
+     "name": "Replace",
+     "use": "replace one or all occurrences"
+    },
+    {
+     "name": "ConvertToArtistic",
+     "use": "paragraph -> artistic text"
+    },
+    {
+     "name": "ConvertToParagraph",
+     "use": "artistic -> paragraph text"
+    },
+    {
+     "name": "FitToPath",
+     "use": "fit the text to a path shape; returns the effect"
+    },
+    {
+     "name": "FontProperties",
+     "use": "font properties as a structure, per frame scope"
+    },
+    {
+     "name": "ImportFromFile",
+     "use": "insert text from a file at a position"
+    },
+    {
+     "name": "ExportToFile",
+     "use": "write a range of the text to a file"
+    }
+   ],
+   "gotchas": [
+    "Contents and the *Properties members default to Frames = cdrAllFrames (2): on a linked chain you read/write the whole story; pass cdrThisFrameOnly (0) for one frame.",
+    "Overflow, FramesInLink and FitTextToFrame only make sense for paragraph text; check Type first.",
+    "Replace with ReplaceAll = False changes only the first match from StartIndex; pass ReplaceAll True for all.",
+    "FitTextToFrame changes the point size of the text, so a fixed type scale is lost.",
+    "Whether Range / Find character positions start at 0 or 1 is not stated; Find's StartIndex defaults to 1, so assume base 1 there (unverified for Range)."
+   ],
+   "example": "Set s = ActiveLayer.CreateParagraphText(1, 6, 5, 2, \"Summer Sale\")\nSet t = s.Text\nt.Story.Font = \"Arial\"\nt.Story.Size = 36\nt.Replace \"Summer\", \"Winter\", False\nIf t.Overflow Then t.FitTextToFrame\nDebug.Print t.Type, t.Contents",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextCharacters",
+   "id": "class:TextCharacters",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextCharacters",
+   "status": "current",
+   "summary": "The characters of a text range (TextRange.Characters), each returned as its own one-character TextRange, so a script can style letters one by one (colour cycling, per-letter rotation or baseline shift).",
+   "use_for": [
+    "rainbow or alternating-colour headline letters",
+    "playful per-letter rotation / bounce on a kids' poster title",
+    "enlarging the first letter of a story without a drop-cap effect"
+   ],
+   "avoid": [
+    "styling words or lines: TextWords / TextLines are simpler",
+    "whole-range formatting: set it on the TextRange directly, it is much faster than a per-character loop"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Characters"
+   },
+   "how": "Coclass; members live on IVGTextCharacters. Reach it with Shape.Text.Story.Characters (or any TextRange.Characters). Item(Index, Count) returns a TextRange covering Count characters from Index.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of characters, including paragraph breaks"
+    },
+    {
+     "name": "Item",
+     "use": "a TextRange of Count characters starting at Index"
+    },
+    {
+     "name": "First",
+     "use": "the first character as a TextRange"
+    },
+    {
+     "name": "Last",
+     "use": "the last character as a TextRange"
+    },
+    {
+     "name": "All",
+     "use": "every character as one TextRange"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the characters"
+    }
+   ],
+   "gotchas": [
+    "Count includes paragraph breaks (stated), so a loop also visits break characters; skip them when colouring.",
+    "Index base is not stated for characters; sibling collections (TextWords, TextFrames) are base 1 (unverified here).",
+    "Inserting or deleting text inside the loop shifts later indexes; collect first or walk backwards.",
+    "VertShift / HorizShift are whole numbers; they are believed to be a percentage of the point size (unverified)."
+   ],
+   "example": "Set ch = ActiveShape.Text.Story.Characters\nFor i = 1 To ch.Count\n    ch.Item(i).CharAngle = (i Mod 2) * 10\n    ch.Item(i).VertShift = (i Mod 3) * 10\nNext i\nch.First.Size = 72",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextColumns",
+   "id": "class:TextColumns",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextColumns",
+   "status": "current",
+   "summary": "The text that falls in each column of a multi-column paragraph text frame (TextRange.Columns), each column returned as a TextRange, so a script can read or format column by column.",
+   "use_for": [
+    "reading which copy landed in each column of a newsletter or brochure frame",
+    "formatting the text of one column differently (e.g. a sidebar column)",
+    "checking whether the last column is nearly empty before export"
+   ],
+   "avoid": [
+    "creating or resizing columns: that is TextFrame.SetColumns, not this collection",
+    "artistic text: it has no columns"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextColumns. Reach it with Shape.Text.Story.Columns (TextRange.Columns). Item(Index, Count) returns the text of Count columns from Index as one TextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of columns the range spans"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of the given column(s), base 1"
+    },
+    {
+     "name": "First",
+     "use": "text of the first column"
+    },
+    {
+     "name": "Last",
+     "use": "text of the last column"
+    },
+    {
+     "name": "All",
+     "use": "text of all columns"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the columns"
+    }
+   ],
+   "gotchas": [
+    "The type library text for Item says 'specified word'; that is a copy-paste slip, Item returns a column's text.",
+    "Columns follow the current layout: changing font size or frame width reflows text between columns, so re-read after edits.",
+    "Column count and widths are read from TextFrame (ColumnCount, ColumnWidth), not from here."
+   ],
+   "example": "Set cols = ActiveShape.Text.Story.Columns\nDebug.Print cols.Count\nFor i = 1 To cols.Count\n    Debug.Print i, cols.Item(i).Length\nNext i\ncols.Last.Italic = True",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFrame",
+   "id": "class:TextFrame",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextFrame",
+   "status": "current",
+   "summary": "One frame of a paragraph text chain: its text, its place in the chain (previous / next), vertical alignment, columns, links to other frames, container or path, and its own background fill.",
+   "use_for": [
+    "flowing a long article from one frame into the next on a brochure spread (LinkTo)",
+    "setting three equal columns on a newsletter frame",
+    "centering copy vertically in a fixed-size badge or button frame",
+    "giving a text frame its own background colour"
+   ],
+   "avoid": [
+    "formatting characters: use the frame's Range (an IVGTextRange) or Text.Story"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:TextFrameItem"
+   },
+   "how": "Coclass; members live on IVGTextFrame. Reach it with Shape.Text.Frame (the shape's own frame) or Shape.Text.Frames.Item(i) / .First / .Last. FrameShape returns the text shape hosting the frame.",
+   "key_members": [
+    {
+     "name": "Range",
+     "use": "the text in this frame as an IVGTextRange"
+    },
+    {
+     "name": "Index",
+     "use": "position in the chain"
+    },
+    {
+     "name": "Previous",
+     "use": "previous frame of the chain"
+    },
+    {
+     "name": "Next",
+     "use": "next frame of the chain"
+    },
+    {
+     "name": "IsFirst",
+     "use": "this is the first frame"
+    },
+    {
+     "name": "IsLast",
+     "use": "this is the last frame"
+    },
+    {
+     "name": "Empty",
+     "use": "no text has flowed into this frame"
+    },
+    {
+     "name": "VerticalAlignment",
+     "use": "cdrTopJustify, cdrCenterJustify, cdrBottomJustify or cdrFullJustify"
+    },
+    {
+     "name": "SetColumns",
+     "use": "create columns: count, equal widths, widths-and-gutters array"
+    },
+    {
+     "name": "ColumnCount",
+     "use": "number of columns"
+    },
+    {
+     "name": "ColumnWidth",
+     "use": "width of a column"
+    },
+    {
+     "name": "ColumnGutter",
+     "use": "space between columns"
+    },
+    {
+     "name": "LinkTo",
+     "use": "flow overflow text into another shape"
+    },
+    {
+     "name": "UnLink",
+     "use": "break the chain at this frame"
+    },
+    {
+     "name": "FrameShape",
+     "use": "the text shape that hosts this frame"
+    },
+    {
+     "name": "Container",
+     "use": "the container shape when text is placed inside an object"
+    },
+    {
+     "name": "IsFittedToPath",
+     "use": "text runs along a path"
+    },
+    {
+     "name": "Path",
+     "use": "the path shape for fitted text"
+    },
+    {
+     "name": "Fill",
+     "use": "background fill of the frame"
+    }
+   ],
+   "gotchas": [
+    "SetColumns' WidthsAndGutters array layout (width, gutter pairs per column) and whether it is ignored when EqualColumns is True are not stated (unverified).",
+    "Fill is the frame background, not the character colour; character colour is Range.Fill.",
+    "ColumnWidth / ColumnGutter take a column index whose base is not stated (unverified).",
+    "LinkTo expects a shape that can hold text (an empty paragraph frame or a closed object); other shapes probably raise an error (unverified)."
+   ],
+   "example": "Set a = ActiveLayer.CreateParagraphText(1, 10, 4, 6, Replace(Space(300), \" \", \"text \"))\nSet b = ActiveLayer.CreateParagraphText(5, 10, 8, 6, \"\")\na.Text.Frame.LinkTo b\na.Text.Frame.VerticalAlignment = cdrCenterJustify\na.Text.Frame.Fill.UniformColor.RGBAssign 255, 240, 200\nDebug.Print a.Text.Frame.IsLast, b.Text.Frame.Index",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example filled the frame with one 800-character word (String repeats one character, no spaces), which may not wrap and flow; now 300 real words so LinkTo visibly flows"
+   }
+  },
+  {
+   "name": "TextFrames",
+   "id": "class:TextFrames",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextFrames",
+   "status": "current",
+   "summary": "The frames of a paragraph text chain (Text.Frames), or the frames a text range touches (TextRange.Frames). Walk them to find empty or overflowing frames, or get the text of a run of frames.",
+   "use_for": [
+    "removing empty trailing frames after copy was shortened",
+    "listing which frame of a multi-page article holds which text",
+    "getting the text of frames 2-3 as one range"
+   ],
+   "avoid": [
+    "single-frame text: Text.Frame is enough"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextFrameItems"
+   },
+   "how": "Coclass; members live on IVGTextFrames. Reach it with Shape.Text.Frames or TextRange.Frames. Item / First / Last return IVGTextFrame objects; Range(Index, Count) and All return the text as an IVGTextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of frames"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextFrame, base 1"
+    },
+    {
+     "name": "First",
+     "use": "the first frame (an IVGTextFrame, not a range)"
+    },
+    {
+     "name": "Last",
+     "use": "the last frame"
+    },
+    {
+     "name": "Range",
+     "use": "text of Count frames from Index as a TextRange"
+    },
+    {
+     "name": "All",
+     "use": "text of every frame as a TextRange"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the frames"
+    }
+   ],
+   "gotchas": [
+    "Unlike TextWords / TextLines, First and Last here return frames, not text ranges; use Range or All for text.",
+    "TextRange.Frames lists only the frames that range spans, not the whole chain.",
+    "Deleting a frame's shape while iterating with For Each changes the chain; collect the shapes first, then delete."
+   ],
+   "example": "Set fr = ActiveShape.Text.Frames\nFor Each f In fr\n    Debug.Print f.Index, f.Empty, f.FrameShape.Name\nNext f\nIf fr.Last.Empty Then fr.Last.FrameShape.Delete",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextIndentLevelStyle",
+   "id": "class:TextIndentLevelStyle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextIndentLevelStyle",
+   "status": "current",
+   "summary": "The bullet or numbering style of one list indent level in paragraph text (multi-level lists): bullet character or number scheme, its font, size, baseline shift, number format and the indent of the bullet area.",
+   "use_for": [
+    "numbered steps (1., 2., 3.) or Roman-numeral sections in a brochure or manual",
+    "nested bullet lists with a different bullet per level",
+    "matching a brand's custom bullet glyph and size"
+   ],
+   "avoid": [
+    "simple single-level bullets: TextRange.ApplyBulletEffect with BulletSymbol / BulletFont is enough"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ListStyle"
+   },
+   "how": "Coclass; members live on IVGTextIndentLevelStyle. Reach it through a range: Shape.Text.Story.IndentLevelStyles.Item(n). Set a paragraph's level with TextRange.IndentLevel and switch the list on with TextRange.ApplyBulletEffect.",
+   "key_members": [
+    {
+     "name": "Level",
+     "use": "which indent level this style describes"
+    },
+    {
+     "name": "NumberStyle",
+     "use": "cdrTextIndentLevelStyle scheme: bullet, Roman, Latin letters, other scripts"
+    },
+    {
+     "name": "Format",
+     "use": "number format with prefix / suffix around the bullet placeholder"
+    },
+    {
+     "name": "Symbol",
+     "use": "bullet character"
+    },
+    {
+     "name": "Font",
+     "use": "font of the bullet or number"
+    },
+    {
+     "name": "UseParagraphFont",
+     "use": "use the paragraph's own font for the number"
+    },
+    {
+     "name": "Size",
+     "use": "bullet / number size in points"
+    },
+    {
+     "name": "BaselineShift",
+     "use": "vertical shift of the bullet in points"
+    },
+    {
+     "name": "FirstCharIndent",
+     "use": "width of the bullet / number area"
+    },
+    {
+     "name": "FirstCharIndentIncludesBullet",
+     "use": "whether that width includes the bullet"
+    },
+    {
+     "name": "HangingIndent",
+     "use": "hanging indent for list paragraphs"
+    }
+   ],
+   "gotchas": [
+    "Format uses a placeholder for the bullet/number, but the placeholder token is not given in the type library (unverified); read Format on a list made in the UI to see it.",
+    "Symbol only matters for the bullet scheme (cdrTextIndentLevelStyleBullet); numeric schemes ignore it (unverified).",
+    "The base of IndentLevelStyles.Item and of Level (0 or 1) is not stated (unverified).",
+    "Size and BaselineShift are in points; FirstCharIndent is a length in document units (unverified)."
+   ],
+   "example": "Set r = ActiveShape.Text.Story\nr.ApplyBulletEffect\nSet lv = r.IndentLevelStyles.Item(1)\nlv.NumberStyle = cdrTextIndentLevelStyleUppercaseRomanNumeral\nlv.UseParagraphFont = True\nr.Paragraphs.Item(2).IndentLevel = 2",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextIndentLevelStyles",
+   "id": "class:TextIndentLevelStyles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextIndentLevelStyles",
+   "status": "current",
+   "summary": "The list styles of every indent level available to a text range (TextRange.IndentLevelStyles), one TextIndentLevelStyle per level of a multi-level bullet or numbered list.",
+   "use_for": [
+    "setting bullet glyphs for all levels of a nested list in one loop",
+    "reading the list setup of a template paragraph before copying it"
+   ],
+   "avoid": [
+    "setting which level a paragraph is on: that is TextRange.IndentLevel"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextIndentLevelStyles. Reach it with Shape.Text.Story.IndentLevelStyles (any IVGTextRange).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of indent levels available"
+    },
+    {
+     "name": "Item",
+     "use": "the IVGTextIndentLevelStyle of one level"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the levels"
+    }
+   ],
+   "gotchas": [
+    "The styles belong to the paragraphs in the range; a range spanning differently styled paragraphs may report the first paragraph's styles (unverified).",
+    "Item base (0 or 1) is not stated (unverified); compare TextIndentLevelStyle.Level."
+   ],
+   "example": "For Each lv In ActiveShape.Text.Story.IndentLevelStyles\n    lv.NumberStyle = cdrTextIndentLevelStyleBullet\n    lv.Symbol = ChrW(8226)\n    Debug.Print lv.Level, lv.Size\nNext lv",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextLines",
+   "id": "class:TextLines",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextLines",
+   "status": "current",
+   "summary": "The lines of a text range as they are currently laid out (TextRange.Lines), each returned as a TextRange, so a script can style the first line, check the last line, or count lines to fit copy.",
+   "use_for": [
+    "small caps or bold lead-in on the first line of an article",
+    "spotting a widow (a last line with one short word) before export",
+    "counting lines to check that copy fits a fixed layout"
+   ],
+   "avoid": [
+    "logical units: line breaks move whenever text reflows; use TextParagraphs or TextWords for stable units"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Lines"
+   },
+   "how": "Coclass; members live on IVGTextLines. Reach it with Shape.Text.Story.Lines (TextRange.Lines). Item(Index, Count) returns Count lines from Index as one TextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of lines"
+    },
+    {
+     "name": "Item",
+     "use": "a TextRange of Count lines starting at Index"
+    },
+    {
+     "name": "First",
+     "use": "first line as a TextRange"
+    },
+    {
+     "name": "Last",
+     "use": "last line as a TextRange"
+    },
+    {
+     "name": "All",
+     "use": "all lines as one TextRange"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the lines"
+    }
+   ],
+   "gotchas": [
+    "Lines depend on the current layout: changing font, size, spacing or frame width reflows the text, so re-read Lines after every formatting change.",
+    "Styling the first line (e.g. making it larger) can push words to the next line; the range you held no longer matches a visual line.",
+    "Whether a line range includes its trailing space or break is not stated (unverified); Trim before comparing text."
+   ],
+   "example": "Set ln = ActiveShape.Text.Story.Lines\nDebug.Print ln.Count\nln.First.Case = cdrSmallCapsFontCase\nIf ln.Last.Words.Count < 2 Then\n    ActiveShape.Text.Story.CharSpacing = -5\nEnd If",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextParagraphs",
+   "id": "class:TextParagraphs",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextParagraphs",
+   "status": "current",
+   "summary": "The paragraphs of a text range (TextRange.Paragraphs), each returned as a TextRange, so a script can format headline, body and caption paragraphs of one text object differently.",
+   "use_for": [
+    "styling the first paragraph as a headline and the rest as body copy",
+    "setting space-after on every paragraph of a menu or price list",
+    "applying a paragraph style to selected paragraphs"
+   ],
+   "avoid": [
+    "character runs inside a paragraph: use TextWords / TextCharacters or TextRange.Range"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Paragraphs"
+   },
+   "how": "Coclass; members live on IVGTextParagraphs. Reach it with Shape.Text.Story.Paragraphs (TextRange.Paragraphs). Item(Index, Count) returns Count paragraphs from Index as one TextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of paragraphs"
+    },
+    {
+     "name": "Item",
+     "use": "a TextRange of Count paragraphs starting at Index"
+    },
+    {
+     "name": "First",
+     "use": "first paragraph as a TextRange"
+    },
+    {
+     "name": "Last",
+     "use": "last paragraph as a TextRange"
+    },
+    {
+     "name": "All",
+     "use": "all paragraphs as one TextRange"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the paragraphs"
+    }
+   ],
+   "gotchas": [
+    "Paragraph ranges include the paragraph break character, so setting text on one may merge it with the next (unverified); use InsertBefore / InsertAfter for edits.",
+    "Paragraph-level properties (Alignment, ParaSpacingBefore/After, indents) apply to whole paragraphs even when the range covers only part of one."
+   ],
+   "example": "Set p = ActiveShape.Text.Story.Paragraphs\np.First.Size = 28\np.First.Bold = True\nFor i = 2 To p.Count\n    p.Item(i).Alignment = cdrLeftAlignment\nNext i",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextRange",
+   "id": "class:TextRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextRange",
+   "status": "current",
+   "summary": "A run of characters in a text object (from Text.Story, Text.Range or the Characters / Words / Lines / Paragraphs collections): read or change its text, font, size, style, colour, spacing, alignment, bullets, drop caps, tabs, OpenType features and text styles.",
+   "use_for": [
+    "setting headline font, size, weight and colour from a script",
+    "colouring one keyword in a sentence",
+    "inserting or replacing copy while keeping its formatting",
+    "switching OpenType features (ligatures, small caps) or applying a named text style",
+    "drop caps and bulleted lists in paragraph text"
+   ],
+   "avoid": [
+    "frame-level settings (columns, vertical alignment, linking): use TextFrame",
+    "text in many shapes at once: loop shapes, or use styles so one style edit updates everything"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TextRange"
+   },
+   "how": "Coclass; members live on IVGTextRange. Get one from Shape.Text.Story (all text), Shape.Text.Range(Start, End), Shape.Text.Selection, or the Item / First / Last of Characters, Words, Lines, Paragraphs, Columns and Frames. Formatting members are read/write; Fill and Outline return objects you modify.",
+   "key_members": [
+    {
+     "name": "Text",
+     "use": "the characters as a string (get / set)"
+    },
+    {
+     "name": "Start",
+     "use": "start position in the text stream"
+    },
+    {
+     "name": "End",
+     "use": "end position in the text stream"
+    },
+    {
+     "name": "Length",
+     "use": "number of characters"
+    },
+    {
+     "name": "Font",
+     "use": "font name"
+    },
+    {
+     "name": "Size",
+     "use": "font size in points"
+    },
+    {
+     "name": "Bold",
+     "use": "bold on / off"
+    },
+    {
+     "name": "Italic",
+     "use": "italic on / off"
+    },
+    {
+     "name": "Fill",
+     "use": "character fill (colour) object"
+    },
+    {
+     "name": "Outline",
+     "use": "character outline object"
+    },
+    {
+     "name": "Alignment",
+     "use": "paragraph alignment (cdrAlignment)"
+    },
+    {
+     "name": "CharSpacing",
+     "use": "character spacing (tracking)"
+    },
+    {
+     "name": "SetLineSpacing",
+     "use": "set line-spacing type, value and paragraph spacing together"
+    },
+    {
+     "name": "Characters",
+     "use": "the characters of the range"
+    },
+    {
+     "name": "Words",
+     "use": "the words of the range"
+    },
+    {
+     "name": "Paragraphs",
+     "use": "the paragraphs of the range"
+    },
+    {
+     "name": "InsertAfter",
+     "use": "add text after the range; returns the inserted part"
+    },
+    {
+     "name": "Replace",
+     "use": "replace the range with new text; returns the new range"
+    },
+    {
+     "name": "ApplyStyle",
+     "use": "apply a named character / paragraph style"
+    },
+    {
+     "name": "SetOpenTypeFeature",
+     "use": "turn an OpenType feature (e.g. \"liga\", \"smcp\") on or off"
+    }
+   ],
+   "gotchas": [
+    "Fill and Outline are read-only references: change colour through them (r.Fill.UniformColor.RGBAssign ...), do not assign a new Fill.",
+    "Size is in points whatever ActiveDocument.Unit is; indents and HyphenHotZone are lengths (document unit, unverified).",
+    "LineSpacing is read in the unit given by LineSpacingType, which is read-only: change both with SetLineSpacing.",
+    "Reading Font / Size / Bold on a range with mixed formatting returns a 'mixed' value (empty string, 0 or cdrMixed...) rather than an error (unverified); split with EnumRanges first.",
+    "Range(Start, End) on a TextRange is relative to that range's start; Start / End of Text.Range are stream positions whose base (0 or 1) is not stated (unverified).",
+    "FindRanges and Evaluate take CQL query strings; the query syntax is not in the type library (unverified)."
+   ],
+   "example": "Set s = ActiveLayer.CreateArtisticText(1, 1, \"BIG SALE today\")\nSet r = s.Text.Story\nr.Font = \"Arial\": r.Size = 48: r.Bold = True\nr.Words.Item(1).Fill.UniformColor.RGBAssign 220, 20, 60\nr.InsertAfter \"!\"\nr.SetOpenTypeFeature \"liga\", 1",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextRanges",
+   "id": "class:TextRanges",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextRanges",
+   "status": "current",
+   "summary": "A list of separate text ranges, returned by TextRange.EnumRanges (runs that share the same formatting) and TextRange.FindRanges (ranges matching a CQL query). Walk it to fix formatting run by run.",
+   "use_for": [
+    "replacing one font with another everywhere in a story, run by run",
+    "finding every run in a given colour or size and changing it",
+    "auditing which fonts and sizes a long text object really uses"
+   ],
+   "avoid": [
+    "simple find / replace of words: Text.Replace is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:TextRanges"
+   },
+   "how": "Coclass; members live on IVGTextRanges. Returned by IVGTextRange.EnumRanges(PropertyFilter) (cdrTextPropertySet flags: font, size, fill, outline, style, all) and IVGTextRange.FindRanges(Query). Reverse returns the same ranges in reverse order.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of ranges"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextRange by index"
+    },
+    {
+     "name": "First",
+     "use": "first range"
+    },
+    {
+     "name": "Last",
+     "use": "last range"
+    },
+    {
+     "name": "Reverse",
+     "use": "a new collection in reverse order"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the ranges"
+    }
+   ],
+   "gotchas": [
+    "When an edit changes text length, later ranges shift; walk Reverse so earlier positions stay valid.",
+    "EnumRanges' PropertyFilter decides what counts as 'same formatting' (cdrTextPropertyFont, cdrTextPropertySize ...); the default -1 splits on every attribute.",
+    "FindRanges' CQL query syntax is not documented in the type library (unverified)."
+   ],
+   "example": "Set runs = ActiveShape.Text.Story.EnumRanges(cdrTextPropertyFont)\nDebug.Print runs.Count\nFor Each r In runs.Reverse\n    If r.Font = \"Arial\" Then r.Font = \"Verdana\"\nNext r",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextTabPosition",
+   "id": "class:TextTabPosition",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextTabPosition",
+   "status": "current",
+   "summary": "One tab stop of a paragraph: its horizontal position, alignment (left, right, centre, decimal), whether it draws a leader (dot) line, and its index.",
+   "use_for": [
+    "decimal tab for prices in a restaurant menu or price list",
+    "right-aligned tab with dot leaders for a table of contents",
+    "moving one tab stop of a template paragraph"
+   ],
+   "avoid": [
+    "real tables with borders and cells: use a table object instead of tabs"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TabStopInfo"
+   },
+   "how": "Coclass; members live on IVGTextTabPosition. Reach it through a range's tab stops: Shape.Text.Story.Tabs.Item(i), or as the return value of Tabs.Add(Position, Alignment, Leadered).",
+   "key_members": [
+    {
+     "name": "Position",
+     "use": "horizontal position of the stop in the text frame"
+    },
+    {
+     "name": "Alignment",
+     "use": "cdrTextTabLeft, cdrTextTabRight, cdrTextTabCenter or cdrTextTabDecimal"
+    },
+    {
+     "name": "Leadered",
+     "use": "fill the gap before the stop with leader characters"
+    },
+    {
+     "name": "Index",
+     "use": "index of this stop among the paragraph's stops"
+    },
+    {
+     "name": "Delete",
+     "use": "remove this tab stop"
+    }
+   ],
+   "gotchas": [
+    "Position is measured from the frame's left edge in document units (unverified); set ActiveDocument.Unit first.",
+    "The leader character and spacing are set for all stops on TextTabPositions (LeaderCharacter, LeaderSpacing), not per stop."
+   ],
+   "example": "Set tabs = ActiveShape.Text.Story.Tabs\ntabs.Clear\nSet t = tabs.Add(4, cdrTextTabDecimal, True)\nt.Position = 4.5\nDebug.Print t.Index, t.Alignment, t.Leadered",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextTabPositions",
+   "id": "class:TextTabPositions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextTabPositions",
+   "status": "current",
+   "summary": "The tab stops of the paragraphs in a text range (TextRange.Tabs): add one stop or a stop every N units, clear them all, and set the leader character and spacing used by leadered stops.",
+   "use_for": [
+    "menu or price-list layouts with dot leaders to the price",
+    "tables of contents with right-aligned page numbers",
+    "resetting inherited tab stops on pasted copy"
+   ],
+   "avoid": [
+    "bordered tabular data: a table object is easier to style"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextTabPositions. Reach it with Shape.Text.Story.Tabs (or any IVGTextRange.Tabs).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tab stops"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextTabPosition"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the stops"
+    },
+    {
+     "name": "Add",
+     "use": "add a stop at Position with alignment and leader flag; returns it"
+    },
+    {
+     "name": "AddEvery",
+     "use": "add stops at a regular interval"
+    },
+    {
+     "name": "Clear",
+     "use": "delete every tab stop in the range"
+    },
+    {
+     "name": "LeaderCharacter",
+     "use": "character used to fill leadered tabs"
+    },
+    {
+     "name": "LeaderSpacing",
+     "use": "spacing between leader characters"
+    }
+   ],
+   "gotchas": [
+    "Tabs are a paragraph attribute: a range covering part of a paragraph changes that whole paragraph (unverified).",
+    "Positions are lengths in the document unit (unverified); set ActiveDocument.Unit before Add.",
+    "The text needs real tab characters (vbTab) between columns for the stops to do anything."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nActiveShape.Text.Story.Text = \"Paneer Tikka\" & vbTab & \"320\"\nSet r = ActiveShape.Text.Story\nr.Tabs.Clear\nr.Tabs.Add 80, cdrTextTabRight, True\nr.Tabs.LeaderCharacter = \".\"",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example set the tabs and then replaced the whole story text, which can drop the new stops; text is now written first and tabs set after on a fresh Story range"
+   }
+  },
+  {
+   "name": "TextureFill",
+   "id": "class:TextureFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextureFill",
+   "status": "current",
+   "summary": "Settings of a texture fill: CorelDRAW's procedural bitmap textures (clouds, minerals, noise-like surfaces) chosen from a texture library, with tile size, origin, rotation, skew, mirroring, render resolution and the texture's own parameters.",
+   "use_for": [
+    "organic background textures (clouds, stone, paper-like grain) behind vector art",
+    "quick textured fills for posters without placing a photo",
+    "random-looking variations of one texture by changing its parameters"
+   ],
+   "avoid": [
+    "print files where size and RIP time matter: textures render as bitmaps; use a bitmap pattern fill or a placed texture image",
+    "exact brand colours: texture colours are parameters of the texture, check them in Properties"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextureFill. Reach it with Shape.Fill.Texture on a texture-filled shape, as the return of Shape.Fill.ApplyTextureFill(TextureName, LibraryName), or from Transparency.Texture for a texture transparency. Properties lists the texture's adjustable parameters.",
+   "key_members": [
+    {
+     "name": "Select",
+     "use": "choose a texture (and library) by name"
+    },
+    {
+     "name": "LibraryName",
+     "use": "texture library in use (read-only)"
+    },
+    {
+     "name": "TextureName",
+     "use": "texture in use (read-only)"
+    },
+    {
+     "name": "StyleName",
+     "use": "the texture's style name (read-only)"
+    },
+    {
+     "name": "Properties",
+     "use": "the texture's adjustable parameters"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set the parameters from an array"
+    },
+    {
+     "name": "Resolution",
+     "use": "render resolution"
+    },
+    {
+     "name": "MaximumTileWidth",
+     "use": "maximum tile width (pixels, unverified: the type library gives no unit)"
+    },
+    {
+     "name": "TileWidth",
+     "use": "tile width"
+    },
+    {
+     "name": "TileHeight",
+     "use": "tile height"
+    },
+    {
+     "name": "OriginX",
+     "use": "tile origin X"
+    },
+    {
+     "name": "OriginY",
+     "use": "tile origin Y"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "rotation of the texture"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "skew of the texture"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "texture scales / rotates with the object"
+    },
+    {
+     "name": "MirrorFillX",
+     "use": "mirror tiles horizontally"
+    },
+    {
+     "name": "MirrorFillY",
+     "use": "mirror tiles vertically"
+    }
+   ],
+   "gotchas": [
+    "Texture and library names are the app's own library entries; a wrong name in Select / ApplyTextureFill probably raises an error (unverified). Read LibraryName / TextureName from a fill set in the UI to get valid names.",
+    "Textures are rendered bitmaps: high Resolution / MaximumTileWidth make redraw, export and print slow and files large.",
+    "The type library describes MirrorFillY as 'horizontal' too; it is the vertical mirror (copy-paste slip, unverified by render).",
+    "The parameter list (Properties) differs per texture style; do not assume parameter names or order."
+   ],
+   "example": "Set tf = ActiveShape.Fill.Texture\nDebug.Print tf.LibraryName, tf.TextureName\ntf.Resolution = 300\ntf.TileWidth = 2: tf.TileHeight = 2\ntf.TransformWithShape = True\nDebug.Print tf.StyleName, tf.Properties.Count",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "MaximumTileWidth unit 'pixels' is not in the type library, marked unverified; example printed every Property.Value, which can fail on colour parameters (Value form unstated), replaced with StyleName / Properties.Count"
+   }
+  },
+  {
+   "name": "TextureFillProperties",
+   "id": "class:TextureFillProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextureFillProperties",
+   "status": "current",
+   "summary": "The adjustable parameters of one texture fill (TextureFill.Properties), such as the texture number (seed), softness, density and colours; which ones exist depends on the texture style.",
+   "use_for": [
+    "changing a texture's seed to get a different variation of the same texture",
+    "recolouring a texture fill to match a palette",
+    "reading a texture's settings to reproduce it elsewhere"
+   ],
+   "avoid": [
+    "fills that are not texture fills: Shape.Fill.Texture only applies to texture-filled shapes"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextureFillProperties. Reach it with Shape.Fill.Texture.Properties. Item takes an index or a parameter name.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of parameters"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextureFillProperty by index (base 1) or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the parameters"
+    }
+   ],
+   "gotchas": [
+    "Parameter names come from the texture style and may be localized in non-English installs (unverified); loop and read Name before using Item(\"name\").",
+    "Whether the fill re-renders immediately after a Value change or needs the fill re-applied is not stated (unverified)."
+   ],
+   "example": "Set props = ActiveShape.Fill.Texture.Properties\nFor Each p In props\n    If p.Type = cdrTexturePropertyNumeric Then Debug.Print p.Name, p.Value Else Debug.Print p.Name, \"(colour)\"\nNext p\nSet p = props.Item(1)\nIf p.Type = cdrTexturePropertyNumeric Then p.Value = p.Value + 1",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example printed Value of colour parameters and wrote an invented 1234 into Item(1) without checking its type; now prints only numeric values and bumps Item(1) only when it is numeric"
+   }
+  },
+  {
+   "name": "TextureFillProperty",
+   "id": "class:TextureFillProperty",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextureFillProperty",
+   "status": "current",
+   "summary": "One parameter of a texture fill: its name, its type (a number, or an RGB, HSB or CMYK colour) and its value.",
+   "use_for": [
+    "setting a texture's seed number for a new random variation",
+    "replacing a texture's colours with brand colours"
+   ],
+   "avoid": [
+    "guessing value ranges: they are not exposed, test a value in the UI first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextureFillProperty. Reach it with Shape.Fill.Texture.Properties.Item(i) or by walking that collection.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "parameter name"
+    },
+    {
+     "name": "Type",
+     "use": "cdrTexturePropertyNumeric, ColorRGB, ColorHSB or ColorCMYK"
+    },
+    {
+     "name": "Value",
+     "use": "the parameter's value (variant)"
+    }
+   ],
+   "gotchas": [
+    "Check Type before writing Value: a colour parameter does not take a plain number, and the exact form a colour Value takes (colour object or packed number) is not stated (unverified).",
+    "Valid ranges are not exposed; out-of-range numbers may be clamped or raise an error (unverified)."
+   ],
+   "example": "For Each p In ActiveShape.Fill.Texture.Properties\n    If p.Type = cdrTexturePropertyNumeric Then\n        Debug.Print p.Name, p.Value\n    End If\nNext p",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextVariableAxes",
+   "id": "class:TextVariableAxes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextVariableAxes",
+   "status": "current",
+   "summary": "The variation axes of the variable font used by a text range (TextRange.VariableAxes), such as weight, width, slant or optical size; empty for ordinary fonts.",
+   "use_for": [
+    "checking whether a font is variable before driving its axes",
+    "listing axis names and ranges to build a weight or width ramp across a headline"
+   ],
+   "avoid": [
+    "static fonts: Count is 0; pick another weight by font name instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextVariableAxes. Reach it with Shape.Text.Story.VariableAxes (any IVGTextRange).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of axes the range's font supports"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGTextVariableAxis"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the axes"
+    }
+   ],
+   "gotchas": [
+    "Axes describe the font of the range; on a range with mixed fonts the result is unclear (unverified), so work per run (EnumRanges).",
+    "Item base is not stated (unverified); For Each avoids the question."
+   ],
+   "example": "Set ax = ActiveShape.Text.Story.VariableAxes\nDebug.Print ax.Count\nFor Each a In ax\n    Debug.Print a.Name, a.MinValue, a.MaxValue, a.Value\nNext a",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextVariableAxis",
+   "id": "class:TextVariableAxis",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextVariableAxis",
+   "status": "current",
+   "summary": "One axis of a variable font for a text range: its OpenType tag and name, the current value and the minimum, maximum and default the font allows. Setting Value changes the weight, width or other axis of the text.",
+   "use_for": [
+    "a weight ramp from thin to black across the letters of a headline",
+    "narrowing a variable font's width axis to fit a long word on one line",
+    "matching an exact in-between weight that has no named instance"
+   ],
+   "avoid": [
+    "static fonts: they expose no axes"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTextVariableAxis. Reach it with Shape.Text.Story.VariableAxes.Item(i) or a For Each over VariableAxes; for per-letter values, go through Characters.Item(i).VariableAxes.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "axis name, e.g. Weight"
+    },
+    {
+     "name": "Tag",
+     "use": "OpenType axis tag packed into a number"
+    },
+    {
+     "name": "Value",
+     "use": "current axis value (get / set)"
+    },
+    {
+     "name": "MinValue",
+     "use": "lowest allowed value"
+    },
+    {
+     "name": "MaxValue",
+     "use": "highest allowed value"
+    },
+    {
+     "name": "DefaultValue",
+     "use": "the font's default value"
+    }
+   ],
+   "gotchas": [
+    "Tag is a number, not the 4-letter string ('wght'); the byte order of the packed tag is not stated (unverified), so match on Name.",
+    "Clamp to MinValue..MaxValue yourself; what happens outside the range is not stated (unverified).",
+    "Axis names come from the font and may differ between fonts (Weight vs wght)."
+   ],
+   "example": "For Each a In ActiveShape.Text.Story.VariableAxes\n    If a.Name = \"Weight\" Then\n        a.Value = a.MaxValue\n    End If\nNext a",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented example weight value 650"
+   }
+  },
+  {
+   "name": "TextWords",
+   "id": "class:TextWords",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TextWords",
+   "status": "current",
+   "summary": "The words of a text range (TextRange.Words), each returned as a TextRange, so a script can find and style individual words.",
+   "use_for": [
+    "colouring a keyword (FREE, NEW, a price) inside a headline",
+    "making the first word of every caption bold",
+    "word counts for copy-fitting"
+   ],
+   "avoid": [
+    "finding text that spans words or punctuation: Text.Find / TextRange.FindRanges"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Words"
+   },
+   "how": "Coclass; members live on IVGTextWords. Reach it with Shape.Text.Story.Words (TextRange.Words). Item(Index, Count) returns Count words from Index (base 1) as one TextRange.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of words"
+    },
+    {
+     "name": "Item",
+     "use": "a TextRange of Count words starting at Index, base 1"
+    },
+    {
+     "name": "First",
+     "use": "first word"
+    },
+    {
+     "name": "Last",
+     "use": "last word"
+    },
+    {
+     "name": "All",
+     "use": "every word as one TextRange"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the words"
+    }
+   ],
+   "gotchas": [
+    "A word range may include its trailing space or punctuation (unverified); Trim the Text before comparing.",
+    "Changing a word's text shifts the indexes of later words; walk backwards when editing."
+   ],
+   "example": "Set w = ActiveShape.Text.Story.Words\nFor i = 1 To w.Count\n    If UCase(Trim(w.Item(i).Text)) = \"FREE\" Then\n        w.Item(i).Fill.UniformColor.RGBAssign 230, 0, 0\n    End If\nNext i",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ToolShape",
+   "id": "class:ToolShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ToolShape",
+   "status": "current",
+   "summary": "Callback interface an add-in implements to make a custom 'tool shape': a parametric object whose geometry is generated by code from stored properties (like a smart badge or chart object). CorelDRAW calls OnGenerateShape whenever the shape must be drawn or rebuilt.",
+   "use_for": [
+    "custom parametric objects in an add-in (price badges, starbursts, dimensioned callouts) that rebuild when resized",
+    "objects whose geometry depends on stored settings rather than on node edits"
+   ],
+   "avoid": [
+    "ordinary macros that just draw shapes once: create them directly on a layer",
+    "quick scripts: a tool shape needs a registered class, attributes and a GUID"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGToolShape. You do not call it: implement IVGToolShape in a VBA class module or COM add-in, register it at startup with Application.RegisterToolShape(guid, attributes, instance) (attributes from Application.CreateToolShapeAttributes), and create shapes with Layer.CreateToolShape(guid, properties). CorelDRAW then calls OnGenerateShape with the target layer, the shape's stored Properties, its style and its transformation.",
+   "key_members": [
+    {
+     "name": "OnGenerateShape",
+     "use": "called to (re)build the geometry: draw onto Parent from ObjectProperties; IsPreviewOnly is True for interactive previews"
+    }
+   ],
+   "gotchas": [
+    "CorelDRAW calls OnGenerateShape, not your script; keep it fast and free of dialogs, it runs on every regenerate.",
+    "IsPreviewOnly = True during interactive edits: draw a cheap preview then (unverified how often it fires).",
+    "Registration lasts for the session (unverified); register again at every startup from a GMS module or add-in.",
+    "The exact VBA signature for Implements (parameter types Layer, Properties, Style, TransformMatrix) is inferred from the type library (unverified)."
+   ],
+   "example": "' class module PriceBadge\nImplements IVGToolShape\nPrivate Sub IVGToolShape_OnGenerateShape(ByVal Parent As Layer, ByVal ObjectProperties As Properties, _\n    ByVal pStyleAttributes As Style, ByVal pTransformation As TransformMatrix, ByVal IsPreviewOnly As Boolean)\n    Parent.CreateEllipse2 0, 0, 1   ' build the geometry here\nEnd Sub",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ToolShapeAttributes",
+   "id": "class:ToolShapeAttributes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ToolShapeAttributes",
+   "status": "current",
+   "summary": "Capability settings for a custom tool shape, passed to Application.RegisterToolShape: whether the shape can be resized, rotated, skewed or enveloped, whether it is regenerated on transform or style change, its default name and the GUIDs of its property bar, context menu and edit state.",
+   "use_for": [
+    "locking a parametric add-in shape against skew or envelope distortion",
+    "making a shape rebuild its geometry on resize instead of stretching (rounded corners, fixed stroke details)",
+    "giving custom shapes a readable default name in the Objects docker"
+   ],
+   "avoid": [
+    "ordinary shapes: these settings only apply to registered tool shapes"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGToolShapeAttributes. Create it with Application.CreateToolShapeAttributes, call the Set* methods, then pass it to Application.RegisterToolShape together with your IVGToolShape implementation.",
+   "key_members": [
+    {
+     "name": "SetCanResize",
+     "use": "allow resizing"
+    },
+    {
+     "name": "SetCanRotate",
+     "use": "allow rotation"
+    },
+    {
+     "name": "SetCanSkew",
+     "use": "allow skewing"
+    },
+    {
+     "name": "SetCanSizeDisproportionally",
+     "use": "allow non-proportional scaling"
+    },
+    {
+     "name": "SetCanApplyNonlinearTransforms",
+     "use": "allow envelope and other non-linear transforms"
+    },
+    {
+     "name": "SetRegenerateOnTransform",
+     "use": "call OnGenerateShape when the shape is resized"
+    },
+    {
+     "name": "SetRegenerateOnStyleChange",
+     "use": "call OnGenerateShape when its style changes"
+    },
+    {
+     "name": "SetDefaultShapename",
+     "use": "default object name"
+    },
+    {
+     "name": "SetPropertyBarGuid",
+     "use": "property bar shown for the shape"
+    },
+    {
+     "name": "SetContextMenuGuid",
+     "use": "context menu for the shape"
+    },
+    {
+     "name": "SetObjectManagerBitmapGuid",
+     "use": "icon in the object manager"
+    },
+    {
+     "name": "SetEditStateGuid",
+     "use": "tool state used to edit the shape"
+    }
+   ],
+   "gotchas": [
+    "All members are setters with no getters: keep your own record of what you set.",
+    "Set everything before RegisterToolShape; changes afterwards probably have no effect (unverified).",
+    "The GUIDs refer to UI items and tool states defined by your add-in (workspace XML / RegisterToolState) (unverified)."
+   ],
+   "example": "Set a = Application.CreateToolShapeAttributes\na.SetCanRotate True\na.SetCanSkew False\na.SetRegenerateOnTransform True\na.SetDefaultShapename \"Price Badge\"\nApplication.RegisterToolShape \"{0B8E3C52-7A11-4C0E-9D0A-5F2C6B1E9A01}\", a, New PriceBadge   ' your own GUID, not an app id",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "marked the GUID in the example as the add-in's own placeholder, not an app id"
+   }
+  },
+  {
+   "name": "ToolState",
+   "id": "class:ToolState",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ToolState",
+   "status": "current",
+   "summary": "Callback interface an add-in implements to make a custom interactive tool: CorelDRAW sends it mouse, keyboard, snap and timer events while the tool is active, so the add-in can draw or edit objects on the canvas the way a built-in tool does.",
+   "use_for": [
+    "a custom click-to-place tool (drop a badge, a callout or a dimension where the user clicks)",
+    "drag-to-draw tools for an add-in (custom arrows, measured lines) with snapping",
+    "interactive pickers that read a point on the page for a script"
+   ],
+   "avoid": [
+    "batch scripts with no user: a tool state needs someone clicking on the canvas",
+    "simple point input: a macro dialog with coordinates is far less work"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGToolState. Implement IVGToolState in a VBA class module or COM add-in, register it with Application.RegisterToolState(guid, name, instance), and activate it, e.g. temporarily with Application.StartTemporaryToolState(guid). CorelDRAW calls the On* methods; OnStartState hands you an IVGToolStateAttributes for cursor, snapping, timers and status text.",
+   "key_members": [
+    {
+     "name": "OnStartState",
+     "use": "tool activated; keep the StateAttributes it passes"
+    },
+    {
+     "name": "OnExitState",
+     "use": "tool deactivated: clean up"
+    },
+    {
+     "name": "OnMouseMove",
+     "use": "pointer moved (pt is the pointer position; unit: see gotchas)"
+    },
+    {
+     "name": "OnLButtonDown",
+     "use": "left button pressed"
+    },
+    {
+     "name": "OnLButtonDownLeaveGrace",
+     "use": "button held and mouse moved: a drag has started"
+    },
+    {
+     "name": "OnLButtonUp",
+     "use": "left button released"
+    },
+    {
+     "name": "OnClick",
+     "use": "a click without drag"
+    },
+    {
+     "name": "OnLButtonDblClick",
+     "use": "double click"
+    },
+    {
+     "name": "OnRButtonDown",
+     "use": "right button pressed"
+    },
+    {
+     "name": "OnKeyDown",
+     "use": "key pressed"
+    },
+    {
+     "name": "OnKeyUp",
+     "use": "key released"
+    },
+    {
+     "name": "OnDelete",
+     "use": "Delete key"
+    },
+    {
+     "name": "OnAbort",
+     "use": "Esc pressed"
+    },
+    {
+     "name": "OnCommit",
+     "use": "Enter pressed"
+    },
+    {
+     "name": "OnSnapMouse",
+     "use": "adjust the snapped position before a mouse move"
+    },
+    {
+     "name": "OnTimer",
+     "use": "a timer started with StartTimer fired"
+    },
+    {
+     "name": "IsDrawing",
+     "use": "report whether the tool is mid-drawing"
+    }
+   ],
+   "gotchas": [
+    "Several callbacks carry a Handled flag: set it True to stop CorelDRAW's default handling; it must be declared ByRef in VBA for that to work (unverified).",
+    "pt arrives as an IVGPoint; whether it is in document units or internal units is not stated (unverified); compare with a known shape position.",
+    "A temporary tool state must end itself (ToolStateAttributes.ExitTemporaryToolState), or the user stays in it (whether Esc / OnAbort ends it on its own is not stated, unverified).",
+    "The exact VBA Implements signatures are inferred from the type library (unverified)."
+   ],
+   "example": "Implements IVGToolState   ' VBA needs every On* member and IsDrawing implemented, even empty\nPrivate sa As ToolStateAttributes\nPrivate Sub IVGToolState_OnStartState(ByVal StateAttributes As ToolStateAttributes)\n    Set sa = StateAttributes: sa.SetCursor cdrCursorSmallcrosshair\nEnd Sub\nPrivate Sub IVGToolState_OnLButtonUp(ByVal pt As Point)\n    ActiveLayer.CreateEllipse2 pt.x, pt.y, 0.1: sa.ExitTemporaryToolState\nEnd Sub",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "OnMouseMove claimed page coordinates while a gotcha says the unit is unknown; 'until Esc' marked unverified; example implemented 2 of 18 members, which does not compile, so it now says every member must be implemented"
+   }
+  },
+  {
+   "name": "ToolStateAttributes",
+   "id": "class:ToolStateAttributes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ToolStateAttributes",
+   "status": "current",
+   "summary": "The services CorelDRAW gives a custom tool state (passed to IVGToolState.OnStartState): cursor, status-bar text, property bar and context menu, tablet pressure, auto-pan, snapping and constraining helpers, key tests, timers and mouse capture.",
+   "use_for": [
+    "giving a custom add-in tool a crosshair cursor and a status-bar hint",
+    "snapping a custom tool's clicks to nodes, guides and objects",
+    "pressure-sensitive custom drawing tools on a pen tablet",
+    "timed effects in a tool (auto-repeat, hover delays)"
+   ],
+   "avoid": [
+    "ordinary macros: it only exists while a registered tool state is active"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGToolStateAttributes. You receive it in IVGToolState.OnStartState; keep the reference for the life of the state and call its helpers from the other On* callbacks.",
+   "key_members": [
+    {
+     "name": "SetCursor",
+     "use": "set a built-in cursor (cdrCursorShape)"
+    },
+    {
+     "name": "SetCursorGuid",
+     "use": "set a custom cursor by GUID"
+    },
+    {
+     "name": "StatusInfo",
+     "use": "status-bar text"
+    },
+    {
+     "name": "PropertyBarGuid",
+     "use": "property bar shown while the tool is active"
+    },
+    {
+     "name": "ContextMenuGuid",
+     "use": "context menu for the tool"
+    },
+    {
+     "name": "UseTabletPressure",
+     "use": "read tablet pressure"
+    },
+    {
+     "name": "CurrentPressure",
+     "use": "current pen pressure (1.0 when pressure is off)"
+    },
+    {
+     "name": "AllowAutopan",
+     "use": "auto-scroll when dragging past the window edge"
+    },
+    {
+     "name": "AllowContextMenu",
+     "use": "allow the right-click menu"
+    },
+    {
+     "name": "AllowTempPickState",
+     "use": "allow temporary switch to the Pick tool"
+    },
+    {
+     "name": "SnapMouse",
+     "use": "snap a point using the document's snapping"
+    },
+    {
+     "name": "AnchoredSnapMouse",
+     "use": "snap relative to an anchor point"
+    },
+    {
+     "name": "ConstrainMouse",
+     "use": "constrain a point (angle steps) from an anchor"
+    },
+    {
+     "name": "IsKeyDown",
+     "use": "test whether a key (e.g. Shift) is held"
+    },
+    {
+     "name": "StartTimer",
+     "use": "start a one-shot or repeating timer"
+    },
+    {
+     "name": "StopTimer",
+     "use": "stop a timer"
+    },
+    {
+     "name": "CaptureMouse",
+     "use": "route all mouse input to this state"
+    },
+    {
+     "name": "ReleaseMouse",
+     "use": "release captured mouse input"
+    },
+    {
+     "name": "ExitTemporaryToolState",
+     "use": "leave a state started with StartTemporaryToolState"
+    },
+    {
+     "name": "Document",
+     "use": "the document the state works on"
+    }
+   ],
+   "gotchas": [
+    "SnapMouse / ConstrainMouse adjust the IVGPoint you pass (in place, unverified); pass a copy (Point.GetCopy) if you need the raw position too.",
+    "Always pair CaptureMouse with ReleaseMouse (also in OnAbort / OnExitState), or the canvas keeps ignoring other input.",
+    "A repeating timer (OneTime False) keeps firing OnTimer until StopTimer; stop it in OnExitState.",
+    "CurrentPressure returns 1.0 unless UseTabletPressure is True (stated)."
+   ],
+   "example": "Private Sub IVGToolState_OnStartState(ByVal StateAttributes As ToolStateAttributes)\n    Set sa = StateAttributes\n    sa.UseTabletPressure = True\n    sa.StatusInfo = \"Click to drop a badge, Esc to cancel\"\n    sa.SetCursor cdrCursorSmallcrosshair\nEnd Sub\nPrivate Sub IVGToolState_OnMouseMove(ByVal pt As Point): sa.SnapMouse pt: End Sub",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TraceSettings",
+   "id": "class:TraceSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TraceSettings",
+   "status": "current",
+   "summary": "A PowerTRACE job in progress, returned by Bitmap.Trace: trace type, smoothing, detail, corner smoothness, colour mode and palette, background removal and merge / group options, with a preview count of curves and nodes; Finish turns the bitmap into vector objects.",
+   "use_for": [
+    "converting a client's low-resolution JPG/PNG logo into editable vectors for print or vinyl cutting",
+    "turning scanned line art or sketches into clean curves",
+    "posterized flat-colour vector illustrations from a photo"
+   ],
+   "avoid": [
+    "photos that must keep detail: tracing flattens tones into shapes; keep the bitmap",
+    "unattended pipelines calling ShowDialog: it opens the modal PowerTRACE dialog"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:TracingObject"
+   },
+   "how": "Coclass; members live on IVGTraceSettings. Reach it with Shape.Bitmap.Trace(TraceType, ...) on a bitmap shape; cdrTraceLineArt ... cdrTraceHighQualityImage are outline traces, cdrTraceTechnical and cdrTraceLineDrawing are centreline traces. Adjust properties, call ApplyChanges to recompute, then Finish to create the vectors (an IVGShapeRange).",
+   "key_members": [
+    {
+     "name": "TraceType",
+     "use": "trace preset (cdrTraceType)"
+    },
+    {
+     "name": "Smoothing",
+     "use": "smoothing level"
+    },
+    {
+     "name": "DetailLevelPercent",
+     "use": "detail as a percentage of the maximum"
+    },
+    {
+     "name": "DetailLevel",
+     "use": "detail level in absolute steps"
+    },
+    {
+     "name": "MinDetailLevel",
+     "use": "lowest detail allowed for this image"
+    },
+    {
+     "name": "MaxDetailLevel",
+     "use": "highest detail possible for this image"
+    },
+    {
+     "name": "CornerSmoothness",
+     "use": "how much corners are rounded"
+    },
+    {
+     "name": "SetColorMode",
+     "use": "colour model (and palette) of the result"
+    },
+    {
+     "name": "SetColorCount",
+     "use": "number of colours in the result"
+    },
+    {
+     "name": "ColorCount",
+     "use": "number of colours in the generated palette"
+    },
+    {
+     "name": "Color",
+     "use": "one colour of the generated palette"
+    },
+    {
+     "name": "RemoveBackground",
+     "use": "drop the background objects"
+    },
+    {
+     "name": "BackgroundRemovalMode",
+     "use": "detect the background automatically or use BackgroundColor"
+    },
+    {
+     "name": "RemoveEntireBackColor",
+     "use": "remove that colour everywhere, not just at the edge"
+    },
+    {
+     "name": "MergeAdjacentObjects",
+     "use": "merge touching objects of the same colour"
+    },
+    {
+     "name": "RemoveOverlap",
+     "use": "cut away hidden overlap so objects do not stack"
+    },
+    {
+     "name": "GroupObjectsByColor",
+     "use": "group the result by colour"
+    },
+    {
+     "name": "DeleteOriginalObject",
+     "use": "delete the source bitmap after tracing"
+    },
+    {
+     "name": "ApplyChanges",
+     "use": "recompute the trace after changing settings"
+    },
+    {
+     "name": "CurveCount",
+     "use": "curves the trace will create"
+    },
+    {
+     "name": "NodeCount",
+     "use": "nodes the trace will create"
+    },
+    {
+     "name": "Finish",
+     "use": "create the vector objects; returns them as a ShapeRange"
+    }
+   ],
+   "gotchas": [
+    "Nothing is added to the document until Finish; after changing settings call ApplyChanges, otherwise CurveCount / NodeCount and the result reflect the old settings (unverified that Finish does not recompute itself).",
+    "Bitmap.Trace defaults RemoveBackground to True: a logo on white loses its white areas, including white shapes inside it, unless you set RemoveBackground False.",
+    "ColorMode and PaletteID are read-only; change them with SetColorMode, which also resets the generated palette.",
+    "High-detail traces of photos (cdrTraceHighQualityImage) can produce a very large number of nodes; check NodeCount before Finish.",
+    "ShowDialog is modal: never call it from an unattended pipeline."
+   ],
+   "example": "Set ts = ActiveShape.Bitmap.Trace(cdrTraceLogo)\nts.SetColorCount 6\nts.RemoveBackground = True\nts.MergeAdjacentObjects = True\nts.ApplyChanges\nDebug.Print ts.CurveCount, ts.NodeCount\nSet vec = ts.Finish\nvec.Group",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "AI equivalent TracingOptions is only the settings; the counterpart of this in-progress trace is TracingObject (returned by a trace, pathCount / anchorCount = CurveCount / NodeCount, expandTracing = Finish, holds tracingOptions); removed an unsourced 'tens of thousands' figure"
+   }
+  },
+  {
+   "name": "TransformMatrix",
+   "id": "class:TransformMatrix",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TransformMatrix",
+   "status": "current",
+   "summary": "A 2D affine transformation matrix (d11, d12, d21, d22 plus X / Y translation) with methods to translate, rotate, scale, combine, invert and apply it to points and vectors. Used to read or set a shape's transformation in one step.",
+   "use_for": [
+    "rotating or scaling objects around an exact point with a single transform",
+    "reading whether an object has been rotated, mirrored or skewed (packaging and dieline checks)",
+    "mapping points between coordinate systems in a custom tool shape"
+   ],
+   "avoid": [
+    "simple moves and rotations: Shape.Move, Shape.Rotate or Shape.SetPosition are clearer",
+    "perspective or envelope distortion: a matrix is affine only (it can skew, see IsSkewedOrRotated, but not taper); use a perspective or envelope effect"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Matrix"
+   },
+   "how": "Coclass; members live on IVGTransformMatrix. Create one with Application.Math (CreateIdentityTransformMatrix, CreateRotationTransformMatrix, CreateScaleTransformMatrix, CreateTranslationTransformMatrix, CreateLineSegmentTransformMatrix); read a shape's own with Shape.TransformationMatrix; apply with Shape.ApplyTransformMatrix or Curve.ApplyTransformMatrix. Tool shapes receive one in OnGenerateShape.",
+   "key_members": [
+    {
+     "name": "d11",
+     "use": "matrix component (x scale / rotation)"
+    },
+    {
+     "name": "d12",
+     "use": "matrix component"
+    },
+    {
+     "name": "d21",
+     "use": "matrix component"
+    },
+    {
+     "name": "d22",
+     "use": "matrix component (y scale / rotation)"
+    },
+    {
+     "name": "TranslationX",
+     "use": "x translation"
+    },
+    {
+     "name": "TranslationY",
+     "use": "y translation"
+    },
+    {
+     "name": "SetToIdentity",
+     "use": "reset to no transformation"
+    },
+    {
+     "name": "Invert",
+     "use": "invert in place"
+    },
+    {
+     "name": "TranslateBy",
+     "use": "add a translation"
+    },
+    {
+     "name": "Rotate",
+     "use": "add a rotation"
+    },
+    {
+     "name": "RotateAround",
+     "use": "add a rotation around a point"
+    },
+    {
+     "name": "Scale",
+     "use": "add a scale"
+    },
+    {
+     "name": "ScaleAround",
+     "use": "add a scale around a point"
+    },
+    {
+     "name": "Transform",
+     "use": "combine with another matrix"
+    },
+    {
+     "name": "TransformPoint",
+     "use": "apply to a point"
+    },
+    {
+     "name": "UntransformPoint",
+     "use": "apply the inverse to a point"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "IsIdentity",
+     "use": "no transformation at all"
+    },
+    {
+     "name": "IsMirrored",
+     "use": "the matrix flips the object"
+    },
+    {
+     "name": "IsSkewedOrRotated",
+     "use": "the matrix skews or rotates"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system and units"
+    }
+   ],
+   "gotchas": [
+    "Translation is in internal units until BindToDocument(doc) is called; after binding it uses the document's coordinates (stated loosely in the type library; units unverified).",
+    "All the Rotate / Scale / Translate methods change the matrix in place; take GetCopy first if you need the original.",
+    "Angles are believed to be degrees counter-clockwise, as elsewhere in the CorelDRAW API (unverified for this class).",
+    "The multiplication order of Transform (this x other or other x this) is not stated (unverified); test with TransformPoint on a known point."
+   ],
+   "example": "Set m = Application.Math.CreateIdentityTransformMatrix\nm.BindToDocument ActiveDocument\nm.RotateAround 30, ActiveShape.CenterX, ActiveShape.CenterY\nm.TranslateBy 1, 0\nActiveShape.ApplyTransformMatrix m\nDebug.Print ActiveShape.TransformationMatrix.IsSkewedOrRotated",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid said a matrix cannot do skew; skew is affine and the class reports it (IsSkewedOrRotated), so the limit is perspective / envelope only"
+   }
+  },
+  {
+   "name": "Transparency",
+   "id": "class:Transparency",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Transparency",
+   "status": "current",
+   "summary": "The transparency of one object (Shape.Transparency): none, uniform, fountain (gradient fade), pattern or texture transparency, applied to the fill, outline or both, plus the merge (blend) mode and freezing.",
+   "use_for": [
+    "fading a photo or shape into the background with a linear fountain transparency",
+    "semi-transparent overlay panels behind poster text",
+    "Multiply / Screen / Overlay blend effects between vector objects",
+    "textured or patterned see-through effects"
+   ],
+   "avoid": [
+    "print jobs for old RIPs or EPS export: transparency is flattened or rasterized on export (unverified per exporter); check the PDF",
+    "unattended runs calling UserAssign: it opens a dialog"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "how": "Coclass; members live on IVGTransparency. Reach it with Shape.Transparency. Apply a type with ApplyUniformTransparency, ApplyFountainTransparency, ApplyPatternTransparency or ApplyTextureTransparency (the last three return the fill object to fine-tune); remove with ApplyNoTransparency.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "current transparency type (cdrTransparencyType)"
+    },
+    {
+     "name": "ApplyUniformTransparency",
+     "use": "flat transparency value (0-100 by analogy with the fountain defaults, unverified)"
+    },
+    {
+     "name": "ApplyFountainTransparency",
+     "use": "gradient transparency: start, end, type, angle ..."
+    },
+    {
+     "name": "ApplyPatternTransparency",
+     "use": "pattern-based transparency"
+    },
+    {
+     "name": "ApplyTextureTransparency",
+     "use": "texture-based transparency"
+    },
+    {
+     "name": "ApplyNoTransparency",
+     "use": "remove all transparency"
+    },
+    {
+     "name": "Uniform",
+     "use": "uniform transparency value"
+    },
+    {
+     "name": "Start",
+     "use": "start value of a fountain / pattern transparency"
+    },
+    {
+     "name": "End",
+     "use": "end value"
+    },
+    {
+     "name": "Fountain",
+     "use": "the fountain settings (IVGFountainFill)"
+    },
+    {
+     "name": "Texture",
+     "use": "the texture settings (IVGTextureFill)"
+    },
+    {
+     "name": "AppliedTo",
+     "use": "fill, outline or both"
+    },
+    {
+     "name": "MergeMode",
+     "use": "blend mode (cdrMergeMultiply, cdrMergeScreen, cdrMergeOverlay ...)"
+    },
+    {
+     "name": "Freeze",
+     "use": "freeze the transparency with what is behind it"
+    },
+    {
+     "name": "Unfreeze",
+     "use": "undo a freeze"
+    },
+    {
+     "name": "Frozen",
+     "use": "True when frozen"
+    }
+   ],
+   "gotchas": [
+    "Values are transparency, not opacity: 0 = opaque, 100 = fully transparent (ApplyFountainTransparency defaults Start 0, End 100).",
+    "Which parts a new transparency covers by default (fill only, or fill and outline) is not stated (unverified); set AppliedTo explicitly (cdrApplyToFill, cdrApplyToOutline, cdrApplyToFillAndOutline).",
+    "MergeMode is the blend mode of the transparency; with Type = none some merge modes may have no visible effect (unverified).",
+    "Freeze bakes the current background into the object; moving it afterwards does not update what shows through (unverified exact behaviour)."
+   ],
+   "example": "Set t = ActiveShape.Transparency\nt.ApplyFountainTransparency 0, 100, cdrLinearFountainFill, 90\nt.AppliedTo = cdrApplyToFillAndOutline\nt.MergeMode = cdrMergeMultiply\nDebug.Print t.Type, t.Start, t.End",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "'AppliedTo defaults to the fill' was stated as fact with no source, now unverified with an explicit set; uniform 0-100 range marked as inferred"
+   }
+  },
+  {
+   "name": "TrapLayer",
+   "id": "class:TrapLayer",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TrapLayer",
+   "status": "current",
+   "summary": "One ink layer in the in-RIP trapping settings of a print job: the ink's name, its neutral density, its trap type (normal, transparent, opaque, opaque-ignore) and its trapping order.",
+   "use_for": [
+    "packaging or label print jobs with metallic or opaque spot inks sent to a PostScript RIP that traps in-RIP",
+    "telling the RIP to ignore an opaque varnish plate when trapping"
+   ],
+   "avoid": [
+    "PDF output for a print house that traps itself: these settings travel with a PostScript print job, not with the artwork",
+    "manual trapping of artwork: use overprinted outlines instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass from the print engine (also in CdrPrn); members live on IPrnVBATrapLayer. Reach it with ActiveDocument.PrintSettings.Trapping.Layers.Item(i) (IPrnVBAPrintTrapping.Layers).",
+   "key_members": [
+    {
+     "name": "Color",
+     "use": "ink name of this layer"
+    },
+    {
+     "name": "Density",
+     "use": "neutral density of the ink"
+    },
+    {
+     "name": "TrapType",
+     "use": "prnLayerNormal, prnLayerTransparent, prnLayerOpaque or prnLayerOpaqueIgnore"
+    },
+    {
+     "name": "Order",
+     "use": "trapping order index"
+    },
+    {
+     "name": "Type",
+     "use": "plate type (reserved for future use)"
+    }
+   ],
+   "gotchas": [
+    "Type is marked 'Reserved for future use' in the type library; identify the ink by Color instead.",
+    "In-RIP trapping only takes effect when Trapping.Enabled is True and the output device is a PostScript 3 RIP that supports it (unverified per device).",
+    "Density values should come from the ink maker or print house; how the default density of a spot ink is chosen is not stated (unverified)."
+   ],
+   "example": "Set tr = ActiveDocument.PrintSettings.Trapping\ntr.Enabled = True\nFor i = 1 To tr.Layers.Count\n    Set L = tr.Layers.Item(i)\n    Debug.Print L.Color, L.Density, L.TrapType, L.Order\n    If InStr(1, L.Color, \"Metallic\", vbTextCompare) > 0 Then L.TrapType = prnLayerOpaque\nNext i",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the unsourced claim that default densities are guesses, and the invented ink number 877 from the example"
+   }
+  },
+  {
+   "name": "TrapLayers",
+   "id": "class:TrapLayers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TrapLayers",
+   "status": "current",
+   "summary": "The ink layers of a print job's in-RIP trapping settings (PrintSettings.Trapping.Layers), one TrapLayer per ink.",
+   "use_for": [
+    "listing the inks the RIP will trap and their densities before a packaging print run",
+    "setting opaque trap types for all metallic spot inks in one loop"
+   ],
+   "avoid": [
+    "artwork changes: this only affects how a PostScript RIP traps the printed job"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass from the print engine; members live on IPrnVBATrapLayers. Reach it with ActiveDocument.PrintSettings.Trapping.Layers.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of trapping layers (inks)"
+    },
+    {
+     "name": "Item",
+     "use": "one IPrnVBATrapLayer by numeric index"
+    }
+   ],
+   "gotchas": [
+    "No _NewEnum member: For Each may not work, use For i = 1 To Count (base 1 unverified).",
+    "The list follows the document's inks; add or remove spot colours and re-read it (unverified when it refreshes)."
+   ],
+   "example": "Set ls = ActiveDocument.PrintSettings.Trapping.Layers\nFor i = 1 To ls.Count\n    Debug.Print ls.Item(i).Color, ls.Item(i).TrapType\nNext i",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TreeManager",
+   "id": "class:TreeManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TreeManager",
+   "status": "current",
+   "summary": "Low-level access to a document's object tree (Document.TreeManager): a virtual layer for building shapes off-document, new detached group nodes, cleanup of empty or single-child groups, and the selected tree nodes.",
+   "use_for": [
+    "building complex artwork off-page (on the virtual layer) and inserting it in one step",
+    "restructuring groups without changing the user's selection",
+    "cleaning up empty or one-child groups after an import"
+   ],
+   "avoid": [
+    "everyday scripts: ShapeRange.Group, Shape.OrderToFront and selection-based calls are simpler and safer"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTreeManager. Reach it with ActiveDocument.TreeManager. Shapes created on VirtualLayer are not linked into the document; link their TreeNode (LinkAfter / LinkBefore / LinkAsChildOf) to place them. CreateGroupNode makes an unlinked group node to fill with children.",
+   "key_members": [
+    {
+     "name": "VirtualLayer",
+     "use": "a layer for creating unlinked virtual shapes"
+    },
+    {
+     "name": "CreateGroupNode",
+     "use": "a new, unlinked group node"
+    },
+    {
+     "name": "CleanGroupNode",
+     "use": "remove an empty group or unwrap a one-child group; returns the resulting node"
+    },
+    {
+     "name": "SelectedNodeCount",
+     "use": "number of selected nodes"
+    },
+    {
+     "name": "FirstSelectedNode",
+     "use": "first node of the selection chain"
+    }
+   ],
+   "gotchas": [
+    "Shapes on VirtualLayer are not part of the document until their TreeNode is linked; what happens to unlinked ones at the end of the macro is not stated (unverified, probably discarded).",
+    "Tree operations bypass the selection; wrap them in ActiveDocument.BeginCommandGroup / EndCommandGroup so they undo as one step (unverified that each link is a separate undo).",
+    "Linking a node into an invalid place (e.g. a shape as child of a non-group) probably returns False rather than raising (Link* return bool) (unverified)."
+   ],
+   "example": "Set tm = ActiveDocument.TreeManager\nSet v = tm.VirtualLayer.CreateRectangle(0, 2, 2, 0)\nSet g = tm.CreateGroupNode\nv.TreeNode.LinkAsChildOf g\ng.LinkAfter ActiveShape.TreeNode   ' place next to the active shape (unverified order)\nDebug.Print tm.SelectedNodeCount, g.Children.Count",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TreeNode",
+   "id": "class:TreeNode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TreeNode",
+   "status": "current",
+   "summary": "One node of the document's object tree: the document root, a page, a layer, a group, a link group, a symbol or a shape. It walks the tree (parent, children, siblings), links / unlinks and moves nodes, and swaps node data, without going through the selection.",
+   "use_for": [
+    "moving a shape into an existing group without ungrouping and regrouping",
+    "walking every object of a page in stacking order for a preflight report",
+    "reordering objects inside a group (MoveToFirst / MoveBefore)"
+   ],
+   "avoid": [
+    "simple restacking of selected objects: Shape.OrderToFront / OrderBackOne are clearer"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTreeNode. Reach it with Shape.TreeNode, Layer.TreeNode, Page.TreeNode or Spread.TreeNode, or from TreeManager (CreateGroupNode, FirstSelectedNode). Shape gives the real document shape back; Type says what kind of node it is (cdrTreeNodeType).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "node kind: shape, group, link group, symbol, root, page, layer"
+    },
+    {
+     "name": "Shape",
+     "use": "the real document shape for this node"
+    },
+    {
+     "name": "VirtualShape",
+     "use": "a virtual shape for this node"
+    },
+    {
+     "name": "Name",
+     "use": "node name"
+    },
+    {
+     "name": "Parent",
+     "use": "parent node"
+    },
+    {
+     "name": "Children",
+     "use": "child nodes"
+    },
+    {
+     "name": "FirstChild",
+     "use": "first child"
+    },
+    {
+     "name": "Next",
+     "use": "next sibling"
+    },
+    {
+     "name": "Previous",
+     "use": "previous sibling"
+    },
+    {
+     "name": "IsGroupChild",
+     "use": "node is inside a group"
+    },
+    {
+     "name": "Selected",
+     "use": "node is selected"
+    },
+    {
+     "name": "UnLink",
+     "use": "take the node out of the tree (not destroyed)"
+    },
+    {
+     "name": "LinkAsChildOf",
+     "use": "insert as first child of a node"
+    },
+    {
+     "name": "LinkAfter",
+     "use": "insert after a node"
+    },
+    {
+     "name": "LinkBefore",
+     "use": "insert before a node"
+    },
+    {
+     "name": "MoveToFirst",
+     "use": "move to the top of its siblings"
+    },
+    {
+     "name": "MoveBefore",
+     "use": "move before another node"
+    },
+    {
+     "name": "IsDescendentOf",
+     "use": "test ancestry"
+    },
+    {
+     "name": "GetCopy",
+     "use": "temporary copy of the node and its properties"
+    },
+    {
+     "name": "Delete",
+     "use": "destroy the node"
+    }
+   ],
+   "gotchas": [
+    "UnLink only detaches; the node still exists until you link it again or Delete it.",
+    "The Link* and Move* methods return a bool; check it, a refused move does not raise (unverified).",
+    "Whether sibling order (Next) runs front-to-back or back-to-front in the stacking order is not stated (unverified); check with a test file.",
+    "Handle is a unique ID, but not stated to be stable across sessions (unverified); do not store it in files."
+   ],
+   "example": "Set grp = ActivePage.Shapes.Item(\"Badge\")\nSet n = ActiveShape.TreeNode\nn.UnLink\nn.LinkAsChildOf grp.TreeNode\nDebug.Print n.Parent.Name, n.IsGroupChild",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TreeNodes",
+   "id": "class:TreeNodes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/TreeNodes",
+   "status": "current",
+   "summary": "The child nodes of one tree node (TreeNode.Children): the layers of a page, the objects of a layer or the members of a group, in tree order.",
+   "use_for": [
+    "listing every object of a layer or group for a preflight or naming script",
+    "counting the members of a group without selecting it"
+   ],
+   "avoid": [
+    "shape-level work: Layer.Shapes / Shape.Shapes return shapes directly"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGTreeNodes. Reach it with TreeNode.Children (e.g. ActiveLayer.TreeNode.Children).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of child nodes"
+    },
+    {
+     "name": "Item",
+     "use": "one child IVGTreeNode by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the children"
+    }
+   ],
+   "gotchas": [
+    "Linking or unlinking nodes while iterating changes the collection; collect nodes first.",
+    "Index base is not stated (unverified); For Each avoids it."
+   ],
+   "example": "For Each n In ActiveLayer.TreeNode.Children\n    Debug.Print n.Type, n.Name, n.Children.Count\nNext n",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "UICategories",
+   "id": "class:UICategories",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/UICategories",
+   "status": "current",
+   "summary": "A type-library module holding two string constants: the GUIDs of the Macros and the Plugins command categories of CorelDRAW's command / customization system.",
+   "use_for": [
+    "identifying the Macros or Plugins command category in add-in or workspace customization code"
+   ],
+   "avoid": [
+    "drawing or document scripts: these constants have no effect on artwork"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Module (not a class) in VGCore: constants you reference by name in VBA (cdrCmdCategoryMacros, cdrCmdCategoryPlugins). Which framework calls take them is not stated in the type library; they are GUID strings for command categories.",
+   "key_members": [
+    {
+     "name": "cdrCmdCategoryMacros",
+     "use": "GUID string of the Macros command category"
+    },
+    {
+     "name": "cdrCmdCategoryPlugins",
+     "use": "GUID string of the Plugins command category"
+    }
+   ],
+   "gotchas": [
+    "The harvested values are bare GUIDs without braces; calls that expect a braced GUID need \"{\" & ... & \"}\" (unverified which form each call wants).",
+    "Module constants may not be exposed to late-bound callers (Python win32com without makepy, JavaScript); copy the GUID string from the harvest there (unverified).",
+    "No member in this harvest is documented as consuming these values (unverified usage)."
+   ],
+   "example": "Debug.Print cdrCmdCategoryMacros    ' 2cc24a3e-fe24-4708-9a74-9c75406eebcd\nDebug.Print cdrCmdCategoryPlugins   ' ab489730-8791-45d2-a825-b78bbe0d6a5d",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "URL",
+   "id": "class:URL",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/URL",
+   "status": "current",
+   "summary": "The hyperlink attached to an object (Shape.URL): web address, target frame, alt text, bookmark and the hotspot region (bounding rectangle or the object's own shape), used when exporting to PDF or HTML.",
+   "use_for": [
+    "clickable buttons and logos in interactive PDF brochures, menus and portfolios",
+    "image-map style hotspots in HTML export",
+    "a 'shop now' link on a digital flyer"
+   ],
+   "avoid": [
+    "printed output: links do nothing on paper; add a QR code or a short URL as text"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGURL. Reach it with Shape.URL on any object; set Address to create the link.",
+   "key_members": [
+    {
+     "name": "Address",
+     "use": "the link URL"
+    },
+    {
+     "name": "TargetFrame",
+     "use": "browser target frame, e.g. _blank"
+    },
+    {
+     "name": "AltComment",
+     "use": "alt text / tooltip"
+    },
+    {
+     "name": "BookMark",
+     "use": "bookmark (internal link target)"
+    },
+    {
+     "name": "Region",
+     "use": "hotspot: default, bounding rectangle or object shape (cdrURLRegion)"
+    }
+   ],
+   "gotchas": [
+    "Whether the link survives export depends on the exporter's hyperlink options (PDF export settings) (unverified per format).",
+    "Clearing a link: setting Address to an empty string is believed to remove it (unverified).",
+    "cdrURLRegionShape makes the hotspot follow the object's own shape rather than its bounding box, so thin or open shapes leave a small target (unverified); prefer cdrURLRegionRectangle there."
+   ],
+   "example": "With ActiveShape.URL\n    .Address = \"https://example.com/offer\"\n    .TargetFrame = \"_blank\"\n    .AltComment = \"Shop the offer\"\n    .Region = cdrURLRegionRectangle\nEnd With",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha said the shape region is the 'outline area'; the type library only says 'shape region', reworded and marked unverified"
+   }
+  },
+  {
+   "name": "UserSnapPoint",
+   "id": "class:UserSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/UserSnapPoint",
+   "status": "current",
+   "summary": "The user-specific part of a user-added snap point (SnapPoint.User): its unique ID and whether it takes part in automatic snapping for connectors.",
+   "use_for": [
+    "reading the ID of an anchor added to a reusable symbol so later scripts can find it",
+    "letting connectors in a flowchart auto-attach to custom anchor points"
+   ],
+   "avoid": [
+    "bounding-box, node or edge snap points: they have no user part; use IVGSnapPoint directly"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGUserSnapPoint. Add a point with Shape.SnapPoints.AddUserSnapPoint / AddUserSnapPointEx (returns an IVGSnapPoint), then use its .User property.",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "unique ID of the user snap point (read-only)"
+    },
+    {
+     "name": "AutoSnap",
+     "use": "include the point in automatic connector snapping"
+    }
+   ],
+   "gotchas": [
+    "ID is read-only; the type library calls it a GUID. Whether it equals the ID string passed to AddUserSnapPointEx is not stated (unverified).",
+    "User is only meaningful on user snap points; on other point types it probably returns Nothing (unverified)."
+   ],
+   "example": "Set sp = ActiveShape.SnapPoints.AddUserSnapPoint(ActiveShape.CenterX, ActiveShape.TopY, 90, True)\nSet u = sp.User\nu.AutoSnap = True\nDebug.Print u.ID",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Vector",
+   "id": "class:Vector",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Vector",
+   "status": "current",
+   "summary": "A 2D vector (x, y, length, angle) with vector maths: add, subtract, scale, normalize, dot / cross product, angle between vectors, projection, and offsetting a point along the vector.",
+   "use_for": [
+    "placing objects at a fixed distance along a direction (callout leaders, radial layouts)",
+    "measuring the angle between two lines in a technical drawing",
+    "geometry in custom tools and tool shapes"
+   ],
+   "avoid": [
+    "simple moves: Shape.Move with dx, dy is enough"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Coclass; members live on IVGVector. Create one with Application.Math.CreateVector(x, y) or set it from two points with SetFromPoints; TransformMatrix.Translation and TransformVector also use it. Points come from Application.Math.CreatePoint.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "x component"
+    },
+    {
+     "name": "y",
+     "use": "y component"
+    },
+    {
+     "name": "Length",
+     "use": "length (setting it rescales the vector)"
+    },
+    {
+     "name": "Angle",
+     "use": "angle in degrees counter-clockwise from the x axis"
+    },
+    {
+     "name": "SetFromPoints",
+     "use": "vector from a start point to an end point"
+    },
+    {
+     "name": "Add",
+     "use": "add another vector"
+    },
+    {
+     "name": "Subtract",
+     "use": "subtract another vector"
+    },
+    {
+     "name": "MultiplyBy",
+     "use": "scale the length"
+    },
+    {
+     "name": "Negate",
+     "use": "reverse the direction"
+    },
+    {
+     "name": "Normalize",
+     "use": "make the length 1"
+    },
+    {
+     "name": "AngleBetween",
+     "use": "angle to another vector, counter-clockwise"
+    },
+    {
+     "name": "SmallAngleBetween",
+     "use": "smaller angle to another vector"
+    },
+    {
+     "name": "DotProduct",
+     "use": "dot product"
+    },
+    {
+     "name": "CrossProduct",
+     "use": "cross product (sign tells left / right)"
+    },
+    {
+     "name": "ProjectOnto",
+     "use": "projection onto another vector"
+    },
+    {
+     "name": "GetOffsettedPoint",
+     "use": "point at a distance from an origin along the vector"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system and units"
+    }
+   ],
+   "gotchas": [
+    "Add, Subtract, MultiplyBy, Negate and Normalize change the vector in place; GetCopy first to keep the original.",
+    "CorelDRAW's y axis points up, so angles run counter-clockwise on the page as on paper.",
+    "Without BindToDocument the components may be in internal units rather than the document unit (unverified).",
+    "Normalize on a zero-length vector: result not stated (unverified)."
+   ],
+   "example": "Set m = Application.Math\nSet a = m.CreatePoint(ActiveShape.CenterX, ActiveShape.CenterY)\nSet v = m.CreateVector(1, 1)\nv.Normalize\nSet p = v.GetOffsettedPoint(a, 2)\nActiveLayer.CreateEllipse2 p.x, p.y, 0.1\nDebug.Print v.Angle",
+   "source": "cdr_api_24 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

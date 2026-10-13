@@ -1,0 +1,235 @@
+{
+ "cards": [
+  {
+   "name": "Gradient Tool",
+   "id": "Adobe Gradient Vector Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Gradient Vector Tool",
+   "status": "current",
+   "summary": "Applies a gradient to the selected object's fill and lets you set its direction, length, centre and colour stops on the artwork through the on-canvas gradient annotator; clicking applies the current gradient, dragging sets where it starts and ends. Linear, radial and freeform gradients are all edited with it.",
+   "how": "Select the object(s), press G and click inside to apply the last-used gradient (white-to-black by default). Drag across the object to set the gradient's start, direction and length; Shift-drag constrains the angle to 45-degree steps. Drag across several selected objects to make one continuous gradient span all of them (a headline's letters, a row of tiles). Choose Linear / Radial / Freeform in the Gradient panel (double-click the tool to open it) or the Properties panel. On the annotator: drag the round end to move the origin, the square end to change length, hover just past the end for the rotate cursor, drag stops along the bar, Alt-drag a stop to duplicate it, drag a stop off the bar to delete it, double-click a stop to pick its colour; for radial gradients the dotted ring changes the aspect ratio. Freeform: Points mode clicks add colour points, Lines mode clicks add stops along a line. The tool edits fill gradients only: with the Stroke box in front it shows a 'no' cursor, so stroke gradients (within, along or across the stroke) are set in the Gradient panel.",
+   "shortcut": "G",
+   "scriptable": "partial",
+   "script_api": "app.selectTool(\"Adobe Gradient Vector Tool\") only makes it the active tool; the drag cannot be scripted. Same result for linear / radial gradients without the tool: build a Gradient (doc.gradients.add(), type = GradientType.LINEAR or RADIAL, fill its gradientStops with rampPoint / midPoint / color), wrap it in a new GradientColor (gradient = that Gradient) and assign it to pathItem.fillColor or strokeColor. Direction: GradientColor has angle / origin / length members, but the dependable way to turn an applied gradient is item.rotate(angle, false, false, true) (changeFillGradients = true). Freeform gradients are not reachable from the DOM as far as known.",
+   "use_for": [
+    "sky, sunset or light-wash backgrounds for posters and social banners",
+    "metallic or glossy fills on logos, badges and buttons",
+    "one continuous gradient running across every letter of an outlined headline",
+    "soft painterly shading on flat illustrations with a freeform gradient",
+    "light falloff and depth on flat icons and app tiles, set by dragging the gradient's direction and length on the art"
+   ],
+   "avoid": [
+    "shading that must follow an object's contours with many colours: the Mesh Tool controls colour per point",
+    "spot-colour screen printing where every colour must print solid: a gradient needs a fine halftone screen; use flat fills or separate solid shapes",
+    "exact numeric angle and colour stops for a brand system: type them into the Gradient panel rather than dragging",
+    "photo-like soft shadows: a Gaussian Blur or Drop Shadow effect is quicker than hand-built radial gradients",
+    "gradients on strokes: the tool cannot edit them; make Stroke active in the Gradient panel and choose within / along / across there"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Gradient Tool",
+    "CDR": "Toolbox/Fill Tools/Interactive Fill"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/how: the Gradient tool and its annotator work on fill gradients only (long-standing Illustrator limitation, 'no' cursor with Stroke active), so dropped 'or stroke, whichever is active' and the fill/stroke-target claim and pointed stroke gradients to the Gradient panel; use_for: replaced the gradient-along-stroke job (a Gradient panel job) with a tool job; avoid: added stroke gradients, reworded the screen-print entry (tints are halftoned too). Batch name/id/path/shortcut G/selectTool id and the GradientColor, Gradient, GradientStop and rotate(angle, false, false, true) members checked against the batch and ai_api harvest; PS Gradient Tool and CDR Interactive Fill exist. Second pass: none; the fill-only limitation and the 'no' cursor on stroke gradients are confirmed (Adobe Community), GradientType has only LINEAR / RADIAL in the harvest so freeform stays out of reach, rotate's 4th arg is changeFillGradients."
+   }
+  },
+  {
+   "name": "Arc Tool",
+   "id": "Adobe Arc Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Line Tool",
+   "status": "current",
+   "summary": "Draws a single curved segment, shaped like a quarter of an ellipse, between the point where you press and the point where you release; the result is an ordinary two-anchor open path (or a closed wedge when set to Closed). Its bulge (concave or convex) is controlled by the Slope setting.",
+   "how": "Drag on the artboard: the drag's start and end become the arc's two end points. While dragging: Shift makes the X and Y lengths equal (a quarter circle), C toggles open / closed, F flips the arc, X toggles concave / convex, Up / Down arrow keys change the slope, and holding the spacebar moves the arc. Click once without dragging (or double-click the tool) to open Arc Segment Tool Options: Length X-Axis, Length Y-Axis, reference point, Type (Open / Closed), Base Along (X Axis / Y Axis), Slope (Concave to Convex) and Fill Arc. It sits in the Line Segment Tool flyout.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Arc Tool\") only activates the tool. Same result without it: var p = doc.pathItems.add(); p.setEntirePath([[x1, y1], [x2, y2]]); then bend it by setting p.pathPoints[0].rightDirection and p.pathPoints[1].leftDirection (handle length about 0.5523 x the radius for a quarter circle); for the Closed (wedge) form add the corner point as a third anchor, e.g. setEntirePath([[x1, y1], [x2, y2], [cx, cy]]), then set closed = true; closed = true on the two-anchor path alone only shuts it with a straight chord.",
+   "use_for": [
+    "curved connector and flow lines in infographics and diagrams",
+    "smile, eyebrow and swoosh strokes in icons and mascots",
+    "an arched baseline for type on a path (badge or seal lettering)",
+    "quarter-round corner pieces and leaf / petal halves for logo construction"
+   ],
+   "avoid": [
+    "an arc with an exact sweep angle (most of a ring, a gauge track): draw an Ellipse and drag its pie handle, or cut a circle with the Scissors tool",
+    "smooth curves with several bends: the Pen or Curvature tool makes one clean path",
+    "true circular arcs of arbitrary length: the tool always draws a quarter-ellipse-like segment"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Curve Tools/3-Point Curve"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: closed = true on a two-anchor path gives a chord-closed D shape, not the tool's Closed wedge; now adds the corner point as a third anchor first. avoid: dropped the invented '270 degrees' example. Kept 0.5523 (the standard quarter-circle Bezier constant). Shift / C / F / X / arrows / spacebar and the Arc Segment Tool Options fields match Illustrator's documented behaviour; CDR 3-Point Curve exists and draws the same two-end-point curved segment. Second pass: none; Shift = quarter circle, C open/closed, arrows = slope confirmed by a tool cheat sheet."
+   }
+  },
+  {
+   "name": "Line Segment Tool",
+   "id": "Adobe Line Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Line Tool",
+   "status": "current",
+   "summary": "Draws one straight line, a two-anchor open path from where you press to where you release, painted with the current stroke. Each drag makes a separate path.",
+   "how": "Press \\ and drag. Shift constrains the angle to 45-degree steps, Alt draws from the centre outward, holding the spacebar moves the line while drawing, and holding the tilde key (~) while dragging spits out many lines at once. Click once without dragging (or double-click the tool) to open Line Segment Tool Options: Length, Angle and Fill Line. Stroke weight, caps, dashes and arrowheads come from the Stroke panel; Smart Guides show length and angle while drawing.",
+   "shortcut": "\\",
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Line Tool\") only activates the tool. Same result without it: var p = doc.pathItems.add(); p.setEntirePath([[x1, y1], [x2, y2]]); p.filled = false; p.stroked = true; then strokeWidth, strokeColor, strokeCap and strokeDashes for dashed rules.",
+   "use_for": [
+    "divider rules between sections of a poster, menu or magazine layout",
+    "leader and callout lines on product diagrams and infographics",
+    "dashed fold and cut lines on packaging dielines",
+    "underline and accent strokes under headlines",
+    "arrows for diagrams (line plus an arrowhead from the Stroke panel)"
+   ],
+   "avoid": [
+    "connected zig-zags or polylines: click point to point with the Pen tool so it stays one path",
+    "curved strokes: use the Arc, Curvature or Pen tool",
+    "a grid of evenly spaced lines: the Rectangular Grid Tool or Object > Path > Split Into Grid is faster"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Line Tool",
+    "CDR": "Toolbox/Curve Tools/2-Point Line"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none: name, id, path, shortcut \\ and selectTool id match the batch; Shift / Alt / spacebar / tilde behaviour and the Length / Angle / Fill Line options are right; filled, stroked, strokeWidth, strokeCap, strokeDashes and setEntirePath are in the ai_api harvest; Split Into Grid exists (Object/Path); PS Line Tool and CDR 2-Point Line exist. Second pass: none."
+   }
+  },
+  {
+   "name": "Polar Grid Tool",
+   "id": "Adobe Polar Grid Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Line Tool",
+   "status": "current",
+   "summary": "Draws a dartboard-like polar grid: a set of concentric circles (or ellipses) crossed by straight radial dividers from the centre, created as a group of separate paths.",
+   "how": "Drag on the artboard; Shift makes it circular, Alt draws from the centre outward. While dragging, Up / Down arrows add or remove concentric circles and Left / Right arrows add or remove radial dividers; X / C skew the concentric dividers toward the centre / toward the edge, and F / V decrease / increase the skew of the radial dividers. Click once without dragging (or double-click the tool) for Polar Grid Tool Options: Default Size width / height and reference point, Concentric Dividers (number, skew In to Out), Radial Dividers (number, skew Bottom to Top), Create Compound Path From Ellipses, and Fill Grid. To colour individual cells, convert the group with the Live Paint Bucket.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Polar Grid Tool\") only activates the tool. Same result without it: inside a doc.groupItems.add() group, draw the rings with pathItems.ellipse(top, left, width, height) at stepped sizes around one centre and the dividers with pathItems.add().setEntirePath([[cx, cy], [cx + r * cos(a), cy + r * sin(a)]]) for each angle.",
+   "use_for": [
+    "base for a radar / spider chart or a skill-wheel infographic",
+    "target, dartboard and sonar motifs",
+    "clock faces and dial tick layouts",
+    "radial sunburst or wheel backgrounds (filled cell by cell with Live Paint)",
+    "circular construction guides for round logos and emblems"
+   ],
+   "avoid": [
+    "data-driven charts: the Radar Graph tool plots real values",
+    "when the cells must be separate closed shapes straight away: the grid is open lines and ellipses; run Live Paint and expand, or build with Pathfinder Divide",
+    "pie or donut charts from data: the Pie Graph Tool sizes the wedges from values (or an Ellipse's pie handle for one exact wedge); the grid's radial dividers are only even or log-skewed"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the X/C/F/V skew keys are now mapped key by key (X/C concentric toward centre/edge, F/V radial skew down/up) instead of named as a set; avoid: the 'evenly divided rings of a donut chart' entry contradicted the tool (its dividers are even); rewritten to point data-driven pie/donut charts at the harvested Pie Graph Tool. Radar Graph Tool and Live Paint Bucket exist in the harvest; no polar-grid counterpart in PS or CDR (pgd.py items), so equivalents stay empty. Second pass: none; X/C concentric in/out and F/V radial skew keys match Adobe's shortcut table."
+   }
+  },
+  {
+   "name": "Rectangular Grid Tool",
+   "id": "Adobe Rectangular Grid Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Line Tool",
+   "status": "current",
+   "summary": "Draws a rectangular grid of evenly (or progressively) spaced horizontal and vertical divider lines, optionally with an outer rectangle as its frame, created as one group of separate paths.",
+   "how": "Drag on the artboard; Shift makes it square, Alt draws from the centre outward. While dragging, Up / Down arrows add or remove horizontal dividers and Left / Right arrows add or remove vertical dividers; F / V skew the horizontal dividers toward the bottom / top and X / C skew the vertical dividers toward the left / right. Click once without dragging (or double-click the tool) for Rectangular Grid Tool Options: Default Size width / height and reference point, Horizontal Dividers (number, skew Bottom to Top), Vertical Dividers (number, skew Left to Right), Use Outside Rectangle As Frame, and Fill Grid. To fill cells, use the Live Paint Bucket on the group; View > Guides > Make Guides turns the grid into non-printing guides.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.selectTool(\"Adobe Rectangular Grid Tool\") only activates the tool. Same result without it: inside a doc.groupItems.add() group, draw a frame with pathItems.rectangle(top, left, width, height) and each divider with pathItems.add().setEntirePath([[x, top], [x, bottom]]) / ([[left, y], [right, y]]) at stepped positions.",
+   "use_for": [
+    "graph-paper or blueprint backgrounds",
+    "calendar, timetable or bingo-card frames",
+    "modular layout grids for posters and social carousels (as guides)",
+    "pixel-art or tile-pattern base grids",
+    "chart backgrounds behind hand-built bar graphs"
+   ],
+   "avoid": [
+    "real tables with text in cells: Illustrator has no table object; lay the table out in InDesign or a CorelDRAW table",
+    "a grid of separate rectangles with gutters: Object > Path > Split Into Grid makes closed cells directly",
+    "column and row guides with gutters: the grid tool has no gutter setting and its lines print until converted; use Object > Path > Split Into Grid with Add Guides on an artboard-sized rectangle"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Shape Tools/Graph Paper"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: the X/C/F/V skew keys are now mapped key by key (F/V horizontal dividers bottom/top, X/C vertical dividers left/right), matching the dialog's Bottom-Top and Left-Right skew sliders. Rest checked: options fields, Make Guides (View/Guides) and Live Paint Bucket exist in the harvest, rectangle(top, left, width, height) order is right, CDR Graph Paper exists. Second pass: the 'layout guides that must not print' avoid contradicted use_for (grid as guides) and its own fix (Make Guides); replaced with the real gap, gutters, pointing to Split Into Grid with Add Guides."
+   }
+  },
+  {
+   "name": "Spiral Tool",
+   "id": "Adobe Shape Construction Spiral Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Line Tool",
+   "status": "current",
+   "summary": "Draws an open spiral path that winds in from the outer radius you drag out; each quarter-turn segment shrinks by the Decay percentage, so the coils tighten toward the centre (a logarithmic-style spiral).",
+   "how": "Drag from the centre outward; dragging also sets the rotation. Shift constrains the rotation to 45-degree steps, Up / Down arrows add or remove segments, Ctrl-drag changes the decay, and holding the spacebar moves the spiral while drawing. Click once without dragging (or double-click the tool) for Spiral options: Radius, Decay (each quarter-turn segment's radius as a percentage of the one before; Adobe's label says 'each wind'), Segments (four per full turn) and Style (counter-clockwise or clockwise). The result is a plain open path; give it a stroke, a variable-width profile or a brush.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.selectTool(\"Adobe Shape Construction Spiral Tool\") only activates the tool. There is no pathItems.spiral(); a script rebuilds it from quarter-turn arcs, multiplying the radius by the decay for each segment, computing the anchors and passing them to pathItems.add().setEntirePath(points), setting leftDirection / rightDirection on each PathPoint for smooth curves.",
+   "use_for": [
+    "hypnotic or retro swirl backgrounds",
+    "snail shell, ammonite, fern-curl and wave icons",
+    "ornamental swirls and flourishes on invitations and labels",
+    "a spiral baseline for type on a path"
+   ],
+   "avoid": [
+    "an exact golden-ratio (Fibonacci) spiral: build it from golden rectangles and quarter arcs instead",
+    "a coil with constant spacing between turns (a true Archimedean spiral): the decay shrinks every segment by a percentage; use a script, or CorelDRAW's Spiral tool in Symmetrical mode",
+    "a filled swirl shape: the spiral is an open path; outline the stroke (Object > Path > Outline Stroke) first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Shape Tools/Spiral"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "how: Decay was described per wind while the summary said per quarter-turn segment; the tool applies it per segment (each segment's radius = previous x decay), now consistent, Segments = four per turn. avoid: removed 'the Twirl effect' (Twirl is a Liquify tool in Illustrator, the effect is Twist, and neither draws an even spiral); points to a script or CDR Spiral's harvested Symmetrical type (cdrSymmetric). script_api reworded to match. No pathItems.spiral in the ai_api harvest, so 'partial' kept; CDR Spiral exists. Second pass: none; decay per quarter-turn segment and arrows = segments, Ctrl-drag = decay confirmed."
+   }
+  },
+  {
+   "name": "Magic Wand",
+   "id": "Adobe Magic Wand Tool",
+   "app": "AI",
+   "kind": "ai_tool",
+   "path": "Toolbar (Default)/flyout of Adobe Magic Wand Tool",
+   "status": "current",
+   "summary": "Clicking an object selects every object whose fill colour (by default) is within a tolerance of the clicked one; it only changes the selection, never the artwork. The Magic Wand panel can match stroke colour, stroke weight, opacity or blending mode instead or as well.",
+   "how": "Press Y and click an object. Shift-click adds the matching objects to the selection, Alt-click subtracts them. Double-click the tool (or Window > Magic Wand) to open the Magic Wand panel: tick Fill Color, Stroke Color, Stroke Weight, Opacity and / or Blending Mode, set a Tolerance for each of the first four (0 = exact match; Blending Mode has no tolerance and matches the mode exactly), and choose whether to search all layers or only the clicked object's layer (Use All Layers). Locked and hidden objects are skipped.",
+   "shortcut": "Y",
+   "scriptable": "partial",
+   "script_api": "app.selectTool(\"Adobe Magic Wand Tool\") only activates the tool. Exact-match equivalent: select the key object, then app.executeMenuCommand(\"Find Fill Color menu item\") (Select > Same > Fill Color). For a tolerance match a script loops over doc.pathItems, compares each fillColor (RGB or CMYK values) with the key colour and sets .selected = true; this approximates, not reproduces, the panel's tolerance rules.",
+   "use_for": [
+    "recolouring every shape of one colour in an Image Trace result or a downloaded vector illustration",
+    "selecting and deleting the white background shapes left by Image Trace",
+    "grabbing all hairline strokes of one weight to fix them for print",
+    "isolating every object at one opacity or blend mode in a messy file"
+   ],
+   "avoid": [
+    "when an exact match is wanted: Select > Same > Fill Color has no tolerance surprises",
+    "changing a brand colour everywhere: use a global swatch or Recolor Artwork instead of selecting by hand",
+    "near-identical colours that must stay separate: lower the tolerance to 0 or the wand grabs both"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Magic Wand Tool",
+    "CDR": "Edit/Find and Replace"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped 'in the document', which contradicted the card's own Use All Layers option (off = only the clicked object's layer). Checked: shortcut Y and id match the batch; 'Find Fill Color menu item' is the harvested id of Select/Same/Fill Color; Window/Magic Wand exists; PS Magic Wand Tool and CDR Edit/Find and Replace exist. Second pass: how said every attribute has a Tolerance; Blending Mode has none, now stated."
+   }
+  }
+ ]
+}

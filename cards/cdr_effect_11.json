@@ -1,0 +1,831 @@
+{
+ "cards": [
+  {
+   "name": "Blocks",
+   "id": "250127ec-1a42-4cc4-bf8d-c023578b8137",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Blocks",
+   "status": "current",
+   "summary": "Breaks the image into a grid of rectangular blocks and pushes each block a random distance from its place, so the picture looks cut into scattered puzzle-like pieces with gaps between them; the gaps are filled according to FillMode (and ColorItem when a colour fill is chosen). Block ranges and defaults were not read by the harvest, so the demo values are a reasoned guess.",
+   "use_for": [
+    "broken / shattered photo look behind a headline",
+    "collage or cut-up background panel for a poster",
+    "glitchy, fragmented transition still between two sections of a layout"
+   ],
+   "avoid": [
+    "small blocks with a small offset only roughen the image and read as a rendering fault: use clearly larger blocks",
+    "faces and small type: the offset tears features apart, so keep them out of the effect or mask them back in",
+    "a clean regular pixel grid with no displacement: use Pixelate instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "tiles"
+   },
+   "look": [
+    "broken into blocks",
+    "shattered tiles",
+    "puzzle pieces",
+    "scattered squares",
+    "fragmented photo",
+    "cut-up collage"
+   ],
+   "params": [
+    {
+     "name": "Block width",
+     "does": "width of each block before it is moved",
+     "typical": "larger values give fewer, bigger, more readable pieces (range not harvested)"
+    },
+    {
+     "name": "Block height",
+     "does": "height of each block",
+     "typical": "same as width for square pieces"
+    },
+    {
+     "name": "Square",
+     "does": "unlabelled check box (key Square); presumably locks block height to block width (not verified)",
+     "typical": "on for even square pieces"
+    },
+    {
+     "name": "Max. offset",
+     "does": "the furthest a block may be pushed from its original position",
+     "typical": "higher values open wider gaps and make the break obvious"
+    },
+    {
+     "name": "FillMode",
+     "does": "what shows in the gaps left between moved blocks (option values not harvested)",
+     "typical": "the default; switch to a solid colour for a graphic look"
+    },
+    {
+     "name": "ColorItem",
+     "does": "the gap colour when FillMode is set to a colour fill",
+     "typical": "black or white"
+    }
+   ],
+   "demo_settings": {
+    "Width": 60,
+    "Height": 60,
+    "Square": true,
+    "Offset": 40
+   },
+   "pairs_with": [
+    "Pixelate (regular blocks without displacement)",
+    "Tile (repeat the image as a grid)",
+    "a duotone or Posterize pass on the pieces for a print look"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Blocks\", \"BlocksEffect Width=60,Height=60,Offset=40\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect (a sibling, Pixelate, ignored its string), so check the pixels changed; menu GUID 250127ec-1a42-4cc4-bf8d-c023578b8137",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (editable / removable in the Properties docker); the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "light: a single-pass block shuffle",
+   "review": {
+    "by": "adversarial",
+    "changes": "params: Square no longer asserted to lock height to width (caption-less check box, behaviour not harvested), hedged like the Tile card"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/9a0aad0eff22.png",
+    "note": "The plate is cut into a grid of rectangular blocks, each pushed a random distance, with white gaps between them (the dialog's stored fill), the scattered puzzle-piece look described; the 'dropped' list (all four keys) is not evidence here, because Blocks is random and its repeat-render noise (62) is as large as every key probe.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Displace",
+   "id": "e927013f-df8a-4c2f-89dd-15e351a9d559",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Displace",
+   "status": "current",
+   "summary": "Moves the image's pixels according to the light and dark values of a displacement map chosen from the dialog's list (CurrentDisplaceImage), so the picture takes on that map's texture, such as wavy glass or a rippled or blocky refraction. Horizontal and Vertical set how far pixels shift; the map is tiled or stretched over the image.",
+   "use_for": [
+    "textured glass / refraction look over a background photo",
+    "distorting an image to follow a pattern for a stylised poster",
+    "subtle texture warp that breaks up a flat, digital-looking image"
+   ],
+   "avoid": [
+    "high Horizontal / Vertical values tear the image into unreadable streaks: stay low for faces and type",
+    "a precise bend along a drawn shape: use Mesh Warp or an envelope instead",
+    "scripts: the harvested map list (CurrentDisplaceImage) was empty with a blank default, so a script cannot pick a map and may apply none: choose the map in the dialog"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "displace"
+   },
+   "look": [
+    "displacement map",
+    "refraction",
+    "textured glass",
+    "wavy distortion",
+    "pattern warp"
+   ],
+   "params": [
+    {
+     "name": "ScaleMode",
+     "does": "Tile repeats the map across the image at its own size; Stretch to fit scales one copy over the whole image",
+     "typical": "Tile for fine texture, Stretch for one big distortion"
+    },
+    {
+     "name": "Horizontal",
+     "does": "how far pixels shift sideways for the map's brightness differences",
+     "typical": "10 (default) subtle; 30-50 clearly distorted"
+    },
+    {
+     "name": "Vertical",
+     "does": "how far pixels shift up and down",
+     "typical": "match Horizontal"
+    },
+    {
+     "name": "Undefined Areas",
+     "does": "fills the edges uncovered by the shift: Repeat Edges smears the border pixels, Wrap Around brings in pixels from the opposite side",
+     "typical": "Repeat Edges"
+    },
+    {
+     "name": "CurrentDisplaceImage",
+     "does": "the displacement map used, picked from the dialog's map list (the harvest found the list empty and the default blank)",
+     "typical": "the map the dialog preselects"
+    }
+   ],
+   "demo_settings": {
+    "ScaleMode": "Tile",
+    "HorizontalScale": 40,
+    "VerticalScale": 40,
+    "UndefinedArea": "0"
+   },
+   "enum_labels": {
+    "UndefinedArea": {
+     "0": "Repeat Edges",
+     "1": "Wrap Around"
+    },
+    "ScaleMode": {
+     "Tile": "Tile",
+     "Stretch": "Stretch to fit"
+    }
+   },
+   "pairs_with": [
+    "Ripple or Swirl for a regular distortion instead of a map-driven one",
+    "a Gaussian blur on the map's result to soften torn edges"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Displace\", \"DisplaceEffect ScaleMode=Tile,HorizontalScale=40,VerticalScale=40,UndefinedArea=0\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed; CurrentDisplaceImage left out: its list was empty and its default blank in the harvest, so which map a script uses (if any) is unknown",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (editable in the Properties docker); the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "moderate",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid / params / scripting: dropped the claim that a script uses a 'default map'; the harvest read CurrentDisplaceImage as an empty list with a blank default"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/87e769a08f55.png",
+    "note": "The pixels are displaced by a tiled X-shaped (cross-hatch) map, so every edge, the mid-tones, swatches and type carry a repeating star-like refraction texture, the map-driven distortion the card describes with the dialog's stored map.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Mesh Warp",
+   "id": "4e45dd98-272e-4836-b154-f910327b74ea",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Mesh Warp",
+   "status": "needs_input",
+   "summary": "Lays a grid of nodes over the image (Gridlines sets how many) and warps the picture like a rubber sheet as you drag those nodes in the dialog preview; the shape of the warp comes entirely from the hand-moved nodes or a saved preset. An untouched Default mesh presumably leaves the image unchanged.",
+   "use_for": [
+    "bending a flat image or label to sit on a curved surface in a mock-up",
+    "freeform bulge / pinch of one part of a photo",
+    "playful hand-shaped distortion of a logo bitmap"
+   ],
+   "avoid": [
+    "unattended scripts: the node moves are made by hand in the dialog and are not harvested parameters, so a script with only Gridlines / Preset applies no visible distortion",
+    "regular, repeatable distortions: use Ripple, Swirl or Shear, which take numeric values",
+    "vector artwork that must stay vector: use an Envelope instead of a bitmap effect"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Transform/Warp",
+    "AI": "Object/Envelope Distort/Make with Mesh..."
+   },
+   "look": [
+    "mesh warp",
+    "freeform distortion",
+    "rubber sheet",
+    "bend",
+    "bulge",
+    "liquify-like warp"
+   ],
+   "params": [
+    {
+     "name": "Gridlines",
+     "does": "number of grid lines (and so draggable nodes) across the image",
+     "typical": "4 (default) for broad bends, up to 10 for local control"
+    },
+    {
+     "name": "Presets",
+     "does": "loads a saved mesh shape; only Default was harvested (presumably the flat, undistorted mesh)",
+     "typical": "Default"
+    }
+   ],
+   "enum_labels": {
+    "Preset": {
+     "7cc7e96a-0171-4281-bc7f-b8c2bf4fab87": "Default"
+    }
+   },
+   "pairs_with": [
+    "Envelope tool for vector objects",
+    "Perspective drop shadow or a lens to complete a mock-up"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Mesh Warp\", \"MeshWarpEffect Gridlines=6,Preset=7cc7e96a-0171-4281-bc7f-b8c2bf4fab87\")  // cdr_com signature; key format from cmd_template, not tested for this effect; node positions cannot be passed, so the result is presumably the unwarped Default mesh; menu GUID 4e45dd98-272e-4836-b154-f910327b74ea opens the dialog for hand editing",
+   "scriptable": "no",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (re-editable in the Properties docker)",
+   "cost": "light to apply; the cost is the manual node editing",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / Presets / scripting: 'Default = flat mesh, image unchanged' hedged as presumed (the harvest has only the preset label)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Offset",
+   "id": "86fc41f0-8810-4064-ba2e-a3bf8d93724a",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Offset",
+   "status": "current",
+   "summary": "Shifts the whole image horizontally and vertically inside its own frame, by a percentage of its size (default) or by a fixed distance; the area uncovered by the shift is filled per Mode (for example wrapped round from the opposite edge or a colour from ColorItem). With wrap-around the image's edges meet in the middle as visible seams.",
+   "use_for": [
+    "checking and fixing seams when building a seamless repeat pattern tile",
+    "re-centring a texture so its seam falls where it can be retouched",
+    "deliberate split / shifted-frame look for a glitch poster"
+   ],
+   "avoid": [
+    "moving an object on the page: just move or transform it, which keeps the full image",
+    "photos with a clear subject: the wrap-around seam cuts straight through it",
+    "Mode option values were not harvested, so a script can only rely on the default fill"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "offset"
+   },
+   "look": [
+    "offset",
+    "wrap around",
+    "shifted image",
+    "seamless tile check",
+    "split frame"
+   ],
+   "params": [
+    {
+     "name": "Horizontal",
+     "does": "sideways shift, -100 to 100 (positive and negative move opposite ways)",
+     "typical": "50 (default, half the width) to centre the seam"
+    },
+    {
+     "name": "Vertical",
+     "does": "up / down shift, -100 to 100",
+     "typical": "50 (default)"
+    },
+    {
+     "name": "Shift value as % of dimensions",
+     "does": "on: Horizontal / Vertical are percentages of the image size; off: absolute distances",
+     "typical": "on (default)"
+    },
+    {
+     "name": "Mode",
+     "does": "how the uncovered area is filled (options not harvested)",
+     "typical": "options and default not harvested; for pattern work pick wrap-around if the list offers it"
+    },
+    {
+     "name": "ColorItem",
+     "does": "fill colour when Mode uses a colour",
+     "typical": "white or black"
+    }
+   ],
+   "demo_settings": {
+    "Horizontal": 30,
+    "Vertical": 40,
+    "AsPercent": true
+   },
+   "pairs_with": [
+    "Tile (to preview the repeat)",
+    "Clone / healing retouch on the centred seam in Corel PHOTO-PAINT"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Offset\", \"OffsetEffect Horizontal=30,Vertical=40\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed; AsPercent / Mode left at defaults",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack; the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "params: Mode no longer claims a wrap-around default (the harvest read Mode as None); Horizontal no longer asserts negative = left, both shifts now state the harvested -100..100 range"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/aa4585306efb.png",
+    "note": "The image is shifted 30 % right and 40 % down inside its frame and wrapped round: the dark-red block, swatch strip and type now sit across the top, part of the photo's centre appears at the left edge, and the wrapped edges meet as hard seams through the middle.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Pixelate",
+   "id": "defc5eef-4402-4c64-8837-aa8c2e635456",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Pixelate",
+   "status": "current",
+   "summary": "Rebuilds the image from flat-coloured cells, each the average colour of the pixels it covers: square or rectangular blocks, or Radial cells arranged in rings around the centre. Width / Height set the cell size and Opacity blends the pixelated result over the original.",
+   "use_for": [
+    "8-bit / retro pixel-art look for a poster or thumbnail",
+    "censoring or anonymising a face, plate or text in a photo",
+    "radial pixel burst background for a tech or gaming layout"
+   ],
+   "avoid": [
+    "scripts: the harvest's apply test returned OK but changed no pixels with 'PixelateEffect Mode=Square,Width=8,Height=8,Opacity=100' (or Width 60), so the command string is not established; apply from the menu",
+    "very small cells on an already soft photo barely read: use cells of 20 px or more",
+    "real redaction of sensitive text: small cells can be partly reversed, so cover it with a solid box instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "mosaic",
+    "AI": "Object/Create Object Mosaic..."
+   },
+   "look": [
+    "pixelate",
+    "mosaic",
+    "8-bit",
+    "pixel blocks",
+    "censor blur",
+    "radial pixels",
+    "low-res"
+   ],
+   "params": [
+    {
+     "name": "Mode",
+     "does": "cell shape: Square, Rectangular (independent width and height) or Radial (rings around the centre)",
+     "typical": "Square"
+    },
+    {
+     "name": "Width",
+     "does": "cell width in pixels",
+     "typical": "10 (default); 30-60 for an obvious pixel look"
+    },
+    {
+     "name": "Height",
+     "does": "cell height in pixels (used by Rectangular and Radial)",
+     "typical": "equal to Width"
+    },
+    {
+     "name": "Opacity",
+     "does": "how strongly the pixelated cells cover the original",
+     "typical": "100 (default)"
+    }
+   ],
+   "demo_settings": {
+    "Mode": "Square",
+    "Width": 40,
+    "Height": 40,
+    "Opacity": 100
+   },
+   "pairs_with": [
+    "Posterize for a limited-palette pixel-art look",
+    "a mask or clip so only one area is pixelated"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Pixelate\", \"PixelateEffect Mode=Square,Width=40,Height=40,Opacity=100\")  // cdr_com signature; NOT working in the harvest test (returned OK, no pixel change with Width 8 vs 60: command string not recognised). Untested alternatives: Application.FrameWork.Automation.InvokeItem(\"defc5eef-4402-4c64-8837-aa8c2e635456\") opens the Effects/Distort/Pixelate dialog on the selection (a person sets values and presses OK), or the Properties docker toggle EffectsPropertiesDS;Path=ApplyOrDeleteEffect:PixelateEffect; read the pixels back after either",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (editable in the Properties docker)",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the menu GUID / docker toggle were called a 'Working route' but were never tested from a script; now marked untested, the GUID shown as an InvokeItem call that opens the modal dialog; 'keys not recognised' -> 'command string not recognised' (the batch's wording)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/46f05fab5d93.png",
+    "note": "The photo is rebuilt from square flat-colour cells (about 20 px in the 960 frame at Width 40), each the average of what it covers; Mode and Height were ignored by the script (dropped), so only the default Square mode is shown.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Ripple",
+   "id": "d3be3195-676f-4096-9b02-3d7c9ef940f8",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Ripple",
+   "status": "current",
+   "summary": "Bends the image with regular sine-like waves running in the direction set by Angle; Period is the distance between waves and Amplitude their strength. Perpendicular Wave adds a second wave set at right angles (its own Amplitude), and Distort ripple makes the waves irregular.",
+   "use_for": [
+    "water-reflection or heat-haze look on a photo",
+    "wavy, psychedelic background for a music or party poster",
+    "flag-in-the-wind feel on a flat graphic"
+   ],
+   "avoid": [
+    "high amplitude on faces and type makes them unreadable: keep text out of the ripple or use low values",
+    "only the outline of vector shapes should wave: a vector effect (Distort tool Zipper with smooth option) keeps it vector",
+    "Optimize Speed can show jagged edges on final output: switch to Quality for the export"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "wave",
+    "AI": "Live Zig Zag"
+   },
+   "look": [
+    "ripple",
+    "wavy",
+    "water waves",
+    "heat haze",
+    "sine wave distortion",
+    "psychedelic warp"
+   ],
+   "params": [
+    {
+     "name": "Period",
+     "does": "distance between wave crests",
+     "typical": "20 (default); 30-50 for broad visible waves"
+    },
+    {
+     "name": "Amplitude (Amplitude)",
+     "does": "how far the main wave pushes pixels",
+     "typical": "20 (default); 30-50 strong"
+    },
+    {
+     "name": "Optimize",
+     "does": "Speed renders faster, Quality gives smoother edges",
+     "typical": "Quality for final output"
+    },
+    {
+     "name": "Perpendicular Wave",
+     "does": "adds a second wave at right angles to the first for a cross-hatched water look",
+     "typical": "off (default)"
+    },
+    {
+     "name": "Amplitude (PerpAmplitude)",
+     "does": "strength of the perpendicular wave",
+     "typical": "lower than the main amplitude"
+    },
+    {
+     "name": "Distort ripple",
+     "does": "makes the waves irregular rather than evenly spaced",
+     "typical": "on for a natural water look"
+    },
+    {
+     "name": "Angle",
+     "does": "direction the waves run across the image, in degrees",
+     "typical": "90 (default)"
+    },
+    {
+     "name": "ImageNode",
+     "does": "internal image-node selector of the dialog (values not harvested)",
+     "typical": "leave as is"
+    }
+   ],
+   "demo_settings": {
+    "Period": 40,
+    "Amplitude": 35,
+    "Optimize": "Quality",
+    "Angle": 90
+   },
+   "pairs_with": [
+    "Swirl or Whirlpool for other liquid distortions",
+    "a blue duotone / colour balance for a water look"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Ripple\", \"RippleEffect Period=40,Amplitude=35,Optimize=Quality,Angle=90\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack; the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "moderate (Quality mode is slower)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/b87eca5a66a6.png",
+    "note": "Strong regular sine waves bend the whole plate: the colour strip, black band and dark-red blocks rise and fall in big smooth humps and the large shapes and stripes are bent along them (Period 40, Amplitude 35, Angle 90).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Shear",
+   "id": "0601af6c-b415-42a3-9174-d1243f7712d3",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Shear",
+   "status": "needs_input",
+   "summary": "Bends the image to follow a curve drawn in the dialog: with Vertical orientation the image is pushed left and right along a top-to-bottom curve, with Horizontal up and down along a left-to-right one; Scale sets how strong the bend is and Edges style fills the uncovered edges (ColorItem when a colour is used). The curve is shaped by hand with the Edit Style tools; which way each orientation bends and whether the Default preset bends the image at all are not confirmed by the harvest.",
+   "use_for": [
+    "S-curve bend of a photo strip or banner for a dynamic layout",
+    "wavy, melted or swaying look on a single image",
+    "bending a bitmap logo along a gentle arc"
+   ],
+   "avoid": [
+    "scripts: the shear curve is drawn in the dialog and is not a harvested parameter, so a script cannot shape it",
+    "regular repeating waves: use Ripple, which takes numeric period and amplitude",
+    "vector shapes that must stay editable: use an Envelope or the Distort tool"
+   ],
+   "confidence": "low",
+   "equivalents": {
+    "PS": "shear"
+   },
+   "look": [
+    "shear",
+    "bend along curve",
+    "S-curve distortion",
+    "sway",
+    "melted bend"
+   ],
+   "params": [
+    {
+     "name": "Edit Style",
+     "does": "how the shear curve is edited: Curve (smooth nodes), Straight (straight segments), Freehand (drawn), Gamma (single gamma-style curve)",
+     "typical": "Curve"
+    },
+    {
+     "name": "Orientation",
+     "does": "Vertical: the shear curve runs top to bottom and the image bends left-right along it; Horizontal: the curve runs across and the image bends up-down (direction not verified)",
+     "typical": "Vertical (default)"
+    },
+    {
+     "name": "Scale",
+     "does": "strength of the shear applied along the curve",
+     "typical": "50 (default)"
+    },
+    {
+     "name": "Edges style",
+     "does": "how the edges uncovered by the shift are filled (options not harvested)",
+     "typical": "default"
+    },
+    {
+     "name": "ColorItem",
+     "does": "edge fill colour when Edges style uses a colour",
+     "typical": "white"
+    },
+    {
+     "name": "Presets",
+     "does": "loads a saved curve; only Default was harvested",
+     "typical": "Default"
+    }
+   ],
+   "demo_settings": {
+    "EditStyle": "0",
+    "Orientation": "Vertical",
+    "Scale": 80
+   },
+   "enum_labels": {
+    "EditStyle": {
+     "0": "Curve",
+     "1": "Straight",
+     "2": "Freehand",
+     "3": "Gamma"
+    },
+    "Preset": {
+     "7cc7e96a-0171-4281-bc7f-b8c2bf4fab87": "Default"
+    }
+   },
+   "pairs_with": [
+    "Ripple for regular waves",
+    "Envelope for vector bends"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Shear\", \"ShearEffect EditStyle=0,Orientation=Vertical,Scale=80\")  // cdr_com signature; key format from cmd_template, not tested for this effect; the shear curve itself cannot be passed, so the result depends on the Default curve; menu GUID 0601af6c-b415-42a3-9174-d1243f7712d3 opens the dialog to draw it",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack (re-editable in the Properties docker)",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary vs Orientation param contradicted each other (rows vs columns moving for Vertical); both now describe one consistent behaviour, marked unverified"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Swirl",
+   "id": "40b2aaaa-ead9-4fb9-8ee6-68f80408da6f",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Swirl",
+   "status": "current",
+   "summary": "Twists the image around its centre into a spiral, rotating the middle the most and the edges least, like stirring paint; the total twist is Whole Rotations plus Additional Degrees, clockwise or counter-clockwise.",
+   "use_for": [
+    "hypnotic spiral / vortex background for a poster",
+    "dreamy or dizzy transition still",
+    "abstract texture made by swirling a colourful photo"
+   ],
+   "avoid": [
+    "faces and type in the centre are twisted beyond recognition: keep them outside the effect",
+    "an even, whole-image rotation: use the Rotate transform instead",
+    "Optimize Speed can leave jagged spirals on export: use Quality for final output"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "twirl",
+    "AI": "Live Twist"
+   },
+   "look": [
+    "swirl",
+    "twirl",
+    "spiral",
+    "vortex",
+    "whirl",
+    "hypnotic",
+    "stirred paint"
+   ],
+   "params": [
+    {
+     "name": "Direction",
+     "does": "spin direction of the spiral",
+     "typical": "Clockwise (default)"
+    },
+    {
+     "name": "Optimize",
+     "does": "Speed renders faster, Quality gives smoother spirals",
+     "typical": "Quality for final output"
+    },
+    {
+     "name": "Whole Rotations",
+     "does": "full turns added to the twist",
+     "typical": "0 (default) to 2; more turns tighten the spiral"
+    },
+    {
+     "name": "Additional Degrees",
+     "does": "extra twist in degrees on top of the whole rotations",
+     "typical": "90 (default); 180-359 for a clear swirl"
+    },
+    {
+     "name": "ImageNode",
+     "does": "internal image-node selector of the dialog (values not harvested)",
+     "typical": "leave as is"
+    }
+   ],
+   "demo_settings": {
+    "Direction": "Clockwise",
+    "Optimize": "Quality",
+    "Rotation": 1,
+    "Degree": 180
+   },
+   "pairs_with": [
+    "Whirlpool (a smeared, fluid variant)",
+    "Ripple",
+    "a radial gradient overlay to focus the vortex centre"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Swirl\", \"SwirlEffect Direction=Clockwise,Optimize=Quality,Rotation=1,Degree=180\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack; the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "moderate (Quality mode is slower)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/22bcd3862fea.png",
+    "note": "The plate is twisted into one big clockwise spiral around the centre: the middle is wound into tight rings of dark, stripe and wall colours while the corners and the left swatches move least, like stirred paint.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Tile",
+   "id": "f2d0dfa5-d967-459d-83e2-f883cee3517d",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Tile",
+   "status": "current",
+   "summary": "Repeats the whole image as a grid of smaller copies inside the original frame, like wallpaper; Horizontal and Vertical tiles set how many copies across and down. What Overlap and the unlabelled Square check box do to the grid was not established by the harvest.",
+   "use_for": [
+    "wallpaper / contact-sheet style repeat of a photo or logo",
+    "pop-art grid poster from a single image",
+    "previewing how a texture repeats before making a pattern fill"
+   ],
+   "avoid": [
+    "many tiles shrink each copy until it is unreadable: keep to 2-6 per side for photos",
+    "a true seamless pattern fill: use a bitmap pattern fill, which repeats without resampling the image",
+    "the harvest's range binding for Vertical tiles points at MaxTilesPerRow (likely a UI-data quirk): stay within 1-100"
+   ],
+   "confidence": "medium",
+   "look": [
+    "tile",
+    "repeat grid",
+    "wallpaper",
+    "contact sheet",
+    "pop-art grid",
+    "multiplied image"
+   ],
+   "params": [
+    {
+     "name": "Horizontal tiles",
+     "does": "number of copies across",
+     "typical": "10 (default); 3-5 for readable copies"
+    },
+    {
+     "name": "Vertical tiles",
+     "does": "number of copies down",
+     "typical": "same as across"
+    },
+    {
+     "name": "Overlap",
+     "does": "percentage overlap of the tiles (exact behaviour not verified)",
+     "typical": "25 (default); 0 for a clean grid"
+    },
+    {
+     "name": "Square",
+     "does": "unlabelled check box; presumably keeps the tiles square (not verified)",
+     "typical": "off (default)"
+    }
+   ],
+   "demo_settings": {
+    "TilesPerRow": 4,
+    "TilesPerCol": 4,
+    "PercentOverlap": 0
+   },
+   "pairs_with": [
+    "Offset (seam check for repeats)",
+    "a different colour adjustment per copy (PowerClip duplicates) for an Andy Warhol grid"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Tile\", \"TileEffect TilesPerRow=4,TilesPerCol=4,PercentOverlap=0\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack; the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/5bdc4c6d7702.png",
+    "note": "The whole plate is repeated as a 4 x 4 grid of smaller copies filling the original frame, like wallpaper or a contact sheet.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Wet Paint",
+   "id": "0eed74a0-2c78-4857-9128-b108ecfdfa3d",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Distort/Wet Paint",
+   "status": "current",
+   "summary": "Makes the image look freshly painted and still wet, with colours running down in drips; Wetness picks which colours drip (positive values the lighter ones, negative the darker ones, per CorelDRAW help) and Percent sets the size of the drips.",
+   "use_for": [
+    "horror / Halloween poster with dripping title art or photo",
+    "melting, running-paint look for street-art or grunge layouts",
+    "dripping product or ice-cream visual"
+   ],
+   "avoid": [
+    "small text drips into illegibility: apply to large display type or images only",
+    "a controlled single drip in a set place: draw it or use a drip brush, the effect drips everywhere the chosen tones are",
+    "on a pale, soft image light-colour drips are faint: try a negative Wetness to drip the dark areas"
+   ],
+   "confidence": "medium",
+   "look": [
+    "wet paint",
+    "dripping",
+    "melting",
+    "running paint",
+    "horror drip",
+    "grunge"
+   ],
+   "params": [
+    {
+     "name": "Wetness",
+     "does": "which tones drip: positive values make lighter colours run, negative values darker ones; larger magnitude drips more",
+     "typical": "45 (default); -50 or 50 for the strongest drip"
+    },
+    {
+     "name": "Percent",
+     "does": "size / length of the drips",
+     "typical": "100 (default)"
+    }
+   ],
+   "demo_settings": {
+    "Wetness": -50,
+    "Percent": 100
+   },
+   "pairs_with": [
+    "Wind (streaks in one direction)",
+    "a dark background so light drips stand out"
+   ],
+   "scripting": "shape.Bitmap.ApplyBitmapEffect(\"Wet Paint\", \"WetPaintEffect Wetness=-50,Percent=100\")  // cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command); key format from cmd_template, not applied in a test for this effect, so check the pixels changed",
+   "scriptable": "partial",
+   "non_destructive": "yes from the Effects menu: CorelDRAW 2024 adds it to the object's effect stack; the scripted Bitmap.ApplyBitmapEffect path changes the bitmap itself",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "demo_settings / scripting: Wetness 50 -> -50, so the vector plate's black PGD type, zigzag and outlines drip down onto the white ground (positive values drip the light tones, mostly the background)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/6e53af2eba91.png",
+    "note": "Dark colours run down in long vertical drips (Wetness -50 picks the darker ones): the darkest areas, radial detail and dark-red panels streak downward and the swatches drip into the black band; the type is smeared.",
+    "rerender": false
+   }
+  }
+ ]
+}

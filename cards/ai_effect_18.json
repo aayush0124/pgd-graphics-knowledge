@@ -1,0 +1,150 @@
+{
+ "cards": [
+  {
+   "name": "De-Interlace",
+   "id": "Live PSAdapter_plugin_Dntr",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Video/De-Interlace",
+   "status": "current",
+   "summary": "Photoshop Effect (Video) that throws away every odd or every even scan line of the rasterized object and fills the gaps by duplicating the neighbouring line or interpolating between lines; it exists to remove the comb artefacts from a frame grabbed off interlaced video. On clean vector art there is nothing to remove, so the only change is a faint recolouring of the edge rows along horizontal edges and two-row stair-steps (Duplication) or slight softening (Interpolation) along diagonal and curved edges, at the raster-effects resolution: the harvest's menu-route render of the red-and-blue probe rectangle (dialog values Odd Lines / Interpolation) changed only the pixel rows along its top and bottom edges, 0.049 mean pixel difference, fill and stroke colours untouched. On a clean photo the same holds: on the photo plate Odd Lines / Duplication changed the frame by a mean 1.06 levels, invisible at full view.",
+   "use_for": [
+    "cleaning comb / feathering artefacts from an interlaced video frame grab placed in an Illustrator layout",
+    "tidying a TV or broadcast screenshot used as an embedded image in a poster or slide",
+    "deliberate, very subtle line-doubling on rasterized art at a low raster resolution for a retro video feel"
+   ],
+   "avoid": [
+    "Flat vector art: almost no visible change at 300 ppi; for a visible scanline look use a repeating line pattern fill or Effect > Sketch > Halftone Pattern (Line) instead.",
+    "Real video frames needing serious repair: de-interlace in Photoshop (Filter > Video > De-Interlace) or the video editor before placing, where you can see the pixels at 100%.",
+    "Any job that must stay vector: it rasterizes the object's look at the Document Raster Effects resolution.",
+    "Scripted output with chosen values: a plain applyEffect stores the effect but draws nothing by itself (harvest render check, mean diff 0.0); use the menu command, a graphic style saved with the values, or the gallery route (see scripting), which renders the chosen values pixel-identical to the dialog."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Filter/Video/De-Interlace",
+    "CDR": "Effects/Transform/DeInterlace"
+   },
+   "look": [
+    "de-interlace",
+    "interlace removal",
+    "video frame cleanup",
+    "scan line",
+    "line doubling",
+    "comb artefact fix",
+    "jaggies"
+   ],
+   "params": [
+    {
+     "name": "eliminate",
+     "does": "which set of scan lines is discarded: odd or even (pick the field that shows the combing)",
+     "typical": "ElmO (Odd Lines, harvested default); switch to ElmE if the odd field is the clean one"
+    },
+    {
+     "name": "create",
+     "does": "how the discarded lines are rebuilt: Duplication copies the neighbouring line (sharper, stair-stepped), Interpolation averages the lines above and below (smoother, slightly soft)",
+     "typical": "CrtI (Interpolation, harvested default) for clean frame grabs; CrtD (Duplication) for a harder, more visible line-doubled edge"
+    }
+   ],
+   "demo_settings": {
+    "IntE": "ElmO",
+    "IntC": "CrtD"
+   },
+   "enum_labels": {
+    "IntE": {
+     "ElmO": "Odd Lines",
+     "ElmE": "Even Lines"
+    },
+    "IntC": {
+     "CrtD": "Duplication",
+     "CrtI": "Interpolation"
+    }
+   },
+   "pairs_with": [
+    "Document Raster Effects Settings (a low resolution such as 72 ppi makes the line doubling visible; 300 ppi hides it)",
+    "Effect > Blur > Gaussian Blur at a small radius to smooth any remaining stair-steps",
+    "Effect > Video > NTSC Colors when the cleaned frame goes back out to SD video"
+   ],
+   "scripting": "Select the item, then app.executeMenuCommand('Live PSAdapter_plugin_Dntr'): opens the 'De-Interlace' dialog with the last-used Eliminate (IntE) / Create (IntC) values and needs OK (Enter). A plain pageItem.applyEffect('<LiveEffect name=\"PSAdapter_plugin_Dntr\"><Dict data=\"I dataSize 36 I PrevDres 300 B go 1\"/></LiveEffect>') stores the effect but renders nothing by itself (harvest render check). For fixed values without a dialog: build it once by hand, save a Graphic Style and apply doc.graphicStyles.getByName('<style>').applyTo(item). Gallery route (2026-10-13): a plain applyEffect cannot carry the dialog settings (the Photoshop parameter block is binary 'data' that Dict data cannot send); the gallery applies the effect, saves the file, writes the dialog's parameter dictionary into it and reopens it, and that route renders the chosen values pixel-identical to the dialog (Dark Strokes control).",
+   "scriptable": "partial",
+   "non_destructive": "yes: a live effect in the Appearance panel (double-click to change Odd/Even or Duplication/Interpolation); Object > Expand Appearance bakes it into an embedded image",
+   "cost": "low: one cheap line pass on the rasterized object at the Document Raster Effects resolution (PrevDres 300 recorded)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the change is not limited to curved/diagonal edges; the menu-route probe render (measured on Effect_Video_De_Interlace__menu.png) changed only the rows along the rectangle's horizontal top and bottom edges, and it ran with Odd Lines / Interpolation, now stated; 'vertical stair-step' reworded to two-row stair-steps. avoid: the binary-descriptor explanation is no longer stated as the proven cause of the 0.0 render."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/b9606df4fbee.png",
+    "note": "On the photo plate (which has no interlacing comb to remove) Odd Lines / Duplication changed the frame by only a mean 1.06 levels, spread thinly over the rows and invisible at full view, which is what the card predicts for art without interlace artefacts; a photo-plate sentence was added and the 'use the menu command' avoid line corrected (the gallery's scripted route drew it).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "NTSC Colors",
+   "id": "Live PSAdapter_plugin_NTSC",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Video/NTSC Colors",
+   "status": "current",
+   "summary": "Photoshop Effect (Video) with no settings that restricts the rasterized object's colours to the range NTSC television can reproduce. In practice it changes almost nothing: on the photo plate, whose colour strip holds near-pure reds, oranges, yellows, greens, blues, violets and magentas, only the cyan block moved, by 2 levels (0,163,224 to 0,161,222), while every other colour, the photo and the grey ramp came through unchanged (mean pixel difference 0.014); on the harvest's probe rectangle the red fill (220,60,40) and blue stroke (20,40,160) did not change either.",
+   "use_for": [
+    "lower thirds, bugs and title graphics built in Illustrator for SD / NTSC broadcast",
+    "checking how a logo's saturated brand colours will survive TV playback",
+    "taming neon-saturated artwork before it goes into an interlaced video timeline"
+   ],
+   "avoid": [
+    "Print or web work: the clamp targets NTSC television and changes nothing useful there.",
+    "Visibly muting bright colours: it barely touches them (only a cyan moved, by 2 levels, on the test plate); use Edit > Edit Colors > Saturate or a Hue/Saturation adjustment in Photoshop to choose how much.",
+    "Modern HD / Rec. 709 delivery: legalise colours with a broadcast-safe limiter in the video editor at export instead of baking the clamp into the artwork.",
+    "Artwork that must stay vector: it rasterizes the object's look at the Document Raster Effects resolution."
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Filter/Video/NTSC Colors"
+   },
+   "look": [
+    "broadcast safe",
+    "TV safe colours",
+    "video legal",
+    "gamut clamp",
+    "near-invisible change",
+    "NTSC"
+   ],
+   "params": [
+    {
+     "name": "go",
+     "does": "on/off flag the Photoshop-effect adapter stores; the effect itself has no adjustable settings",
+     "typical": "true (harvested default)"
+    }
+   ],
+   "demo_settings": {
+    "go": true
+   },
+   "pairs_with": [
+    "Effect > Video > De-Interlace for frame grabs going back to SD video",
+    "Document Raster Effects Settings at 72 ppi for screen / video output",
+    "View > Proof Colors with a video profile to preview the remaining shift"
+   ],
+   "scripting": "pageItem.applyEffect('<LiveEffect name=\"PSAdapter_plugin_NTSC\"><Dict data=\"B go 1\"/></LiveEffect>') (harvest round trip read the value back and the scripted render changed the probe); menu route with the item selected: app.executeMenuCommand('Live PSAdapter_plugin_NTSC'), which opens no dialog.",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live effect in the Appearance panel; delete it to restore the original colours, or Object > Expand Appearance to bake it into an embedded image",
+   "cost": "low: a single per-pixel colour clamp on the rasterized object at the Document Raster Effects resolution",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the probe render (measured on Effect_Video_NTSC_Colors.png vs _plain.png) shows the red fill and blue stroke unchanged and the 0.046 diff confined to two rows at the bottom edge, so the card no longer implies the probe showed colour dulling; the plate expectation is now 'little or no visible change'. confidence high -> medium because the colour clamp itself was never observed in the harvest."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ai_effect/0e30a0ba87bf.png",
+    "note": "Only the cyan block of the colour strip moved, by 2 levels (0,163,224 -> 0,161,222; mean diff 0.014); the saturated red, orange, yellow, green, blue, violet and magenta blocks came through unchanged, so the claim that intense reds, magentas, yellows and blues come out duller is not borne out; summary and look rewritten to what the frame shows.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "effect text",
+     "note": "Plate check: a pixel diff against ref_photo.png finds changes only inside the cyan block (5,400 px, at most 2 levels); the near-pure 255-level yellow, blue and magenta blocks are byte-identical, so the 'duller intense colours' text was a guess the frame contradicts; the effect has no settings, so no demo change can make it stronger."
+    }
+   }
+  }
+ ]
+}

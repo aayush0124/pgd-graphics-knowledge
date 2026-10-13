@@ -1,0 +1,853 @@
+{
+ "cards": [
+  {
+   "name": "Move Plane to Match Object",
+   "id": "path:Object/Perspective/Move Plane to Match Object",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Perspective/Move Plane to Match Object",
+   "status": "needs_input",
+   "summary": "With an object that is already attached to the perspective grid selected, moves the matching grid plane (left, right or floor) to that object's depth or height, so the next art you draw or attach lands at the same plane position. The selected artwork itself does not change; only the grid plane moves.",
+   "use_for": [
+    "adding windows, signs or posters at the same depth as an existing wall in a perspective street or interior scene",
+    "placing a second label on the same face of a packaging box drawn in perspective",
+    "lining up new perspective art with a shelf, step or floor tile that is already on the grid"
+   ],
+   "avoid": [
+    "moving the object rather than the plane: drag it with the Perspective Selection Tool",
+    "art that is not in perspective yet: there is nothing to match; attach it first with Object > Perspective > Attach to Active Plane"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Show the grid (View > Perspective Grid > Show Grid), select a perspective object with the Perspective Selection Tool, then choose the command. No dialog.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484341 posted to the Illustrator main window (menu path Object/Perspective/Move Plane to Match Object). The DOM has no plane-move call; it only offers doc.getPerspectiveActivePlane() / doc.setPerspectiveActivePlane(PerspectiveGridPlaneType.LEFTPLANE etc.) and PageItem.bringInPerspective(x, y, plane).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Release with Perspective",
+   "id": "path:Object/Perspective/Release with Perspective",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Perspective/Release with Perspective",
+   "status": "needs_input",
+   "summary": "Detaches the selected perspective objects from the perspective grid: they keep their current foreshortened shape but become ordinary artwork, so moving or scaling them no longer re-projects them onto a plane.",
+   "use_for": [
+    "freezing finished perspective signage or packaging faces so later grid changes do not move them",
+    "reusing a foreshortened element (a sign, a window, a road marking) as a plain shape elsewhere in the layout",
+    "handing perspective art to tools that expect normal paths (envelope distort, pathfinder clean-up)"
+   ],
+   "avoid": [
+    "when more perspective edits are coming: keep it attached so it still snaps and re-projects",
+    "to get the flat, front-on art back: release keeps the distorted shape; keep an unattached copy before you attach art to the grid"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Select the perspective objects (Perspective Selection Tool or Selection Tool) and choose the command. No dialog.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484340 posted to the Illustrator main window (menu path Object/Perspective/Release with Perspective). No release-from-perspective call was found in the harvested DOM.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rasterize...",
+   "id": "Rasterize 8 menu item",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Rasterize...",
+   "status": "current",
+   "summary": "Permanently converts the selected vector objects (paths, live type, gradients, effects) into an embedded raster image at the resolution and colour model chosen in the Rasterize dialog. The result looks the same at that resolution but no longer edits as paths or text; Effect > Rasterize is the live, reversible version.",
+   "use_for": [
+    "flattening a heavy illustration (blurs, meshes, many effects) so the file opens and prints reliably",
+    "locking a texture or photo-like vector so it cannot be edited further",
+    "preparing art for a raster-only destination at a resolution you control (e.g. a print resolution)"
+   ],
+   "avoid": [
+    "art you may still need to edit: use Effect > Rasterize (live) or keep a vector copy on a hidden layer",
+    "logos and type for print: rasterizing loses crisp vector edges at large sizes",
+    "producing a web or social image: export the artboard (File > Export) and keep the source vector"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/Rasterize/Layer",
+    "CDR": "Object/Convert to Bitmap"
+   },
+   "how": "Dialog: Color Model (RGB / CMYK / Grayscale / Bitmap, limited by the document colour mode); Resolution (Screen, Medium, High, Use Document Raster Effects Resolution, or Other); Background (White or Transparent); Anti-aliasing (None, Art Optimized, Type Optimized); Create Clipping Mask; Add N around object (padding).",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Rasterize 8 menu item\") opens the Rasterize dialog (confirmed). Same job without the dialog: var o = new RasterizeOptions(); o.resolution = ppi; o.transparency = true; doc.rasterize(doc.selection, undefined, o). Document.rasterize(sourceArt, clipBounds, options) and RasterizeOptions (colorModel, resolution, transparency, antiAliasingMethod, clippingMask, padding ...) are in the harvested DOM (call unverified as written).",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: dropped the Screen 72 / Medium 150 / High 300 ppi figures and use_for: the '300 ppi' example (neither is in the batch); script_api example now takes a ppi variable instead of a literal 300"
+   }
+  },
+  {
+   "name": "Grid",
+   "id": "path:Object/Repeat/Grid",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Repeat/Grid",
+   "status": "current",
+   "summary": "Turns the selected art into live Grid repeat art: copies of it tiled in rows and columns. On-canvas handles change the spacing and how many rows and columns show; grid types can offset alternate rows or columns by half (brick layouts) and flip rows or columns. Editing the source (double-click into isolation mode) updates every tile.",
+   "use_for": [
+    "icon or logo background patterns for packaging, wrapping paper and social posts",
+    "evenly spaced ticket, badge or sticker sheets",
+    "textile and wallpaper pattern drafts that stay editable"
+   ],
+   "avoid": [
+    "a swatch you can apply as a fill to any shape: use Object > Pattern > Make",
+    "copies that each need different content: duplicate and transform them (Transform Again, Ctrl+D) or use Transform Each"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484365 posted to the Illustrator main window (menu path Object/Repeat/Grid). Same result through the DOM: doc.gridRepeatItems.add(sourceArt, config) with a GridRepeatConfig (horizontalSpacing, verticalSpacing, patternType / rowFlipType / columnFlipType from RepeatGridShiftFlipType) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial: the menu item has no executeMenuCommand id, but the card's own harvested DOM route (doc.*RepeatItems.add / set*Configuration, unverified) produces the result, the same standard as the reviewed Slice Selection Tool card"
+   }
+  },
+  {
+   "name": "Mirror",
+   "id": "path:Object/Repeat/Mirror",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Repeat/Mirror",
+   "status": "current",
+   "summary": "Turns the selected art into live Mirror repeat art: a reflected copy appears across a symmetry axis that you can move and rotate on the canvas, and editing the source half in isolation mode updates the mirrored half as you draw.",
+   "use_for": [
+    "symmetric logos, crests and emblems",
+    "faces, masks, butterflies, vases and other bilateral illustrations",
+    "ornaments and frames drawn one half at a time"
+   ],
+   "avoid": [
+    "a one-off flipped copy that never needs to update: Object > Transform > Reflect with Copy",
+    "more than two-fold symmetry: use Radial repeat"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Symmetry/Create New Symmetry"
+   },
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484366 posted to the Illustrator main window (menu path Object/Repeat/Mirror). Same result through the DOM: doc.symmetryRepeatItems.add(sourceArt, config) with a SymmetryRepeatConfig (axisRotationAngleInRadians) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial: the menu item has no executeMenuCommand id, but the card's own harvested DOM route (doc.*RepeatItems.add / set*Configuration, unverified) produces the result, the same standard as the reviewed Slice Selection Tool card"
+   }
+  },
+  {
+   "name": "Options...",
+   "id": "path:Object/Repeat/Options...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Repeat/Options...",
+   "status": "current",
+   "summary": "Opens the Repeat Options dialog, the numeric settings for repeat art: for Radial the number of instances, radius and reverse overlapping; for Grid the horizontal and vertical spacing, grid type and row / column flips; and for Mirror the harvested DOM has only an axis angle (SymmetryRepeatConfig), so whether the dialog shows a Mirror section is not confirmed. Exactly which fields apply with or without repeat art selected was not confirmed by the harvest.",
+   "use_for": [
+    "typing an exact number of petals, spokes or teeth into a radial motif",
+    "setting precise gutters between tiles of a grid repeat",
+    "matching repeat settings across several repeat objects in a pattern set"
+   ],
+   "avoid": [
+    "quick visual tweaks: drag the on-canvas repeat handles instead",
+    "objects that are not repeat art: make them a repeat first (Object > Repeat > Radial / Grid / Mirror)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Dialog with Radial (number of instances, radius, reverse overlapping) and Grid (horizontal / vertical spacing, grid type, flip row / column) settings, named after the harvested RadialRepeatConfig / GridRepeatConfig fields (a Mirror section is not confirmed); the values apply to the selected repeat art.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484369 posted to the Illustrator main window (menu path Object/Repeat/Options...). DOM equivalent for selected repeat art: item.setRadialConfiguration(config, RadialRepeatUpdate.RADIALALL), item.setGridConfiguration(config, GridRepeatUpdate.GRIDALL) or item.setSymmetryConfiguration(config, SymmetryRepeatUpdate.SYMMETRYALL) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial: the menu item has no executeMenuCommand id, but the card's own harvested DOM route (doc.*RepeatItems.add / set*Configuration, unverified) produces the result, the same standard as the reviewed Slice Selection Tool card; summary / how: the Mirror section of the dialog was stated as fact, but nothing in the batch or the harvested DOM (SymmetryRepeatConfig has only axisRotationAngleInRadians) shows it; now hedged"
+   }
+  },
+  {
+   "name": "Radial",
+   "id": "path:Object/Repeat/Radial",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Repeat/Radial",
+   "status": "current",
+   "summary": "Turns the selected art into live Radial repeat art: copies arranged evenly around a circle, each rotated a step further round the centre. On-canvas handles set the radius and the number of instances and can open a gap in the ring; editing the source updates every copy.",
+   "use_for": [
+    "mandalas, rosettes and flower motifs",
+    "clock faces, dials, gear rims and sunburst badges",
+    "circular logo marks, seals and stamps"
+   ],
+   "avoid": [
+    "type running around a circle: use Type on a Path",
+    "a fixed set of rotated copies that must be edited individually: Rotate dialog with Copy, then Transform Again (Ctrl+D)"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484364 posted to the Illustrator main window (menu path Object/Repeat/Radial). Same result through the DOM: doc.radialRepeatItems.add(sourceArt, config) with a RadialRepeatConfig (numberOfInstances, radius, reverseOverlap) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial: the menu item has no executeMenuCommand id, but the card's own harvested DOM route (doc.*RepeatItems.add / set*Configuration, unverified) produces the result, the same standard as the reviewed Slice Selection Tool card"
+   }
+  },
+  {
+   "name": "Release",
+   "id": "path:Object/Repeat/Release",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Repeat/Release",
+   "status": "needs_input",
+   "summary": "Releases the selected repeat art (radial, grid or mirror) back to ordinary art: the repeat stops, the live copies go away and the source artwork remains. To keep every copy as separate objects, use Object > Expand instead (behaviour from Adobe documentation, not checked in the harvest).",
+   "use_for": [
+    "abandoning a repeat while keeping the motif drawn for it",
+    "starting over with a different repeat type on the same source art"
+   ],
+   "avoid": [
+    "keeping all the repeated copies as editable shapes: use Object > Expand",
+    "changing the count or spacing only: use Object > Repeat > Options or the on-canvas handles"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Select the repeat art and choose the command. No dialog.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "No executeMenuCommand id was paired in the harvest; the menu item runs as Win32 WM_COMMAND 2147484368 posted to the Illustrator main window (menu path Object/Repeat/Release). The harvested DOM has no release call (RadialRepeatItem / GridRepeatItem / SymmetryRepeatItem .remove() deletes the whole repeat art).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Convert to Shape",
+   "id": "Convert to Shape",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Shape/Convert to Shape",
+   "status": "current",
+   "summary": "Converts the selected regular paths into Live Shapes when their geometry is a rectangle, rounded rectangle, ellipse or polygon, giving them live corner widgets and editable shape properties (size, corner radius, sides) in the Properties / Transform panel. The look does not change; what happens to paths that match none of these shapes is not confirmed.",
+   "use_for": [
+    "getting live, editable rounded corners on rectangles from older files or PDFs",
+    "making imported button and card rectangles resizable without distorting their corners",
+    "turning a drawn polygon back into one whose side count can be changed"
+   ],
+   "avoid": [
+    "freehand or complex outlines: they do not become live shapes; draw with the Rectangle / Ellipse / Polygon tools or the Shaper Tool",
+    "art you are about to edit point by point: that expands the live shape anyway"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Convert to Shape\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Expand Shape",
+   "id": "Expand Shape",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Shape/Expand Shape",
+   "status": "current",
+   "summary": "Converts the selected Live Shapes (rectangles, rounded rectangles, ellipses, polygons with live corners) into ordinary paths, dropping their shape properties and corner widgets; the outline stays exactly where it was.",
+   "use_for": [
+    "freezing rounded corners before editing anchor points by hand",
+    "sending plain paths to a cutter, plotter, embroidery or older software",
+    "stopping corner widgets from getting in the way on dense icon art"
+   ],
+   "avoid": [
+    "shapes whose corner radius, size or side count may still change: keep the live shape",
+    "expanding strokes, effects or appearance: use Object > Expand or Object > Expand Appearance"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Convert to Curves"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Expand Shape\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Show All",
+   "id": "showAll",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Show All",
+   "status": "current",
+   "summary": "Makes every object that was hidden with Object > Hide visible again and selects the objects it reveals.",
+   "use_for": [
+    "bringing back construction shapes hidden while working on a layout",
+    "checking a file before handoff or print for forgotten hidden art",
+    "restoring art hidden by a script or action"
+   ],
+   "avoid": [
+    "revealing a single object: click its eye in the Layers panel (Show All brings back everything)",
+    "final files where hidden art should go: delete it rather than hide it"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Object/Hide/Show All"
+   },
+   "shortcut": "Alt+Ctrl+3",
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"showAll\") (id paired by its shortcut, not confirmed by execution). DOM alternative: set item.hidden = false on each of doc.pageItems (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Clip to Artboard",
+   "id": "AISlice Clip to Artboard",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Clip to Artboard",
+   "status": "current",
+   "summary": "Toggles whether slicing is bounded by the artboard, so slices and the Save for Web (Legacy) slice table stop at the artboard edge instead of running to the bounds of all the artwork. The default state and how existing slices are trimmed were not confirmed.",
+   "use_for": [
+    "web banner or email layouts sliced for Save for Web (Legacy) where only the artboard area should export",
+    "keeping off-artboard scraps out of a sliced export"
+   ],
+   "avoid": [
+    "modern asset export: use Export for Screens or the Asset Export panel",
+    "files that are not exported through Save for Web (Legacy): slicing has no effect on them"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Clip to Artboard\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Combine Slices",
+   "id": "AISlice Combine",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Combine Slices",
+   "status": "needs_input",
+   "summary": "Merges the selected slices into one slice whose rectangle encloses the outer edges of all of them.",
+   "use_for": [
+    "joining several small slices of a web layout into one image piece",
+    "cleaning up an over-sliced banner before Save for Web (Legacy)"
+   ],
+   "avoid": [
+    "grouping the artwork itself: slices only define export areas; group the art with Object > Group",
+    "modern asset export: use Export for Screens or the Asset Export panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "sliceSelectTool"
+   },
+   "how": "Select two or more slices with the Slice Selection Tool, then choose the command. No dialog.",
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Combine\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Create from Guides",
+   "id": "AISlice Create from Guides",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Create from Guides",
+   "status": "needs_input",
+   "summary": "Creates slices from the document's ruler guides: the areas between the guides become slices for Save for Web (Legacy).",
+   "use_for": [
+    "cutting a guide-based web or email layout into image pieces in one step",
+    "rows-and-columns slicing of a banner set up with guides"
+   ],
+   "avoid": [
+    "documents without guides: drag guides from the rulers first",
+    "modern asset export: use Export for Screens or the Asset Export panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "sliceTool"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Create from Guides\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Create from Selection",
+   "id": "AISlice Create from Selection",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Create from Selection",
+   "status": "current",
+   "summary": "Creates slices from the bounds of the selected objects. Unlike Object > Slice > Make, these are user slices that are not tied to the art, so moving or resizing the objects later does not move the slices.",
+   "use_for": [
+    "fixing export areas for a web layout whose art may still shift",
+    "slicing around a group of objects for Save for Web (Legacy)"
+   ],
+   "avoid": [
+    "slices that should follow the art when it changes: use Object > Slice > Make",
+    "modern asset export: use Export for Screens or the Asset Export panel"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Create from Selection\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "status needs_input -> current: it needs only an ordinary selection of any art, the same as Object > Slice > Make (current) and the Transform dialogs; needs_input on this card set is kept for commands that need a slice, wrap, repeat or perspective object or guides to exist"
+   }
+  },
+  {
+   "name": "Delete All",
+   "id": "AISlice Delete All Slices",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Delete All",
+   "status": "current",
+   "summary": "Removes every slice in the document. Slices made with Object > Slice > Make are released rather than deleted, so the artwork itself stays.",
+   "use_for": [
+    "clearing old web slices from a file reused for print",
+    "starting slicing again from scratch"
+   ],
+   "avoid": [
+    "removing one slice only: select it with the Slice Selection Tool and delete it, or Release it",
+    "files with no slices: the command does nothing"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "View/Clear Slices"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Delete All Slices\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Divide Slices...",
+   "id": "AISlice Divide",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Divide Slices...",
+   "status": "needs_input",
+   "summary": "Splits the selected slice into a grid of smaller slices, either into a set number of equal slices or into slices of a set pixel size, horizontally and/or vertically.",
+   "use_for": [
+    "cutting a large web image area into equal tiles",
+    "splitting a navigation bar slice into one slice per button"
+   ],
+   "avoid": [
+    "slices that must follow individual objects: use Object > Slice > Make on each object",
+    "modern asset export: use Export for Screens or the Asset Export panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "sliceSelectTool"
+   },
+   "how": "Dialog: Divide Horizontally Into (N slices down, evenly spaced, or N pixels per slice) and Divide Vertically Into (N slices across, or N pixels per slice); Preview.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"AISlice Divide\") opens the Divide Slice dialog (id paired from the menu label, not confirmed by execution). No DOM call for dividing slices is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Duplicate Slice",
+   "id": "AISlice Duplicate",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Duplicate Slice",
+   "status": "needs_input",
+   "summary": "Makes a copy of the selected slice as a new slice of the same size, which you can then move to mark another export area. The exact offset of the copy was not confirmed.",
+   "use_for": [
+    "marking several equally sized image areas (thumbnails, buttons) in a web layout"
+   ],
+   "avoid": [
+    "duplicating the artwork: copy the art itself (Ctrl+C / Ctrl+V or Alt-drag)",
+    "modern asset export: use Export for Screens or the Asset Export panel"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "sliceSelectTool"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Duplicate\") (id paired from the menu label, not confirmed by execution).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "AISlice Make Slice",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Make",
+   "status": "current",
+   "summary": "Makes a slice from each selected object, tied to the object's bounds: when the object moves or changes size, its slice follows. Slices define the image pieces written by Save for Web (Legacy).",
+   "use_for": [
+    "marking buttons, banners and image areas of a web or email layout for sliced export",
+    "export areas that must stay matched to art that is still being edited"
+   ],
+   "avoid": [
+    "modern asset export: use Export for Screens or the Asset Export panel",
+    "a fixed export area independent of the art: use Object > Slice > Create from Selection"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Layer/New Layer Based Slice"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Make Slice\") (id paired from the menu label, not confirmed by execution). DOM alternative: item.sliced = true on the PageItem (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Release",
+   "id": "AISlice Release Slice",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Release",
+   "status": "needs_input",
+   "summary": "Removes the slice from the selected object made with Object > Slice > Make; the object itself is left untouched.",
+   "use_for": [
+    "taking one element out of a sliced web layout while keeping the art",
+    "undoing an accidental Make Slice"
+   ],
+   "avoid": [
+    "removing every slice: Object > Slice > Delete All",
+    "user slices drawn with the Slice Tool: select and delete them"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AISlice Release Slice\") (id paired from the menu label, not confirmed by execution). DOM alternative: item.sliced = false (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Slice Options...",
+   "id": "AISlice Slice Options",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Slice/Slice Options...",
+   "status": "needs_input",
+   "summary": "Opens Slice Options for the selected slice: what the slice becomes in a Save for Web (Legacy) HTML export (an image, an empty cell, or HTML text) and its web attributes such as name, link and alt text.",
+   "use_for": [
+    "adding links and alt text to slices of an exported HTML email or web page",
+    "naming slice image files before a Save for Web (Legacy) export"
+   ],
+   "avoid": [
+    "modern asset export: use Export for Screens or the Asset Export panel",
+    "layouts that are not exported as sliced HTML: the options have no effect"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "sliceSelectTool"
+   },
+   "how": "Dialog: Slice Type (Image, No Image, HTML Text). Image: Name, URL, Target, Message, Alt, Background. No Image: text shown in the cell and its alignment. HTML Text: available for text objects sliced with Make.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"AISlice Slice Options\") opens the Slice Options dialog (id paired from the menu label, not confirmed by execution). No DOM call for slice options is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Make",
+   "id": "Make Text Wrap",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Text Wrap/Make",
+   "status": "current",
+   "summary": "Makes the selected object a text-wrap object: area text in the same layer flows around its shape, at the offset set in Text Wrap Options. Illustrator's help puts the wrap object above the text in the stacking order (the harvested DOM note for PageItem.wrapped words it the other way round; check on first use).",
+   "use_for": [
+    "magazine-style layouts with body text flowing around a photo or cut-out",
+    "flyers and menus where copy wraps around an illustration",
+    "posters with text shaped around a logo or product shot"
+   ],
+   "avoid": [
+    "point text or type on a path: wrap only affects area text",
+    "text on a different layer from the object: move them into the same layer first",
+    "a plain rectangular column: size the area text frame or set columns instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Make Text Wrap\") (id paired from the menu label, not confirmed by execution). DOM alternative: item.wrapped = true (with item.wrapOffset / item.wrapInside) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Release",
+   "id": "Release Text Wrap",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Text Wrap/Release",
+   "status": "needs_input",
+   "summary": "Stops the selected object from pushing text away: the surrounding area text reflows as if the object were not there. The object itself is unchanged.",
+   "use_for": [
+    "letting a decorative object overlap body text on purpose",
+    "removing a stale wrap after a layout change"
+   ],
+   "avoid": [
+    "changing the gap only: use Text Wrap Options",
+    "objects that are not wrap objects: the command does nothing"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"Release Text Wrap\") (id paired from the menu label, not confirmed by execution). DOM alternative: item.wrapped = false (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Text Wrap Options...",
+   "id": "Text Wrap Options...",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Text Wrap/Text Wrap Options...",
+   "status": "current",
+   "summary": "Opens Text Wrap Options for the selected object (Illustrator's help says the options can be set before or after Object > Text Wrap > Make; not checked in the harvest): the distance kept between the object and the wrapped text, and whether the wrap is inverted so text flows inside the shape instead of around it.",
+   "use_for": [
+    "setting a consistent gutter between body text and photos in a brochure",
+    "pouring text inside a shape for a type-in-shape poster effect"
+   ],
+   "avoid": [
+    "quick text-in-a-shape: the Area Type Tool on the shape is simpler than an inverted wrap",
+    "expecting the dialog alone to move text: the offset and invert settings only act once Object > Text Wrap > Make is applied to the object"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Dialog: Offset (gap between object and text), Invert Wrap (text flows on the inside), Preview.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"Text Wrap Options...\") opens the Text Wrap Options dialog (confirmed). DOM alternative: item.wrapOffset = offsetPt; item.wrapInside = true (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'not wrap objects yet: Make first' contradicted Illustrator's help (wrap options can be set before or after Make); now warns that the settings act only once Make is applied; summary no longer limits the dialog to existing wrap objects; script_api: literal 12 offset (not in the batch) is now a variable"
+   }
+  },
+  {
+   "name": "Move...",
+   "id": "transformmove",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Move...",
+   "status": "current",
+   "summary": "Moves the selection by exact amounts typed into the Move dialog (horizontal and vertical offsets, or a distance and angle), optionally moving a copy instead of the original.",
+   "use_for": [
+    "nudging artwork by an exact amount when building grids and layouts",
+    "making evenly spaced copies (Copy, then Transform Again with Ctrl+D)",
+    "shifting a pattern fill inside a shape without moving the shape"
+   ],
+   "avoid": [
+    "setting an absolute position on the artboard: type X / Y in the Properties or Transform panel",
+    "snapping to other objects: drag with Smart Guides or use the Align panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Free Transform",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "how": "Dialog: Position Horizontal / Vertical, Distance and Angle (linked); Options: Transform Objects / Transform Patterns; Preview; Copy moves a duplicate. Pressing Enter with the Selection Tool active also opens it.",
+   "shortcut": "Shift+Ctrl+M",
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"transformmove\") opens the Move dialog (confirmed). DOM: item.translate(deltaX, deltaY[, transformObjects, transformFillPatterns ...]); for a copy, item.duplicate(item, ElementPlacement.PLACEBEFORE).translate(dx, dy) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: item.duplicate() called with no arguments, but the harvested PageItem.duplicate marks relativeObject and insertionLocation required; now duplicate(item, ElementPlacement.PLACEBEFORE), the form the reviewed ai_menu_02 cards use"
+   }
+  },
+  {
+   "name": "Reflect...",
+   "id": "transformreflect",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Reflect...",
+   "status": "current",
+   "summary": "Flips the selection across a horizontal, vertical or angled axis through its centre (or through a reference point set with the Reflect Tool), optionally as a copy, using the Reflect dialog.",
+   "use_for": [
+    "mirrored copies for symmetric logos and icons (Copy)",
+    "flipping a product shot, arrow or character to face the other way",
+    "reflection effects under objects, combined with a gradient mask"
+   ],
+   "avoid": [
+    "symmetry that should stay live while you draw: use Object > Repeat > Mirror",
+    "type you want to stay readable: reflecting text makes it read backwards"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Flip Horizontal",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "how": "Dialog: Axis Horizontal (top to bottom), Vertical (left to right) or Angle; Options: Transform Objects / Transform Patterns; Preview; Copy reflects a duplicate.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"transformreflect\") opens the Reflect dialog (confirmed). DOM: item.transform(app.getScaleMatrix(-100, 100)) flips left to right across a vertical axis; getScaleMatrix(100, -100) flips top to bottom (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Reset Bounding Box",
+   "id": "AI Reset Bounding Box",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Reset Bounding Box",
+   "status": "current",
+   "summary": "After an object has been rotated its bounding box stays tilted with it; this command squares the bounding box back to the horizontal and vertical without changing the artwork.",
+   "use_for": [
+    "scaling a rotated object along the page axes with the Selection Tool handles",
+    "getting straight width and height readouts for rotated art"
+   ],
+   "avoid": [
+    "to straighten the artwork itself: rotate it back (Object > Transform > Rotate or the Properties panel angle)",
+    "objects that were never rotated: nothing changes"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "app.executeMenuCommand(\"AI Reset Bounding Box\") (id paired from the menu label, not confirmed by execution). No DOM call for the bounding box orientation is known.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Rotate...",
+   "id": "transformrotate",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Rotate...",
+   "status": "current",
+   "summary": "Rotates the selection by an exact angle typed into the Rotate dialog, around its centre (or a reference point set with the Rotate Tool), optionally rotating a copy.",
+   "use_for": [
+    "exact angles for badges, stamps and diagonal banners",
+    "radial copies made by hand (Copy, then Transform Again with Ctrl+D)",
+    "rotating a pattern fill inside a shape without rotating the shape"
+   ],
+   "avoid": [
+    "live radial copies that stay editable: use Object > Repeat > Radial",
+    "quick free rotation: drag just outside a bounding box corner with the Selection Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Rotate",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "how": "Dialog: Angle (positive = counter-clockwise); Options: Transform Objects / Transform Patterns; Preview; Copy rotates a duplicate.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"transformrotate\") opens the Rotate dialog (confirmed). DOM: item.rotate(angle[, changePositions, changeFillPatterns, changeFillGradients, changeStrokePattern, rotateAbout]), angle in degrees counter-clockwise (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the DOM call (signature checked against the harvested PageItem) is now marked unverified like its siblings"
+   }
+  },
+  {
+   "name": "Scale...",
+   "id": "transformscale",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Scale...",
+   "status": "current",
+   "summary": "Resizes the selection by exact percentages typed into the Scale dialog, uniformly or with separate horizontal and vertical values, around its centre (or a reference point set with the Scale Tool), with control over whether strokes, effects and corners scale too.",
+   "use_for": [
+    "scaling a logo to an exact percentage for a size variant",
+    "resizing icons while keeping stroke weights constant (Scale Strokes & Effects off)",
+    "scaling a pattern fill inside a shape without resizing the shape"
+   ],
+   "avoid": [
+    "an exact final size in mm or px: type W / H in the Properties or Transform panel",
+    "scaling many objects each around its own centre: use Object > Transform > Transform Each"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Scale",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "how": "Dialog: Uniform scale %, or Non-Uniform Horizontal % / Vertical %; Options: Scale Corners, Scale Strokes & Effects, Transform Objects / Transform Patterns; Preview; Copy scales a duplicate.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"transformscale\") opens the Scale dialog (confirmed). DOM: item.resize(scaleX, scaleY, changePositions, changeFillPatterns, changeFillGradients, changeStrokePattern, changeLineWidths, scaleAbout), scale in percent; changeLineWidths is the stroke-scaling percentage (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: the DOM call (signature checked against the harvested PageItem) is now marked unverified like its siblings"
+   }
+  },
+  {
+   "name": "Shear...",
+   "id": "transformshear",
+   "app": "AI",
+   "kind": "ai_menu",
+   "path": "Object/Transform/Shear...",
+   "status": "current",
+   "summary": "Slants (skews) the selection by an exact angle along a horizontal, vertical or angled axis, using the Shear dialog, optionally as a copy.",
+   "use_for": [
+    "faux-italic or dynamic slanted headlines and logotypes",
+    "isometric-style faces for boxes and icons (with scale and rotate)",
+    "cast shadows made from a sheared, darkened copy of an object"
+   ],
+   "avoid": [
+    "true perspective: use the Perspective Grid or Effect > Distort & Transform > Free Distort",
+    "real italic type: choose the italic font style instead of shearing text"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Edit/Transform/Skew",
+    "CDR": "Window/Dockers/Transform"
+   },
+   "how": "Dialog: Shear Angle; Axis Horizontal, Vertical or Angle; Options: Transform Objects / Transform Patterns; Preview; Copy shears a duplicate.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.executeMenuCommand(\"transformshear\") opens the Shear dialog (confirmed). DOM: var m = app.getIdentityMatrix(); m.mValueC = Math.tan(angle * Math.PI / 180); item.transform(m) (unverified).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

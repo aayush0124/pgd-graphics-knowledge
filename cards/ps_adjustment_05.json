@@ -1,0 +1,242 @@
+{
+ "cards": [
+  {
+   "name": "Shadows/Highlights",
+   "id": "adaptCorrect",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Shadows/Highlights",
+   "status": "current",
+   "summary": "Locally brightens dark areas (Shadow amount 35% by default) and, once the Highlight amount is raised from its default 0, darkens bright areas, judging each pixel against its neighbourhood (radius) rather than applying one global curve, so a backlit or underexposed subject opens up without washing out the rest of the frame. Overdone it looks flat, grey and HDR-like, with glowing halos along high-contrast edges.",
+   "use_for": [
+    "opening up dark clothing and shadows in a press or event photo before it goes on a news card",
+    "rescuing a backlit portrait shot against a window or bright sky",
+    "pulling detail back into a blown wall, shirt or sky with the Highlight amount",
+    "evening out a harshly lit product or interior shot before colour grading"
+   ],
+   "avoid": [
+    "a small radius with a large amount: grey halos and outlines appear along edges; raise the radius or lower the amount",
+    "a plain global brighten or darken: Curves or Levels is simpler and keeps contrast",
+    "deep, noisy shadows: lifting them shows noise and compression blocks (very visible on a soft video frame); run Reduce Noise after",
+    "it is a destructive menu command on a pixel layer and has no adjustment layer: convert the layer to a Smart Object first to keep it editable",
+    "scripts: the main controls (Shadow and Highlight amount / width / radius) are object params and must be sent as an adaptCorrectTones descriptor; demo_settings cannot carry them, so the gallery frame relies on the shadow lift Photoshop applied with nothing specified in the harvest read-back (35%, Highlight 0)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Light"
+   },
+   "look": [
+    "lifted shadows",
+    "open shadows",
+    "recovered highlights",
+    "backlight fix",
+    "flat HDR look",
+    "low contrast",
+    "tone mapping"
+   ],
+   "params": [
+    {
+     "name": "Shadow",
+     "does": "adaptCorrectTones object: amount (% lift of the shadows, default 35), width (% of the tonal range treated as shadow, default 50), radius (neighbourhood size in px, default 30) that decides what counts as a dark area",
+     "typical": "amount 25-50%, width 30-50%, radius 30-100 px (bigger on large images for smoother transitions)"
+    },
+    {
+     "name": "Highlight",
+     "does": "adaptCorrectTones object with the same amount / width / radius fields, darkening the brightest areas; amount defaults to 0 (off)",
+     "typical": "amount 10-30% to recover a bright wall, shirt or window; 0 when only shadows need help"
+    },
+    {
+     "name": "center",
+     "does": "contrast of the midtones after the correction (the dialog's Midtone Contrast); positive values put back the punch that lifting shadows removes",
+     "typical": "+10 to +30; 0 by default"
+    },
+    {
+     "name": "Color Correction",
+     "does": "saturation of the corrected areas only, so lifted shadows do not go grey or over-colourful",
+     "typical": "+20 (default) to +40; lower if lifted skin turns orange"
+    },
+    {
+     "name": "Black Clip",
+     "does": "percentage of the darkest pixels clipped to pure black after the correction",
+     "typical": "0.01 (default) to about 0.5"
+    },
+    {
+     "name": "White Clip",
+     "does": "percentage of the brightest pixels clipped to pure white after the correction",
+     "typical": "0.01 (default) to about 0.5"
+    },
+    {
+     "name": "Brightness",
+     "does": "declared in Photoshop's terminology with no default; believed to be the slider shown in place of Color Correction on grayscale images (not confirmed by the harvest)",
+     "typical": "leave unset on RGB images"
+    }
+   ],
+   "demo_settings": {
+    "colorCorrection": 40
+   },
+   "pairs_with": [
+    "Curves or Levels (set final contrast after the lift)",
+    "Reduce Noise (cleans the noise the lift exposes)",
+    "Vibrance (restores colour in the opened-up areas)",
+    "Convert for Smart Filters (keeps it editable)"
+   ],
+   "scripting": "var s = new ActionDescriptor(); s.putUnitDouble(stringIDToTypeID(\"amount\"), stringIDToTypeID(\"percentUnit\"), 50); s.putUnitDouble(stringIDToTypeID(\"width\"), stringIDToTypeID(\"percentUnit\"), 50); s.putInteger(stringIDToTypeID(\"radius\"), 30); var h = new ActionDescriptor(); h.putUnitDouble(stringIDToTypeID(\"amount\"), stringIDToTypeID(\"percentUnit\"), 15); h.putUnitDouble(stringIDToTypeID(\"width\"), stringIDToTypeID(\"percentUnit\"), 50); h.putInteger(stringIDToTypeID(\"radius\"), 30); var d = new ActionDescriptor(); d.putObject(stringIDToTypeID(\"shadowMode\"), stringIDToTypeID(\"adaptCorrectTones\"), s); d.putObject(stringIDToTypeID(\"highlightMode\"), stringIDToTypeID(\"adaptCorrectTones\"), h); d.putDouble(stringIDToTypeID(\"blackClip\"), 0.01); d.putDouble(stringIDToTypeID(\"whiteClip\"), 0.01); d.putInteger(stringIDToTypeID(\"center\"), 30); d.putInteger(stringIDToTypeID(\"colorCorrection\"), 40); executeAction(stringIDToTypeID(\"adaptCorrect\"), d, DialogModes.NO);  // keys and the adaptCorrectTones layout are from the harvest read-back; the harvest found no clamp on blackClip / whiteClip / center / colorCorrection, so keep them in the dialog's ranges",
+   "scriptable": "yes",
+   "non_destructive": "no on a pixel layer (harvest: destructive menu command, and there is no Shadows/Highlights adjustment layer); applied to a Smart Object it becomes an editable Smart Filter",
+   "cost": "medium: a radius-based local tone pass; large radius values on big images take noticeably longer than a global adjustment",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: highlights are only darkened once Highlight amount is raised (harvested default 0); demo_settings: dropped center 30 (Midtone Contrast +30 pushes the lifted lower midtones back down, working against the only visible change, the default 35% shadow lift, and against the card's 'low contrast' look), kept colorCorrection 40; equivalents.CDR: Bitmaps/Image Adjustment Lab (a multi-adjust dialog, mapped to Camera Raw Filter) -> Effects/Adjust/Light (SMHEffect: the dedicated Shadows / Midtones / Highlights band effect, scriptable, still global not local); avoid: reworded the gallery-default note"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/ef970cc3bc0a.png",
+    "note": "Shadows open up (ramp 5/63 to 14/99, dark areas lifted) and the frame flattens, from the default Shadow amount 35%; Color Correction 40 adds a little colour; matches the summary.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Threshold",
+   "id": "thresholdClassEvent",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Threshold",
+   "status": "current",
+   "summary": "Turns the image into pure black and white: every pixel brighter than the Level becomes white, every darker pixel becomes black, with no greys or colour left. The result is a stark, stencil or photocopy look with hard, jagged edges.",
+   "use_for": [
+    "a stencil or street-art poster portrait from a photo",
+    "screen-print or one-colour artwork prepared from a photo",
+    "cleaning a scanned signature, stamp or line drawing to solid black on white before tracing",
+    "finding the darkest and lightest points of an image (slide the Level to the ends) before setting Curves or Levels"
+   ],
+   "avoid": [
+    "a soft or low-contrast photo (like a video frame) breaks into blotchy shapes: raise contrast or sharpen first, or blur slightly to smooth the edge",
+    "two colours other than black and white: use Gradient Map, or Threshold followed by a colour fill in a blend mode",
+    "keeping some midtones: use Posterize for a few levels instead of one cut",
+    "it is a destructive menu command: use a Threshold adjustment layer to keep the Level editable"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Transform/Threshold",
+    "AI": "app.tracingPresetsList#[Black & White]"
+   },
+   "look": [
+    "black and white",
+    "two-tone",
+    "stencil",
+    "1-bit",
+    "photocopy",
+    "high contrast",
+    "street art",
+    "line art"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "the cut-off brightness (1-255): pixels brighter than it go white, darker ones go black; higher values make more of the image black",
+     "typical": "110-150 for a balanced portrait; 128 is the default"
+    }
+   ],
+   "demo_settings": {
+    "Level": 140
+   },
+   "pairs_with": [
+    "Gaussian Blur or Median before it (smoother, less noisy edges)",
+    "Brightness/Contrast or Curves before it (decides what falls on each side of the cut)",
+    "Gradient Map (recolours the two tones)",
+    "Image Trace in Illustrator (turns the result into vector shapes)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"level\"), 140); executeAction(stringIDToTypeID(\"thresholdClassEvent\"), d, DialogModes.NO);  // level is clamped by Photoshop to 1..255",
+   "scriptable": "yes",
+   "non_destructive": "no: the Image > Adjustments command rewrites the pixel layer (harvest: destructive); a Threshold adjustment layer gives the same result editable",
+   "cost": "light: a single per-pixel comparison",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_adjustment/af4478e3a9e7.png",
+    "note": "Pure black and white at Level 140: hard stencil edges, the yellow and orange blocks white and the rest black.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Vibrance",
+   "id": "vibrance",
+   "app": "PS",
+   "kind": "ps_adjustment",
+   "path": "Image/Adjustments/Vibrance",
+   "status": "current",
+   "summary": "Raises (or lowers) colour intensity selectively: the Vibrance slider pushes muted colours more than already saturated ones and is designed to hold back skin tones; the Saturation slider beside it changes every colour by the same amount. It is not clip-proof: on the photo plate, whose colours are almost all muted warm tones, Vibrance 100 with Saturation 25 drives the whole frame to near-full saturation (the tan wall turns saturated yellow-orange and the blue channel collapses). Negative Vibrance mutes the dull colours first, for a soft, faded look.",
+   "use_for": [
+    "making a dull event or travel photo look richer while keeping faces natural",
+    "boosting a flat, washed-out video frame before it goes into a social post",
+    "a muted, pastel or faded editorial grade (negative Vibrance)",
+    "matching colour intensity of photos placed side by side in a collage"
+   ],
+   "avoid": [
+    "colours that are already saturated (logos, strong reds, the colour strip) change less with Vibrance alone; with Saturation added (25 in the gallery frame) the strip's blocks were pushed to full saturation too, so use Saturation or Hue/Saturation when everything must shift",
+    "high Saturation values clip bright reds and oranges into flat blobs; keep Saturation modest and let Vibrance do the work",
+    "full black and white: use Black & White or Desaturate, not Vibrance at -100",
+    "it is a destructive menu command: the editable version is the Color and vibrance adjustment layer (Layer > New Adjustment Layer > Color and vibrance, the former Vibrance layer, which adds Temperature and Tint)",
+    "scripts: the harvest read back no default or range for vibrance / saturation (declared integer keys only, so pass both); Adobe documents the dialog sliders as -100..+100, not probed in this version",
+    "high Vibrance on an image made mostly of muted warm tones still clips it, worse with Saturation added: raise it gradually and watch the blue channel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Adjust/Vibrance"
+   },
+   "look": [
+    "colour pop",
+    "rich colour",
+    "natural saturation",
+    "skin-safe saturation",
+    "vivid",
+    "muted",
+    "faded pastel"
+   ],
+   "params": [
+    {
+     "name": "Vibrance",
+     "does": "smart saturation: boosts low-saturation colours most and protects skin tones; negative values mute the dullest colours first",
+     "typical": "+30 to +60 for a natural boost; -30 to -60 for a faded look"
+    },
+    {
+     "name": "Saturation",
+     "does": "uniform saturation change for all colours, like Hue/Saturation's Saturation",
+     "typical": "+5 to +20, or 0"
+    }
+   ],
+   "demo_settings": {
+    "Vibrance": 100,
+    "Saturation": 25
+   },
+   "pairs_with": [
+    "Shadows/Highlights or Curves (fix tone first, then colour)",
+    "Hue/Saturation (targeted per-colour tweaks after)",
+    "Camera Raw Filter (has the same Vibrance control)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"vibrance\"), 100); d.putInteger(stringIDToTypeID(\"saturation\"), 25); executeAction(stringIDToTypeID(\"vibrance\"), d, DialogModes.NO);  // both keys are declared integers; no default or clamp was read back, keep them in the documented -100..+100",
+   "scriptable": "yes",
+   "non_destructive": "no: the Image > Adjustments command rewrites the pixel layer (harvest: destructive); the Color and vibrance adjustment layer (adjustmentLayer:vibrance) gives the same result editable",
+   "cost": "light: a per-pixel colour adjustment",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid + non_destructive: the editable version in 27.4 is the 'Color and vibrance' adjustment layer (Layer/New Adjustment Layer/Color and vibrance, id adjustmentLayer:vibrance), not a 'Vibrance adjustment layer'; marked the -100..+100 range as Adobe documentation, not harvested"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_adjustment/62f36d488e7a.png",
+    "note": "Vibrance 100 + Saturation 25 drive the warm, muted photo to near-full saturation: the tan wall turns saturated yellow-orange, the photo's blue channel collapses (mean 70 to 13) and 66 % of its pixels end with a clipped channel (0.8 % on the plate), and the colour blocks also go to full saturation; the claim \"richer without neon clipping\" is not borne out. Summary and the first avoid line rewritten.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "effect text",
+     "note": "Re-measured clipping on the photo area (0.8 % to 66 % of pixels with a 0 or 255 channel) and the blue-channel collapse; the plate is mostly muted warm tones, which is exactly where Vibrance acts hardest, so the frame is a fair test of the overclaim, not a plate artefact. The rewrite keeps the slider description and drops \"without neon clipping\"."
+    }
+   }
+  }
+ ]
+}

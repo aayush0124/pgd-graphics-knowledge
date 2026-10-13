@@ -1,0 +1,831 @@
+{"cards": [
+{
+ "name": "Global Light",
+ "id": "1307",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Layer Style/Global Light",
+ "status": "current",
+ "summary": "Opens the Global Light dialog, which sets one document-wide lighting Angle and Altitude shared by every layer effect that has Use Global Light ticked (Drop Shadow, Inner Shadow, Bevel & Emboss), so all shadows and highlights in the file fall from the same direction. Changing it re-lights those effects on every layer at once; effects with Use Global Light off keep their own angle. The harvest found it enabled even with no document open.",
+ "how": "Angle (direction the light comes from, drag the dial or type degrees) and Altitude (height of the light above the surface, which mainly changes Bevel & Emboss shading). Preview shows the change live on the document's effects.",
+ "use_for": [
+  "making the drop shadows on every product cut-out, badge and button in a poster fall the same way",
+  "re-lighting all bevelled and shadowed headline text in a template in one step",
+  "matching layer-effect shadows to the light direction of the background photo"
+ ],
+ "avoid": [
+  "one layer that needs its own shadow direction: untick Use Global Light in that effect and set its angle there",
+  "realistic cast shadows on a surface: paint or warp a shadow layer instead of relying on Drop Shadow angle"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (no menuItemType or event label matches; command id 1307 is not runnable through runMenuItem). Without the dialog (unverified): executeAction(stringIDToTypeID('set')) on the current document's globalAngle property, passing globalLightingAngle and globalAltitude values.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Hide All Effects",
+ "id": "1306",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Layer Style/Hide All Effects",
+ "status": "current",
+ "summary": "Turns off the visibility of every layer effect (shadows, strokes, glows, bevels, overlays) on every layer in the document at once, without deleting them; the styles stay attached and the command becomes Show All Effects to bring them back. Needs an open document.",
+ "use_for": [
+  "checking the flat artwork of a poster or UI mock-up underneath all its drop shadows and strokes",
+  "speeding up redraw in a heavy file full of styled text and buttons while arranging layout",
+  "comparing a design with and without its effects before sign-off"
+ ],
+ "avoid": [
+  "removing effects for good: use Layer > Layer Style > Clear Layer Style",
+  "hiding the effects of just one layer: click that layer's fx eye in the Layers panel"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('set'), desc, DialogModes.NO) with desc: null = reference to property layerFXVisible ('lfxv') of the current document (Dcmn, Ordn, Trgt), to (T   ) = object lfxv {lfxv: false}; verified live (history 'Hide All Effects'). Set lfxv true to show them again.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Paste Layer Style",
+ "id": "1315",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Layer Style/Paste Layer Style",
+ "status": "needs_input",
+ "summary": "Applies the layer style previously taken with Copy Layer Style (all its effects and their settings) to the selected layer or layers, replacing the style they had. Disabled until a style has been copied: the harvest found it disabled in every fixture state, and it worked once copyEffects had been run on a styled layer.",
+ "use_for": [
+  "giving every button, tag or badge in a UI kit or social template the same stroke, shadow and gradient overlay",
+  "copying a finished headline treatment onto the sub-headlines of a poster",
+  "re-applying a look across many layers selected together in one step"
+ ],
+ "avoid": [
+  "pasting onto a much smaller or larger layer: effect sizes stay in pixels, so follow with Layer Style > Scale Effects",
+  "a style you will reuse across files: save it in the Styles panel instead of copy and paste"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('pasteEffects'), new ActionDescriptor(), DialogModes.NO), after executeAction(stringIDToTypeID('copyEffects'), new ActionDescriptor(), DialogModes.NO) on the source layer; verified live (history 'Paste Style').",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid claimed pasted styles keep pixel sizes across documents (unharvested); limited to layer size"
+ }
+},
+{
+ "name": "Scale Effects",
+ "id": "1327",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Layer Style/Scale Effects",
+ "status": "needs_input",
+ "summary": "Scales every size value inside the selected layer's style (shadow distance and size, stroke width, glow size, bevel size, pattern scale) by one percentage, without resizing the layer's own pixels. Needs a layer that has a layer style: the harvest found it disabled in every plain fixture state and it ran once an effect had been added (the styled bounds shrank at 50%).",
+ "how": "One Scale percentage with a Preview checkbox; values below 100% thin and tighten the effects, above 100% thicken and spread them.",
+ "use_for": [
+  "fixing a stroke and drop shadow that look too heavy after a style was pasted onto smaller text",
+  "matching a style built for a high-resolution print file to a smaller social graphic",
+  "making the same button style read correctly at a smaller size"
+ ],
+ "avoid": [
+  "resizing the layer together with its effects: Free Transform leaves effect sizes unchanged, so convert the layer to a smart object first, or use Image > Image Size with Scale Styles on for the whole document",
+  "changing only one effect's setting: double-click the layer and edit that effect"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('scaleEffectsEvent'), desc, DialogModes.NO) with desc: scale (Scl ) = 50 percent (#Prc); verified live on a styled layer (history 'Scale Effects').",
+ "review": {
+  "by": "adversarial",
+  "changes": "use_for had invented 300 ppi / 72 ppi numbers; removed; avoid said Free Transform scales effects with the layer (it does not); corrected"
+ }
+},
+{
+ "name": "Link Layers",
+ "id": "2961",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Link Layers",
+ "status": "needs_input",
+ "summary": "Links the selected layers so they move and transform together while staying separate, editable layers (a chain icon appears on each); the command toggles to Unlink Layers. Needs two or more layers selected: the harvest found it enabled only in the multi-layer fixture state.",
+ "use_for": [
+  "keeping a logo and its tagline together while repositioning them around a poster",
+  "moving a product shot with its own shadow and reflection layers as one unit",
+  "keeping a caption tied to a photo without grouping them out of their layer order"
+ ],
+ "avoid": [
+  "organising layers for the long run or applying one mask or opacity to them: use a group (Layer > New > Group from Layers)",
+  "a one-off move of several layers: select them in the Layers panel and move them; links persist and drag the layers along in every later edit"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No verified route: executeAction(stringIDToTypeID('linkSelectedLayers'), ...) and executeAction(charIDToTypeID('Lnk '), {null: target layers}) both errored live (command not available). DOM alternative (unverified): layerA.link(layerB) on ArtLayer / LayerSet objects.",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid stated an unharvested artboard-linking limit as fact; replaced"
+ }
+},
+{
+ "name": "Lock Layers",
+ "id": "2957",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Lock Layers",
+ "status": "current",
+ "summary": "Opens the Lock dialog for the selected layer(s) and protects them from edits: transparent pixels, image pixels, position, artboard nesting, or everything; a padlock shows in the Layers panel. With a group selected the title changes (alternate title Lock Group). Needs an open document.",
+ "how": "Tick Transparency (paint only where there are pixels), Image (no painting on the pixels), Position (cannot move), Artboards and nesting (stops auto-nesting into or out of artboards and frames), or All. Running it again on locked layers lets you clear the locks.",
+ "use_for": [
+  "locking a finished background plate so retouching brushes cannot touch it",
+  "locking the position of a logo and safe-area guides in a social template",
+  "locking transparency on a cut-out so a colour wash stays inside its edges"
+ ],
+ "avoid": [
+  "protecting a file from other people: locks are one click to undo; flatten or export a copy instead",
+  "a layer you need to keep editing: lock only the attribute you want protected"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Lock/Selection",
+  "CDR": "Object/Lock/Lock"
+ },
+ "shortcut": "Ctrl+/",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('applyLocking'), desc, DialogModes.NO) with desc: null = reference to the target layer (Lyr ), layerLocking = object layerLocking {protectAll: true}; verified live (layer lock became protectAll, history 'Lock Layers'). DOM alternative (unverified): layer.allLocked = true.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how said the nesting lock keeps a layer in its group; it governs auto-nesting into artboards and frames"
+ }
+},
+{
+ "name": "Mask All Objects",
+ "id": "22100",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Mask All Objects",
+ "status": "current",
+ "summary": "Detects the separate objects in the selected layer automatically and creates, for each one found, a layer group carrying a layer mask that isolates that object, so each object can be adjusted or hidden on its own. In the harvest a pixel layer holding one filled rectangle gained a masked group named 'px1 Object 1' whose mask was slightly larger than the rectangle (layer count 1 -> 3). Needs an open document.",
+ "use_for": [
+  "splitting a product line-up photo into individually masked products for a catalogue layout",
+  "getting quick masks for every person or item in a scene before targeted colour adjustments",
+  "preparing several elements of one photo for a parallax or layered social post"
+ ],
+ "avoid": [
+  "one precise cut-out with hair or fine edges: use Select > Subject or Select and Mask and refine it",
+  "a layer group or several layers selected: the harvest found it disabled then, so select the one layer to analyse"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('autoMaskGenerate'), new ActionDescriptor(), DialogModes.NO); verified live (masked group created, history 'Mask All Objects').",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary said each group holds the layer (one layer cannot sit in several object groups) and called the fixture pixel layer a shape layer; avoid said flat graphics give detection nothing to find, but the harvest masked a flat rectangle; replaced with the harvested disabled states"
+ }
+},
+{
+ "name": "Color Decontaminate",
+ "id": "1295",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Matting/Color Decontaminate",
+ "status": "needs_input",
+ "summary": "As far as known, it replaces the colour fringe left by the old background in the semi-transparent edge pixels of a cut-out with colour from the nearby solid pixels of the subject, the same job as the Decontaminate Colors option in Select and Mask. Exactly what it needs is unconfirmed: the harvest found it disabled in every fixture state (none had a layer mask), and its script candidate failed as not currently available; it stayed disabled even on a layer with transparent edges (the filled state, where Defringe was enabled), so it most likely needs a layer mask.",
+ "how": "Opens a dialog (the menu title ends in '...'); its controls were not harvested, presumably an amount for how strongly edge colours are replaced.",
+ "use_for": [
+  "removing a green or blue spill from the hair edges of a cut-out portrait placed on a new background",
+  "cleaning the coloured halo around a product cut out from a coloured backdrop"
+ ],
+ "avoid": [
+  "a cut-out that still has a layer mask you want to keep editing: decontamination bakes edge colour into the pixels, so work on a copy",
+  "pure black or white halos: Remove Black Matte or Remove White Matte are simpler"
+ ],
+ "confidence": "low",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No verified route: executeAction(stringIDToTypeID('decontaminate'), new ActionDescriptor(), DialogModes.NO) errored live (command not currently available in the fixture state).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary guessed 'mask or transparent edges'; the filled state rules transparent edges out, narrowed to a layer mask"
+ }
+},
+{
+ "name": "Defringe",
+ "id": "1037",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Matting/Defringe",
+ "status": "current",
+ "summary": "Replaces the colour of the edge pixels of a layer's content with the colour of nearby pixels that hold no background colour, removing the thin halo of old background around a cut-out. Works on a layer with transparency; the harvest found it enabled on the plain document, filled and group states, not with a selection, a text layer, a smart object or several layers active.",
+ "how": "One Width value in pixels: how far in from the edge colours are replaced; the harvest ran it at 2 pixels; small widths are usually enough, larger values smear the edge.",
+ "use_for": [
+  "removing a coloured edge left after cutting a product or person out of a photo",
+  "cleaning the fringe on a pasted logo before placing it on a different coloured background"
+ ],
+ "avoid": [
+  "fine hair or fur: Select and Mask with Decontaminate Colors keeps the detail",
+  "edges that are pure black or white halos: use Remove Black Matte or Remove White Matte"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('defringe'), desc, DialogModes.NO) with desc: width (Wdth) = 2 pixels (#Pxl); verified live (history 'Defringe').",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary omitted the disabled multi-layer state; how stated an unharvested 1 to 2 pixel range; tied to the harvested 2 px"
+ }
+},
+{
+ "name": "Remove Black Matte",
+ "id": "2701",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Matting/Remove Black Matte",
+ "status": "current",
+ "summary": "Removes the dark halo from the anti-aliased, semi-transparent edges of a layer whose content was cut or rendered against a black background, by un-mixing the black from those edge pixels; no dialog. Works on a layer with transparency; the harvest found it enabled on the plain document, filled and group states.",
+ "use_for": [
+  "cleaning the dark rim around a glow, fire or light-leak element shot on black and placed on a light poster",
+  "fixing edge darkening on a 3D render or logo exported with a black matte"
+ ],
+ "avoid": [
+  "a halo of some other colour: use Layer > Matting > Defringe",
+  "elements that should keep their black edge: the command lightens every soft edge"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('removeBlackMatte'), new ActionDescriptor(), DialogModes.NO); verified live (history 'Remove Black Matte').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Remove White Matte",
+ "id": "2703",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Matting/Remove White Matte",
+ "status": "current",
+ "summary": "Removes the light halo from the anti-aliased, semi-transparent edges of a layer whose content was cut or rendered against a white background, by un-mixing the white from those edge pixels; no dialog. Works on a layer with transparency; the harvest found it enabled on the plain document, filled and group states.",
+ "use_for": [
+  "cleaning the white rim around a logo or product cut out from a white studio background and placed on a dark design",
+  "fixing pale edges on clip-art or icons pasted from a white page"
+ ],
+ "avoid": [
+  "a halo of some other colour: use Layer > Matting > Defringe",
+  "hard-edged content with no soft pixels: there is nothing for it to change"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('removeWhiteMatte'), new ActionDescriptor(), DialogModes.NO); verified live (history 'Remove White Matte').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Merge Layers",
+ "id": "1166",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Merge Layers",
+ "status": "current",
+ "summary": "Merges the selected layers into a single pixel layer that keeps the name of the top one, baking in their blend modes, opacity and effects; with a single layer selected the same command merges it down into the layer below. In the harvest two selected layers became one layer whose bounds covered both. Needs an open document.",
+ "use_for": [
+  "combining finished retouch layers into one before handing off a lighter file",
+  "merging a painted shadow with its object so they move and transform as one pixel layer",
+  "collapsing a stack of texture layers before applying a filter to them"
+ ],
+ "avoid": [
+  "anything you may still need to edit separately: group the layers or convert them to a smart object instead",
+  "merging text, shapes or smart objects you need to keep vector or editable: they get rasterized"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+E",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('mergeLayersNew'), new ActionDescriptor(), DialogModes.NO) with the layers to merge selected; verified live (2 layers -> 1, history 'Merge Layers'). DOM alternative for one layer (unverified): layer.merge().",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Merge Visible",
+ "id": "1139",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Merge Visible",
+ "status": "current",
+ "summary": "Merges every visible layer of the document into one layer and leaves hidden layers untouched; when the Background is visible the result becomes the Background. In the harvest a pixel layer over the Background merged into a single Background layer. Needs an open document.",
+ "use_for": [
+  "flattening a finished composite while keeping hidden alternative versions as separate layers",
+  "baking all visible adjustments into the pixels before a final sharpen",
+  "reducing a heavy working file to one layer before export"
+ ],
+ "avoid": [
+  "keeping the layered file editable: merge into a new layer on top, or save a flattened copy instead",
+  "merging only some layers: select them and use Layer > Merge Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+Shift+E",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('mergeVisible'), new ActionDescriptor(), DialogModes.NO); verified live (history 'Merge Visible'). DOM alternative (unverified): app.activeDocument.mergeVisibleLayers().",
+ "review": {
+  "by": "adversarial",
+  "changes": "fixture layer is a pixel layer (kind 1), not a shape layer"
+ }
+},
+{
+ "name": "Gradient",
+ "id": "6301",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New Fill Layer/Gradient",
+ "status": "current",
+ "summary": "Adds a Gradient Fill layer: a non-destructive layer that fills the canvas (or the active selection, through its mask) with an editable gradient, re-editable at any time by double-clicking its thumbnail. In the harvest it created 'Gradient Fill 1' covering the whole 400x300 canvas with a layer mask. Needs an open document.",
+ "how": "First the New Layer dialog (name, clipping, colour, mode, opacity), then Gradient Fill: Gradient preset or custom stops, Style (Linear, Radial, Angle, Reflected, Diamond), Angle, Scale, Reverse, Dither, Align with Layer and the interpolation Method. Drag on the canvas while the dialog is open to move the gradient.",
+ "use_for": [
+  "a smooth editable background for a poster, banner or social post",
+  "a colour-to-transparent fade over a photo so headline text stays readable",
+  "a vignette or light falloff clipped to a single image layer"
+ ],
+ "avoid": [
+  "painting a gradient into an existing pixel layer: use the Gradient tool",
+  "colouring a single vector shape: set the shape layer's own fill to a gradient instead of adding a fill layer"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class contentLayer, using (Usng) = object contentLayer {type: object gradientLayer {}} (gradient, type and angle keys inside the gradientLayer descriptor set it; unverified, not harvested); verified live (layer 'Gradient Fill 1', history 'New Gradient Fill Layer').",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api named unharvested descriptor keys without marking them unverified"
+ }
+},
+{
+ "name": "Pattern",
+ "id": "6302",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New Fill Layer/Pattern",
+ "status": "current",
+ "summary": "Adds a Pattern Fill layer: a non-destructive layer that tiles a chosen pattern across the canvas (or the active selection, through its mask), with the pattern, angle and scale editable at any time. In the harvest it created 'Pattern Fill 1' covering the whole canvas with a layer mask. Needs an open document.",
+ "how": "First the New Layer dialog, then Pattern Fill: pick the pattern swatch, Angle, Scale, Link with Layer (pattern moves with the layer) and Snap to Origin. Drag on the canvas while the dialog is open to shift the tiling.",
+ "use_for": [
+  "a textured or tiled background (paper, fabric, dots, stripes) for packaging or social templates",
+  "a subtle overlay texture on a photo using a blend mode and low opacity",
+  "filling a selected area such as a label panel with a brand pattern that stays editable"
+ ],
+ "avoid": [
+  "a pattern that should follow the form of an object: use Filter > Distort > Displace or a warp instead",
+  "applying a pattern to a layer's own content with its effects: use the Pattern Overlay layer effect"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class contentLayer, using (Usng) = object contentLayer {type: object patternLayer {}} (a pattern reference and scale inside the patternLayer descriptor set it; unverified, not harvested); verified live (layer 'Pattern Fill 1', history 'New Pattern Fill Layer').",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api named unharvested descriptor contents without marking them unverified"
+ }
+},
+{
+ "name": "Solid Color",
+ "id": "6300",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New Fill Layer/Solid Color",
+ "status": "current",
+ "summary": "Adds a Color Fill layer: a non-destructive layer that fills the canvas (or the active selection, through its mask) with one flat colour that can be changed at any time by double-clicking its thumbnail. In the harvest it created 'Color Fill 1' (orange from the descriptor) covering the whole canvas with a layer mask. Needs an open document.",
+ "how": "First the New Layer dialog (name, clipping, colour label, mode, opacity), then the Color Picker for the fill colour.",
+ "use_for": [
+  "a brand-colour background behind a cut-out product that can be recoloured later",
+  "a colour wash over a photo with a blend mode such as Color or Multiply for a duotone look",
+  "a solid colour block clipped to text or a shape for a template"
+ ],
+ "avoid": [
+  "filling pixels inside an existing layer: use Edit > Fill",
+  "a coloured vector shape with a crisp outline: draw a shape layer instead"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class contentLayer, using (Usng) = object contentLayer {type: object solidColorLayer {color (Clr ) = RGBC {Rd 255, Grn 128, Bl 0}}}; verified live (layer 'Color Fill 1', history 'New Color Fill Layer').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "New Layer Based Slice",
+ "id": "5217",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New Layer Based Slice",
+ "status": "current",
+ "summary": "Creates a web slice that encloses the selected layer's pixel content and updates itself when that layer is moved or edited, for exporting the region as its own image. The harvest found it enabled with a single layer, disabled with a group or several layers selected.",
+ "use_for": [
+  "cutting buttons, icons or banner parts out of a web mock-up as separate images",
+  "exporting a hero image region that should follow its layer if the layout shifts"
+ ],
+ "avoid": [
+  "modern per-layer asset export: use File > Export > Export As or Quick Export as PNG",
+  "slices across several layers: draw a user slice with the Slice tool"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Slice/Make"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('sliceFromLayer')); verified live (history 'New Slice From Layer').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Artboard",
+ "id": "9220",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Artboard",
+ "status": "current",
+ "summary": "Creates a new artboard: a separate canvas inside the document with its own size, background and layer stack, shown as an artboard group in the Layers panel. In the harvest it created 'Artboard 1' at the full 400x300 canvas size and converted the Background into an ordinary layer. Needs an open document.",
+ "how": "Opens the New Artboard dialog: name, a size preset (phone, tablet, web, social formats) or custom width and height.",
+ "use_for": [
+  "laying out several social sizes of one campaign (post, story, banner) in one file",
+  "app or web screens side by side in one document",
+  "multiple design options of a poster next to each other for review"
+ ],
+ "avoid": [
+  "a single print image: artboards add nothing and export differently from a plain canvas",
+  "multi-page print documents with bleeds: build them in InDesign or Illustrator"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Adobe Crop Tool",
+  "CDR": "Layout/Insert Page"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('newArtboardEvent')); verified live (layer 'Artboard 1', history 'New Artboard'). A sized artboard (unverified): executeAction(stringIDToTypeID('make')) on class artboardSection with an artboardRect.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary said the document was turned into the artboard; it created one and converted the Background"
+ }
+},
+{
+ "name": "Artboard from Group",
+ "id": "9221",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Artboard from Group",
+ "status": "needs_input",
+ "summary": "Converts the selected layer group into an artboard sized to the group's content, keeping its layers inside it. Needs a layer group selected: the harvest found it enabled only in the group fixture state, where the group 'grp1' became an artboard of 40,40 to 200,200.",
+ "use_for": [
+  "turning a grouped banner layout into its own artboard to export it separately",
+  "converting grouped screen designs of an old file into artboards"
+ ],
+ "avoid": [
+  "an artboard at a standard size: the result fits the content, so set the size afterwards or use Layer > New > Artboard",
+  "ungrouped layers: use Layer > New > Artboard from Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('artboardFromLayerGroupEvent')) with a group selected; verified live (history 'Artboard From Layer Group').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Artboard from Layers",
+ "id": "9222",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Artboard from Layers",
+ "status": "current",
+ "summary": "Creates a new artboard sized around the selected layers and moves those layers into it. In the harvest a pixel layer at 40,40 to 200,200 was placed in a new 'Artboard 1' with the same bounds. Needs an open document.",
+ "how": "Opens a New Artboard from Layers dialog with a name and size; by default the size fits the selected layers.",
+ "use_for": [
+  "pulling one element of a big layout (a logo, an icon) onto its own artboard for export",
+  "splitting a single-canvas design into artboards per component"
+ ],
+ "avoid": [
+  "an empty artboard of a set size: use Layer > New > Artboard",
+  "a layer group already holding the content: use Layer > New > Artboard from Group"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('artboardFromLayersEvent')) with the layers selected; verified live (history 'New Artboard From Layers').",
+ "review": {
+  "by": "adversarial",
+  "changes": "fixture layer is a pixel layer, not a shape layer; the layer was moved into a new artboard, not turned into one"
+ }
+},
+{
+ "name": "Convert to Frame",
+ "id": "9255",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Convert to Frame",
+ "status": "needs_input",
+ "summary": "Turns the selected text (or shape) layer into a frame: a placeholder in the shape of that content into which an image can be dropped, so the picture shows through the letterforms or shape. Needs a text layer: the harvest found it enabled only in the text fixture state; the script candidate failed live.",
+ "use_for": [
+  "photo-filled headline lettering for a poster or travel graphic",
+  "a reusable template slot where clients drop their own photo into a shaped area"
+ ],
+ "avoid": [
+  "text that must stay editable as text: the frame takes the shape of the text, so keep a copy",
+  "a plain rectangular image slot: draw one with the Frame tool or use Frame from Layers"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Object/PowerClip/Create Empty PowerClip Frame"
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No verified route: app.runMenuItem(stringIDToTypeID('convertToFramedGroupEvent')) errored live (menu item not available in the tried state).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Frame from Layers",
+ "id": "9252",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Frame from Layers",
+ "status": "current",
+ "summary": "Wraps the selected layer in a new frame (a placeholder group with a rectangular vector mask) sized to the layer's content, so the image is cropped by the frame and can be replaced by dropping another image into it. In the harvest a pixel layer was wrapped in 'Frame 1' with a vector mask of 40,40 to 200,200. Needs an open document; disabled with a text layer or a layer group selected.",
+ "how": "The menu title ends in '...', so it opens a dialog; its exact options were not harvested (most likely the frame's name and size).",
+ "use_for": [
+  "turning placed photos in a layout into swappable image slots",
+  "building a social-post or catalogue template where images are replaced later without re-masking"
+ ],
+ "avoid": [
+  "a shaped or lettered image slot: use Layer > New > Convert to Frame on text or a shape",
+  "a mask you will paint by hand: add a layer mask instead"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.runMenuItem(stringIDToTypeID('framedGroupFromLayersEvent')); verified live (layer 'Frame 1', history 'Add Frame to Layers').",
+ "review": {
+  "by": "adversarial",
+  "changes": "fixture layer is a pixel layer, not a shape layer; summary omitted the disabled group state"
+ }
+},
+{
+ "name": "Group",
+ "id": "2976",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Group",
+ "status": "current",
+ "summary": "Creates a new, empty layer group above the selected layer, after a dialog for its name and settings; layers can then be dragged into it. In the harvest it created 'Group 1' in Pass Through mode. Needs an open document.",
+ "how": "New Group dialog: Name, Color label, Mode (Pass Through by default, so the group does not change how its layers blend) and Opacity.",
+ "use_for": [
+  "setting up a named folder structure (background, product, text) before building a layout",
+  "an empty container to which a mask or adjustment will be applied to several layers later"
+ ],
+ "avoid": [
+  "grouping layers that already exist: select them and use Layer > New > Group from Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class layerSection; verified live (layer 'Group 1', history 'New Group'). DOM alternative (unverified): app.activeDocument.layerSets.add().",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Group from Layers",
+ "id": "2956",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Group from Layers",
+ "status": "current",
+ "summary": "Puts the selected layers into a new layer group, after a dialog for the group's name and settings, so they can be moved, hidden, masked or faded together. In the harvest two selected layers went into 'Group 1' (Pass Through). Needs an open document.",
+ "how": "New Group from Layers dialog: Name, Color label, Mode (Pass Through keeps each layer's own blending) and Opacity.",
+ "use_for": [
+  "keeping the parts of a logo lock-up or product shot together in a layered poster",
+  "applying one mask or opacity to several layers at once",
+  "organising a social template into named sections for handoff"
+ ],
+ "avoid": [
+  "layers that must move together but stay in different places in the stack: use Layer > Link Layers"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Group",
+  "CDR": "Object/Group/Group"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class layerSection, from (From) = reference to the target layers (Lyr ); verified live (history 'Create Group from Layers').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer",
+ "id": "1099",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Layer",
+ "status": "current",
+ "summary": "Adds a new empty, transparent pixel layer above the selected layer, after a dialog for its name and settings. In the harvest it created an empty 'Layer 1'. Needs an open document.",
+ "how": "New Layer dialog: Name, Use Previous Layer to Create Clipping Mask, Color label, Mode and Opacity; for modes such as Overlay or Soft Light a tick fills it with the neutral colour of that mode, ready for dodge-and-burn or texture work.",
+ "use_for": [
+  "a separate layer for retouching, painting or shadows so the original photo stays untouched",
+  "a neutral grey Overlay layer for non-destructive dodge and burn on a portrait",
+  "a clipped colour layer that only affects the layer below"
+ ],
+ "avoid": [
+  "copying existing pixels to a new layer: use Layer > New > Layer Via Copy",
+  "a flat colour or gradient that stays editable: use Layer > New Fill Layer"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "New Layer with Dialog"
+ },
+ "shortcut": "Ctrl+Shift+N",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('make'), desc, DialogModes.NO) with desc: null = reference to class layer (Lyr ); verified live (layer 'Layer 1', history 'New Layer'). DOM alternative (unverified): app.activeDocument.artLayers.add().",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer from Background",
+ "id": "1942",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Layer from Background",
+ "status": "current",
+ "summary": "Converts the locked Background layer into an ordinary layer (named Layer 0 by default), so it can hold transparency, take a mask, change blend mode and opacity, and be moved in the stack. In the harvest the document lost its background layer and gained 'Layer 0'. Needs an open document with a Background layer.",
+ "how": "Dialog: Name, Color label, Mode and Opacity for the new layer.",
+ "use_for": [
+  "deleting the backdrop of a product photo to leave a transparent PNG cut-out",
+  "adding a layer mask to the original photo itself",
+  "moving the photo below other layers or freely transforming it"
+ ],
+ "avoid": [
+  "keeping an untouched original: duplicate the Background with Layer Via Copy and work on the copy"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('set'), desc, DialogModes.NO) with desc: null = reference to property background (Bckg) of the layer class (Lyr ), to (T   ) = object layer {opacity 100 percent, mode normal}; verified live (history 'Make Layer'). DOM alternative (unverified): app.activeDocument.backgroundLayer.isBackgroundLayer = false.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer Via Copy",
+ "id": "2970",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Layer Via Copy",
+ "status": "current",
+ "summary": "Copies the selected pixels into a new layer at the same position, or duplicates the whole active layer when nothing is selected; the original is left untouched. In the harvest it produced 'px1 copy' with the same bounds. Needs an open document.",
+ "use_for": [
+  "a working copy of a photo before retouching, so the original stays as a fallback",
+  "lifting an object (a sky, a product, a face) onto its own layer to adjust it separately",
+  "stacking copies of a texture or element to build up a pattern or glow"
+ ],
+ "avoid": [
+  "removing the area from the original layer at the same time: use Layer > New > Layer Via Cut",
+  "duplicating into another document: use Layer > Duplicate Layer"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Edit/Duplicate"
+ },
+ "shortcut": "Ctrl+J",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('copyToLayer'), new ActionDescriptor(), DialogModes.NO); verified live (layer 'px1 copy', history 'Layer Via Copy'). DOM alternative for the whole layer (unverified): layer.duplicate().",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Layer Via Cut",
+ "id": "2971",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/New/Layer Via Cut",
+ "status": "needs_input",
+ "summary": "Cuts the selected pixels out of the active layer and puts them on a new layer at the same position, leaving a transparent hole in the original (or background colour on a Background layer). Needs an active selection: the harvest found it enabled only in the selection fixture state, where it produced 'Layer 1' from the lasso area.",
+ "use_for": [
+  "separating a subject from its backdrop so each can be moved or adjusted alone",
+  "splitting one scanned sheet of icons or stickers into individual layers",
+  "pulling a foreground element forward for a parallax or pop-out effect"
+ ],
+ "avoid": [
+  "keeping the original layer intact: use Layer > New > Layer Via Copy and mask the original",
+  "a clean, refinable cut-out: a layer mask lets you change the edge later"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+Shift+J",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('cutToLayer'), new ActionDescriptor(), DialogModes.NO) with an active selection; verified live (history 'Layer Via Cut').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Quick Export as PNG",
+ "id": "3446",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Quick Export as PNG",
+ "status": "current",
+ "summary": "Exports the selected layers (or artboards) as PNG files in one step using the Quick Export settings from Preferences > Export (location, transparency, metadata), with no format dialog. Needs an open document and was disabled with a layer group selected; the harvest did not run it (exports are skipped by rule), so its exact output was not observed.",
+ "use_for": [
+  "pulling transparent PNG cut-outs of logos, stickers or icons out of a working file",
+  "quick PNGs of each artboard of a social campaign for review"
+ ],
+ "avoid": [
+  "exports that need a set size, scale or format: use File > Export > Export As",
+  "print output: export a PDF or TIFF instead of PNG"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "AI": "File/Export Selection...",
+  "CDR": "File/Export"
+ },
+ "shortcut": "Ctrl+Shift+'",
+ "scriptable": "no",
+ "script_api": "No script route harvested (export not run by rule). Same result without the menu (unverified): duplicate the layer to a new document and call doc.saveAs(new File(path), new PNGSaveOptions(), true), or doc.exportDocument(file, ExportType.SAVEFORWEB, options) with PNG-24.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary omitted the harvested disabled group state"
+ }
+},
+{
+ "name": "3D",
+ "id": "3553",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Layer/Rasterize/3D",
+ "status": "obsolete",
+ "summary": "Was used to rasterize a 3D layer into a flat pixel layer. Photoshop's 3D features have been removed, so it has nothing to work on: the harvest found the item still listed but disabled in every fixture state, with no script route.",
+ "use_for": [
+  "recognising the step in old tutorials or recorded actions that rasterized 3D layers; it can no longer run in this version"
+ ],
+ "avoid": [
+  "any new 3D work: build it in Substance 3D or Illustrator's 3D and Materials effect and place the render",
+  "rasterizing type, shapes or smart objects: use the matching item of Layer > Rasterize"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (no menuItemType or event label matches; command id 3553 is not runnable through runMenuItem).",
+ "review": {
+  "by": "adversarial",
+  "changes": "use_for claimed a working use on old 3D files although the item is disabled in every state; replaced"
+ }
+}
+]}

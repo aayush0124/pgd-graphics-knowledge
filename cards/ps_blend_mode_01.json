@@ -1,0 +1,570 @@
+{
+ "cards": [
+  {
+   "name": "Behind",
+   "id": "behind",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "unusable",
+   "summary": "A painting / fill mode, not a layer blend mode: paint or a fill lands only on the transparent parts of the current layer, as if painted on the back of the acetate, so existing pixels stay untouched and semi-transparent ones get colour showing through behind them. Cannot be shown on the blend plate because Photoshop refuses it as a layer mode.",
+   "use_for": [
+    "fill the empty area behind a cut-out object on the same layer with a backing colour",
+    "paint a soft shadow or glow under line art without a new layer",
+    "add an outline or backing behind lettering on a transparent layer"
+   ],
+   "avoid": [
+    "Not a layer blend mode: the Layers panel does not offer it and setting it on a layer or group through the 'set' event fails with 'General Photoshop error ... not available' (harvest 2026-10-04).",
+    "Only works on a layer with transparency and Lock Transparency off; unavailable on the Background layer.",
+    "Destructive: for editable results put the backing on a new layer underneath, or use a Stroke / Drop Shadow layer style."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "paint behind",
+    "fill transparent areas",
+    "backing colour",
+    "under-painting"
+   ],
+   "pairs_with": [
+    "Brush Tool, Paint Bucket and Shape tools in Pixels mode (mode in the options bar)",
+    "Edit > Fill and Edit > Stroke (Mode menu)",
+    "selections of transparent areas"
+   ],
+   "scripting": "// not via set layer mode (raises 'General Photoshop error ... not available'); as a fill mode: app.activeDocument.selection.fill(app.foregroundColor, ColorBlendMode.BEHIND, 100, false);",
+   "scriptable": "partial",
+   "non_destructive": false,
+   "cost": "destructive: changes the pixels it paints or fills; undo / History only",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Not rendered: status unusable: a painting / fill mode that Photoshop refuses as a layer mode, so it cannot be shown on a layer.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Clear",
+   "id": "clearEnum",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "unusable",
+   "summary": "A painting / fill mode, not a layer blend mode: whatever the brush, shape or fill covers is made transparent (fully at 100% opacity), so it works as an eraser shaped by the tool, selection or shape. Cannot be shown on the blend plate because Photoshop refuses it as a layer mode.",
+   "use_for": [
+    "punch a shape or type-shaped hole out of a pixel layer with a Shape tool in Pixels mode",
+    "knock out a selected area to transparency as a fill step in an action",
+    "erase with a brush using its exact shape and opacity"
+   ],
+   "avoid": [
+    "Not a layer blend mode: the Layers panel does not offer it and setting it on a layer or group through the 'set' event fails with 'General Photoshop error ... not available' (harvest 2026-10-04).",
+    "Only on a layer with Lock Transparency off; unavailable on the Background layer.",
+    "Destructive: use a layer mask (or a vector mask) to hide areas so they can be brought back."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Eraser",
+    "AI": "Eraser Tool"
+   },
+   "equivalents_note": "Closest jobs, not the same mechanism: CorelDRAW's Eraser removes painted areas of bitmaps and vector objects; Illustrator's Eraser Tool removes areas of vector paths (it cannot erase embedded raster pixels).",
+   "look": [
+    "erase",
+    "knockout",
+    "punch out",
+    "cut to transparency"
+   ],
+   "pairs_with": [
+    "Shape tools in Pixels mode",
+    "Brush and Pencil tools",
+    "Edit > Fill and Edit > Stroke (Mode menu)",
+    "Paint Bucket Tool"
+   ],
+   "scripting": "// not via set layer mode (raises 'General Photoshop error ... not available'); as a fill mode: app.activeDocument.selection.fill(app.foregroundColor, ColorBlendMode.CLEAR, 100, false);",
+   "scriptable": "partial",
+   "non_destructive": false,
+   "cost": "destructive: changes the pixels it paints or fills; undo / History only",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: transparency follows the tool opacity (fully transparent only at 100%)."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Not rendered: status unusable: a painting / fill mode that Photoshop refuses as a layer mode.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Color",
+   "id": "color",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Keeps the luminance of the layers below and takes hue and saturation from the blend layer, so it re-tints the image without changing its light and shade. On the blend plate each colour bar recolours the photo in its own hue at the photo's brightness (olive-yellow, teal, green, magenta, red, periwinkle), the white and black bars and the whole grey-ramp band turn the photo into a plain greyscale image, and the bottom band tints it magenta at the opaque left end, fading out to the right; the white type stays white.",
+   "use_for": [
+    "hand-tint or colourise a black-and-white photo",
+    "one-hue colour wash for a poster or thumbnail background",
+    "recolour a product or garment with a painted layer while keeping its shading",
+    "brand-colour duotone-style treatment of mixed photos"
+   ],
+   "avoid": [
+    "Pure white and pure black below cannot be tinted (Color keeps their luminance); lift or lower them first with Levels / Curves, or use a Gradient Map to recolour the full tonal range. Overlay and Soft Light leave pure white and black untouched too.",
+    "Strong saturated colours look flat and plasticky on skin; lower opacity or use a Hue/Saturation adjustment layer with Colorize for a controllable tint."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "COLORBLEND",
+    "CDR": "Uniform Transparency"
+   },
+   "equivalents_note": "CorelDRAW: Uniform Transparency with merge mode Color (cdrMergeColor, 14) via shape.Transparency.MergeMode.",
+   "look": [
+    "tint",
+    "colorize",
+    "colour wash",
+    "recolor",
+    "monotone",
+    "duotone look"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "Hue/Saturation adjustment layer",
+    "Luminosity mode (its inverse)",
+    "Gradient Map"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"color\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.COLORBLEND; reads back as \"color\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: near-black band and dark areas take a violet-navy tint rather than staying black; avoid: removed the claim that Overlay / Soft Light tint pure white or black."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/6dd0fe800114.png",
+    "note": "Frame matches SetLum(layer, Lum(base)), composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.81 levels mean (99th percentile 3) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "The frame equals the formula composite, so it shows the mode itself; the only fault was the plate sentence, written for the earlier full-frame gradient plate. Re-sampled the rewritten claims (8 bar centres, 5 ramp points, 5 bottom-band points, the white type and hairline pixels) against blend_samples and they hold; no person in the photo is described."
+    }
+   }
+  },
+  {
+   "name": "Color Burn",
+   "id": "colorBurn",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Darkens the layers below by increasing contrast toward the blend colour: white in the blend layer changes nothing, a 0 channel in the blend colour drives that channel to black unless it is already full. On the blend plate the photo is unchanged under the white bar, each colour bar strips the channels it lacks (dark gold under yellow, teal-green under cyan, green, crimson under magenta, deep red, navy under blue) and the black bar is black; the grey ramp crushes the photo to black over most of its width, letting it back only near the white end; the bottom band burns the photo to deep red-black at the opaque magenta end, fading out to the right, while the white type stays white.",
+   "use_for": [
+    "deep, saturated shadows and moody colour grades",
+    "burnt-edge vignettes and darkened corners",
+    "rich colour textures over flat backgrounds",
+    "film-poster style dark colour toning"
+   ],
+   "avoid": [
+    "Harsh: clips shadows to black and over-saturates quickly; use Multiply at lower opacity for a gentler darken.",
+    "One of the special modes where Fill and Opacity behave differently: lowering Fill keeps more of the burn than lowering Opacity.",
+    "Not available for Lab-mode images."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "COLORBURN",
+    "CDR": "Uniform Transparency"
+   },
+   "equivalents_note": "CorelDRAW: Uniform Transparency with merge mode Burn (cdrMergeBurn, 34) via shape.Transparency.MergeMode.",
+   "look": [
+    "burn",
+    "deep saturated shadows",
+    "high-contrast darken",
+    "moody grade",
+    "rich colour"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "Color Dodge (its opposite)",
+    "texture and grunge overlays"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"colorBurn\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.COLORBURN; reads back as \"colorBurn\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: plate description corrected (hot pink / violet-navy / teal-green, not a cyan duotone); avoid: dropped Linear Burn as a 'gentler' alternative."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/f82d07853446.png",
+    "note": "Frame matches 1 - (1 - base) / layer, composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.11 levels mean (99th percentile 1) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "The frame equals the formula composite, so it shows the mode itself; the only fault was the plate sentence, written for the earlier full-frame gradient plate. Re-sampled the rewritten claims (8 bar centres, 5 ramp points, 5 bottom-band points, the white type and hairline pixels) against blend_samples and they hold; no person in the photo is described."
+    }
+   }
+  },
+  {
+   "name": "Color Dodge",
+   "id": "colorDodge",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Brightens the layers below by decreasing contrast toward the blend colour: black in the blend layer changes nothing, and a full (100%) channel in the blend colour pushes any non-black value of that channel to full. On the blend plate the white bar blows the photo to white, each colour bar blows out the channels it has (the photo turns pastel yellow, pale cyan, lime, pink-magenta, orange-red, lavender) and the photo is unchanged under the black bar; the grey ramp leaves the photo at its dark end and brightens it to pure white toward the light end; the bottom band dodges the photo to hot pink at the opaque magenta end, fading out to the right; the white type stays white.",
+   "use_for": [
+    "glows, light rays and neon highlights painted on a separate layer",
+    "sparkle, bokeh and light-leak overlays",
+    "punchy highlight lifts on eyes or metal",
+    "fire, magic and sci-fi effects"
+   ],
+   "avoid": [
+    "Blows highlights out and over-saturates fast; paint with dark, low-saturation colours or use Screen for a softer lighten.",
+    "One of the special modes where Fill and Opacity behave differently: lowering Fill keeps a stronger glow than lowering Opacity.",
+    "Not available for Lab-mode images."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "COLORDODGE",
+    "CDR": "Uniform Transparency"
+   },
+   "equivalents_note": "CorelDRAW: Uniform Transparency with merge mode Dodge (cdrMergeDodge, 33) via shape.Transparency.MergeMode.",
+   "look": [
+    "glow",
+    "neon",
+    "blown highlights",
+    "light leak",
+    "dodge",
+    "luminous"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "soft round brush on an empty layer",
+    "Outer Glow layer style",
+    "Color Burn (its opposite)"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"colorDodge\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.COLORDODGE; reads back as \"colorDodge\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dark areas do not keep detail and the near-black band does not stay black (full blue channel dodges every non-black pixel); avoid: dropped Linear Dodge (Add) as a 'softer' alternative."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/ea7f4a2c80fa.png",
+    "note": "Frame matches base / (1 - layer), composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.19 levels mean (99th percentile 1) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "The frame equals the formula composite, so it shows the mode itself; the only fault was the plate sentence, written for the earlier full-frame gradient plate. Re-sampled the rewritten claims (8 bar centres, 5 ramp points, 5 bottom-band points, the white type and hairline pixels) against blend_samples and they hold; no person in the photo is described."
+    }
+   }
+  },
+  {
+   "name": "Darken",
+   "id": "darken",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Compares each channel of the blend and base colours and keeps the darker value per channel, so only areas lighter than the blend colour change and the result can be a mixed colour. On the blend plate the photo is unchanged under the white bar, each colour bar keeps only the photo's channels where the bar is full (dark gold, teal-green, green, crimson, deep red, navy) and the black bar stays black; in the ramp band the dark left end of the ramp shows wherever it is darker than the photo and the photo returns toward the right; in the bottom band the white type takes the layer's magenta and the white hairlines a pale cyan tint, while the darker photo there barely changes.",
+   "use_for": [
+    "drop white paper out of scanned line art or signatures over a background",
+    "lay dark texture or shapes over an image so only the darker parts show",
+    "darken-only retouching: clone or paint over light spots without touching darker pixels"
+   ],
+   "avoid": [
+    "Works per channel, so it can create colours that are in neither layer; use Darker Color to keep whole original colours.",
+    "Not available for Lab-mode images.",
+    "For a smoother darken use Multiply."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "DARKEN",
+    "CDR": "Uniform Transparency"
+   },
+   "equivalents_note": "CorelDRAW: Uniform Transparency with merge mode If Darker (cdrMergeIfDarker, 12) via shape.Transparency.MergeMode.",
+   "look": [
+    "darken only",
+    "drop out white",
+    "per-channel minimum",
+    "colour cast",
+    "knock out highlights"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "Clone Stamp / Healing in Darken mode",
+    "Lighten (its opposite)"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"darken\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.DARKEN; reads back as \"darken\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: cyan end gives a green cast (per-channel minimum with the beige wall), not cyan."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/9d434f61af34.png",
+    "note": "Frame matches min(base, layer), composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.0 levels mean (99th percentile 0) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "The frame equals the formula composite, so it shows the mode itself; the only fault was the plate sentence, written for the earlier full-frame gradient plate. Re-sampled the rewritten claims (8 bar centres, 5 ramp points, 5 bottom-band points, the white type and hairline pixels) against blend_samples and they hold; no person in the photo is described."
+    }
+   }
+  },
+  {
+   "name": "Darker Color",
+   "id": "darkerColor",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Compares the luminance (perceived brightness, about 0.3 red + 0.59 green + 0.11 blue) of the blend and base colours pixel by pixel and shows whichever whole colour is darker, never mixing channels, so no third colour appears and edges between the two are hard; it is not the total of the channel values (a yellow block and a blue block with the same channel total are far apart in luminance). On the blend plate the photo shows through the white, yellow and cyan bars, the green bar breaks into hard-edged patches of green and photo, and the magenta, red, blue and black bars stay solid; the dark end of the ramp covers the photo and the photo shows from about the middle; in the bottom band only light pixels (the white type, the hairlines, the orange and yellow blocks of the colour strip) are replaced by the layer's flat magenta-to-cyan.",
+   "use_for": [
+    "composite a dark subject over a light background so only the darker colour shows, with no colour mixing",
+    "graphic poster effects where a flat colour fills only the highlights",
+    "drop light backgrounds out of artwork while keeping its exact colours"
+   ],
+   "avoid": [
+    "Hard, stepped transitions on smooth gradients and skin; use Darken or Multiply for smooth results.",
+    "Picks one whole colour per pixel, so it cannot tint; use Darken for per-channel mixing."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "posterized",
+    "hard-edged replace",
+    "darker colour wins",
+    "no new colours",
+    "flat colour highlights"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "Lighter Color (its opposite)"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"darkerColor\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.DARKERCOLOR; reads back as \"darkerColor\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: replaced areas corrected (a white band and the small bright highlights; the beige stripes mostly stay); colour blocks named as unchanged; 'posterised' dropped."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/dadd6b38c0c7.png",
+    "note": "Frame matches whole colour with the lower 0.3/0.59/0.11 luminance, composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.17 levels mean (99th percentile 2) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band). The maths claim was wrong too: comparing channel totals misses the frame by about 30 levels mean in the bar band, luminance matches; summary corrected.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "effect text + plate",
+     "note": "Re-ran both comparisons independently: channel-total selection misses the frame by 29-30 levels mean in the bar band, 0.3/0.59/0.11 luminance by 0.17-1.04 (residue at near-equal luminance ties), so the maths fix is right; the bar / ramp / band patches in the rewrite were checked by eye on the full-size frame (green bar patchy, red / blue / black solid or photo as stated)."
+    }
+   }
+  },
+  {
+   "name": "Desaturate",
+   "id": "desaturate",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "unusable",
+   "summary": "Not a layer blend mode: it is the Sponge Tool's Desaturate mode (the harvested Sponge Tool options read back Mode = desaturate), which lowers colour saturation wherever you brush, gradually toward grey with each stroke. Cannot be shown on the blend plate because Photoshop refuses it as a layer mode.",
+   "use_for": [
+    "locally mute a loud background colour that distracts from the subject",
+    "tone down an oversaturated patch of skin or clothing",
+    "brush toward a selective-colour look where only the subject keeps colour"
+   ],
+   "avoid": [
+    "Not a layer blend mode: the Layers panel does not offer it and setting it on a layer or group through the 'set' event fails with 'General Photoshop error ... not available' (harvest 2026-10-04).",
+    "Destructive on pixels and has no effect on grey areas; for an editable result use a Hue/Saturation adjustment layer with a mask.",
+    "Not the Image > Adjustments > Desaturate command (which greys the whole layer at once)."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "muted",
+    "desaturated",
+    "selective colour",
+    "toned down",
+    "washed out"
+   ],
+   "pairs_with": [
+    "Sponge Tool (Mode, Flow, Vibrance option)",
+    "Dodge and Burn tools",
+    "Saturate mode (its opposite)"
+   ],
+   "scripting": "// not via set layer mode (raises 'General Photoshop error ... not available'); it is the Sponge Tool mode: app.currentTool = \"saturationTool\"; then, with the tool's Mode set to Desaturate in its options, stroke a path with it: app.activeDocument.pathItems[0].strokePath(ToolType.SPONGE);",
+   "scriptable": "partial",
+   "non_destructive": false,
+   "cost": "destructive: changes the pixels it paints or fills; undo / History only",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the harvest reads back the Sponge Tool's current (last-used) options, so 'desaturate' is its current Mode, not a proven default; scripting: notes strokePath uses the tool's current Mode."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Not rendered: status unusable: the Sponge Tool mode, refused as a layer mode.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "status",
+     "note": "No frame on disk and the id is listed in not_rendered.json / failed.json; the reason given matches the card status and the harvest."
+    }
+   }
+  },
+  {
+   "name": "Difference",
+   "id": "difference",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Subtracts the darker of the blend and base colours from the lighter per channel: black in the blend layer changes nothing, white inverts the image. On the blend plate the white bar shows a blue-tinted negative of the photo, each colour bar inverts only the channels it holds (muted green-grey, steel blue, olive, slate green, mauve) and the black bar leaves the photo unchanged; the grey ramp leaves the photo at its dark end, goes almost black where its grey matches the photo and becomes a blue-grey negative toward the light end; the bottom band turns the photo purple-violet at the opaque magenta end, fading out to the right, and the white type turns green.",
+   "use_for": [
+    "psychedelic and acid-style poster colour effects",
+    "negative / inverted graphic treatments with a white or coloured shape",
+    "check alignment of two near-identical layers (matching pixels go black)"
+   ],
+   "avoid": [
+    "Results are hard to predict on photos and skin; use Exclusion for a lower-contrast version.",
+    "One of the special modes where Fill and Opacity behave differently.",
+    "Not available for Lab-mode images."
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "DIFFERENCE",
+    "CDR": "Uniform Transparency"
+   },
+   "equivalents_note": "CorelDRAW: Uniform Transparency with merge mode Difference (cdrMergeDifference, 24) via shape.Transparency.MergeMode; Corel's maths for this mode may not match Photoshop's exactly.",
+   "look": [
+    "invert",
+    "psychedelic",
+    "negative",
+    "acid colours",
+    "high-contrast inversion"
+   ],
+   "pairs_with": [
+    "layer Opacity and Fill sliders",
+    "Blending Options > Blend If (limit the mode to tonal ranges)",
+    "clipping mask (mode affects only the layer below)",
+    "layer groups (set the group to Pass Through or a mode)",
+    "Exclusion (softer variant)",
+    "Invert adjustment"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"difference\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.DIFFERENCE; reads back as \"difference\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/48d53c6e2219.png",
+    "note": "Frame matches |base - layer|, composited by the layer's alpha from the top layer and the photo plate and downsampled like the gallery, within 0.0 levels mean (99th percentile 0) in the worst band. The plate sentence described the earlier full-frame magenta-to-cyan gradient plate and was rewritten from this frame (bars, ramp, fading band).",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "The frame equals the formula composite, so it shows the mode itself; the only fault was the plate sentence, written for the earlier full-frame gradient plate. Re-sampled the rewritten claims (8 bar centres, 5 ramp points, 5 bottom-band points, the white type and hairline pixels) against blend_samples and they hold; no person in the photo is described."
+    }
+   }
+  },
+  {
+   "name": "Dissolve",
+   "id": "dissolve",
+   "app": "PS",
+   "kind": "ps_blend_mode",
+   "status": "current",
+   "summary": "Shows a random scatter of the blend layer's pixels in proportion to its opacity (and to the transparency of soft edges), with no anti-aliasing, giving a grainy speckled or sprayed look. On the blend plate the opaque bar and ramp bands look exactly like Normal, while the bottom band, whose top layer fades from opaque to clear, breaks into speckle: dense magenta pixels over the photo at the left thinning to scattered cyan specks at the right, with no smooth blend anywhere.",
+   "use_for": [
+    "gritty, sprayed or stippled textures and retro pixel grain",
+    "rough dithered edges on drop shadows, glows or soft brush strokes",
+    "distressed print or stencil effects on type"
+   ],
+   "avoid": [
+    "Does nothing visible on a fully opaque, hard-edged layer; lower Opacity / Fill or use a soft brush or feathered edge.",
+    "The speckle is a fixed random pattern and aliased; for controllable grain use Add Noise or a texture."
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "grainy",
+    "speckle",
+    "dither",
+    "spray paint",
+    "stipple",
+    "noisy edge"
+   ],
+   "pairs_with": [
+    "layer Opacity / Fill below 100%",
+    "Drop Shadow or Outer Glow layer style in Dissolve mode",
+    "soft round brush",
+    "feathered selections"
+   ],
+   "scripting": "var d = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(stringIDToTypeID(\"layer\"), stringIDToTypeID(\"ordinal\"), stringIDToTypeID(\"targetEnum\")); d.putReference(stringIDToTypeID(\"null\"), r); var l = new ActionDescriptor(); l.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"blendMode\"), stringIDToTypeID(\"dissolve\")); d.putObject(stringIDToTypeID(\"to\"), stringIDToTypeID(\"layer\"), l); executeAction(stringIDToTypeID(\"set\"), d, DialogModes.NO);  // DOM: app.activeDocument.activeLayer.blendMode = BlendMode.DISSOLVE; reads back as \"dissolve\" on a pixel layer and on a layer group",
+   "scriptable": "yes",
+   "non_destructive": true,
+   "cost": "none: a layer property, no extra memory or render time; change or reset to Normal any time",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_blend_mode/00fd7a2735ee.png",
+    "note": "Bar and ramp bands identical to the Normal frame (diff 0.0 / 0.02); the bottom band, where the top layer fades to clear, is a random speckle around the Normal result (std 17-27 levels), the Dissolve behaviour. The card said the frame looks exactly like Normal at 100 % opacity, true of the earlier fully opaque gradient plate, not of this one; plate sentence rewritten.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "plate",
+     "note": "Plate check: only the bottom band has partial alpha, and only there does the frame differ from Normal (std 17-27 levels vs 0); the speckle density falls from left to right with the alpha, as the rewrite says."
+    }
+   }
+  }
+ ]
+}

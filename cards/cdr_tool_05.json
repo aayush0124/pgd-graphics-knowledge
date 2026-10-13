@@ -1,0 +1,228 @@
+{
+ "cards": [
+  {
+   "name": "Attract and Repel",
+   "id": "98797683-0fc6-4b66-81d2-42a2e80e18ae",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Attract and Repel",
+   "status": "current",
+   "summary": "Brush-style shaping tool for a selected vector object: pressing and holding the nib over the outline pulls the nodes inside the nib toward its centre (Attract) or pushes them away from it (Repel), so the edge follows or flees the cursor: with the nib centre inside the object Attract dents the edge and Repel bulges it, with the centre outside it is the other way round. The longer you hold, the stronger the dent or bulge.",
+   "how": "Select the object with the Pick tool, choose Attract and Repel from the Edit Shape flyout, pick Attract mode or Repel mode on the property bar, set the nib radius and speed, then press and hold with the nib overlapping the outline; drag while holding to spread the effect along the edge. Pen pressure can drive the strength on a tablet. Live shapes (rectangles, ellipses, text) end up as plain curves after editing.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Automation.InvokeItem with cdr_guid 98797683-0fc6-4b66-81d2-42a2e80e18ae only makes this the active tool (the harvest read it back from AppOrViewDataSource.ActiveTool; Application.ActiveTool reads -1, so there is no cdrTools value for it). The hold-and-press itself cannot be scripted. Closest scripted result: Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude) for a whole-object pinch or bloat, or moving individual nodes with Shape.Curve.Nodes(i).Move(dx, dy).",
+   "use_for": [
+    "organic pinched or bloated edges on blob shapes and stickers",
+    "hand-tuning a bump or dent into a logo mark or mascot silhouette",
+    "cartoon shapes: puffy clouds, melted or squeezed letterforms after converting text to curves"
+   ],
+   "avoid": [
+    "precise, symmetric reshaping: edit nodes with the Shape tool (F10) or use the Distort tool's Push & Pull mode (Toolbox/Distort/Push & Pull) instead",
+    "objects that must stay live rectangles, ellipses or editable text: duplicate first, the result is a plain curve",
+    "automated pipelines: the press-and-hold stroke cannot be replayed by script"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Pucker Tool",
+    "PS": "Liquify"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "summary said Attract always pinches the edge inward and Repel always bulges it; both modes move nodes toward or away from the nib centre, so the result flips with the side of the edge the nib centre is on; summary now says so"
+   }
+  },
+  {
+   "name": "Roughen",
+   "id": "0666b943-f65a-4e19-97ba-996c98e8b7f3",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Roughen",
+   "status": "current",
+   "summary": "Brushing along the outline of a selected vector object breaks that stretch of edge into jagged, saw-tooth spikes, giving a torn, fuzzy or hand-cut look only where you drag.",
+   "how": "Select the object, choose Roughen from the Edit Shape flyout and drag the nib across the part of the outline you want jagged. The property bar sets nib size, spike frequency, dry-out (spikes taper off along the stroke) and spike direction; the harvested pen options are Pen Pressure and Use Pen Tilt for tablet control. Repeated passes add more spikes and many nodes.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Automation.InvokeItem with cdr_guid 0666b943-f65a-4e19-97ba-996c98e8b7f3 only activates the tool (Application.ActiveTool reads -1; no cdrTools value). The brushed stroke cannot be scripted. Closest scripted result: Shape.CreateZipperDistortion(OriginX, OriginY, Amplitude, Frequency, ...) makes the whole outline evenly jagged.",
+   "use_for": [
+    "torn-paper and ripped edges on banners and badges",
+    "grunge or distressed sticker outlines",
+    "fur, grass, flame or explosion edges on cartoon shapes",
+    "rough stamp-style frames around a headline"
+   ],
+   "avoid": [
+    "an even jagged edge all round: the Distort tool's Zipper mode (Toolbox/Distort/Zipper) is uniform and stays editable",
+    "clean print logos and cutting paths: it adds a very large number of nodes",
+    "small text: convert to curves first and expect legibility to suffer"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Live Roughen"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api wording only ('jaggs' -> 'makes the whole outline evenly jagged'); content none"
+   }
+  },
+  {
+   "name": "Shape",
+   "id": "ae9f4ba1-2406-4dbc-b119-c12f9cca17f7",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Shape",
+   "status": "current",
+   "summary": "CorelDRAW's node-editing tool: shows the nodes and control handles of the selected object so you can move, add, delete and convert nodes and segments. On live shapes it edits their shape properties instead (round rectangle corners, turn an ellipse into a pie or arc, shift individual text characters, reshape a bitmap's crop edges).",
+   "how": "Press F10 (or pick Shape from the Edit Shape flyout) and click a curve. Click or marquee nodes, drag nodes or handles to reshape; double-click a segment to add a node, double-click a node to delete it. The property bar converts line/curve segments, sets cusp/smooth/symmetrical nodes, joins or breaks nodes, reverses direction, extracts a subpath and reduces nodes, with elastic mode for proportional moves. On a rectangle drag a corner node to round the corners; on an ellipse drag its node to make a pie or arc; on text drag a character's node to move that letter.",
+   "shortcut": "F10",
+   "scriptable": "yes",
+   "script_api": "Application.ActiveTool = 2 (cdrToolNodeEdit) or Automation.InvokeItem with cdr_guid ae9f4ba1-2406-4dbc-b119-c12f9cca17f7 activates it (both verified in the harvest). The edits themselves go through the object model: Shape.ConvertToCurves, Shape.Curve.Nodes(i).Move(dx, dy) and .Type, Curve.Segments(i).Type and .AddNodeAt(Offset), NodeRange.Smoothen(Smoothness) and .AutoReduce(PrecisionMargin), Curve.AutoReduceNodes; Rectangle.SetRoundness / SetRadius for corners; Ellipse.StartAngle / EndAngle for pies and arcs.",
+   "use_for": [
+    "refining logo and icon outlines node by node",
+    "cleaning up auto-traced (PowerTRACE) artwork: delete stray nodes, fix cusps",
+    "rounding rectangle corners for buttons and cards",
+    "custom letterforms: kern single characters or reshape converted text",
+    "making pie-chart wedges and arcs from ellipses"
+   ],
+   "avoid": [
+    "moving or scaling whole objects: use the Pick tool",
+    "free-form organic distortion over a large area: Smear, Twirl or an envelope is faster",
+    "tiny node edits on very dense curves: reduce nodes first or the curve becomes hard to control"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Direct Select Tool",
+    "PS": "directSelectTool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed a key not in the batch from how (Shift adds to the node selection)"
+   }
+  },
+  {
+   "name": "Smear",
+   "id": "3faedeeb-3675-729a-442e-28c2f58c6eff",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Smear",
+   "status": "current",
+   "summary": "Pushes or pulls the outline of a selected vector object in the drag direction: dragging outward from inside stretches out a smooth lobe or a pointed spur, dragging inward from outside pushes in a dent. The edit behaves like stretching a rubber edge, not like painting.",
+   "how": "Select the object, choose Smear from the Edit Shape flyout, set nib radius and pressure on the property bar and choose Smooth smear (rounded result) or Pointy smear (sharp tip). Start the drag inside the object and pull out to extend it, or start outside and push in to indent. Pen pressure can control the amount on a tablet. The object becomes a curve.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Automation.InvokeItem with cdr_guid 3faedeeb-3675-729a-442e-28c2f58c6eff only activates the tool (Application.ActiveTool reads -1; no cdrTools value). The drag cannot be scripted. Closest scripted result: add and move nodes by hand, e.g. Shape.Curve.Segments(i).AddNodeAt(Offset) then Node.Move(dx, dy), or apply an envelope with Shape.CreateEnvelope.",
+   "use_for": [
+    "drips, splats and liquid tendrils on blob shapes",
+    "pulling horns, tails or spikes out of a mascot silhouette",
+    "playful stretched lettering after converting text to curves"
+   ],
+   "avoid": [
+    "fine repeatable edits: use the Shape tool (F10) on nodes",
+    "a brush-trail look with tapering: the Smudge tool (with dry-out) gives that",
+    "objects that must stay live shapes or editable text"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Warp Tool",
+    "PS": "Liquify"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api had AddNodeAt(0.5), a value not in the batch; now AddNodeAt(Offset)"
+   }
+  },
+  {
+   "name": "Smooth",
+   "id": "6f4dfa2b-d31a-7892-4aa6-e55ff1bcddbb",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Smooth",
+   "status": "current",
+   "summary": "Brushing along a curve irons out bumps and jagged sections and removes surplus nodes, leaving a cleaner, flowing outline in the brushed area only.",
+   "how": "Select a curve, choose Smooth from the Edit Shape flyout, set the nib radius and rate on the property bar (pen pressure can vary it), then drag along the rough part of the outline. Each pass smooths further; stop before corners you want to keep sharp are rounded off.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "Automation.InvokeItem with cdr_guid 6f4dfa2b-d31a-7892-4aa6-e55ff1bcddbb only activates the tool (Application.ActiveTool reads -1; no cdrTools value). The brushed stroke cannot be scripted, but the same kind of result can: NodeRange.Smoothen(Smoothness) on a chosen range of nodes, NodeRange.AutoReduce(PrecisionMargin), or Curve.AutoReduceNodes for the whole curve.",
+   "use_for": [
+    "cleaning shaky freehand or tablet-drawn outlines",
+    "smoothing PowerTRACE results before print or vinyl cutting",
+    "softening jagged spots left by Roughen or Smudge passes"
+   ],
+   "avoid": [
+    "whole-object cleanup by numbers: Shape tool Reduce nodes (or Curve.AutoReduceNodes) is uniform and repeatable",
+    "outlines with crisp corners nearby: the nib rounds them too, narrow the nib radius"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Freehand Smooth Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Smudge",
+   "id": "3ceaf4f4-94d0-43f1-a987-ae5c0790b712",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Smudge",
+   "status": "current",
+   "summary": "Drags the outline of a selected vector object along the path of the brush, leaving a smudge trail: dragging out from the object extends a brush-shaped streak, dragging in carves a channel. The streak can taper off (dry-out) and its nib shape follows tilt and bearing.",
+   "how": "Select the object, choose Smudge from the Edit Shape flyout and drag across the outline. The property bar sets nib size, dry-out (positive values make the streak narrow along the drag), and nib flatten/tilt and bearing for an elliptical, angled nib; the harvested tablet options are Pen Pressure, Use Pen Tilt and Use Pen Bearing. Each pass adds many nodes.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Automation.InvokeItem with cdr_guid 3ceaf4f4-94d0-43f1-a987-ae5c0790b712 only activates the tool (Application.ActiveTool reads -1; no cdrTools value; activation independently audited 2026-10-04). The brushed stroke cannot be scripted; a script can only approximate it by adding and moving nodes through Shape.Curve.Segments(i).AddNodeAt and Node.Move.",
+   "use_for": [
+    "paint-streak and brushed-edge shapes for posters",
+    "motion streaks trailing off a shape",
+    "carving notches and channels into a silhouette by hand"
+   ],
+   "avoid": [
+    "a smooth, rounded push or pull of the edge: Smear is cleaner",
+    "print-ready logos: the many extra nodes need a Smooth or reduce-nodes pass afterwards",
+    "scripted batch work: no API for the stroke"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Warp Tool",
+    "PS": "Liquify"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Twirl",
+   "id": "c5dce714-953f-6094-459d-2c17c0e69d2c",
+   "app": "CDR",
+   "kind": "cdr_tool",
+   "path": "Toolbox/Edit Shape Tools/Twirl",
+   "status": "current",
+   "summary": "Pressing and holding the nib over the edge of a selected vector object winds that part of the outline into a swirl; the longer you hold, the more turns the spiral gets, clockwise or counterclockwise.",
+   "how": "Select the object, choose Twirl from the Edit Shape flyout, set nib radius and speed and choose clockwise or counterclockwise twirl on the property bar, then press and hold with the nib overlapping the outline. Release when the swirl is tight enough; drag while holding to drag the swirl along. Pen pressure can vary it. The object becomes a curve.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "Automation.InvokeItem with cdr_guid c5dce714-953f-6094-459d-2c17c0e69d2c only activates the tool (Application.ActiveTool reads -1; no cdrTools value). The hold cannot be scripted. Closest scripted result: Shape.CreateTwisterDistortion(OriginX, OriginY, Angle), which twists the whole object around one centre rather than a local swirl on the edge.",
+   "use_for": [
+    "decorative curls and swirls on ornaments and flourishes",
+    "hair curls, smoke or wave tips on illustrations",
+    "playful twisted edges on stickers and badges"
+   ],
+   "avoid": [
+    "a twist of the whole object around its centre: the Distort tool's Twister mode (Toolbox/Distort/Twister) is uniform and editable",
+    "evenly spaced repeated curls: draw one and duplicate, the hold length is hard to repeat",
+    "objects that must stay live shapes or editable text"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe New Twirl Tool",
+    "PS": "Liquify"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

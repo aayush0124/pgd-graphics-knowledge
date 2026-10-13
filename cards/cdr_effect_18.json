@@ -1,0 +1,996 @@
+{
+ "cards": [
+  {
+   "name": "Blend",
+   "id": "bda9bd40-dfb8-4f1a-8cc0-651ebcccc9f7",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Blend",
+   "status": "needs_input",
+   "summary": "Live blend between two vector objects: CorelDRAW generates a run of intermediate objects that morph shape, size, outline and colour step by step from the start object to the end object. The result is a shape tween, a stepped colour ramp, or (with many steps) a smooth 3D-tube / neon-glow look. Steps (or fixed Spacing along a path), the colour route around the colour wheel, a progressive rotation Angle and object / colour acceleration shape the run.",
+   "use_for": [
+    "neon or glowing tube lettering (blend a thick dark stroke into a thin bright copy)",
+    "stepped colour ramps and op-art line patterns between two curves",
+    "morph-style shape tweens for infographics and logo explorations",
+    "evenly spaced objects along a curve (dots, chevrons, beads) with a Path and Mode = spacing"
+   ],
+   "avoid": [
+    "a single selected object: a blend needs a start object and an end object (the required Shape argument)",
+    "smooth photographic gradients: low Steps show visible banding; use a fountain fill or Contour instead",
+    "very high Steps on complex shapes or text: slow redraws and heavy print files",
+    "control objects with very different node structure: the in-between shapes can twist; align their start nodes first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Blend/Make"
+   },
+   "look": [
+    "blend",
+    "shape morph",
+    "tween",
+    "stepped gradient",
+    "neon tube",
+    "3D tube",
+    "op art lines"
+   ],
+   "params": [
+    {
+     "name": "Shape",
+     "does": "the end object of the blend (required); the shape the method is called on is the start object",
+     "typical": "a second shape on the page"
+    },
+    {
+     "name": "Steps",
+     "does": "number of intermediate objects generated between the two control objects (Mode = steps)",
+     "typical": "8-30; 50+ for smooth tubes and glows"
+    },
+    {
+     "name": "ColorBlendType",
+     "does": "route the colours take: Direct goes straight from start colour to end colour; Rainbow clockwise / counter-clockwise travel around the colour wheel for rainbow in-betweens",
+     "typical": "cdrDirectFountainFillBlend"
+    },
+    {
+     "name": "Mode",
+     "does": "steps = a fixed number of objects; spacing = a fixed distance between objects (meaningful on a blend attached to a Path)",
+     "typical": "cdrBlendSteps"
+    },
+    {
+     "name": "Spacing",
+     "does": "distance between intermediate objects when Mode = spacing, in document units",
+     "typical": "0 unless the blend runs along a path"
+    },
+    {
+     "name": "Angle",
+     "does": "rotation in degrees added progressively across the intermediate objects",
+     "typical": "0; 90-360 for a twisting blend"
+    },
+    {
+     "name": "Loop",
+     "does": "with a non-zero Angle, swings the intermediate objects around an arc instead of only rotating them in place",
+     "typical": "off"
+    },
+    {
+     "name": "Path",
+     "does": "a curve the blend follows (blend along a path); None = straight blend",
+     "typical": "None"
+    },
+    {
+     "name": "RotateShapes",
+     "does": "on a path blend, turns every step to follow the path direction",
+     "typical": "on for objects running along curves"
+    },
+    {
+     "name": "SpacingAccel",
+     "does": "object acceleration: bunches the intermediate objects toward the start or the end; 0 = even spacing",
+     "typical": "0; push either way to suggest speed or depth"
+    },
+    {
+     "name": "ColorAccel",
+     "does": "colour acceleration: makes the colour change happen faster near one end; 0 = even colour steps",
+     "typical": "0"
+    },
+    {
+     "name": "AccelSize",
+     "does": "also applies the acceleration to the size change of the steps",
+     "typical": "off"
+    }
+   ],
+   "demo_settings": {
+    "Steps": 12,
+    "ColorBlendType": 0,
+    "Mode": 0
+   },
+   "enum_labels": {
+    "ColorBlendType": {
+     "0": "Direct",
+     "1": "Rainbow clockwise",
+     "2": "Rainbow counter-clockwise",
+     "3": "Custom"
+    },
+    "Mode": {
+     "0": "fixed number of steps",
+     "1": "fixed spacing"
+    }
+   },
+   "pairs_with": [
+    "Contour, for a halo or outline around a neon blend",
+    "a Path curve (Blend along path) for objects marching along a line",
+    "Transparency on one control object for fading trails",
+    "PowerClip to confine a blend pattern inside a shape"
+   ],
+   "scripting": "start.CreateBlend(end, 12, 0, 0, 0.0, 0.0, False, None, False, 0, 0, False)  # Python/pywin32; Shape.CreateBlend(Shape, Steps, ColorBlendType, Mode, Spacing, Angle, Loop, Path, RotateShapes, SpacingAccel, ColorAccel, AccelSize) -> IVGEffect (apply test: effect_type 0). Demo: start = orange_box, end = blue_star of the vector plate. Menu: Effects > Blend toggles the Blend docker (FrameWork.Automation.InvokeItem \"bda9bd40-dfb8-4f1a-8cc0-651ebcccc9f7\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live blend group; editing either control object or the blend settings regenerates the in-between steps; clearing the blend removes them, breaking it apart bakes them into plain objects",
+   "cost": "light; grows with Steps x node count of the control objects",
+   "review": {
+    "by": "adversarial",
+    "changes": "look: removed 'step and repeat' (CorelDRAW has its own Edit/Step and Repeat command, so the keyword sent searches to the wrong card). Signature, demo, status needs_input and equivalents checked against the batch and apply_tests.py: no other change."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Contour",
+   "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Contour",
+   "status": "current",
+   "summary": "Live vector effect that draws a series of evenly spaced, concentric offset copies of an object's outline, outside it, inside it, or all the way to its centre. Fill and outline colours step from the object's own colours to the chosen end colours. The result reads as topographic rings, multi-outline or inline lettering, a vector glow, or a sticker cut line.",
+   "use_for": [
+    "sticker / die-cut outline around a logo or headline (1 step, Outside)",
+    "retro multi-outline and inline lettering",
+    "topographic contour-line patterns and concentric ripple backgrounds",
+    "soft vector glow: many fine steps contouring outward from the shape colour to the background colour",
+    "inset borders inside badges and buttons (Inside)"
+   ],
+   "avoid": [
+    "bitmaps: Contour works on vector objects; for pixels use a bitmap blur or glow",
+    "large Offset x Steps with Inside: the contours run out of room and stop early; use To Center or fewer steps",
+    "a cut line that must be edited as its own object: apply the contour, then break the contour group apart"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Path/Offset Path"
+   },
+   "look": [
+    "contour",
+    "concentric outlines",
+    "offset rings",
+    "topographic lines",
+    "inline outline type",
+    "sticker outline",
+    "vector glow",
+    "ripple"
+   ],
+   "params": [
+    {
+     "name": "Direction",
+     "does": "where the contours go: Inside, Outside, or To Center (fills inward until the shape is used up, step count follows from Offset)",
+     "typical": "cdrContourOutside"
+    },
+    {
+     "name": "Offset",
+     "does": "distance between successive contour lines, in document units; passing 0 makes the app substitute 0.15",
+     "typical": "0.05-0.3 (inches)"
+    },
+    {
+     "name": "Steps",
+     "does": "number of contour lines for Inside / Outside",
+     "typical": "1 for a sticker outline, 4-10 for rings"
+    },
+    {
+     "name": "BlendType",
+     "does": "how fill and outline colours progress from the object to the end colours: Direct, or around the colour wheel (Rainbow clockwise / counter-clockwise)",
+     "typical": "cdrDirectFountainFillBlend"
+    },
+    {
+     "name": "OutlineColor",
+     "does": "outline colour of the last contour; the in-between outlines step toward it",
+     "typical": "a dark or matching tone"
+    },
+    {
+     "name": "FillColor",
+     "does": "fill colour of the last contour; the in-between fills step from the object fill to it",
+     "typical": "a contrast colour for rings, the background colour for a glow"
+    },
+    {
+     "name": "FillColor2",
+     "does": "second end colour, used when the object has a fountain fill",
+     "typical": "None for solid-filled objects"
+    },
+    {
+     "name": "SpacingAccel",
+     "does": "bunches the contour lines toward the object or toward the last contour; 0 = even",
+     "typical": "0"
+    },
+    {
+     "name": "ColorAccel",
+     "does": "makes the colour change happen faster near one end; 0 = even",
+     "typical": "0"
+    },
+    {
+     "name": "EndCapType",
+     "does": "end shape of contours around open paths: butt, round or square",
+     "typical": "cdrContourRoundCap around strokes"
+    },
+    {
+     "name": "CornerType",
+     "does": "corner shape of the contour lines: bevelled, round, or mitered variants (sharp corners that fall back to a bevel past MiterLimit)",
+     "typical": "cdrContourCornerRound for soft rings, the mitered default for sharp lettering"
+    },
+    {
+     "name": "MiterLimit",
+     "does": "limit for mitered corners: corners sharper than it are bevelled (passing 0 makes the app substitute 15)",
+     "typical": "15"
+    }
+   ],
+   "demo_settings": {
+    "Direction": 1,
+    "Offset": 0.15,
+    "Steps": 5,
+    "BlendType": 0,
+    "OutlineColor": "#1A1A1A",
+    "FillColor": "#00C2FF",
+    "CornerType": 2
+   },
+   "enum_labels": {
+    "Direction": {
+     "0": "Inside",
+     "1": "Outside",
+     "2": "To Center"
+    },
+    "BlendType": {
+     "0": "Direct",
+     "1": "Rainbow clockwise",
+     "2": "Rainbow counter-clockwise",
+     "3": "Custom"
+    },
+    "EndCapType": {
+     "0": "Butt",
+     "1": "Round",
+     "2": "Square"
+    },
+    "CornerType": {
+     "0": "Bevel",
+     "1": "Offset bevel",
+     "2": "Round",
+     "3": "Mitered (bevel)",
+     "4": "Mitered (offset bevel)",
+     "5": "Mitered (round)"
+    }
+   },
+   "pairs_with": [
+    "Blend, for neon tubes with a contour halo",
+    "Drop Shadow on the contour group for sticker mock-ups",
+    "artistic text converted to curves for clean multi-outline lettering"
+   ],
+   "scripting": "s.CreateContour(1, 0.15, 5, 0, app.CreateRGBColor(26, 26, 26), app.CreateRGBColor(0, 194, 255), None, 0, 0, 2, 2, 15.0)  # Python/pywin32; Shape.CreateContour(Direction, Offset, Steps, BlendType, OutlineColor, FillColor, FillColor2, SpacingAccel, ColorAccel, EndCapType, CornerType, MiterLimit) -> IVGEffect type 6 (apply-tested; audit: all arguments omitted also works). Offset is in document units (inches in the harvest test document). Menu: Effects > Contour toggles the Contour docker (FrameWork.Automation.InvokeItem \"0a57d894-9adb-4ea7-87e3-4729eb14db54\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live contour group linked to its control object; edit the object or the settings and the contours regenerate; clearing removes them, breaking the group apart bakes them",
+   "cost": "light; grows with Steps on complex outlines",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (12-argument call, effect type 6, the 0.15 / 15 substituted defaults and the omitted-arguments audit all match the batch; demo sits inside the enums)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d5028697c0e9.png",
+    "note": "Five concentric outside contour rings step from the star's blue out to the chosen cyan (#00C2FF) around the star, a vector glow / sticker-outline look as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Envelope",
+   "id": "e08bc376-0809-4f3b-a001-7869f02fd74c",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Envelope",
+   "status": "current",
+   "summary": "Live vector distortion that wraps an object (shapes, artistic text, groups) in an editable envelope outline so its contents bend to fit: arches, bulges, waves or any custom outline. From a script, CreateEnvelope applies one of the Envelope docker's preset outlines by index; CreateEnvelopeFromShape / FromCurve copy the outline of another shape or curve to fit artwork into it.",
+   "use_for": [
+    "arched or bulging headline text for badges, labels and signage",
+    "fitting a word or logo into a shape (shield, circle, banner) with CreateEnvelopeFromShape",
+    "waving flag or ribbon distortion of vector art",
+    "squeezed / stretched packaging and sticker type"
+   ],
+   "avoid": [
+    "photos: the harvest lists a vector object as the requirement and bitmap support was not probed; for a pixel image test first, or use a bitmap distortion",
+    "straight-line one- or two-point perspective: use Add Perspective",
+    "small text under strong envelopes: it becomes illegible; keep distortion gentle",
+    "PresetIndex 1 or 2: on the 2026-10 renders they returned an envelope effect but changed nothing visible (0.005 mean px on the star); use 3-6"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Object/Envelope Distort/Make with Warp...",
+    "PS": "Edit/Transform/Warp"
+   },
+   "look": [
+    "envelope",
+    "warp",
+    "arch",
+    "bulge",
+    "flag wave",
+    "fit to shape",
+    "bend",
+    "squeeze"
+   ],
+   "params": [
+    {
+     "name": "PresetIndex",
+     "does": "which preset envelope outline to apply (index into the Envelope docker's preset list); the Envelope Preset Library render (gallery/cdr_preset/bd38895dce0b.png) shows 1 and 2 leave a square unchanged, 3 maps it to a circle, 4 to a pinched-waist shape, 5 and 6 to slanted parallelograms; the docker's names for them are not mapped",
+     "typical": "3 (circle) or 4 to 6; 1 and 2 give no visible change"
+    },
+    {
+     "name": "Mode",
+     "does": "mapping mode, how the contents follow the envelope: Putty (smoothest, maps the corners), Original, Horizontal or Vertical (fit along one axis first)",
+     "typical": "cdrEnvelopePutty"
+    },
+    {
+     "name": "KeepLines",
+     "does": "keeps straight segments straight instead of bending them into curves",
+     "typical": "off"
+    }
+   ],
+   "demo_settings": {
+    "PresetIndex": 3,
+    "Mode": 2,
+    "KeepLines": false
+   },
+   "enum_labels": {
+    "Mode": {
+     "0": "Horizontal",
+     "1": "Original",
+     "2": "Putty",
+     "3": "Vertical"
+    }
+   },
+   "pairs_with": [
+    "artistic text, for arched titles",
+    "Extrude after the envelope for bent 3D lettering",
+    "a frame shape as the source of CreateEnvelopeFromShape"
+   ],
+   "scripting": "s.CreateEnvelope(3, 2, False)  # Python/pywin32; Shape.CreateEnvelope(PresetIndex, Mode, KeepLines) -> IVGEffect type 2 (apply-tested). Fit into another shape: s.CreateEnvelopeFromShape(frame, 2, False, 1). Menu: Effects > Envelope toggles the Envelope docker (FrameWork.Automation.InvokeItem \"e08bc376-0809-4f3b-a001-7869f02fd74c\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live envelope, re-editable with the Envelope tool's nodes; clearing the envelope restores the original object",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'envelopes distort vector objects' stated bitmap exclusion as fact; the batch only gives requires = vector object, so it is now marked as not probed. Calls, Mode enum and the apply-tested PresetIndex 1 match the batch."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/465141ec97bd.png",
+    "note": "New frame (PresetIndex 3, Mode 2): the star's straight edges are bent into curves, its arms bowed and its outline pulled toward a rounded envelope, while the box, circle, type and zigzag are untouched: the live envelope distortion described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: failed.json says star.CreateEnvelope(1, 2, False) returned an effect but changed the page by only 0.0051 mean px; the demo is the cause: the Envelope Preset Library render (gallery/cdr_preset/bd38895dce0b.png) shows PresetIndex 1 and 2 leave a checker square unchanged while 3 maps it to a circle, so the demo now uses PresetIndex 3.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Harness check: the renderer did apply CreateEnvelope (effect type 2 returned) and failed only the 0.05 visibility rule, so the demo is the cause; the preset-library frame (gallery/cdr_preset/bd38895dce0b.png) shows index 3 maps a checker square to a circle, so PresetIndex 3 (inside the int type, no harvested range) should pass the rule on the star."
+     }
+    }
+   }
+  },
+  {
+   "name": "Extrude",
+   "id": "952e4cc8-4316-4bca-9ad9-9f79cf8574f2",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Extrude",
+   "status": "current",
+   "summary": "Live vector 3D effect that projects an object's outline toward (or away from) a vanishing point and builds solid side faces, so flat shapes and text become blocky 3D letters and objects. Side faces take the object's own fill, a solid colour or a two-colour shade, and an optional bevel can chamfer the front face.",
+   "use_for": [
+    "retro 3D block lettering for posters and titles",
+    "isometric-style icons and signs (parallel extrusion)",
+    "chunky 3D logo marks for print where everything must stay vector",
+    "solid long shadows (Back Parallel with a solid dark fill): the scriptable stand-in for the Block Shadow tool, which has no object-model call"
+   ],
+   "avoid": [
+    "photoreal 3D with materials and textures: Extrude builds vector faces coloured by the Shading setting, plus optional light sources (EffectExtrude.SetLight in the cdr_api harvest), not rendered materials",
+    "bitmaps: vector objects only",
+    "small text with a deep extrusion: the faces collide and get illegible; lower Depth",
+    "very complex shapes or long text: many faces, slow redraws and heavy files"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/3D and Materials/3D (Classic)/Extrude & Bevel (Classic)"
+   },
+   "look": [
+    "3D extrude",
+    "block letters",
+    "retro 3D type",
+    "isometric",
+    "vanishing point",
+    "bevel",
+    "solid shadow"
+   ],
+   "params": [
+    {
+     "name": "Type",
+     "does": "extrusion style: Small / Big Back or Front run toward or away from the vanishing point in perspective; Back / Front Parallel keep the depth edges parallel (no taper)",
+     "typical": "cdrExtrudeSmallBack for classic 3D type, cdrExtrudeBackParallel for isometric or long shadows"
+    },
+    {
+     "name": "VPType",
+     "does": "what the vanishing point is locked to: the shape, the page, or shared between several extrusions",
+     "typical": "cdrVPLockedToShape"
+    },
+    {
+     "name": "VPX",
+     "does": "x of the vanishing point, in document units",
+     "typical": "outside the object, to the side the depth should go"
+    },
+    {
+     "name": "VPY",
+     "does": "y of the vanishing point, in document units",
+     "typical": "below or above the object"
+    },
+    {
+     "name": "Depth",
+     "does": "how far the extrusion runs toward the vanishing point",
+     "typical": "20-50"
+    },
+    {
+     "name": "Shading",
+     "does": "side-face colouring: Object fill (same as the front), Solid fill (BaseColor), Color shading (BaseColor to ShadingColor gradient)",
+     "typical": "cdrExtrudeColorShading"
+    },
+    {
+     "name": "BaseColor",
+     "does": "the solid side colour, or the near colour of colour shading",
+     "typical": "a mid tone of the object colour"
+    },
+    {
+     "name": "ShadingColor",
+     "does": "the far colour of colour shading",
+     "typical": "near black"
+    },
+    {
+     "name": "BevelDepth",
+     "does": "size of a bevel cut around the front face; 0 = no bevel",
+     "typical": "0, or small for a chiselled edge"
+    },
+    {
+     "name": "BevelAngle",
+     "does": "slope of the bevel in degrees",
+     "typical": "45"
+    },
+    {
+     "name": "BevelColor",
+     "does": "colour of the bevel faces",
+     "typical": "a lighter tone of the object colour"
+    },
+    {
+     "name": "BevelOnly",
+     "does": "show only the bevel and hide the extruded depth",
+     "typical": "off"
+    }
+   ],
+   "demo_settings": {
+    "Type": 0,
+    "VPType": 0,
+    "VPX": 12.0,
+    "VPY": 2.0,
+    "Depth": 40.0,
+    "Shading": 2,
+    "BaseColor": "#6E6E6E",
+    "ShadingColor": "#111111"
+   },
+   "enum_labels": {
+    "Type": {
+     "0": "Small back",
+     "1": "Small front",
+     "2": "Big back",
+     "3": "Big front",
+     "4": "Back parallel",
+     "5": "Front parallel"
+    },
+    "VPType": {
+     "0": "Locked to shape",
+     "1": "Locked to page",
+     "2": "Shared"
+    },
+    "Shading": {
+     "0": "Object fill",
+     "1": "Solid fill",
+     "2": "Color shading"
+    }
+   },
+   "pairs_with": [
+    "Envelope first, for bent 3D lettering",
+    "Contour on the front face for an outlined 3D title",
+    "Drop Shadow under the extrude group to ground it"
+   ],
+   "scripting": "s.CreateExtrude(0, 0, 12.0, 2.0, 40.0, 2, app.CreateRGBColor(110, 110, 110), app.CreateRGBColor(17, 17, 17), 0.0, 45.0, None, False)  # Python/pywin32; Shape.CreateExtrude(Type, VPType, VPX, VPY, Depth, Shading, BaseColor, ShadingColor, BevelDepth, BevelAngle, BevelColor, BevelOnly) -> IVGEffect type 1 (apply-tested). VPX / VPY are document units; the demo values assume the imported plate spans about 20 x 11.25 in from the page origin, so move them if the plate sits elsewhere, and keep the point outside the target shape (with that layout and CorelDRAW's bottom-left origin, (12, 2) sits against the right end of the PGD type, so extrude orange_box, blue_star or grad_circle, not the type). Bevel afterwards: EffectExtrude.SetBevel(Depth, Angle, ShowBevelOnly). Menu: Effects > Extrude toggles the Extrude docker (FrameWork.Automation.InvokeItem \"952e4cc8-4316-4bca-9ad9-9f79cf8574f2\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live extrude group; depth, vanishing point and shading stay editable; clearing removes it, breaking the group apart bakes the faces into objects",
+   "cost": "moderate: many faces on text or detailed outlines",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'Extrude is flat vector shading' was wrong, since IVGEffectExtrude has LightPresent / SetLight / LightIntensity in the cdr_api harvest; now says vector faces plus optional lights, no materials. use_for: long-shadow line now points at Block Shadow. scripting: the vanishing point must sit outside the target, and (12, 2) sits against the PGD type with the assumed plate layout."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/ebde03215e6f.png",
+    "note": "The star is extruded into a solid 3D block toward a vanishing point to the right: grey side faces shaded from #6E6E6E to near black run behind the star and the gradient circle, retro 3D type style.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Lens",
+   "id": "1c86e69f-30a5-4a01-85cb-e4a76cca5fd5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens",
+   "status": "current",
+   "summary": "Effects > Lens turns a closed vector shape into a live lens: whatever lies under the shape's area (vectors and bitmaps; on the 2026-10 renders the Invert lens recoloured both the photo and the shapes under it, while Fish Eye at -100 warped only the vector shapes and left the photo nearly unchanged) is shown through a filter (Magnify, Fish Eye, Wireframe, Color Limit, Color Add, Invert, Brighten, Tinted Grayscale, Heat Map, Transparency or Custom Color Map) while the objects underneath stay unchanged. This card covers the Lens docker and the CreateLens call as a whole; each lens type also has its own card.",
+   "use_for": [
+    "magnifier call-outs on maps, diagrams and product details (Magnify, Fish Eye)",
+    "tinted or monochrome panels over part of a photo to back text (Tinted Grayscale, Transparency)",
+    "inverted or heat-map bands for graphic posters",
+    "x-ray / wireframe reveal of the artwork under a shape (Wireframe)"
+   ],
+   "avoid": [
+    "an open path or a bitmap as the lens object: the lens must be a closed vector shape",
+    "artwork handed to other apps: lenses are a CorelDRAW live effect; freeze or flatten the result before export",
+    "global colour correction of a whole photo: use a bitmap adjustment instead of a page-sized lens"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "look": [
+    "lens",
+    "magnifier",
+    "fish eye",
+    "invert",
+    "heat map",
+    "tinted grayscale",
+    "colour filter",
+    "see-through",
+    "x-ray"
+   ],
+   "params": [
+    {
+     "name": "Type",
+     "does": "which lens to make (see enum_labels)",
+     "typical": "Magnify, Transparency or Tinted Grayscale"
+    },
+    {
+     "name": "RateOrMagnification",
+     "does": "strength: the magnification factor for Magnify, a rate in percent for Fish Eye and the colour / transparency lenses",
+     "typical": "2-3 for Magnify, 50-100 for rates"
+    },
+    {
+     "name": "Color1",
+     "does": "the lens colour for the colour lenses (Color Limit, Color Add, Tinted Grayscale, Transparency) and the start colour of a Custom Color Map",
+     "typical": "a brand colour"
+    },
+    {
+     "name": "Color2",
+     "does": "second colour for lens types that use two (end colour of a Custom Color Map); exact use per type not harvested",
+     "typical": "None"
+    },
+    {
+     "name": "ColorMapPalette",
+     "does": "how a Custom Color Map runs from Color1 to Color2: Direct, or around the colour wheel",
+     "typical": "cdrDirectFountainFillBlend"
+    }
+   ],
+   "demo_settings": {
+    "Type": 1,
+    "RateOrMagnification": -100.0
+   },
+   "enum_labels": {
+    "Type": {
+     "0": "Magnify",
+     "1": "Fish Eye",
+     "2": "Wireframe",
+     "3": "Color Limit",
+     "4": "Color Add",
+     "5": "Invert",
+     "6": "Brighten",
+     "7": "Tinted Grayscale",
+     "8": "Heat Map",
+     "9": "Transparency",
+     "10": "Custom Color Map"
+    },
+    "ColorMapPalette": {
+     "0": "Direct",
+     "1": "Rainbow clockwise",
+     "2": "Rainbow counter-clockwise",
+     "3": "Custom"
+    }
+   },
+   "pairs_with": [
+    "an ellipse or rounded rectangle as the lens shape over a photo or diagram",
+    "PowerClip, to keep a lens inside a frame",
+    "Transparency lens plus Tinted Grayscale for a text panel over busy photos"
+   ],
+   "scripting": "lensShape.CreateLens(1, -100.0, None, None, 0)  # Python/pywin32; Shape.CreateLens(Type, RateOrMagnification, Color1, Color2, ColorMapPalette) -> IVGEffect. lensShape = a new closed shape (e.g. an ellipse) drawn on top of the vector plate so it straddles orange_box, blue_star and some empty page: a lens only shows what lies under it, so applied to a plate shape that sits on blank page it just looks like a recoloured shape. Menu: Effects > Lens toggles the Lens docker (FrameWork.Automation.InvokeItem \"1c86e69f-30a5-4a01-85cb-e4a76cca5fd5\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: the objects under the lens are untouched; moving or reshaping the lens changes what it affects; removing the lens restores the view",
+   "cost": "light for colour lenses; Magnify / Fish Eye over complex artwork redraw slowly",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the lens shape was placed 'above the vector shapes and the photo', but the CorelDRAW vector plate has no photo. It now says to draw a new shape that straddles orange_box, blue_star and empty page, because a lens over blank page reads as a plain recolour. Call, enums and the per-type sibling cards (lens:cdrLens*) checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/c0687b3441d6.png",
+    "note": "New demo, Fish Eye at rate -100 (a negative fish eye, a pinch): inside the lens circle the vector shapes are pulled toward its centre and bent (the orange box's edges curve, the zigzag is displaced into a bent copy) while the photo half under the lens barely changes (1-3 % of its pixels by more than 16 levels); outside the circle nothing changes: a live lens over what lies beneath, as described; summary notes the photo case.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/c0687b3441d6.png",
+     "note": "The frame shows a lens circle over the photo and shapes inverting what lies beneath it, which is what the card describes; but Type 5 is Invert, so the frame is byte-identical to the Invert lens card's frame and adds nothing; demo changed to Type 1 (Fish Eye) at rate -100 to show the docker's other side (a negative fish-eye pinch, a claim no other lens frame tests).",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Checked the demo change: Type 1 = Fish Eye in enum_labels, rate -100 is a pinch no other lens card renders (Fish Eye uses +300), and the old frame is byte-identical to the Invert lens frame (live chain pixel audit), so the duplicate was the card's demo, not the renderer."
+     }
+    }
+   }
+  },
+  {
+   "name": "Add Perspective",
+   "id": "vector:Perspective",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Object/Perspective/Add Perspective",
+   "status": "current",
+   "summary": "Puts an editable four-corner perspective grid on a vector object or group so the artwork recedes toward one or two vanishing points, like a sign or wall seen at an angle. Interactively you drag the grid's corner nodes; from a script you give the vanishing points. The object stays live, and the perspective can be edited or cleared later.",
+   "use_for": [
+    "placing a flat logo or label on a receding wall, box side or billboard mock-up",
+    "receding title text (one-point perspective)",
+    "quick vector packaging and signage views",
+    "floor, road or grid patterns running to a horizon"
+   ],
+   "avoid": [
+    "photos: the harvest lists a vector object or group as the requirement and bitmap support was not probed; for a pixel image test first, or use Photoshop Edit/Transform/Perspective",
+    "true depth with side faces: use Extrude",
+    "curved bends rather than straight-line perspective: use Envelope"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Free Distort",
+    "PS": "Edit/Transform/Perspective"
+   },
+   "look": [
+    "perspective",
+    "vanishing point",
+    "receding",
+    "one-point perspective",
+    "two-point perspective",
+    "foreshortening",
+    "angled sign"
+   ],
+   "params": [
+    {
+     "name": "HorizVanishPointX",
+     "does": "x of the horizontal vanishing point (optional variant, document units)",
+     "typical": "well to one side of the object"
+    },
+    {
+     "name": "HorizVanishPointY",
+     "does": "y of the horizontal vanishing point",
+     "typical": "near the object's vertical centre for an eye-level view"
+    },
+    {
+     "name": "VertVanishPointX",
+     "does": "x of the vertical vanishing point; leave both vertical values out for one-point perspective",
+     "typical": "omitted"
+    },
+    {
+     "name": "VertVanishPointY",
+     "does": "y of the vertical vanishing point (far above or below for a looking-up / looking-down view)",
+     "typical": "omitted"
+    }
+   ],
+   "pairs_with": [
+    "a group of logo + text, so the whole layout recedes together",
+    "Extrude after perspective for deeper 3D signage",
+    "Drop Shadow to seat the angled object on the page"
+   ],
+   "scripting": "s.CreatePerspective(8.0, 5.0)  # Python/pywin32; Shape.CreatePerspective(HorizVanishPointX, HorizVanishPointY, VertVanishPointX, VertVanishPointY) -> IVGEffect type 8 (apply-tested with only the horizontal point = one-point perspective); pass all four values for two-point perspective. (8.0, 5.0) suited the apply test's 1.2 x 0.9 in rectangle at x = 1 in; on the vector plate (about 20 x 11.25 in, bottom-left origin) that point falls in the narrow gap between orange_box and blue_star, so choose a vanishing point well clear of the target, e.g. far to its right at about its vertical centre. The params are variants (harvest type unknown), so no demo_settings are given. Menu: Object > Perspective > Add Perspective (FrameWork.Automation.InvokeItem \"00f16820-b826-45a2-ad9a-4287b280a7b2\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live perspective effect; the grid nodes stay editable and clearing the perspective restores the flat object",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the bitmap exclusion was stated as fact; the batch only gives requires = vector object or group, so it is now marked as not probed. scripting: the apply-test point (8.0, 5.0) falls between orange_box and blue_star on the plate, so it now says to pick a point well clear of the target. Leaving demo_settings out stays right, because the params are variant (type unknown)."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/17cdb5e395e1.png",
+    "note": "One-point perspective toward a vanishing point at the right: the star's right side shrinks and recedes (top point leans right, right arms shorter), a sign-seen-at-an-angle look; moderate but clear against ref_vector.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "PowerClip",
+   "id": "vector:PowerClip",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Object/PowerClip/Place Inside Frame",
+   "status": "needs_input",
+   "summary": "Places one object (a photo, artwork or text) inside another closed object that acts as a frame, so the content shows only within the frame's outline: CorelDRAW's clipping mask. The content stays whole and can be repositioned inside the frame or extracted later.",
+   "use_for": [
+    "photo inside headline lettering or a logo shape",
+    "images cropped into circles, blobs or badges for social graphics",
+    "patterns or textures masked to a shape",
+    "keeping artwork inside a trim or bleed frame"
+   ],
+   "avoid": [
+    "a single object: it needs content plus a container",
+    "an open path as the frame: use a closed shape or artistic text",
+    "feathered or faded edges: PowerClip is a hard clip; add Transparency to the contents or frame for soft fades",
+    "very large bitmaps in many frames: file size balloons; crop or resample the bitmap first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Clipping Mask/Make",
+    "PS": "Layer/Create Clipping Mask"
+   },
+   "look": [
+    "clipping mask",
+    "image in text",
+    "photo in shape",
+    "frame",
+    "mask",
+    "crop to shape"
+   ],
+   "params": [
+    {
+     "name": "Shape",
+     "does": "the container (frame) object; the method is called on the content shape",
+     "typical": "a closed shape or artistic text"
+    },
+    {
+     "name": "CenterInContainer",
+     "does": "cdrTrue centres the content in the frame, cdrFalse keeps its current position; cdrUndefined (the default) presumably defers to the app's own PowerClip centring preference (only the label was harvested)",
+     "typical": "cdrTrue for a quick placement"
+    }
+   ],
+   "demo_settings": {
+    "CenterInContainer": -1
+   },
+   "enum_labels": {
+    "CenterInContainer": {
+     "0": "cdrFalse: keep position",
+     "-1": "cdrTrue: centre in frame",
+     "-2": "cdrUndefined (default): app preference, presumed"
+    }
+   },
+   "pairs_with": [
+    "artistic text in a heavy font as the frame",
+    "Contour or an outline on the frame to edge the clipped image",
+    "Transparency on the contents for a tinted photo-in-type look"
+   ],
+   "scripting": "photo.AddToPowerClip(star, -1)  # Python/pywin32; Shape.AddToPowerClip(Shape=container, CenterInContainer) -> void, called on the CONTENT (apply test: content placed into a container, container.PowerClip.Shapes.Count = 1). Demo: plate_photo.png bitmap into the blue_star (or the PGD type). Menu: Object > PowerClip > Place Inside Frame (FrameWork.Automation.InvokeItem \"da1efe7f-16d0-459b-94b2-836a6b5e6bc6\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: the content is kept intact inside the frame and can be edited, moved or extracted again",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "params / enum_labels: cdrUndefined 'follows the app's PowerClip option' was stated as fact; only the label was harvested, so it is now marked as presumed and as the default (-2). Call direction (content.AddToPowerClip(container)) checked against apply_tests.py, and needs_input is right."
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Block Shadow",
+   "id": "vector:BlockShadow",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Block Shadow",
+   "status": "current",
+   "summary": "Toolbox tool: drag from an object to add a solid, hard-edged vector block (a 'long shadow') that runs from its outline in one direction, one flat colour with no blur or gradient, as used in flat-design icons and retro type. Its settings live on the tool's property bar and were not probed; there is no scripting member for it.",
+   "use_for": [
+    "flat-design long shadows on icons and app tiles",
+    "retro solid offset shadows behind lettering",
+    "vinyl-cut or screen-print output where the shadow must be one solid vector shape"
+   ],
+   "avoid": [
+    "soft, blurred shadows: use the Drop Shadow tool",
+    "automated pipelines: no VGCore member applies it (harvest error); a script can only select the tool. Approximate it with Extrude (Back Parallel, solid fill) instead",
+    "photographic shadows that should fade with distance: use Drop Shadow or a Blend to the background colour"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "long shadow",
+    "block shadow",
+    "flat design shadow",
+    "solid shadow",
+    "retro offset shadow",
+    "3D offset"
+   ],
+   "pairs_with": [
+    "flat icon shapes and bold display type",
+    "a background colour one step darker than the shadow for a layered flat look"
+   ],
+   "scripting": "No apply call: VGCoreAuto.tlb 25.1 has no Block Shadow member (harvest error). FrameWork.Automation.InvokeItem \"249b7791-6d54-401b-a326-378c53773a52\" only selects the tool; the shadow must then be dragged by hand. Scripted stand-in: s.CreateExtrude(4, 0, vpx, vpy, depth, 1, darkColor, None, 0.0, 45.0, None, False) (Back Parallel, solid fill) gives a similar solid block.",
+   "scriptable": "no",
+   "non_destructive": "not harvested: whether the block stays linked to its object was not probed",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (scriptable no and the InvokeItem GUID match the batch error; no params, so no demo_settings; empty equivalents are right because neither Illustrator nor Photoshop has a solid block-shadow command)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (scriptable 'no': No apply call: VGCoreAuto.tlb 25.1 has no Block Shadow member (harvest error). FrameWork.Automation.InvokeItem \"249b7791-6d54-401b-a326-378c53773a52\" only selects the tool; the shadow must then be dragged by hand. Scripted stand-in: [...]), so there is no frame to check. Harness check: there is no apply call to test, so the card's look is unverified, not wrong.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (no scripted apply call); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Push & Pull",
+   "id": "vector:Distort:PushPull",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Distort/Push & Pull",
+   "status": "current",
+   "summary": "Distort tool in Push & Pull mode: a live vector distortion that moves an object's segments in or out relative to a centre point. Depending on the sign and size of Amplitude, ordinary shapes become spiky star-like forms or puffy, petal-like flower forms. It works best on shapes with several nodes.",
+   "use_for": [
+    "starburst / sale-badge shapes from a circle or polygon",
+    "flower and petal motifs from simple polygons",
+    "playful pinched or bloated logo and lettering explorations",
+    "organic blob shapes for backgrounds"
+   ],
+   "avoid": [
+    "shapes with very few nodes (a plain rectangle) give crude lobes: start from a polygon or add nodes",
+    "bitmaps: vector objects only",
+    "precise geometry: the result is free-form; convert to curves before node editing"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Pucker & Bloat"
+   },
+   "look": [
+    "push pull",
+    "pucker",
+    "bloat",
+    "starburst",
+    "petal",
+    "flower shape",
+    "spiky",
+    "puffy"
+   ],
+   "params": [
+    {
+     "name": "OriginX",
+     "does": "x of the distortion centre, in document units",
+     "typical": "the shape's centre (shape.CenterX)"
+    },
+    {
+     "name": "OriginY",
+     "does": "y of the distortion centre, in document units",
+     "typical": "the shape's centre (shape.CenterY)"
+    },
+    {
+     "name": "Amplitude",
+     "does": "strength and direction: one sign pushes the segments out into puffy lobes, the other pulls them in into spikes (which sign is which was not harvested); larger magnitude = more extreme",
+     "typical": "magnitude 20-80 (40 was apply-tested)"
+    }
+   ],
+   "demo_settings": {
+    "Amplitude": 60
+   },
+   "pairs_with": [
+    "a Polygon / Star shape as the starting object",
+    "Contour around the distorted shape for a badge outline",
+    "Twister for swirled flowers"
+   ],
+   "scripting": "s.CreatePushPullDistortion(s.CenterX, s.CenterY, 60)  # Python/pywin32; Shape.CreatePushPullDistortion(OriginX, OriginY, Amplitude) -> IVGEffect type 7 (apply-tested with the origin at the shape centre and Amplitude 40). Demo: blue_star or orange_box, origin = that shape's centre (OriginX / OriginY are computed, not fixed numbers). Interactive: Toolbox > Distort (FrameWork.Automation.InvokeItem \"f42edc69-976b-4917-802a-1c4fed6297ef\" selects the tool), then the Push and Pull mode button on the property bar (mode radio \"5cc921c9-24af-49b5-a097-ab131a45a2eb\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live distortion effect; clearing the distortion restores the shape, converting to curves bakes it",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the interactive route named only the Distort tool GUID, which opens the tool in whatever mode was last used; it now adds the batch's Push and Pull mode-radio GUID (extra.mode_radio_guid). Call, effect type 7 and the Amplitude demo (int, sign hedged) checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/f491918a7d39.png",
+    "note": "At Amplitude 60 the star's segments are pushed into long thin needle spikes radiating from its centre (pucker), a spiky starburst; so on this render the positive amplitude gave the spiky form.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Twister",
+   "id": "vector:Distort:Twister",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Distort/Twister",
+   "status": "current",
+   "summary": "Distort tool in Twister mode: a live vector distortion that rotates an object's outline around a centre point so its edges sweep into a spiral swirl. Angle sets how far it twists; the property bar splits it into whole rotations plus extra degrees. Curly results need enough nodes, so it shows best on stars, polygons and text.",
+   "use_for": [
+    "swirl, vortex and hypnotic spiral motifs",
+    "twisted star and flower ornaments",
+    "warped logo and lettering explorations",
+    "tornado or whirlpool icon shapes"
+   ],
+   "avoid": [
+    "simple shapes with few nodes: a rectangle barely curls; use a star or add nodes",
+    "readable text: more than a small twist destroys legibility",
+    "bitmaps: vector only; for pixels use a bitmap swirl / twirl filter"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Distort & Transform/Twist",
+    "PS": "Filter/Distort/Twirl"
+   },
+   "look": [
+    "twist",
+    "swirl",
+    "spiral",
+    "vortex",
+    "twirl",
+    "whirl"
+   ],
+   "params": [
+    {
+     "name": "OriginX",
+     "does": "x of the twist centre, in document units",
+     "typical": "the shape's centre (shape.CenterX)"
+    },
+    {
+     "name": "OriginY",
+     "does": "y of the twist centre, in document units",
+     "typical": "the shape's centre (shape.CenterY)"
+    },
+    {
+     "name": "Angle",
+     "does": "twist amount in degrees; the sign sets the direction (which sign is clockwise was not harvested)",
+     "typical": "90-360 (180 was apply-tested)"
+    }
+   ],
+   "demo_settings": {
+    "Angle": 270.0
+   },
+   "pairs_with": [
+    "a Star or Polygon with many points as the starting shape",
+    "Push & Pull first, then Twister, for swirled flowers",
+    "Blend between a twisted and an untwisted copy for a spiralling tunnel"
+   ],
+   "scripting": "s.CreateTwisterDistortion(s.CenterX, s.CenterY, 270.0)  # Python/pywin32; Shape.CreateTwisterDistortion(OriginX, OriginY, Angle) -> IVGEffect type 7 (apply-tested at the shape centre with Angle 180). Demo: blue_star, origin = its centre (OriginX / OriginY are computed, not fixed numbers). Interactive: Toolbox > Distort (FrameWork.Automation.InvokeItem \"f42edc69-976b-4917-802a-1c4fed6297ef\" selects the tool), then the Twister mode button on the property bar (mode radio \"7e6c8fad-acf5-4529-b095-397d7f02dacf\").",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live distortion effect; clearing the distortion restores the shape, converting to curves bakes it",
+   "cost": "light",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the interactive route named only the Distort tool GUID; it now adds the batch's Twister mode-radio GUID (extra.mode_radio_guid). Call, effect type 7, the Angle 270 demo and the AI Twist / PS Twirl equivalents checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d8d28dffc42d.png",
+    "note": "The star's outline is twisted 270 degrees into a spiral of curved blue blades around its centre, the swirl the card describes.",
+    "rerender": false
+   }
+  }
+ ]
+}

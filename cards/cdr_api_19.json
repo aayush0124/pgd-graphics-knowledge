@@ -1,0 +1,2168 @@
+{
+ "cards": [
+  {
+   "name": "IVGStructColorConversionOptions",
+   "id": "class:IVGStructColorConversionOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructColorConversionOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Color-management settings used when a file is opened, imported or pasted: the color management policy, the profiles to assume for the incoming data, the profiles to convert the document to, and an optional callback for missing or mismatched profiles. You never create it on its own; it hangs off the open, import and paste option structs.",
+   "use_for": [
+    "placing client photos with no embedded profile into a CMYK print layout under a known source-profile assumption",
+    "batch-opening or importing files with one predictable color policy, without per-file mismatch prompts",
+    "pasting RGB artwork from other apps into a print document without surprise conversions"
+   ],
+   "avoid": [
+    "converting single colors: use IVGColor.ConvertTo",
+    "setting TargetColorProfileList on a shared or finished document: per the typelib it changes the color context of the whole document"
+   ],
+   "equivalents": {},
+   "how": "Options object of the VGCore model. There is no factory for it: a script reaches it read-only through the ColorConversionOptions property of IVGStructOpenOptions, IVGStructImportOptions or IVGStructPasteOptions (made with Application.CreateStructOpenOptions / CreateStructImportOptions / CreateStructPasteOptions). Set its members, then pass the parent struct to Application.OpenDocumentEx, Layer.ImportEx or Layer.PasteEx.",
+   "key_members": [
+    {
+     "name": "ColorPolicy",
+     "use": "the color-management policy object for this open/import/paste (read-only reference; edit its own properties)"
+    },
+    {
+     "name": "SourceColorProfileList",
+     "use": "profile names to assume as the source of the incoming color data"
+    },
+    {
+     "name": "TargetColorProfileList",
+     "use": "profile names to convert the document to after the operation; changes the whole document's color context"
+    },
+    {
+     "name": "ColorConversionHandler",
+     "use": "custom callback object called when profiles are missing or mismatched"
+    }
+   ],
+   "gotchas": [
+    "ColorPolicy is read-only: change the policy object's properties, you cannot assign a different policy object.",
+    "TargetColorProfileList re-targets the color context of the whole document, not only the incoming objects (typelib description).",
+    "The string format of the profile lists (order of RGB / CMYK / grayscale entries, separator) is not documented in the typelib; read the current value and keep its shape (unverified).",
+    "ColorConversionHandler needs a COM object that implements IColorConversionHandler, which is awkward from Python / pywin32; leave it empty so the policy decides (unverified that it then never prompts).",
+    "Each parent struct has its own ColorConversionOptions: settings made on an import options object do not affect opening or pasting."
+   ],
+   "example": "Dim io As StructImportOptions\nSet io = Application.CreateStructImportOptions\nDebug.Print io.ColorConversionOptions.SourceColorProfileList\nDebug.Print io.ColorConversionOptions.TargetColorProfileList\nActiveLayer.ImportEx(\"C:\\in\\photo.jpg\", cdrJPEG, io).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructCreateOptions",
+   "id": "class:IVGStructCreateOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructCreateOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for a new document made by script: name, page width and height, measurement units, rendering resolution, bleed and document color context. Passed to Application.CreateDocumentEx so the document starts at the right size instead of being created at the default page and resized.",
+   "use_for": [
+    "A4 / A3 print posters and flyers created with a 3 mm bleed already set",
+    "1080 x 1080 px social post canvases in pixel units",
+    "batch-creating one document per job-ticket size",
+    "starting a print job in a known color context instead of the app default"
+   ],
+   "avoid": [
+    "resizing an existing document or adding pages of another size: change the page settings of that document instead",
+    "naming the output file: Name is only the document title, the file is written later with SaveAs"
+   ],
+   "equivalents": {
+    "AI": "class:DocumentPreset"
+   },
+   "how": "Options object of the VGCore model. Application.CreateStructCreateOptions returns a fresh struct; fill its properties and pass it to Application.CreateDocumentEx(Options), which returns the new IVGDocument.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "title of the new document"
+    },
+    {
+     "name": "Units",
+     "use": "cdrUnit used for the page size and as the document's default unit"
+    },
+    {
+     "name": "PageWidth",
+     "use": "page width, in Units"
+    },
+    {
+     "name": "PageHeight",
+     "use": "page height, in Units"
+    },
+    {
+     "name": "Bleed",
+     "use": "page bleed of the new document"
+    },
+    {
+     "name": "Resolution",
+     "use": "document rendering resolution (typelib); dpi presumably (unverified)"
+    },
+    {
+     "name": "ColorContext",
+     "use": "IVGColorContext (color profiles) of the new document"
+    }
+   ],
+   "gotchas": [
+    "Set Units together with the sizes: PageWidth and PageHeight are read in Units (typelib), so 210 x 297 is A4 only with cdrMillimeter.",
+    "Bleed is probably read in Units as well (unverified).",
+    "Resolution is the document's rendering resolution, not an export dpi; exports take their own resolution from StructExportOptions.",
+    "If ColorContext is left empty the application's default color settings apply (unverified); build one with Application.CreateColorContext for a fixed profile set."
+   ],
+   "example": "Dim co As StructCreateOptions, doc As Document\nSet co = Application.CreateStructCreateOptions\nco.Name = \"A4 poster\"\nco.Units = cdrMillimeter\nco.PageWidth = 210: co.PageHeight = 297\nco.Bleed = 3: co.Resolution = 300\nSet doc = Application.CreateDocumentEx(co)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Resolution: dpi unit marked unverified (typelib gives no unit)"
+   }
+  },
+  {
+   "name": "IVGStructExportOptions",
+   "id": "class:IVGStructExportOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructExportOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Bitmap export settings for Document.ExportEx: pixel size or resolution, color mode of the image, anti-aliasing, transparent background or matte color, dithering, compression, layer keeping, color profile use, overwrite and the area to export. It is how a script makes PNG, JPEG, TIFF and similar raster files from vector artwork.",
+   "use_for": [
+    "exporting a logo selection as a 300 dpi transparent PNG",
+    "web and social images at an exact pixel size with anti-aliasing",
+    "TIFF or JPEG proofs of a page in RGB or CMYK",
+    "exporting only a rectangle of the page (ExportArea)"
+   ],
+   "avoid": [
+    "vector formats (PDF, SVG, EPS): use their own filter settings, these members are raster settings",
+    "8-bit paletted output on its own: the palette is set in IVGStructPaletteOptions, passed alongside"
+   ],
+   "equivalents": {
+    "PS": "class:ExportOptionsSaveForWeb",
+    "AI": "class:ImageCaptureOptions"
+   },
+   "how": "Options object of the VGCore model. Application.CreateStructExportOptions returns a fresh struct; set its members and pass it as Options to ActiveDocument.ExportEx(FileName, Filter, Range, Options, PaletteOptions), which returns an export filter whose Finish writes the file. Document.ExportBitmap takes the same settings as plain arguments.",
+   "key_members": [
+    {
+     "name": "ImageType",
+     "use": "color mode of the bitmap (cdrImageType: RGB, CMYK, grayscale, paletted ...)"
+    },
+    {
+     "name": "ResolutionX",
+     "use": "horizontal resolution in dpi"
+    },
+    {
+     "name": "ResolutionY",
+     "use": "vertical resolution in dpi"
+    },
+    {
+     "name": "SizeX",
+     "use": "output width in pixels"
+    },
+    {
+     "name": "SizeY",
+     "use": "output height in pixels"
+    },
+    {
+     "name": "MaintainAspect",
+     "use": "keep width / height ratio when only one size is given"
+    },
+    {
+     "name": "AntiAliasingType",
+     "use": "none, normal or supersampling edge smoothing"
+    },
+    {
+     "name": "Transparent",
+     "use": "transparent background where the format supports it"
+    },
+    {
+     "name": "Matted",
+     "use": "fill the background with a matte color"
+    },
+    {
+     "name": "MatteColor",
+     "use": "matte color (IVGColor object)"
+    },
+    {
+     "name": "MatteMaskedOnly",
+     "use": "apply the matte only to masked areas"
+    },
+    {
+     "name": "Dithered",
+     "use": "dither when reducing colors"
+    },
+    {
+     "name": "Compression",
+     "use": "compression type for formats that offer one (cdrCompressionType)"
+    },
+    {
+     "name": "UseColorProfile",
+     "use": "embed / apply the color profile"
+    },
+    {
+     "name": "MaintainLayers",
+     "use": "keep layers in formats that support them"
+    },
+    {
+     "name": "ExportArea",
+     "use": "rectangle (IVGRect) to export instead of the whole range"
+    },
+    {
+     "name": "Overwrite",
+     "use": "replace an existing file without asking"
+    },
+    {
+     "name": "AlwaysOverprintBlack",
+     "use": "overprint black during export"
+    },
+    {
+     "name": "ProofColorSettings",
+     "use": "color-proofing settings to apply on export"
+    }
+   ],
+   "gotchas": [
+    "Only ProofColorSettings has a typelib description; the meaning of the other members comes from the matching fields of the bitmap export dialog.",
+    "ExportEx returns an ICorelExportFilter; call Finish on it, otherwise the file may not be written (unverified for every filter).",
+    "SizeX / SizeY are pixels while ResolutionX / ResolutionY are dpi; set one pair deliberately, and leave the other for MaintainAspect / the app to derive (unverified which wins when both are set).",
+    "Transparent needs a format with alpha (PNG, TIFF); for JPEG use Matted + MatteColor for the background (unverified).",
+    "cdrExportRange only has cdrAllPages, cdrCurrentPage and cdrSelection; how ExportArea interacts with the Range argument is unverified.",
+    "MatteColor is an IVGColor object: set it with the color's own methods (e.g. RGBAssign) rather than assigning a number (unverified that a fresh struct already holds a color object)."
+   ],
+   "example": "Dim eo As StructExportOptions\nSet eo = Application.CreateStructExportOptions\neo.ImageType = cdrRGBColorImage\neo.ResolutionX = 300: eo.ResolutionY = 300\neo.AntiAliasingType = cdrNormalAntiAliasing\neo.Transparent = True: eo.Overwrite = True\nActiveDocument.ExportEx(\"C:\\out\\logo.png\", cdrPNG, cdrSelection, eo).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructFontProperties",
+   "id": "class:IVGStructFontProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructFontProperties",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Legacy bundle of character formatting for text: font name, style (weight / italic), size, underline, overscore and strikethrough lines, case (small caps / all caps), sub- or superscript position, range kerning, and the text's fill and outline. Its only routes in 25.1 are hidden members (Text.FontProperties / FontPropertiesInRange and Application.CreateStructFontProperties), so it is an old text model kept for compatibility.",
+   "use_for": [
+    "reading or setting a whole headline's font, size, weight and case in one object in old macros",
+    "copying character formatting from one text object to another (read the struct from one, write it to the other)",
+    "auditing which fonts and sizes a document's text uses"
+   ],
+   "avoid": [
+    "new scripts: format text through IVGTextRange (Text.Story / Text.Range: Font, Size, Bold, Fill) instead of this hidden route",
+    "per-character formatting in long stories: walk IVGTextRange / IVGTextCharacters"
+   ],
+   "equivalents": {
+    "AI": "class:CharacterAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Old-style property struct of the VGCore text model. A script gets it from a text shape through the hidden IVGText members FontProperties(Frames) (whole frame chain, default cdrAllFrames) or FontPropertiesInRange(StartIndex, Count, IndexingType), or makes an empty one with the hidden Application.CreateStructFontProperties. Change members, then assign the struct back through the same Text property, which is 'get or set'.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "font family name"
+    },
+    {
+     "name": "Style",
+     "use": "weight / italic variant (cdrFontStyle: normal, bold, italic, thin, light, medium, semi-bold, extra-bold, heavy ...)"
+    },
+    {
+     "name": "Size",
+     "use": "font size"
+    },
+    {
+     "name": "Underline",
+     "use": "underline type (cdrFontLine)"
+    },
+    {
+     "name": "Overscore",
+     "use": "line above the text (cdrFontLine)"
+    },
+    {
+     "name": "Strikethru",
+     "use": "strikethrough line (cdrFontLine)"
+    },
+    {
+     "name": "Uppercase",
+     "use": "case: normal, small caps or all caps (cdrFontCase)"
+    },
+    {
+     "name": "Position",
+     "use": "normal, subscript or superscript (cdrFontPosition)"
+    },
+    {
+     "name": "RangeKerning",
+     "use": "tracking / range kerning of the characters"
+    },
+    {
+     "name": "Fill",
+     "use": "fill of the characters (IVGFill)"
+    },
+    {
+     "name": "Outline",
+     "use": "outline of the characters (IVGOutline)"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct is a hidden member in the 25.1 typelib (IVGText.FontProperties, FontPropertiesInRange, Application.CreateStructFontProperties): VBA IntelliSense does not list them and they may be removed in a later release.",
+    "None of the members have typelib descriptions.",
+    "Changing the struct alone probably does not change the text; write it back with Text.FontProperties(...) = struct (unverified).",
+    "A range with more than one value presumably reports the cdrMixed... value of the enum (cdrMixedFontStyle, cdrMixedFontLine, cdrMixedFontCase, cdrMixedFontPosition).",
+    "Size is most likely in points whatever the document unit, and RangeKerning units are undocumented (unverified)."
+   ],
+   "example": "Dim fp As StructFontProperties\nSet fp = ActiveShape.Text.FontProperties(cdrAllFrames)\nDebug.Print fp.Name, fp.Size, fp.Style\nfp.Name = \"Arial\": fp.Size = 36\nfp.Style = cdrBoldFontStyle\nfp.Uppercase = cdrAllCapsFontCase\nActiveShape.Text.FontProperties(cdrAllFrames) = fp",
+   "review": {
+    "by": "adversarial",
+    "changes": "Style member: cdrFontStyle has no 'black' value; listed real ones (thin, medium, semi-bold, extra-bold, heavy); cdrMixed... gotcha marked as inference"
+   }
+  },
+  {
+   "name": "IVGStructHyphenationSettings",
+   "id": "class:IVGStructHyphenationSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructHyphenationSettings",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Legacy struct with the hyphenation settings of text: automatic hyphenation on or off, whether capitalised and all-caps words may break, the hot zone, the minimum word length and the minimum characters before and after a hyphen. Reached only through hidden IVGText members in 25.1.",
+   "use_for": [
+    "justified body text in brochures and newsletters, to reduce gaps and rivers",
+    "narrow paragraph-text columns that otherwise rag badly",
+    "keeping brand names and acronyms unbroken (no breaks in capitalised or all-caps words)"
+   ],
+   "avoid": [
+    "artistic (single-line) text that never wraps: hyphenation has nothing to do there",
+    "new scripts: this route is hidden; set hyphenation on IVGTextRange (Text.Story / Text.Range): AutoHyphenate, HyphenHotZone, HyphenMinWordLength, HyphenMinCharsBefore, HyphenMinCharsAfter, HyphenateCapitals, HyphenateAllCapWords"
+   ],
+   "equivalents": {
+    "AI": "class:ParagraphAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Old-style property struct of the VGCore text model. Get it with the hidden IVGText members HyphenationSettings(Frames) (default cdrAllFrames) or HyphenationSettingsInRange(StartIndex, Count, IndexingType), or an empty one from the hidden Application.CreateStructHyphenationSettings; change members and assign it back through the same property.",
+   "key_members": [
+    {
+     "name": "UseAutomaticHyphenation",
+     "use": "turn automatic hyphenation on or off"
+    },
+    {
+     "name": "BreakCapitalized",
+     "use": "allow breaking words that start with a capital"
+    },
+    {
+     "name": "BreakAllCapWords",
+     "use": "allow breaking words set in all caps"
+    },
+    {
+     "name": "HotZone",
+     "use": "distance from the right edge inside which a word gets hyphenated"
+    },
+    {
+     "name": "MinWordLength",
+     "use": "shortest word that may be hyphenated"
+    },
+    {
+     "name": "MinCharactersBefore",
+     "use": "minimum characters left before the hyphen"
+    },
+    {
+     "name": "MinCharactersAfter",
+     "use": "minimum characters carried after the hyphen"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct is hidden in the 25.1 typelib (IVGText.HyphenationSettings, HyphenationSettingsInRange, Application.CreateStructHyphenationSettings).",
+    "None of the members have typelib descriptions; HotZone's unit is undocumented (document units are likely, unverified).",
+    "Hyphenation only shows in wrapping paragraph text, and needs the text's language to have hyphenation support (unverified).",
+    "Editing the struct alone probably does not reach the text; assign it back (unverified)."
+   ],
+   "example": "Dim hs As StructHyphenationSettings\nSet hs = ActiveShape.Text.HyphenationSettings(cdrAllFrames)\nhs.UseAutomaticHyphenation = True\nhs.MinWordLength = 6\nhs.MinCharactersBefore = 3: hs.MinCharactersAfter = 3\nhs.BreakCapitalized = False\nActiveShape.Text.HyphenationSettings(cdrAllFrames) = hs",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: the harvest lists the current IVGTextRange hyphenation members (AutoHyphenate, HyphenHotZone, HyphenMin*, HyphenateCapitals, HyphenateAllCapWords); named them instead of 'unverified which member'"
+   }
+  },
+  {
+   "name": "IVGStructImportOptions",
+   "id": "class:IVGStructImportOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructImportOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for Layer.ImportEx: how a bitmap comes in (embedded or linked externally, full, cropped or resampled, multi-layer bitmaps combined or kept as layers, ICC profile extracted, which image of a multi-image file), how text and tables come in (formatting, code page, tables as text, column delimiter, black text forced to CMYK black), watermark detection, OPI links, and the color conversion options.",
+   "use_for": [
+    "placing a layered PSD into a layout with its layers kept",
+    "importing product photos linked externally so the CDR file stays small",
+    "bringing a Word / RTF text file in without its fonts and formatting",
+    "importing one page or frame of a multi-image file (ImageIndex)",
+    "cropping or resampling big camera images on the way in"
+   ],
+   "avoid": [
+    "opening a file as its own document: use Application.OpenDocumentEx with IVGStructOpenOptions",
+    "linked bitmaps for files that travel to a printer: links break when the source moves; embed instead"
+   ],
+   "equivalents": {},
+   "how": "Options object of the VGCore model. Application.CreateStructImportOptions returns a fresh struct; set members and pass it to ActiveLayer.ImportEx(FileName, Filter, Options), which returns an ICorelImportFilter; call Finish on it to place the content on that layer.",
+   "key_members": [
+    {
+     "name": "Mode",
+     "use": "cdrImportFull, cdrImportCrop or cdrImportResample"
+    },
+    {
+     "name": "LinkBitmapExternally",
+     "use": "link the bitmap file instead of embedding it"
+    },
+    {
+     "name": "MaintainLayers",
+     "use": "keep the layers of a layered file"
+    },
+    {
+     "name": "CombineMultilayerBitmaps",
+     "use": "flatten a multi-layer bitmap into one image"
+    },
+    {
+     "name": "ExtractICCProfile",
+     "use": "read the embedded ICC profile"
+    },
+    {
+     "name": "ImageIndex",
+     "use": "which image / page of a multi-image file"
+    },
+    {
+     "name": "CropLeft",
+     "use": "crop rectangle left edge (Mode = cdrImportCrop)"
+    },
+    {
+     "name": "CropTop",
+     "use": "crop rectangle top edge"
+    },
+    {
+     "name": "CropWidth",
+     "use": "crop rectangle width"
+    },
+    {
+     "name": "CropHeight",
+     "use": "crop rectangle height"
+    },
+    {
+     "name": "ResampleWidth",
+     "use": "new width when resampling (Mode = cdrImportResample)"
+    },
+    {
+     "name": "ResampleHeight",
+     "use": "new height when resampling"
+    },
+    {
+     "name": "ResampleDpiX",
+     "use": "new horizontal resolution when resampling"
+    },
+    {
+     "name": "ResampleDpiY",
+     "use": "new vertical resolution when resampling"
+    },
+    {
+     "name": "TextFormatting",
+     "use": "keep fonts and formatting, drop formatting, or formatting only (cdrImportTextFormatting)"
+    },
+    {
+     "name": "CodePage",
+     "use": "code page for text files"
+    },
+    {
+     "name": "ConvertTablesToText",
+     "use": "turn imported tables into delimited text"
+    },
+    {
+     "name": "TableColumnDelimiter",
+     "use": "delimiter used when tables become text"
+    },
+    {
+     "name": "ForceCMYKBlackText",
+     "use": "make black text pure CMYK black"
+    },
+    {
+     "name": "ColorConversionOptions",
+     "use": "color-management settings for this import (read-only reference)"
+    }
+   ],
+   "gotchas": [
+    "Only ColorConversionOptions has a typelib description; the rest maps to the import dialog fields.",
+    "Crop* and Resample* values are presumably read only when Mode is cdrImportCrop / cdrImportResample, and they are longs, most likely source pixels (unverified).",
+    "ImportEx returns a filter; call Finish or nothing is placed (unverified for every filter).",
+    "TableOutline is a hidden member in 25.1; CropHandler, ResampleHandler and CustomData are callback / custom hooks that are hard to drive from Python.",
+    "The imported content lands on the given layer at a default position; move or align it afterwards (unverified where it lands).",
+    "ColorConversionOptions is read-only: set its members, do not assign another struct."
+   ],
+   "example": "Dim io As StructImportOptions\nSet io = Application.CreateStructImportOptions\nio.Mode = cdrImportFull\nio.MaintainLayers = True\nio.LinkBitmapExternally = False\nio.ExtractICCProfile = True\nActiveLayer.ImportEx(\"C:\\in\\product.psd\", cdrPSD, io).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructOpenOptions",
+   "id": "class:IVGStructOpenOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructOpenOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for opening a document with Application.OpenDocumentEx: the code page for text in files from earlier CorelDRAW versions, and the color conversion options (policy, assumed source profiles, target profiles) applied while opening.",
+   "use_for": [
+    "opening old CDR files whose text is in a Cyrillic, Greek or Asian code page so it does not turn into garbage",
+    "batch-opening client files under one color policy, without per-file profile prompts"
+   ],
+   "avoid": [
+    "placing a file into an already open document: use Layer.ImportEx with IVGStructImportOptions",
+    "current-version files with no color issues: plain Application.OpenDocument is enough"
+   ],
+   "equivalents": {
+    "AI": "class:OpenOptions",
+    "PS": "class:OpenOptions"
+   },
+   "how": "Options object of the VGCore model. Application.CreateStructOpenOptions returns a fresh struct; set CodePage and/or the members of ColorConversionOptions, then call Application.OpenDocumentEx(FileName, Options), which returns the opened IVGDocument. Application.OpenDocumentAsCopy(FileName, Options) takes the same struct; for a code page alone, Application.OpenDocument(FileName, CodePage) is enough.",
+   "key_members": [
+    {
+     "name": "CodePage",
+     "use": "Windows code page used to read text from files made by earlier versions"
+    },
+    {
+     "name": "ColorConversionOptions",
+     "use": "color-management settings for this open (read-only reference to an IVGStructColorConversionOptions)"
+    }
+   ],
+   "gotchas": [
+    "CodePage only matters for files created in earlier versions (typelib); current files presumably store Unicode text (unverified).",
+    "ColorConversionOptions is read-only: change its members, do not assign another struct.",
+    "Depending on the color policy, opening may still raise a profile-mismatch or font-substitution dialog, which blocks an automated run (unverified which settings suppress every prompt)."
+   ],
+   "example": "Dim oo As StructOpenOptions, doc As Document\nSet oo = Application.CreateStructOpenOptions\noo.CodePage = 1251\nSet doc = Application.OpenDocumentEx(\"C:\\old\\label_v9.cdr\", oo)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: added OpenDocumentAsCopy (takes this struct) and OpenDocument's own CodePage argument; Unicode claim marked unverified"
+   }
+  },
+  {
+   "name": "IVGStructPaletteOptions",
+   "id": "class:IVGStructPaletteOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructPaletteOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for reducing an image to a palette of a limited number of colors: palette type (uniform, standard VGA, adaptive, optimized, black body, grayscale, system, Internet Explorer, Netscape, custom), number of colors, dither type and intensity, smoothing, a color-sensitive range around a target color (importance, lightness, tolerances) and a custom palette. Passed as PaletteOptions with paletted bitmap exports such as GIF or 8-bit PNG, or to Bitmap.ConvertToPaletted2 to reduce a bitmap in the document.",
+   "use_for": [
+    "small GIF or PNG-8 web icons and banners",
+    "limiting a graphic to a fixed number of colors for screen printing or embroidery previews",
+    "posterised, limited-palette looks with or without dithering",
+    "reducing a placed photo or scan to a limited palette inside the document (Bitmap.ConvertToPaletted2)"
+   ],
+   "avoid": [
+    "full-color exports: leave PaletteOptions out and use an RGB or CMYK ImageType",
+    "reducing vector artwork on the page: the struct only drives bitmap export and bitmap conversion; export or convert to a bitmap first"
+   ],
+   "equivalents": {
+    "PS": "class:IndexedConversionOptions",
+    "AI": "class:ExportOptionsGIF"
+   },
+   "how": "Options object of the VGCore model. Application.CreateStructPaletteOptions returns a fresh struct; set its members and pass it as PaletteOptions to ActiveDocument.ExportEx (with an IVGStructExportOptions whose ImageType is cdrPalettedImage) or to Document.ExportBitmap; Bitmap.ConvertToPaletted2(Options) applies the same struct to a bitmap already in the document.",
+   "key_members": [
+    {
+     "name": "PaletteType",
+     "use": "palette to reduce to (cdrImagePaletteType: adaptive, optimized, uniform, grayscale, custom ...)"
+    },
+    {
+     "name": "NumColors",
+     "use": "number of colors in the palette"
+    },
+    {
+     "name": "DitherType",
+     "use": "none, ordered, Jarvis, Stucki or Floyd-Steinberg (cdrDitherType)"
+    },
+    {
+     "name": "DitherIntensity",
+     "use": "strength of the dither"
+    },
+    {
+     "name": "Smoothing",
+     "use": "smoothing applied before reduction"
+    },
+    {
+     "name": "ColorSensitive",
+     "use": "favour a range of colors around TargetColor"
+    },
+    {
+     "name": "TargetColor",
+     "use": "color the reduction should favour, as a packed number"
+    },
+    {
+     "name": "Importance",
+     "use": "weight of the color-sensitive range"
+    },
+    {
+     "name": "Lightness",
+     "use": "lightness weight of the color-sensitive range"
+    },
+    {
+     "name": "ToleranceA",
+     "use": "first tolerance of the color-sensitive range"
+    },
+    {
+     "name": "ToleranceB",
+     "use": "second tolerance of the color-sensitive range"
+    },
+    {
+     "name": "Palette",
+     "use": "custom palette (variant) for cdrPaletteCustom"
+    }
+   ],
+   "gotchas": [
+    "None of the members have typelib descriptions; meanings follow the Convert to Paletted / export palette dialog.",
+    "Probably ignored unless the export ImageType is cdrPalettedImage (unverified).",
+    "A fresh struct may not start with the dialog's defaults: set PaletteType, NumColors and DitherType explicitly (unverified what a fresh struct holds).",
+    "TargetColor is a long; its byte order (RGB vs BGR packing) is undocumented (unverified).",
+    "The layout of the Palette variant for a custom palette is undocumented (unverified)."
+   ],
+   "example": "Dim eo As StructExportOptions, po As StructPaletteOptions\nSet eo = Application.CreateStructExportOptions\nSet po = Application.CreateStructPaletteOptions\neo.ImageType = cdrPalettedImage: eo.Overwrite = True\npo.PaletteType = cdrPaletteAdaptive: po.NumColors = 64\npo.DitherType = cdrDitherNone\nActiveDocument.ExportEx(\"C:\\out\\icon.gif\", cdrGIF, cdrSelection, eo, po).Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: palette types are cdrPaletteIE / cdrPaletteNetscape, not a generic 'web-safe'; summary/how: added Bitmap.ConvertToPaletted2(Options), which takes this struct; removed the avoid entry that sent in-document bitmap conversion elsewhere (ConvertToPaletted2 takes this struct); added it as a use"
+   }
+  },
+  {
+   "name": "IVGStructPasteOptions",
+   "id": "class:IVGStructPasteOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructPasteOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for Layer.PasteEx. Its only member is the color conversion options applied to clipboard content as it is pasted (color policy, profiles assumed for the incoming colors, profiles to convert the document to).",
+   "use_for": [
+    "pasting RGB artwork from a browser or another app into a CMYK print document under a known color assumption",
+    "scripted copy-paste between documents that use different color settings"
+   ],
+   "avoid": [
+    "choosing the clipboard format or paste position: this struct has no such settings",
+    "moving shapes between open documents: Shape.Duplicate / copy to layer avoids the clipboard entirely (unverified for cross-document moves)"
+   ],
+   "equivalents": {},
+   "how": "Options object of the VGCore model. Application.CreateStructPasteOptions returns a fresh struct; adjust the members of its ColorConversionOptions and pass it to ActiveLayer.PasteEx(Options), which returns the pasted shapes as an IVGShapeRange.",
+   "key_members": [
+    {
+     "name": "ColorConversionOptions",
+     "use": "color-management settings for the paste (read-only reference to an IVGStructColorConversionOptions)"
+    }
+   ],
+   "gotchas": [
+    "ColorConversionOptions is read-only: set its members, do not assign another struct.",
+    "PasteEx fails or returns nothing when the clipboard is empty or locked by another application (unverified exact behaviour); copy right before pasting.",
+    "The clipboard format CorelDRAW picks (native, EMF, bitmap ...) is not controlled by this struct (unverified)."
+   ],
+   "example": "Dim po As StructPasteOptions, sr As ShapeRange\nSet po = Application.CreateStructPasteOptions\nDebug.Print po.ColorConversionOptions.SourceColorProfileList\nSet sr = ActiveLayer.PasteEx(po)\nDebug.Print sr.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructSaveAsOptions",
+   "id": "class:IVGStructSaveAsOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructSaveAsOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for Document.SaveAs and SaveAsCopy: file filter, CorelDRAW file version to save as (saving back to older releases), page range, overwrite, ICC profile embedding, VBA project embedding, CMX data, keep-appearance, and the hidden thumbnail size.",
+   "use_for": [
+    "saving a copy for a printer or colleague on an older CorelDRAW version",
+    "versioned backups of a job without changing the open document's file path (SaveAsCopy)",
+    "files that carry their ICC profile for print hand-off",
+    "stripping a macro project out of files sent to clients"
+   ],
+   "avoid": [
+    "raster or other foreign formats (PNG, PDF, SVG ...): use Document.ExportEx with export options",
+    "SaveAs for backups: it re-points the open document to the new file; use SaveAsCopy"
+   ],
+   "equivalents": {
+    "AI": "class:IllustratorSaveOptions",
+    "PS": "class:PhotoshopSaveOptions"
+   },
+   "how": "Options object of the VGCore model. Application.CreateStructSaveAsOptions returns a fresh struct; set members and pass it to ActiveDocument.SaveAs(FileName, Options) or ActiveDocument.SaveAsCopy(FileName, Options).",
+   "key_members": [
+    {
+     "name": "Filter",
+     "use": "file format (cdrFilter), e.g. cdrCDR"
+    },
+    {
+     "name": "Version",
+     "use": "CorelDRAW file version (cdrFileVersion): cdrCurrentVersion or an older cdrVersionNN"
+    },
+    {
+     "name": "Range",
+     "use": "pages to save (cdrExportRange: all pages, current page, selection)"
+    },
+    {
+     "name": "Overwrite",
+     "use": "replace an existing file"
+    },
+    {
+     "name": "EmbedICCProfile",
+     "use": "embed the document's color profile"
+    },
+    {
+     "name": "EmbedVBAProject",
+     "use": "store the document's VBA project in the file"
+    },
+    {
+     "name": "IncludeCMXData",
+     "use": "add CMX presentation data for older readers"
+    },
+    {
+     "name": "KeepAppearance",
+     "use": "keep the look of newer features when saving to an older version"
+    },
+    {
+     "name": "ThumbnailSize",
+     "use": "preview thumbnail size (hidden member)"
+    }
+   ],
+   "gotchas": [
+    "None of the members have typelib descriptions.",
+    "Saving to an older Version converts or drops features that release lacks; KeepAppearance presumably trades editability for looks (unverified exact behaviour).",
+    "SaveAs changes the document's file path and name; SaveAsCopy leaves the open document as it was.",
+    "ThumbnailSize is a hidden member in 25.1.",
+    "With Overwrite = False and an existing file, expect an error or a prompt (unverified which)."
+   ],
+   "example": "Dim so As StructSaveAsOptions\nSet so = Application.CreateStructSaveAsOptions\nso.Filter = cdrCDR\nso.Version = cdrVersion21\nso.EmbedICCProfile = True\nso.Overwrite = True\nActiveDocument.SaveAsCopy \"C:\\out\\job_for_print.cdr\", so",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructSpaceProperties",
+   "id": "class:IVGStructSpaceProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructSpaceProperties",
+   "status": "hidden",
+   "confidence": "medium",
+   "summary": "Legacy struct with the spacing of text: character spacing, word spacing, line spacing and how it is measured (percent of character height, points, percent of point size), and space before and after paragraphs. Reached only through hidden IVGText members in 25.1.",
+   "use_for": [
+    "tightening or loosening leading of body copy in old macros",
+    "adding paragraph spacing to imported text in one call",
+    "reading the spacing of a text object to copy it to another"
+   ],
+   "avoid": [
+    "new scripts: format spacing through IVGTextRange (Text.Story / Text.Range): CharSpacing, WordSpacing, LineSpacing, and SetLineSpacing(Type, LineSpacing, ParaBefore, ParaAfter) for the spacing type and paragraph spacing (LineSpacingType is read-only on a text range)",
+    "kerning between two particular characters: that is a per-character setting, not range spacing"
+   ],
+   "equivalents": {
+    "AI": "class:ParagraphAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "Old-style property struct of the VGCore text model. Get it with the hidden IVGText members SpaceProperties(Frames) (default cdrAllFrames) or SpacePropertiesInRange(StartIndex, Count, IndexingType), or an empty one from the hidden Application.CreateStructSpaceProperties; change members and assign it back through the same property.",
+   "key_members": [
+    {
+     "name": "CharacterSpacing",
+     "use": "spacing between characters"
+    },
+    {
+     "name": "WordSpacing",
+     "use": "spacing between words"
+    },
+    {
+     "name": "LineSpacing",
+     "use": "distance between lines, in the unit set by LineSpacingType"
+    },
+    {
+     "name": "LineSpacingType",
+     "use": "cdrLineSpacingType: percent of character height, points, or percent of point size"
+    },
+    {
+     "name": "BeforeParagraphSpacing",
+     "use": "space added before each paragraph"
+    },
+    {
+     "name": "AfterParagraphSpacing",
+     "use": "space added after each paragraph"
+    }
+   ],
+   "gotchas": [
+    "Every route to this struct is hidden in the 25.1 typelib (IVGText.SpaceProperties, SpacePropertiesInRange, Application.CreateStructSpaceProperties).",
+    "None of the members have typelib descriptions.",
+    "LineSpacing is read in LineSpacingType, so set the type first; whether the paragraph spacings follow the same type is unverified.",
+    "CharacterSpacing and WordSpacing are most likely percent of a space width (unverified).",
+    "A range with mixed line spacing reports cdrMixedLineSpacing."
+   ],
+   "example": "Dim sp As StructSpaceProperties\nSet sp = ActiveShape.Text.SpaceProperties(cdrAllFrames)\nsp.LineSpacingType = cdrPercentOfCharacterHeightLineSpacing\nsp.LineSpacing = 120\nsp.AfterParagraphSpacing = 50\nActiveShape.Text.SpaceProperties(cdrAllFrames) = sp",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: named the IVGTextRange spacing members and SetLineSpacing (LineSpacingType is read-only there)"
+   }
+  },
+  {
+   "name": "IVGStyle",
+   "id": "class:IVGStyle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyle",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "One object style or style set from CorelDRAW's Object Styles system: a named, reusable bundle of outline, fill, transparency, character, paragraph or frame properties that shapes and text link to, with inheritance (BasedOn / DerivedStyles) and local overrides. It is also what Shape.Style returns (typelib: the style set applied to the shape) and what TextRange.ObjectStyle returns (the style applied to the text). Changing a style restyles every linked object.",
+   "use_for": [
+    "brand style sets (fill + outline + type) applied to many objects so one edit restyles the whole layout",
+    "reading or copying a shape's look property by property",
+    "serialising a style to a string and restoring it elsewhere (ToString / StringAssign)",
+    "renaming, re-parenting or deleting styles in a template"
+   ],
+   "avoid": [
+    "one-off formatting of a single object: set the shape's Fill / Outline directly",
+    "styles that must survive in Photoshop or Illustrator: object styles do not export as styles"
+   ],
+   "equivalents": {
+    "AI": "class:GraphicStyle"
+   },
+   "how": "Style object of the VGCore model. A script gets one from ActiveDocument.StyleSheet (FindStyle, Styles, StyleSets, AllStyles, CreateStyle, CreateStyleSet), from a shape's Style or a text range's ObjectStyle, or by walking BasedOn / DerivedStyles. Properties are read and written by name (GetProperty, SetProperty, GetPropertyAsString) or through the typed views Fill, Outline and Transparency; objects are linked with Shape.ApplyStyle(Name).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "name of the style (typelib); presumably the one FindStyle and ApplyStyle take (unverified)"
+    },
+    {
+     "name": "DisplayName",
+     "use": "name as shown in the Object Styles docker"
+    },
+    {
+     "name": "CategoryName",
+     "use": "category of the style (fill, outline, character ...; exact strings unverified)"
+    },
+    {
+     "name": "IsStyleSet",
+     "use": "True for a style set (several categories) rather than a single style"
+    },
+    {
+     "name": "IsObjectDefaults",
+     "use": "True for the style sets that hold default properties of an object type"
+    },
+    {
+     "name": "BasedOn",
+     "use": "parent style it inherits from"
+    },
+    {
+     "name": "DerivedStyles",
+     "use": "child styles that inherit from it"
+    },
+    {
+     "name": "GetAllPropertyNames",
+     "use": "names of every property in the category: discover what GetProperty accepts"
+    },
+    {
+     "name": "GetOverridePropertyNames",
+     "use": "properties set locally rather than inherited"
+    },
+    {
+     "name": "IsPropertyInherited",
+     "use": "whether one property comes from the parent"
+    },
+    {
+     "name": "GetProperty",
+     "use": "read a property by name"
+    },
+    {
+     "name": "SetProperty",
+     "use": "write a property by name"
+    },
+    {
+     "name": "ClearProperty",
+     "use": "remove a local override so the parent value applies again"
+    },
+    {
+     "name": "Fill",
+     "use": "typed fill view (IVGStyleFill)"
+    },
+    {
+     "name": "Outline",
+     "use": "typed outline view (IVGStyleOutline)"
+    },
+    {
+     "name": "Transparency",
+     "use": "typed transparency view (IVGStyleTransparency)"
+    },
+    {
+     "name": "ToString",
+     "use": "all properties as one string"
+    },
+    {
+     "name": "StringAssign",
+     "use": "restore properties from such a string"
+    },
+    {
+     "name": "SetBasedOn",
+     "use": "re-parent the style"
+    },
+    {
+     "name": "Rename",
+     "use": "rename the style"
+    }
+   ],
+   "gotchas": [
+    "Property names for GetProperty / SetProperty are internal strings the typelib does not list; call GetAllPropertyNames on a style of the right category first (unverified exact names).",
+    "Editing a style restyles every linked object and every derived style that inherits the property.",
+    "Character, Paragraph and Frame views only expose Style again; their properties are reached by name, unlike Fill / Outline / Transparency which are typed.",
+    "Object-default style sets (IsObjectDefaults) set what new objects get; editing them does not restyle existing shapes (unverified).",
+    "Delete on a style still in use: what happens to linked objects is unverified (they likely keep the look as local properties).",
+    "Shape.Style returns the style set applied to the shape (typelib); editing it may restyle every object that uses that style set, not only this shape (unverified); test on a copy."
+   ],
+   "example": "Dim st As Style, n\nSet st = ActiveDocument.StyleSheet.FindStyle(\"Headline\")\nDebug.Print st.CategoryName, st.IsStyleSet\nFor Each n In st.GetAllPropertyNames\n  Debug.Print n, st.GetPropertyAsString(n)\nNext\nActiveShape.ApplyStyle st.Name",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: the typelib describes Shape.Style as 'a styleset applied to the shape', not the shape's own local properties; gotcha on Shape.Style rewritten to match the typelib; CategoryName strings marked unverified; Name: 'the one ApplyStyle and FindStyle use' marked unverified"
+   }
+  },
+  {
+   "name": "IVGStyleCharacter",
+   "id": "class:IVGStyleCharacter",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleCharacter",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The character-formatting part of an object style or style set (font, size, weight, character color and similar text properties; the typelib does not list them). This interface only hands back the generic IVGStyle that holds those properties; there are no typed font members here, so character properties are read and written by name.",
+   "use_for": [
+    "brand typography: a character style for headlines or captions applied to many text objects",
+    "listing or changing the font properties stored in a style through GetAllPropertyNames / SetProperty"
+   ],
+   "avoid": [
+    "formatting one text object directly: use IVGTextRange (Font, Size, Bold ...)",
+    "typed fill / outline edits: those have their own views (IVGStyleFill, IVGStyleOutline)"
+   ],
+   "equivalents": {
+    "AI": "class:CharacterStyle"
+   },
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Character on a character style or a style set (from ActiveDocument.StyleSheet or a shape / text range's style). Its only member, Style, returns the IVGStyle whose GetProperty / SetProperty / GetAllPropertyNames work on the character properties.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "generic IVGStyle object carrying the character properties"
+    }
+   ],
+   "gotchas": [
+    "No typed members: discover property names with Style.GetAllPropertyNames (unverified exact names such as font or size keys).",
+    "On a style of another category Character may return Nothing or an empty view (unverified).",
+    "Edits restyle every text object linked to the style."
+   ],
+   "example": "Dim cs As StyleCharacter\nSet cs = ActiveDocument.StyleSheet.FindStyle(\"Body text\").Character\nDebug.Print Join(cs.Style.GetAllPropertyNames, \", \")",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: property set flagged as not listed in the typelib"
+   }
+  },
+  {
+   "name": "IVGStyleFill",
+   "id": "class:IVGStyleFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleFill",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Typed view of the fill part of an object style: fill type (none, uniform, fountain, PostScript, two-color / bitmap / full-color pattern, texture, hatch), fountain settings (linear / radial / conical / square, steps, blend, midpoint, center offset, scale, spread, acceleration, first and last stop color and opacity), pattern tile size, origin, offset and mirroring, rotation and skew, overprint, winding rule, and saving or loading fills to files. Editing it refills every linked object.",
+   "use_for": [
+    "a brand gradient defined once as a style and reused on buttons, badges and backgrounds",
+    "switching a whole template from flat to gradient fills in one edit",
+    "pattern or texture fills with set tile size and mirroring for packaging",
+    "saving a fill to a file and loading it into styles in other documents (SaveFill / LoadFill)"
+   ],
+   "avoid": [
+    "one object's fill: set Shape.Fill directly",
+    "fountain fills with more than two stops: this view only exposes the first and last stop colors"
+   ],
+   "equivalents": {},
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Fill on a fill style or style set (ActiveDocument.StyleSheet.FindStyle(...).Fill, Shape.Style.Fill) and from IVGStyleTransparency.Fill for a transparency's fill. Set members directly; Style returns the generic IVGStyle.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "fill type (cdrFillStyleType)"
+    },
+    {
+     "name": "PrimaryColor",
+     "use": "color of the first fountain color stop (IVGColor, read-only reference); presumably also the color of a uniform fill (unverified)"
+    },
+    {
+     "name": "SecondaryColor",
+     "use": "color of the last fountain stop (IVGColor, read-only reference)"
+    },
+    {
+     "name": "FountainFillType",
+     "use": "linear, radial, conical or square fountain"
+    },
+    {
+     "name": "FountainSteps",
+     "use": "number of steps, 0 = unlimited / smooth"
+    },
+    {
+     "name": "FountainBlendType",
+     "use": "blend type between the first pair of colors"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint between the first pair of colors"
+    },
+    {
+     "name": "FlipColors",
+     "use": "reverse the fountain colors"
+    },
+    {
+     "name": "FountainCenterXOffset",
+     "use": "horizontal offset of the fountain center"
+    },
+    {
+     "name": "FountainCenterYOffset",
+     "use": "vertical offset of the fountain center"
+    },
+    {
+     "name": "FountainSpreadMethod",
+     "use": "how the fountain continues past its ends"
+    },
+    {
+     "name": "PrimaryOpacity",
+     "use": "opacity of the first stop"
+    },
+    {
+     "name": "SecondaryOpacity",
+     "use": "opacity of the last stop"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "fill rotation angle"
+    },
+    {
+     "name": "TileWidth",
+     "use": "pattern / texture tile width"
+    },
+    {
+     "name": "TileHeight",
+     "use": "pattern / texture tile height"
+    },
+    {
+     "name": "MirrorFillX",
+     "use": "mirror tiles horizontally"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "fill scales / rotates with the object"
+    },
+    {
+     "name": "Overprint",
+     "use": "overprint the fill in separations"
+    },
+    {
+     "name": "LoadFill",
+     "use": "load a fill from a file into the style"
+    }
+   ],
+   "gotchas": [
+    "EdgePad, FountainCenterOffsetX, FountainCenterOffsetY and MirrorFill are marked obsolete in the typelib (the first three are also hidden); use FountainCenterXOffset / FountainCenterYOffset and MirrorFillX / MirrorFillY.",
+    "MergeMode is a hidden member in 25.1.",
+    "PrimaryColor and SecondaryColor are read-only references: change the color through the IVGColor object (e.g. RGBAssign); whether the style updates at once is unverified.",
+    "Only the first and last fountain stops are exposed; intermediate stops are out of reach here.",
+    "PrimaryOpacity / SecondaryOpacity are bytes; whether 255 means opaque is unverified.",
+    "The file format SaveFill / LoadFill expect is not stated in the typelib (unverified extension)."
+   ],
+   "example": "Dim f As StyleFill\nSet f = ActiveDocument.StyleSheet.FindStyle(\"Brand gradient\").Fill\nf.Type = cdrFountainFillStyle\nf.FountainFillType = cdrLinearFountainFill\nf.RotationAngle = 45\nf.FountainSteps = 0\nf.PrimaryColor.RGBAssign 255, 80, 0\nf.SecondaryColor.RGBAssign 120, 0, 160",
+   "review": {
+    "by": "adversarial",
+    "changes": "PrimaryColor: 'uniform color' marked unverified (typelib only says fountain color stop)"
+   }
+  },
+  {
+   "name": "IVGStyleFrame",
+   "id": "class:IVGStyleFrame",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleFrame",
+   "status": "current",
+   "confidence": "low",
+   "summary": "The frame part of an object style or style set, for paragraph-text frame properties (likely columns, gutters, vertical alignment and similar frame settings; the exact set is not listed in the typelib). The interface only hands back the generic IVGStyle; frame properties are read and written by name.",
+   "use_for": [
+    "a consistent column and alignment setup for paragraph-text frames across a brochure or catalogue template",
+    "listing which frame properties a style carries via GetAllPropertyNames"
+   ],
+   "avoid": [
+    "text formatting (font, size): that is the character / paragraph part of the style",
+    "artistic text, which has no frame (unverified that a frame style has any effect on it)"
+   ],
+   "equivalents": {},
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Frame on a frame style or a style set from ActiveDocument.StyleSheet. Its only member, Style, returns the IVGStyle whose GetProperty / SetProperty / GetAllPropertyNames work on the frame properties.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "generic IVGStyle object carrying the frame properties"
+    }
+   ],
+   "gotchas": [
+    "No typed members and no description of which properties exist: call Style.GetAllPropertyNames before relying on any name (unverified property set).",
+    "On a style of another category Frame may return Nothing or an empty view (unverified).",
+    "Edits reach every frame linked to the style."
+   ],
+   "example": "Dim fr As StyleFrame\nSet fr = ActiveDocument.StyleSheet.FindStyle(\"Two columns\").Frame\nDebug.Print Join(fr.Style.GetAllPropertyNames, \", \")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStyleOutline",
+   "id": "class:IVGStyleOutline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleOutline",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Typed view of the outline part of an object style: outline type, width, color, line caps, corner joins, miter limit, position (centered, inside or outside the path), behind fill, scale with object, overprint, calligraphic nib stretch and angle, arrowhead overlap and sharing, dash adjustment and wide-line width. Editing it changes the stroke of every linked object.",
+   "use_for": [
+    "one hairline or cut-line style (e.g. 0.25 pt, no scaling) shared by every die line in a packaging file",
+    "brand icon strokes with fixed caps, joins and inside alignment",
+    "turning Scale With Object off across a whole logo set so strokes stay constant at any size"
+   ],
+   "avoid": [
+    "a single object's outline: set Shape.Outline directly",
+    "dash patterns and arrowhead shapes themselves: not typed here, reach them by name through Style (unverified names)"
+   ],
+   "equivalents": {},
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Outline on an outline style or style set (ActiveDocument.StyleSheet.FindStyle(...).Outline, Shape.Style.Outline). Set members directly; Style returns the generic IVGStyle for name-based access.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "outline type (cdrOutlineType)"
+    },
+    {
+     "name": "Width",
+     "use": "outline width"
+    },
+    {
+     "name": "Color",
+     "use": "outline color (IVGColor)"
+    },
+    {
+     "name": "LineCaps",
+     "use": "end caps (cdrOutlineLineCaps)"
+    },
+    {
+     "name": "LineJoin",
+     "use": "corner joins: miter, round or bevel"
+    },
+    {
+     "name": "MiterLimit",
+     "use": "angle limit before a miter join is beveled"
+    },
+    {
+     "name": "Justification",
+     "use": "outline centered on, inside or outside the path"
+    },
+    {
+     "name": "BehindFill",
+     "use": "draw the outline behind the fill"
+    },
+    {
+     "name": "ScaleWithShape",
+     "use": "scale the outline when the object is resized"
+    },
+    {
+     "name": "Overprint",
+     "use": "overprint the outline in separations"
+    },
+    {
+     "name": "NibStretch",
+     "use": "calligraphic nib stretch ratio"
+    },
+    {
+     "name": "NibAngle",
+     "use": "calligraphic nib angle"
+    },
+    {
+     "name": "AdjustDashes",
+     "use": "how dashes adjust to corners and ends"
+    },
+    {
+     "name": "OverlapArrow",
+     "use": "arrowhead overlaps the segment end"
+    },
+    {
+     "name": "ShareArrow",
+     "use": "both arrowheads share their properties"
+    },
+    {
+     "name": "WidelineWidth",
+     "use": "width of the wide-line outline"
+    },
+    {
+     "name": "Style",
+     "use": "generic IVGStyle for name-based property access"
+    }
+   ],
+   "gotchas": [
+    "The unit of Width is not stated in the typelib; read an existing value before writing (unverified whether it follows the document unit).",
+    "Color is an IVGColor object: change it with its own methods (RGBAssign, CMYKAssign).",
+    "WidelineWidth is only described as 'width of the wide line outline'; what wide line means here is unverified.",
+    "Changing the style restyles every linked object at once; derived styles that inherit the property change too."
+   ],
+   "example": "Dim o As StyleOutline\nSet o = ActiveDocument.StyleSheet.FindStyle(\"Die line\").Outline\no.Width = 0.25\no.LineJoin = cdrOutlineRoundLineJoin\no.Justification = cdrOutlineJustificationInside\no.ScaleWithShape = False\no.Color.CMYKAssign 0, 100, 0, 0",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStyleParagraph",
+   "id": "class:IVGStyleParagraph",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleParagraph",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The paragraph-formatting part of an object style or style set (alignment, indents, paragraph spacing and similar paragraph settings; the typelib does not list them). This interface only hands back the generic IVGStyle; paragraph properties are read and written by name.",
+   "use_for": [
+    "body-copy and caption paragraph styles applied across a brochure or catalogue template",
+    "listing or changing paragraph settings stored in a style via GetAllPropertyNames / SetProperty"
+   ],
+   "avoid": [
+    "formatting one paragraph directly: use IVGTextRange",
+    "character formatting (font, size): that lives in the character part (IVGStyleCharacter)"
+   ],
+   "equivalents": {
+    "AI": "class:ParagraphStyle"
+   },
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Paragraph on a paragraph style or a style set from ActiveDocument.StyleSheet or a text range's ObjectStyle. Its only member, Style, returns the IVGStyle whose GetProperty / SetProperty / GetAllPropertyNames work on the paragraph properties.",
+   "key_members": [
+    {
+     "name": "Style",
+     "use": "generic IVGStyle object carrying the paragraph properties"
+    }
+   ],
+   "gotchas": [
+    "No typed members: discover property names with Style.GetAllPropertyNames (unverified exact names).",
+    "On a style of another category Paragraph may return Nothing or an empty view (unverified).",
+    "Edits reach every paragraph linked to the style."
+   ],
+   "example": "Dim ps As StyleParagraph\nSet ps = ActiveDocument.StyleSheet.FindStyle(\"Body text\").Paragraph\nDebug.Print Join(ps.Style.GetAllPropertyNames, \", \")",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: property set flagged as not listed in the typelib"
+   }
+  },
+  {
+   "name": "IVGStyles",
+   "id": "class:IVGStyles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyles",
+   "status": "current",
+   "confidence": "high",
+   "summary": "A list of object styles or style sets: the top-level styles, style sets or object defaults of a style sheet, every style in it, the children of one style, or the styles just made by a CreateStyleFrom... call. Gives the count, items by index, lookup by name, first / last and For Each.",
+   "use_for": [
+    "listing every style in a template to audit or document a brand system",
+    "finding a style by name before applying or editing it",
+    "walking a style's children to see what an edit will affect"
+   ],
+   "avoid": [
+    "creating or deleting styles: use IVGStyleSheet (CreateStyle ...) and IVGStyle.Delete"
+   ],
+   "equivalents": {
+    "AI": "class:GraphicStyles"
+   },
+   "how": "Collection of the VGCore Object Styles model. Returned by ActiveDocument.StyleSheet.Styles / StyleSets / ObjectDefaults / AllStyles / AllStyleSets, by IVGStyle.DerivedStyles and by the StyleSheet.CreateStyleFrom... / CreateStyleSetFrom... methods. Item(Index) is the default member and For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of styles in the list"
+    },
+    {
+     "name": "Item",
+     "use": "style at a numeric index"
+    },
+    {
+     "name": "Find",
+     "use": "style by name"
+    },
+    {
+     "name": "First",
+     "use": "first style in the list"
+    },
+    {
+     "name": "Last",
+     "use": "last style in the list"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    }
+   ],
+   "gotchas": [
+    "Item takes a long index only; use Find for names.",
+    "StyleSheet.Styles and StyleSets list top-level entries only; use AllStyles / AllStyleSets or DerivedStyles to see children.",
+    "Indexing is probably base 1 like other VGCore collections (unverified).",
+    "Find returns Nothing rather than raising when the name is missing (unverified); test the result."
+   ],
+   "example": "Dim st As Style\nFor Each st In ActiveDocument.StyleSheet.AllStyles\n  Debug.Print st.DisplayName, st.CategoryName\nNext\nDebug.Print ActiveDocument.StyleSheet.AllStyleSets.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStyleSheet",
+   "id": "class:IVGStyleSheet",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleSheet",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "A document's Object Styles store: its styles, style sets, object defaults and color styles. Through it a script creates styles from existing shapes or text or from scratch, finds them by name, exports and imports style sheets to and from files, and creates, renames and deletes color styles.",
+   "use_for": [
+    "building a brand style sheet from a designed sample object (CreateStyleSetFromShape) and applying it across a layout",
+    "moving a style system between templates with Export / Import",
+    "defining brand color styles that recolor every linked object when changed",
+    "auditing which styles and color styles a client file contains"
+   ],
+   "avoid": [
+    "formatting a few objects once: set their properties directly",
+    "editing a single style's properties: get it (FindStyle) and use IVGStyle and its typed views"
+   ],
+   "equivalents": {},
+   "how": "Style-sheet object of the VGCore Object Styles model, one per document: ActiveDocument.StyleSheet. Create with CreateStyle / CreateStyleSet or from a shape, shape range or text range; look up with FindStyle or the Styles / StyleSets / AllStyles lists; link objects with Shape.ApplyStyle(Name).",
+   "key_members": [
+    {
+     "name": "Styles",
+     "use": "top-level styles"
+    },
+    {
+     "name": "StyleSets",
+     "use": "top-level style sets"
+    },
+    {
+     "name": "ObjectDefaults",
+     "use": "style sets that hold default properties for new objects"
+    },
+    {
+     "name": "AllStyles",
+     "use": "every style, nested ones included"
+    },
+    {
+     "name": "AllStyleSets",
+     "use": "every style set, nested ones included"
+    },
+    {
+     "name": "FindStyle",
+     "use": "a style or style set by name"
+    },
+    {
+     "name": "CreateStyle",
+     "use": "new style of a category, optionally based on another"
+    },
+    {
+     "name": "CreateStyleSet",
+     "use": "new style set, optionally based on another (BasedOn)"
+    },
+    {
+     "name": "CreateStyleFromShape",
+     "use": "style of one category taken from a shape's look"
+    },
+    {
+     "name": "CreateStyleSetFromShape",
+     "use": "style set taken from a shape's look"
+    },
+    {
+     "name": "CreateStyleFromTextRange",
+     "use": "style taken from a piece of text"
+    },
+    {
+     "name": "CreateStyleSetFromTextRange",
+     "use": "style set taken from a piece of text"
+    },
+    {
+     "name": "Export",
+     "use": "write styles, style sets, object defaults and / or color styles to a file"
+    },
+    {
+     "name": "Import",
+     "use": "read them from a file, optionally merging"
+    },
+    {
+     "name": "AllColorStyles",
+     "use": "all color styles of the document"
+    },
+    {
+     "name": "CreateColorStyle",
+     "use": "new color style from an IVGColor"
+    },
+    {
+     "name": "RenameColorStyle",
+     "use": "rename a color style"
+    },
+    {
+     "name": "DeleteColorStyle",
+     "use": "delete one color style"
+    },
+    {
+     "name": "DeleteAllColorStyles",
+     "use": "delete every color style"
+    }
+   ],
+   "gotchas": [
+    "Category names for CreateStyle / CreateStyleFrom... are strings the typelib does not list (fill, outline, character, paragraph, frame, transparency are likely; unverified exact spelling). Read CategoryName from an existing style to be sure.",
+    "ReplaceExisting defaults to False: re-running a script that creates a style with the same name may fail or produce a renamed copy (unverified which); pass True for repeatable builds.",
+    "The CreateStyleFrom... and CreateStyleSetFrom... methods return IVGStyles (a list), not one IVGStyle.",
+    "Export and Import flags all default to False: pass True for each part you want, or possibly nothing is written or read (unverified).",
+    "DeleteAllColorStyles removes every color style; whether objects keep their colors unlinked is unverified, so try it on a copy."
+   ],
+   "example": "Dim ss As StyleSheet, made As Styles\nSet ss = ActiveDocument.StyleSheet\nSet made = ss.CreateStyleSetFromShape(ActiveShape, \"Card title\", True)\nDebug.Print made.Count, ss.AllStyleSets.Count\nss.CreateColorStyle \"Brand Orange\", ActiveShape.Fill.UniformColor, , , True\nss.Export \"C:\\styles\\brand.cdss\", True, True, False, True",
+   "review": {
+    "by": "adversarial",
+    "changes": "CreateStyleSet: not necessarily empty, it takes BasedOn"
+   }
+  },
+  {
+   "name": "IVGStyleTransparency",
+   "id": "class:IVGStyleTransparency",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStyleTransparency",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Typed view of the transparency part of an object style: the transparency's own fill (uniform, fountain, pattern, texture ...), its merge mode (normal, multiply, screen, overlay ...), the uniform transparency amount, the levels used for white and black areas of pattern / bitmap transparencies, and whether it applies to fill, outline or both.",
+   "use_for": [
+    "a shared 'overlay' style (e.g. 50% multiply) for image tints and shadows across a layout",
+    "gradient fade-outs defined once and reused on many objects",
+    "transparency that affects only fills, leaving outlines solid"
+   ],
+   "avoid": [
+    "a single object's transparency: set it on the shape directly",
+    "print jobs bound for old RIPs that flatten transparency badly: test the output first"
+   ],
+   "equivalents": {},
+   "how": "Category view of the VGCore Object Styles model. Reached from IVGStyle.Transparency on a transparency style or style set from ActiveDocument.StyleSheet or Shape.Style. Fill returns an IVGStyleFill whose Type picks uniform, fountain or pattern transparency; Style returns the generic IVGStyle.",
+   "key_members": [
+    {
+     "name": "Fill",
+     "use": "fill that drives the transparency (IVGStyleFill: uniform, fountain, pattern ...)"
+    },
+    {
+     "name": "Mode",
+     "use": "merge mode (cdrMergeMode: normal, multiply, screen, overlay ...)"
+    },
+    {
+     "name": "UniformTransparency",
+     "use": "transparency amount of a uniform transparency"
+    },
+    {
+     "name": "WhiteTransparency",
+     "use": "transparency level for white areas of the transparency fill"
+    },
+    {
+     "name": "BlackTransparency",
+     "use": "transparency level for black areas of the transparency fill"
+    },
+    {
+     "name": "AppliesTo",
+     "use": "fill, outline or both (cdrTransparencyAppliedTo)"
+    },
+    {
+     "name": "Style",
+     "use": "generic IVGStyle for name-based access"
+    }
+   ],
+   "gotchas": [
+    "The typelib description of UniformTransparency is copy-pasted ('winding rule'); it is the uniform transparency amount, and its scale (0-100 is likely) is unverified.",
+    "The interface description also says 'StyleFill class': another copy-paste; the members are transparency settings.",
+    "Fill is read-only as a reference: set Fill.Type and its members, do not assign another object.",
+    "WhiteTransparency / BlackTransparency only matter for two-color, bitmap or texture transparency fills (unverified)."
+   ],
+   "example": "Dim t As StyleTransparency\nSet t = ActiveDocument.StyleSheet.FindStyle(\"Overlay 50\").Transparency\nt.Fill.Type = cdrUniformFillStyle\nt.UniformTransparency = 50\nt.Mode = cdrMergeMultiply\nt.AppliesTo = cdrApplyToFill",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSubPath",
+   "id": "class:IVGSubPath",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSubPath",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One continuous piece of a curve object; a compound curve such as the letter O or a combined logo has several. Through it a script measures the piece (length, area, size, direction, bounding box, points, tangents, curvature), tests points against it, edits it (close / open, reverse, move, append line or curve segments, add nodes, break apart, divide equally, delete) and pulls it out as its own curve.",
+   "use_for": [
+    "separating the pieces of a combined logo or traced artwork (Extract)",
+    "fixing winding: reversing subpaths so holes cut correctly, or checking IsClockwise",
+    "measuring outline lengths and areas for cutting, engraving or material estimates",
+    "placing evenly spaced dots or stitches along a path (GetEvenlySpacedPoints)",
+    "building a path node by node from data (AppendLineSegment / AppendCurveSegment2)"
+   ],
+   "avoid": [
+    "rectangles, ellipses and text that are not curves yet: ConvertToCurves first",
+    "node-level edits of one segment (handle angles and lengths): use IVGSegment",
+    "whole-object transforms: use the shape's own move / scale / rotate"
+   ],
+   "equivalents": {
+    "PS": "class:SubPathItem",
+    "AI": "class:PathItem"
+   },
+   "how": "Subpath object of the VGCore curve model. A script reaches it from a curve shape: ActiveShape.Curve.SubPaths(i) or SubPaths.First / Last, from a node or segment (IVGNode.SubPath, IVGSegment.SubPath), by walking Next / Previous, or as the result of Curve.CreateSubPath(x, y). Its Nodes and Segments give node / segment collections of this piece only. Numbers are in the document's unit.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "position within its curve (base 1)"
+    },
+    {
+     "name": "Closed",
+     "use": "read or set whether the piece is closed"
+    },
+    {
+     "name": "Length",
+     "use": "length in document units"
+    },
+    {
+     "name": "Area",
+     "use": "area of a closed piece"
+    },
+    {
+     "name": "IsClockwise",
+     "use": "overall direction of the path"
+    },
+    {
+     "name": "Nodes",
+     "use": "nodes of this piece"
+    },
+    {
+     "name": "Segments",
+     "use": "segments of this piece"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "bounding rectangle as an IVGRect"
+    },
+    {
+     "name": "ReverseDirection",
+     "use": "reverse the node order"
+    },
+    {
+     "name": "Extract",
+     "use": "move the piece out into a new separate curve shape"
+    },
+    {
+     "name": "Delete",
+     "use": "erase the piece"
+    },
+    {
+     "name": "Move",
+     "use": "move the piece by a delta"
+    },
+    {
+     "name": "AppendLineSegment",
+     "use": "add a straight segment to x, y at the end (or start)"
+    },
+    {
+     "name": "AppendCurveSegment2",
+     "use": "add a Bezier segment with explicit control points"
+    },
+    {
+     "name": "GetPointAt",
+     "use": "point on the piece at an offset, as an IVGPoint"
+    },
+    {
+     "name": "GetTangentAt",
+     "use": "tangent angle at an offset"
+    },
+    {
+     "name": "AddNodeAt",
+     "use": "insert a node at an offset"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "whether a point lies inside a closed piece"
+    },
+    {
+     "name": "EqualDivide",
+     "use": "divide the piece into equal parts"
+    },
+    {
+     "name": "GetEvenlySpacedPoints",
+     "use": "points spaced evenly along the piece (IVGPointRange)"
+    }
+   ],
+   "gotchas": [
+    "The *At methods here default to OffsetType 1 = cdrRelativeSegmentOffset (a fraction of this subpath's length), unlike IVGSegment whose default is 2 = cdrParamSegmentOffset; pass the OffsetType explicitly when porting code between the two.",
+    "Lengths, positions and areas are in ActiveDocument.Unit; set it (e.g. cdrMillimeter) before reading or writing numbers.",
+    "Area and IsPointInside only make sense on a Closed piece (typelib: 'area of a closed path').",
+    "Extract, Delete, AddNodeAt, BreakApartAt and EqualDivide change the curve, so SubPaths indexes and counts shift; loop from the last subpath backwards or re-read Curve.SubPaths.",
+    "GetPosition, GetPointPositionAt and GetBoundingBox return through ByRef arguments; from Python / pywin32 BoundingBox and GetPointAt are simpler (unverified how pywin32 surfaces the ByRef values).",
+    "What Gap = -1 (default) does in EqualDivide and how ScaleDistanceToFit adjusts spacing in GetEvenlySpacedPoints is unverified; test on a copy."
+   ],
+   "example": "Dim sp As SubPath\nActiveDocument.Unit = cdrMillimeter\nFor Each sp In ActiveShape.Curve.SubPaths\n  Debug.Print sp.Index, sp.Closed, sp.Length, sp.IsClockwise\nNext\nSet sp = ActiveShape.Curve.SubPaths(1)\nIf Not sp.IsClockwise Then sp.ReverseDirection\nsp.AddNodeAt 0.5, cdrRelativeSegmentOffset",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSubPaths",
+   "id": "class:IVGSubPaths",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSubPaths",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The list of subpaths (separate continuous pieces) of one curve object: count, items by index, first, last and For Each. A single open or closed path has one; combined shapes, letters with counters and traced artwork have several.",
+   "use_for": [
+    "counting the pieces of a combined or traced object before cleaning it up",
+    "looping over every piece to measure, reverse or extract it",
+    "finding the outer contour among holes (e.g. the largest Area)"
+   ],
+   "avoid": [
+    "adding a new piece: use Curve.CreateSubPath / CreateSubPathFromArray, the collection has no Add",
+    "objects that are not curves: ConvertToCurves first"
+   ],
+   "equivalents": {
+    "PS": "class:SubPathItems",
+    "AI": "class:PathItems"
+   },
+   "how": "Collection of the VGCore curve model. A script reaches it as ActiveShape.Curve.SubPaths (any IVGCurve). Item(Index) is base 1 and the default member; For Each works through _NewEnum; Parent is the curve.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of subpaths in the curve"
+    },
+    {
+     "name": "Item",
+     "use": "subpath at an index (base 1)"
+    },
+    {
+     "name": "First",
+     "use": "first subpath"
+    },
+    {
+     "name": "Last",
+     "use": "last subpath"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    },
+    {
+     "name": "Parent",
+     "use": "the curve that owns the subpaths"
+    }
+   ],
+   "gotchas": [
+    "The typelib description of Item says 'node' (copy-paste); it returns an IVGSubPath.",
+    "Count and indexes change when a subpath is extracted, deleted, combined or broken apart; loop backwards when editing.",
+    "Only curve shapes have a Curve; rectangles, ellipses and text need ConvertToCurves first (unverified whether Curve is Nothing or raises on them)."
+   ],
+   "example": "Dim sps As SubPaths, i As Long\nSet sps = ActiveShape.Curve.SubPaths\nDebug.Print sps.Count\nFor i = sps.Count To 1 Step -1\n  If sps(i).Length < 1 Then sps(i).Delete\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSymbol",
+   "id": "class:IVGSymbol",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSymbol",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The symbol side of a symbol instance shape: gives the definition it is an instance of and can turn the instance back into ordinary editable shapes. Placement, scale and rotation of the instance live on the shape, not here.",
+   "use_for": [
+    "finding which symbol each placed instance uses, e.g. to count logo or icon placements",
+    "breaking selected instances into plain shapes for one-off edits (RevertToShapes)"
+   ],
+   "avoid": [
+    "editing the artwork of every instance: edit the definition (IVGSymbolDefinition.EnterEditMode) instead of reverting",
+    "shapes that are not symbol instances: Shape.Symbol is only meaningful when Shape.Type is cdrSymbolShape"
+   ],
+   "equivalents": {
+    "AI": "class:SymbolItem"
+   },
+   "how": "Symbol-instance object of the VGCore model. A script reaches it as Shape.Symbol on a shape whose Type is cdrSymbolShape (instances are placed with Layer.CreateSymbol or made by Shape.ConvertToSymbol).",
+   "key_members": [
+    {
+     "name": "Definition",
+     "use": "the IVGSymbolDefinition this instance shows"
+    },
+    {
+     "name": "RevertToShapes",
+     "use": "convert the instance into normal shapes and return them as a shape range"
+    }
+   ],
+   "gotchas": [
+    "RevertToShapes cuts the link: later edits to the definition no longer reach those shapes.",
+    "Check Shape.Type = cdrSymbolShape first; Shape.Symbol on other shapes returns Nothing or raises (unverified which).",
+    "The instance's position, size and rotation are properties of the Shape, not of this object."
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n  If s.Type = cdrSymbolShape Then\n    Debug.Print s.Symbol.Definition.Name\n  End If\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSymbolDefinition",
+   "id": "class:IVGSymbolDefinition",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSymbolDefinition",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The master artwork of a symbol: name, description, type, link state to an external library, nested symbols, how many instances use it and which ones, plus editing (enter / leave edit mode), duplicate, copy, delete, and link maintenance (break, update, fix). Editing a definition updates every instance at once.",
+   "use_for": [
+    "repeated logos, icons and seating or map markers kept as one master, so one edit updates every copy",
+    "auditing a file for broken or outdated links to external symbol libraries before sending it out",
+    "counting how many times an icon or part is placed (InstanceCount) for a parts list",
+    "localising a linked symbol (BreakLink) before handing a file to someone without the library"
+   ],
+   "avoid": [
+    "changing a single instance: revert that instance (IVGSymbol.RevertToShapes) or use a different definition",
+    "linked definitions you need to edit: check Editable; they are probably not editable until BreakLink makes them local (unverified)"
+   ],
+   "equivalents": {
+    "AI": "class:Symbol"
+   },
+   "how": "Symbol-definition object of the VGCore model. A script reaches it from ActiveDocument.SymbolLibrary.Symbols(IndexOrName) (local library), from an external library in Application.SymbolLibraries, from an instance (Shape.Symbol.Definition), or from NestedSymbols. New definitions come from Shape / ShapeRange.ConvertToSymbol(Name); instances are placed with Layer.CreateSymbol(x, y, Name, Library).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "symbol name (read / write)"
+    },
+    {
+     "name": "Description",
+     "use": "symbol description (read / write)"
+    },
+    {
+     "name": "Type",
+     "use": "symbol, sprite or button (cdrSymbolType)"
+    },
+    {
+     "name": "InstanceCount",
+     "use": "number of instances in the current document"
+    },
+    {
+     "name": "Instances",
+     "use": "those instances as a shape range"
+    },
+    {
+     "name": "Editable",
+     "use": "whether the definition can be modified"
+    },
+    {
+     "name": "EnterEditMode",
+     "use": "start editing the master artwork"
+    },
+    {
+     "name": "LeaveEditMode",
+     "use": "finish editing"
+    },
+    {
+     "name": "Linked",
+     "use": "True when it comes from an external library"
+    },
+    {
+     "name": "LinkLibraryPath",
+     "use": "path of that library"
+    },
+    {
+     "name": "IsLinkBroken",
+     "use": "external library is missing"
+    },
+    {
+     "name": "IsLinkUpdated",
+     "use": "external library has a newer version"
+    },
+    {
+     "name": "HasBrokenLinks",
+     "use": "a nested symbol has a broken link"
+    },
+    {
+     "name": "Nested",
+     "use": "contains sub-symbols"
+    },
+    {
+     "name": "NestedSymbols",
+     "use": "those sub-symbols"
+    },
+    {
+     "name": "UpdateLinks",
+     "use": "refresh from the external library"
+    },
+    {
+     "name": "BreakLink",
+     "use": "make the definition local"
+    },
+    {
+     "name": "FixLink",
+     "use": "point a broken link at a library path"
+    },
+    {
+     "name": "Duplicate",
+     "use": "copy the definition under a new name"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the definition from its library"
+    }
+   ],
+   "gotchas": [
+    "Always pair EnterEditMode with LeaveEditMode, also in the error handler; otherwise the document stays in symbol edit mode (unverified what else then fails).",
+    "Linked definitions from an external library are usually not Editable; BreakLink first.",
+    "Delete on a definition that still has instances: whether the instances go too or the call fails is unverified; check InstanceCount first.",
+    "The sprite and button values of Type are legacy web-graphics types (unverified that 25.1 still creates them)."
+   ],
+   "example": "Dim def As SymbolDefinition\nFor Each def In ActiveDocument.SymbolLibrary.Symbols\n  Debug.Print def.Name, def.InstanceCount, def.Linked, def.IsLinkBroken\n  If def.Linked And def.IsLinkUpdated Then def.UpdateLinks\nNext",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: 'not Editable until BreakLink' marked unverified"
+   }
+  },
+  {
+   "name": "IVGSymbolDefinitions",
+   "id": "class:IVGSymbolDefinitions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSymbolDefinitions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "A list of symbol definitions: all symbols of one library (local or external) or the sub-symbols nested inside a symbol. Gives the count, items by index or by name, and For Each.",
+   "use_for": [
+    "listing every symbol in a document or library to audit or document an icon set",
+    "fetching a symbol by name before placing it with Layer.CreateSymbol"
+   ],
+   "avoid": [
+    "creating symbols: use Shape / ShapeRange.ConvertToSymbol, the collection has no Add",
+    "deleting symbols: call IVGSymbolDefinition.Delete on the item"
+   ],
+   "equivalents": {
+    "AI": "class:Symbols"
+   },
+   "how": "Collection of the VGCore symbol model. A script reaches it as IVGSymbolLibrary.Symbols (ActiveDocument.SymbolLibrary.Symbols for the local library, Application.SymbolLibraries(i).Symbols for an external one) or IVGSymbolDefinition.NestedSymbols. Item(IndexOrName) accepts a number or a name; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "definition by index or by name"
+    },
+    {
+     "name": "Count",
+     "use": "number of definitions"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    }
+   ],
+   "gotchas": [
+    "Item with a name that does not exist most likely raises an error rather than returning Nothing (unverified); loop or trap the error.",
+    "Index is probably base 1 like other VGCore collections (unverified).",
+    "Deleting definitions while iterating with For Each can skip items; collect names first, then delete."
+   ],
+   "example": "Dim syms As SymbolDefinitions\nSet syms = ActiveDocument.SymbolLibrary.Symbols\nDebug.Print syms.Count\nIf syms.Count > 0 Then Debug.Print syms(1).Name, syms(1).InstanceCount",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGSymbolLibraries",
+   "id": "class:IVGSymbolLibraries",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSymbolLibraries",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "The symbol libraries visible in the Symbols docker (typelib wording; whether a document's local library is among them is unverified): count, items by index or name, adding one library file, or adding every library in a folder (optionally recursive, optionally copied locally). Symbols from these libraries can be placed as linked instances in any document.",
+   "use_for": [
+    "registering a shared brand icon or signage-symbol library on a workstation by script",
+    "loading a folder of client symbol libraries before a batch build",
+    "listing which external libraries are available before placing symbols"
+   ],
+   "avoid": [
+    "a document's own symbols: they are in ActiveDocument.SymbolLibrary (the local library)"
+   ],
+   "equivalents": {},
+   "how": "Application-level collection of the VGCore symbol model: Application.SymbolLibraries. Add(FileName, CopyLocally) and AddFromFolder(Folder, Recursive, CopyLocally) register library files; Item(IndexOrName) returns an IVGSymbolLibrary; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of registered libraries"
+    },
+    {
+     "name": "Item",
+     "use": "library by index or name"
+    },
+    {
+     "name": "Add",
+     "use": "register one library file; returns the IVGSymbolLibrary"
+    },
+    {
+     "name": "AddFromFolder",
+     "use": "register every library in a folder; returns how many were added"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    }
+   ],
+   "gotchas": [
+    "CopyLocally (default False) presumably copies the library file into the user's own library folder instead of linking it in place (unverified).",
+    "Whether added libraries stay registered in the next CorelDRAW session is unverified.",
+    "The library file format is CorelDRAW's symbol library (.csl) (unverified that Add accepts other files).",
+    "Instances placed from an external library are linked: moving or renaming the library file later breaks those links (see IVGSymbolDefinition.IsLinkBroken / FixLink)."
+   ],
+   "example": "Dim lib As SymbolLibrary\nSet lib = Application.SymbolLibraries.Add(\"C:\\assets\\icons.csl\")\nDebug.Print lib.Name, lib.Symbols.Count\nActiveLayer.CreateSymbol 50, 50, lib.Symbols(1).Name, lib",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary follows the typelib ('all symbol libraries visible in the Symbols docker') instead of claiming external libraries only"
+   }
+  },
+  {
+   "name": "IVGSymbolLibrary",
+   "id": "class:IVGSymbolLibrary",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSymbolLibrary",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One symbol library: either a document's local library (the symbols defined in that file) or an external library file registered with the application. Gives its symbols, name, file path and read-only state; a local library can purge unused symbols and paste a copied symbol in, an external one can be removed.",
+   "use_for": [
+    "cleaning a file before hand-off by purging symbol definitions nobody uses",
+    "listing the symbols a document defines",
+    "copying a symbol from one document's library into another's (SymbolDefinition.Copy then Paste)"
+   ],
+   "avoid": [
+    "registering new external libraries: use Application.SymbolLibraries.Add",
+    "PurgeUnusedSymbols on a template whose spare symbols are meant to stay"
+   ],
+   "equivalents": {},
+   "how": "Library object of the VGCore symbol model. The local one is ActiveDocument.SymbolLibrary; external ones come from Application.SymbolLibraries(IndexOrName) or SymbolLibraries.Add. Symbols lists its definitions; pass the library as the Library argument of Layer.CreateSymbol to place one of its symbols.",
+   "key_members": [
+    {
+     "name": "Symbols",
+     "use": "definitions in the library"
+    },
+    {
+     "name": "Name",
+     "use": "library name"
+    },
+    {
+     "name": "FilePath",
+     "use": "full path of the library file"
+    },
+    {
+     "name": "ReadOnly",
+     "use": "library cannot be changed"
+    },
+    {
+     "name": "PurgeUnusedSymbols",
+     "use": "remove symbols not used in the current document (local library only)"
+    },
+    {
+     "name": "Paste",
+     "use": "paste a symbol copied to the clipboard into the library (local library only)"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the library (external library only)"
+    }
+   ],
+   "gotchas": [
+    "PurgeUnusedSymbols and Paste work on the local library only, Delete on an external library only (typelib).",
+    "Whether Delete only unregisters the external library or also removes the file from disk is unverified; do not call it on a library you need without a backup.",
+    "Paste expects a symbol on the clipboard from IVGSymbolDefinition.Copy; anything else on the clipboard is likely ignored or raises (unverified)."
+   ],
+   "example": "Dim lib As SymbolLibrary\nSet lib = ActiveDocument.SymbolLibrary\nDebug.Print lib.Name, lib.Symbols.Count, lib.ReadOnly\nlib.PurgeUnusedSymbols\nDebug.Print lib.Symbols.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGText",
+   "id": "class:IVGText",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGText",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The text side of a text shape (artistic or paragraph text): its type, the whole story and ranges of it, the frames of linked paragraph text and whether text overflows them, find and replace, converting between artistic and paragraph text, fitting text to a path or the text to its frame, and importing or exporting text files.",
+   "use_for": [
+    "template fills and data merges: replacing placeholders such as {NAME} in a layout",
+    "checking every paragraph frame for overflow before sending a brochure to print",
+    "fitting headlines or captions to their frame (FitTextToFrame)",
+    "setting text along a curve for badges and seals (FitToPath)",
+    "importing body copy from a text file into a frame"
+   ],
+   "avoid": [
+    "character formatting: work on the IVGTextRange from Story or Range (Font, Size, Bold, Fill)",
+    "turning text into outlines: that is Shape.ConvertToCurves, not a text call"
+   ],
+   "equivalents": {
+    "AI": "class:TextFrameItem",
+    "PS": "class:TextItem"
+   },
+   "how": "Text object of the VGCore model. A script reaches it as Shape.Text on a shape whose Type is cdrTextShape. Story returns all text as an IVGTextRange, Range(Start, End) a part of it and Selection the selected part; Frames / Frame give the paragraph-text frames of a linked chain.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "artistic, paragraph or fitted text (cdrTextType)"
+    },
+    {
+     "name": "IsArtisticText",
+     "use": "True for artistic text"
+    },
+    {
+     "name": "Story",
+     "use": "all text in all frames as an IVGTextRange"
+    },
+    {
+     "name": "Range",
+     "use": "characters from Start to End as an IVGTextRange"
+    },
+    {
+     "name": "Selection",
+     "use": "selected text as an IVGTextRange"
+    },
+    {
+     "name": "Frame",
+     "use": "current text frame"
+    },
+    {
+     "name": "Frames",
+     "use": "all frames of the text"
+    },
+    {
+     "name": "FramesInLink",
+     "use": "number of frames in the linked chain"
+    },
+    {
+     "name": "UnusedFramesInLink",
+     "use": "frames of the chain that hold no text"
+    },
+    {
+     "name": "Overflow",
+     "use": "text does not fit in the chain"
+    },
+    {
+     "name": "Find",
+     "use": "find a string, returns its position"
+    },
+    {
+     "name": "Replace",
+     "use": "replace one or all occurrences"
+    },
+    {
+     "name": "ConvertToArtistic",
+     "use": "paragraph text to artistic text"
+    },
+    {
+     "name": "ConvertToParagraph",
+     "use": "artistic text to paragraph text"
+    },
+    {
+     "name": "FitToPath",
+     "use": "fit the text to a path shape, returns the effect"
+    },
+    {
+     "name": "FitTextToFrame",
+     "use": "resize the text so it fits its frame"
+    },
+    {
+     "name": "ImportFromFile",
+     "use": "insert text from a file at a position"
+    },
+    {
+     "name": "ExportToFile",
+     "use": "write a range of the text to a file"
+    },
+    {
+     "name": "IsEditing",
+     "use": "whether the text is in editing state"
+    },
+    {
+     "name": "BeginEdit",
+     "use": "put the text into editing state"
+    }
+   ],
+   "gotchas": [
+    "Contents, FontProperties, AlignProperties, SpaceProperties, HyphenationSettings and their ...InRange variants are hidden in the 25.1 typelib (old text model); use Story.Text and IVGTextRange formatting instead.",
+    "Positions in Find, Replace, ImportFromFile and ExportToFile are read according to IndexingType, default cdrCharacterIndexing; Range(Start, End) has no IndexingType argument;",
+    "Overflow only means something for paragraph text in frames; artistic text grows instead.",
+    "FitTextToFrame changes the font size of the text to fill the frame (unverified whether it also enlarges short text).",
+    "BeginEdit puts the object into an editing state like the Text tool does; avoid it in unattended batch runs (unverified side effects)."
+   ],
+   "example": "Dim t As Text\nSet t = ActiveShape.Text\nDebug.Print t.Type, t.Story.Text\nt.Replace \"{NAME}\", \"Client Name\", False, , True\nIf t.Overflow Then t.FitTextToFrame",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha: Range(Start, End) has no IndexingType parameter; ExportToFile does"
+   }
+  },
+  {
+   "name": "IVGTextCharacters",
+   "id": "class:IVGTextCharacters",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextCharacters",
+   "status": "current",
+   "confidence": "high",
+   "summary": "The characters of a text range as a collection: count (paragraph breaks included), a run of characters from an index, all, first, last and For Each. Every item comes back as an IVGTextRange, so it can be formatted like any text range.",
+   "use_for": [
+    "per-letter effects: alternating colors or sizes on a headline",
+    "styling the first character of a paragraph (drop-cap look) or the last one",
+    "counting characters to check copy length against a layout limit"
+   ],
+   "avoid": [
+    "formatting whole words or paragraphs: use the Words / Paragraphs collections or IVGTextRange directly",
+    "long stories letter by letter: one call on a TextRange is far faster than thousands of single-character edits"
+   ],
+   "equivalents": {
+    "AI": "class:Characters"
+   },
+   "how": "Collection of the VGCore text model. A script reaches it as IVGTextRange.Characters, e.g. ActiveShape.Text.Story.Characters. Item(Index, Count) returns a TextRange of Count characters starting at Index; All / First / Last return TextRanges; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of characters, paragraph breaks included"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of Count characters starting at Index"
+    },
+    {
+     "name": "All",
+     "use": "TextRange of every character"
+    },
+    {
+     "name": "First",
+     "use": "TextRange of the first character"
+    },
+    {
+     "name": "Last",
+     "use": "TextRange of the last character"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "enumerator behind For Each"
+    }
+   ],
+   "gotchas": [
+    "Count includes paragraph breaks (typelib), so it is larger than the visible letter count in multi-paragraph text.",
+    "Indexing is probably base 1 like other VGCore collections (unverified).",
+    "Inserting or deleting text while looping shifts indexes; read Count again or loop from the end.",
+    "Per-character loops over long stories are slow, especially across COM from Python."
+   ],
+   "example": "Dim chars As TextCharacters, i As Long\nSet chars = ActiveShape.Text.Story.Characters\nFor i = 1 To chars.Count Step 2\n  chars.Item(i).Fill.UniformColor.RGBAssign 255, 80, 0\nNext\nchars.First.Size = chars.First.Size * 2",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

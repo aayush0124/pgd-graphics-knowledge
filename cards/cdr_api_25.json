@@ -1,0 +1,706 @@
+{
+ "cards": [
+  {
+   "name": "View",
+   "id": "class:View",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/View",
+   "status": "current",
+   "summary": "A saved named view from the View Manager docker (IVGView): it stores a page, a zoom level and a view origin so a script or user can jump back to that exact framing later. It is a bookmark of the camera, not the live window (that is Window.ActiveView).",
+   "use_for": [
+    "bookmark the framing of each panel of a multi-page brochure so a review macro can step through them",
+    "jump back to a fixed close-up of a logo detail before taking a screen grab",
+    "build a client walkthrough of a layout from a list of saved framings"
+   ],
+   "avoid": [
+    "changing what the open window shows without saving anything: use Window.ActiveView (ToFitPage, Zoom, SetViewArea)",
+    "setting export bounds: a view only changes the screen; export a page or a ShapeRange instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "View/New View..."
+   },
+   "how": "Members live on IVGView. Saved views belong to a document: ActiveDocument.Views.Item(index or name). Create one with ActiveDocument.CreateView(Name, OriginX, OriginY, [Zoom], [Page]), or capture the current framing with ActiveDocument.Views.AddActiveView(Name). Activate applies the view to the active window; Delete removes it from the View Manager.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "read or rename the view as listed in the View Manager"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal position the view jumps to (document units)"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical position the view jumps to (document units)"
+    },
+    {
+     "name": "Zoom",
+     "use": "stored zoom level in percent"
+    },
+    {
+     "name": "UseZoom",
+     "use": "when True, Activate applies the stored Zoom"
+    },
+    {
+     "name": "Page",
+     "use": "the page the view belongs to (IVGPage)"
+    },
+    {
+     "name": "UsePage",
+     "use": "when True, Activate switches to the stored Page"
+    },
+    {
+     "name": "Activate",
+     "use": "apply the saved framing to the active window"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the saved view"
+    },
+    {
+     "name": "Parent",
+     "use": "the Views collection that holds it"
+    }
+   ],
+   "gotchas": [
+    "UseZoom / UsePage are switches: with one of them False, Activate keeps the window's current zoom (or page), so a view can look like it did nothing (unverified per-flag behaviour on 25.1).",
+    "OriginX / OriginY are in document units (Document.Unit) and are taken to be the centre of the view, not a corner (unverified).",
+    "Document.CreateView takes Zoom as a whole-number percent (long) while View.Zoom is a double; what CreateView's default Zoom of 0 does is unverified.",
+    "Views are saved inside the .cdr with the document, not in the workspace, so they travel with the file.",
+    "Activate acts on the active document window; with no window open there is nothing to apply it to (unverified error)."
+   ],
+   "example": "Dim v As Object\nSet v = ActiveDocument.CreateView(\"Logo close-up\", 4.25, 5.5, 400, ActiveDocument.ActivePage)\nv.UseZoom = True\nv.UsePage = True\n' later, from any page:\nActiveDocument.Views.Item(\"Logo close-up\").Activate",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ViewHost",
+   "id": "class:ViewHost",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ViewHost",
+   "status": "current",
+   "summary": "A UI-framework tab group (ICUIViewHost, from CrlFrmWkOM): one area of a frame window that holds document views as tabs. A script reads its ID and screen rectangle, lists the tabs it holds, and moves a view or another whole tab group into it. Confidence is low: this is framework plumbing with no visible design result.",
+   "use_for": [
+    "move a document tab into another tab group, or merge two tab groups into one, from an add-in",
+    "read where a tab group sits on screen before a canvas screenshot",
+    "find which tab group a document window belongs to"
+   ],
+   "avoid": [
+    "plain tile or cascade: Windows.Arrange, or the frame window's TileViews / CombineViews",
+    "zoom or scroll: Window.ActiveView"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on ICUIViewHost. It belongs to the UI framework, not the drawing model: Application.FrameWork.MainFrameWindow.ViewHosts (First, Find(ID) or Item), or from a document window: ActiveWindow.ViewWindow.ViewHost. Views returns its tabs (ViewWindows); InsertView moves one ViewWindow into this host at a tab index; InsertViewHost moves all tabs of another host in.",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "framework ID of the tab group"
+    },
+    {
+     "name": "Views",
+     "use": "the tabs in this group (ViewWindows)"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle of the group (ICUIScreenRect)"
+    },
+    {
+     "name": "DockHost",
+     "use": "the dock host this tab group sits in"
+    },
+    {
+     "name": "DockItem",
+     "use": "the group seen as a dock item"
+    },
+    {
+     "name": "InsertView",
+     "use": "move a ViewWindow into this group at a tab index"
+    },
+    {
+     "name": "InsertViewHost",
+     "use": "move every tab of another ViewHost into this group"
+    }
+   ],
+   "gotchas": [
+    "Framework objects (also_in CrlFrmWkOM) are not reachable from Document or Shape; go through Application.FrameWork or ActiveWindow.ViewWindow.",
+    "ID strings are generated by the framework at run time; do not hard-code them across sessions (unverified).",
+    "Position is in screen pixels, not document units, and changes when the user moves or resizes the UI.",
+    "Whether InsertView's Index counts tabs from 0 or 1 is not stated in the type library (unverified)."
+   ],
+   "example": "Dim vh As Object, vw As Object\nSet vh = ActiveWindow.ViewWindow.ViewHost\nDebug.Print vh.ID, vh.Views.Count\nFor Each vw In vh.Views\n  Debug.Print vw.Title, vw.Kind\nNext vw",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: InsertView/InsertViewHost only move tabs into an existing group; splitting tabs side by side is FrameWindow.TileViews or FrameWork.CreateFrameWindowForView, not this class"
+   }
+  },
+  {
+   "name": "ViewHosts",
+   "id": "class:ViewHosts",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ViewHosts",
+   "status": "current",
+   "summary": "UI-framework collection of the tab groups (ViewHost objects) in one frame window (ICUIViewHosts, CrlFrmWkOM). A script counts them, walks them, finds one by ID, or takes the first or last. Confidence is low: framework plumbing with no visible design result.",
+   "use_for": [
+    "detect whether documents are split into several tab groups before capturing the canvas",
+    "merge every tab group back into one from an add-in"
+   ],
+   "avoid": [
+    "listing documents or document windows: Application.Documents / Application.Windows",
+    "saved framings: Document.Views"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on ICUIViewHosts. Reach it as Application.FrameWork.MainFrameWindow.ViewHosts (the frame window's ViewHosts property); floating frame windows have their own, reached through FrameWork.FrameWindows. Item(Index), Find(ID), First, Last, Count, and For Each (_NewEnum).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tab groups"
+    },
+    {
+     "name": "Item",
+     "use": "a tab group by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the tab groups"
+    },
+    {
+     "name": "Find",
+     "use": "a tab group by its ID"
+    },
+    {
+     "name": "First",
+     "use": "the first tab group"
+    },
+    {
+     "name": "Last",
+     "use": "the last tab group"
+    }
+   ],
+   "gotchas": [
+    "Whether Item counts from 0 or 1 is not stated in the type library (unverified); First, Last and For Each avoid the question.",
+    "Only the tab groups of that one frame window are listed; a floating document frame is a separate frame window (FrameWork.FrameWindows).",
+    "Framework objects (also_in CrlFrmWkOM) are not reachable from Document or Shape; go through Application.FrameWork or ActiveWindow.ViewWindow."
+   ],
+   "example": "Dim hosts As Object, h As Object\nSet hosts = Application.FrameWork.MainFrameWindow.ViewHosts\nDebug.Print hosts.Count\nFor Each h In hosts\n  Debug.Print h.ID, h.Views.Count\nNext h",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Views",
+   "id": "class:Views",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Views",
+   "status": "current",
+   "summary": "The collection of saved named views of one document (IVGViews), the list the View Manager docker shows. A script counts it, looks views up by 1-based index or name, and saves the current framing as a new view.",
+   "use_for": [
+    "loop through every saved view of a layout to proof each framing in turn",
+    "save the current framing under a name from a review macro",
+    "check whether a template already ships with named views before adding more"
+   ],
+   "avoid": [
+    "controlling live zoom or scroll: use Window.ActiveView",
+    "listing open document windows: that is the Windows collection"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "View/Edit Views..."
+   },
+   "how": "Members live on IVGViews. Reached as ActiveDocument.Views (Document.Views). Item takes a 1-based index or a view name; AddActiveView(Name) stores the active window's current page, zoom and origin as a new View and returns it; Count and For Each (_NewEnum) walk the list. Document.CreateView adds a view with explicit coordinates instead.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "a saved view by 1-based index or by name"
+    },
+    {
+     "name": "Count",
+     "use": "number of saved views in the document"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the views"
+    },
+    {
+     "name": "AddActiveView",
+     "use": "save the active window's current framing under a name; returns the View"
+    },
+    {
+     "name": "Parent",
+     "use": "the Document that owns the views"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1 (the type library says so); Item(0) fails.",
+    "Item with a name that does not exist raises a run-time error rather than returning Nothing (unverified); loop and compare Name when unsure.",
+    "AddActiveView captures the application's active window: activate the target document's window first when several documents are open (unverified for multi-document setups).",
+    "The collection has no Remove: delete a view with View.Delete."
+   ],
+   "example": "Dim i As Long\nFor i = 1 To ActiveDocument.Views.Count\n  Debug.Print i, ActiveDocument.Views.Item(i).Name\nNext i\nActiveDocument.Views.AddActiveView \"Proof framing\"",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ViewWindow",
+   "id": "class:ViewWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ViewWindow",
+   "status": "current",
+   "summary": "A UI-framework view tab (ICUIViewWindow, CrlFrmWkOM): one tab inside a tab group that hosts an application view, normally a document window. A script reads its ID, title, tooltip, kind, tab index and screen rectangle, activates or closes the tab, and gets the application-side object behind it (AppView). Confidence is low: framework plumbing.",
+   "use_for": [
+    "get the on-screen rectangle of a document tab for a screenshot or a targeted click",
+    "bring a document tab to the front from an add-in",
+    "go from a UI tab to the drawing window or document it shows"
+   ],
+   "avoid": [
+    "document work (shapes, pages): use the Window and Document objects",
+    "closing a document: Document.Close"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on ICUIViewWindow. From a document window: ActiveWindow.ViewWindow; from the framework: Application.FrameWork.MainFrameWindow.ViewHosts.First.Views (ViewWindows). ViewHost is the tab group it sits in, Index its tab position, Kind the type of view, AppView the application-side view object.",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "framework ID of the view"
+    },
+    {
+     "name": "Title",
+     "use": "tab title"
+    },
+    {
+     "name": "Description",
+     "use": "tab tooltip / description text"
+    },
+    {
+     "name": "Kind",
+     "use": "type of application view held in the tab"
+    },
+    {
+     "name": "Index",
+     "use": "tab position within its ViewHost"
+    },
+    {
+     "name": "ViewHost",
+     "use": "the tab group holding this view"
+    },
+    {
+     "name": "Position",
+     "use": "screen rectangle of the view (ICUIScreenRect)"
+    },
+    {
+     "name": "Activate",
+     "use": "bring the tab to the front"
+    },
+    {
+     "name": "Close",
+     "use": "close the view"
+    },
+    {
+     "name": "AppView",
+     "use": "the application-side view object (IDispatch)"
+    }
+   ],
+   "gotchas": [
+    "AppView returns IDispatch; which object a drawing tab hands back (the VGCore Window or another view object) is not stated in the type library (unverified).",
+    "Kind is a string defined by the application, not an enum; read it at run time before branching on it (unverified values).",
+    "Position is in screen pixels and changes whenever the UI is moved or resized.",
+    "Close on the last view of a modified document may raise a save prompt that blocks an unattended run (unverified)."
+   ],
+   "example": "Dim vw As Object\nSet vw = ActiveWindow.ViewWindow\nDebug.Print vw.Title, vw.Kind, vw.Index\nDebug.Print vw.ViewHost.ID\nvw.Activate",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ViewWindows",
+   "id": "class:ViewWindows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ViewWindows",
+   "status": "current",
+   "summary": "UI-framework collection of the view tabs (ViewWindow objects) in one tab group (ICUIViewWindows, CrlFrmWkOM), returned by ViewHost.Views. A script counts, walks, finds a tab by ID, or takes the first or last tab. Confidence is low: framework plumbing.",
+   "use_for": [
+    "list every document tab in a tab group with its title",
+    "find a tab by ID and activate it"
+   ],
+   "avoid": [
+    "walking document windows in the drawing model: Application.Windows",
+    "saved framings: Document.Views"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Members live on ICUIViewWindows. Reach it as a ViewHost's Views property, e.g. ActiveWindow.ViewWindow.ViewHost.Views or Application.FrameWork.MainFrameWindow.ViewHosts.First.Views. Item(Index), Find(ID), First, Last, Count, and For Each (_NewEnum).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of tabs in the group"
+    },
+    {
+     "name": "Item",
+     "use": "a tab by index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the tabs"
+    },
+    {
+     "name": "Find",
+     "use": "a tab by its ID"
+    },
+    {
+     "name": "First",
+     "use": "the first tab"
+    },
+    {
+     "name": "Last",
+     "use": "the last tab"
+    }
+   ],
+   "gotchas": [
+    "Whether Item counts from 0 or 1 is not stated in the type library (unverified); First, Last and For Each avoid the question.",
+    "It holds the tabs of one tab group only; walk ViewHosts to cover a split layout.",
+    "IDs are generated by the framework; do not hard-code them across sessions (unverified).",
+    "Framework objects (also_in CrlFrmWkOM) are not reachable from Document or Shape; go through Application.FrameWork or ActiveWindow.ViewWindow."
+   ],
+   "example": "Dim tabs As Object, vw As Object\nSet tabs = ActiveWindow.ViewWindow.ViewHost.Views\nDebug.Print tabs.Count, tabs.First.Title, tabs.Last.Title\nFor Each vw In tabs\n  Debug.Print vw.ID, vw.Title\nNext vw",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Window",
+   "id": "class:Window",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Window",
+   "status": "current",
+   "summary": "One document window (IVGWindow): the on-screen window or tab showing a document. Through it a script activates, closes, sizes or full-screens the window, reaches its ActiveView (zoom and scroll), redraws it, and converts between screen pixels and document coordinates.",
+   "use_for": [
+    "switch between open layouts in a batch macro before working on each one",
+    "redraw the canvas after a long macro run with Application.Optimization on",
+    "open a second window on the same document to watch a detail while editing the whole page",
+    "map a screen position to page coordinates for a custom click tool"
+   ],
+   "avoid": [
+    "zooming or scrolling: that is ActiveView (Window.ActiveView.ToFitPage, Zoom, SetViewArea)",
+    "closing a document: use Document.Close, which handles the document rather than one of its windows"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:View"
+   },
+   "how": "Members live on IVGWindow. Reach it as ActiveWindow (Application.ActiveWindow), ActiveDocument.ActiveWindow, or Application.Windows.Item(n) / Document.Windows.Item(n). Document and Page say what it shows; ActiveView is its zoom and scroll; ViewWindow links to the UI-framework tab (ViewWindow / ViewHost).",
+   "key_members": [
+    {
+     "name": "Activate",
+     "use": "bring this window (and its document) to the front"
+    },
+    {
+     "name": "Close",
+     "use": "close this window"
+    },
+    {
+     "name": "Document",
+     "use": "the document shown in the window"
+    },
+    {
+     "name": "Page",
+     "use": "the page currently shown"
+    },
+    {
+     "name": "ActiveView",
+     "use": "zoom and scroll control (IVGActiveView)"
+    },
+    {
+     "name": "Caption",
+     "use": "window title text"
+    },
+    {
+     "name": "Active",
+     "use": "True when this is the active window"
+    },
+    {
+     "name": "Index",
+     "use": "position in the Windows collection"
+    },
+    {
+     "name": "NewWindow",
+     "use": "open another window on the same document"
+    },
+    {
+     "name": "Refresh",
+     "use": "redraw the window"
+    },
+    {
+     "name": "FullScreen",
+     "use": "get or set the window's full-screen state (whether this is View > Full-screen Preview is unverified)"
+    },
+    {
+     "name": "WindowState",
+     "use": "normal / minimized / maximized (cdrWindowState)"
+    },
+    {
+     "name": "Left",
+     "use": "window left position"
+    },
+    {
+     "name": "Top",
+     "use": "window top position"
+    },
+    {
+     "name": "Width",
+     "use": "window width"
+    },
+    {
+     "name": "Height",
+     "use": "window height"
+    },
+    {
+     "name": "ScreenToDocument",
+     "use": "screen pixel point to document coordinates (ByRef out)"
+    },
+    {
+     "name": "DocumentToScreen",
+     "use": "document point to screen pixels (ByRef out)"
+    },
+    {
+     "name": "Handle",
+     "use": "HWND of the document window"
+    },
+    {
+     "name": "ViewWindow",
+     "use": "the UI-framework tab hosting this window"
+    }
+   ],
+   "gotchas": [
+    "ActiveWindow is Nothing when no document is open; test it before use.",
+    "With tabbed documents, Left / Top / Width / Height and WindowState may be ignored or act on the tab group rather than a floating window (unverified).",
+    "ScreenToDocument / DocumentToScreen return their results through ByRef arguments; from Python win32com the outputs come back only with early binding (makepy) (unverified).",
+    "After a macro that sets Application.Optimization = True, set it back to False and call ActiveWindow.Refresh, or the canvas can stay stale.",
+    "Close on the last window of a modified document can raise a save prompt that blocks an unattended run (unverified).",
+    "Handle is the window handle of the document window (a long): a target for PostMessage instead of global keyboard input (unverified that the canvas acts on posted input)."
+   ],
+   "example": "Dim w As Object\nSet w = ActiveDocument.ActiveWindow\nDebug.Print w.Caption, w.Index, w.WindowState\nw.ActiveView.ToFitPage\nApplication.Optimization = False\nw.Refresh",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "FullScreen use no longer asserts it is the Full-screen Preview (unverified); Handle/PostMessage gotcha marked unverified"
+   }
+  },
+  {
+   "name": "Windows",
+   "id": "class:Windows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Windows",
+   "status": "current",
+   "summary": "A collection of document windows (IVGWindows): every window in the application (Application.Windows) or only one document's windows (Document.Windows). A script counts them, picks one by 1-based index, finds one by caption, tiles or cascades them, redraws them, or closes them all.",
+   "use_for": [
+    "step through every open document window in a batch macro",
+    "tile two layouts side by side for a visual comparison",
+    "find a window by its caption (file name) and bring that layout forward"
+   ],
+   "avoid": [
+    "looping over documents to process them: use Application.Documents, because one document can have several windows",
+    "saved framings: those are Document.Views"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Views"
+   },
+   "how": "Members live on IVGWindows. Application.Windows holds every document window; ActiveDocument.Windows only that document's. Item(Index) is base 1; FindWindow(Caption) matches the window title; Arrange takes a cdrWindowArrangeStyle (cdrTileHorizontally 0, cdrTileVertically 1, cdrCascade 2); CloseAll closes every window in the collection.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "a window by 1-based index"
+    },
+    {
+     "name": "Count",
+     "use": "number of windows"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the windows"
+    },
+    {
+     "name": "FindWindow",
+     "use": "a document window by its caption"
+    },
+    {
+     "name": "Arrange",
+     "use": "tile or cascade the windows (cdrWindowArrangeStyle)"
+    },
+    {
+     "name": "Refresh",
+     "use": "redraw all the windows"
+    },
+    {
+     "name": "CloseAll",
+     "use": "close every window in the collection"
+    },
+    {
+     "name": "Parent",
+     "use": "the Application or Document that owns the collection"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1.",
+    "Application.Windows.CloseAll closes every document window in the application, including documents the designer or another script opened; to stay inside your own work use YourDocument.Windows or Document.Close.",
+    "CloseAll on modified documents can raise save prompts that block an unattended run (unverified).",
+    "FindWindow needs the caption exactly as shown (a second window on the same file gets a suffix such as ':2', unverified); behaviour when nothing matches (Nothing or an error) is unverified.",
+    "Arrange (tile / cascade) is meant for floating document windows; with tabbed documents it may change the layout or do nothing (unverified)."
+   ],
+   "example": "Dim w As Object\nFor Each w In Application.Windows\n  Debug.Print w.Index, w.Caption\nNext w\nApplication.Windows.Arrange cdrTileVertically",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "CloseAll gotcha reworded: it closes all document windows in this CorelDRAW instance (no 'another process'), points to Document.Windows"
+   }
+  },
+  {
+   "name": "Workspace",
+   "id": "class:Workspace",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Workspace",
+   "status": "current",
+   "summary": "One CorelDRAW workspace (IVGWorkspace): a saved UI layout of toolbars, dockers, menus and shortcuts, such as the default or a lite or Illustrator-style layout. A script reads its name and description, checks whether it is the default or the active one, and switches to it.",
+   "use_for": [
+    "put an automation machine into a known workspace before a scripted UI run, so menus and dockers are where the script expects",
+    "report which workspace a designer is in when a macro misbehaves",
+    "toggle between a lite and a full layout from a macro button"
+   ],
+   "avoid": [
+    "creating, deleting or exporting a workspace: not in this class; use the Window/Workspace menu (New, Delete, Import, Export); Application.ImportWorkspace only imports workspace elements into the current workspace",
+    "anything about document content: a workspace is UI only"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGWorkspace. Reach it as Application.ActiveWorkspace or Application.Workspaces.Item(index or name). Name and Description are read-only, Default tells whether it is the default workspace, Active whether it is the current one, and Activate switches the UI to it.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "workspace name"
+    },
+    {
+     "name": "Description",
+     "use": "workspace description text"
+    },
+    {
+     "name": "Default",
+     "use": "True for the default workspace"
+    },
+    {
+     "name": "Active",
+     "use": "True when this workspace is in use"
+    },
+    {
+     "name": "Activate",
+     "use": "switch the UI to this workspace"
+    },
+    {
+     "name": "Parent",
+     "use": "the Workspaces collection"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Activate rebuilds the toolbars, dockers and menus; it is slow and should not run in a loop or in the middle of an edit (unverified timing on 25.1).",
+    "Name is the display name, which may differ from the .cdws file name in the Workspace folder (unverified).",
+    "Everything except Activate is read-only: a workspace cannot be renamed or edited through this object.",
+    "The switch is likely to persist into the user's next session (unverified); store ActiveWorkspace first and restore it at the end of an automation run on a designer's machine."
+   ],
+   "example": "Dim orig As Object, ws As Object\nSet orig = Application.ActiveWorkspace\nFor Each ws In Application.Workspaces\n  If ws.Default Then ws.Activate\nNext ws\n' ... scripted UI work ...\norig.Activate",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: Application.ImportWorkspace imports elements into the current workspace (typelib), it does not create one; example no longer hard-codes Item(\"Lite\") (unverified display name) and switches to the Default workspace instead"
+   }
+  },
+  {
+   "name": "Workspaces",
+   "id": "class:Workspaces",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Workspaces",
+   "status": "current",
+   "summary": "The collection of every workspace CorelDRAW has installed (IVGWorkspaces), the list behind Window > Workspace. A script counts the workspaces, walks them, and picks one by 1-based index or by name.",
+   "use_for": [
+    "list the available workspaces to choose one for a scripted run",
+    "check that a team workspace is installed before a macro switches to it"
+   ],
+   "avoid": [
+    "adding a workspace: there is no Add; import a .cdws with the Window/Workspace/Import menu (Application.ImportWorkspace only imports workspace elements into the current workspace)",
+    "just the current workspace: Application.ActiveWorkspace is shorter"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Members live on IVGWorkspaces. Reach it as Application.Workspaces. Item(IndexOrName) takes a 1-based index or a workspace name; Count and For Each (_NewEnum) walk it; each element is a Workspace.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "a workspace by 1-based index or by name"
+    },
+    {
+     "name": "Count",
+     "use": "number of installed workspaces"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the workspaces"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning object (the application)"
+    },
+    {
+     "name": "Application",
+     "use": "the CorelDRAW application"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1; a name that does not exist raises an error rather than returning Nothing (unverified).",
+    "The collection is read-only: no Add or Remove.",
+    "A workspace imported during the session may not show up in the list until CorelDRAW restarts (unverified)."
+   ],
+   "example": "Dim ws As Object\nFor Each ws In Application.Workspaces\n  Debug.Print ws.Name, ws.Active, ws.Default\nNext ws",
+   "source": "cdr_api_25 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: Application.ImportWorkspace does not add a workspace to the list, it imports elements into the current one (typelib)"
+   }
+  }
+ ]
+}

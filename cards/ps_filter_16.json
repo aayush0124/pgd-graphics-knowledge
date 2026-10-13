@@ -1,0 +1,141 @@
+{
+ "cards": [
+  {
+   "name": "De-Interlace",
+   "id": "deInterlace",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Video/De-Interlace",
+   "status": "current",
+   "summary": "Throws away every other horizontal pixel row (the odd or the even video field) and rebuilds it either by copying the neighbouring kept row (Duplication) or by averaging the rows above and below (Interpolation). On a frame grabbed from interlaced video it removes the comb-tooth tearing on moving edges; on a progressive image it only halves vertical detail, giving doubled, slightly stair-stepped edges (Duplication) or a faint vertical softening (Interpolation).",
+   "use_for": [
+    "cleaning a still pulled from interlaced SD / 1080i footage (comb-tooth fringes on a moving arm or head) before it goes into a poster, thumbnail or news card",
+    "fixing scanned TV-screen grabs or old broadcast frame captures used as reference in a design",
+    "a subtle line-doubled lo-fi video texture when stacked with Filter/Noise and scanline overlays"
+   ],
+   "avoid": [
+    "progressive photos and modern video frames with no combing: there is nothing to fix, it just discards half the vertical resolution and 1-px horizontal lines vanish or double",
+    "a strong retro-TV / scanline look: it is too subtle for that; build scanlines with Filter/Sketch/Halftone Pattern (Pattern Type: Line) or a line-pattern overlay instead",
+    "stills you can still re-export from the source video: deinterlace there (ffmpeg yadif / bwdif) before Photoshop, which keeps more detail than dropping a field",
+    "CMYK documents: harvest supported_modes are Grayscale, RGB and Lab only",
+    "thin horizontal lines that flicker on an interlaced TV: De-Interlace does not fix that; use the Video Actions.atn 'Interlace Flicker Removal' action"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Video/De-Interlace",
+    "CDR": "Effects/Transform/DeInterlace"
+   },
+   "look": [
+    "deinterlace",
+    "video field removal",
+    "remove combing",
+    "line doubling",
+    "frame grab cleanup",
+    "broadcast still"
+   ],
+   "params": [
+    {
+     "name": "interlaceEliminateType",
+     "does": "which field (set of alternate pixel rows) is thrown away: Odd Lines or Even Lines; either choice removes the combing, so keep the field that caught the sharper moment",
+     "typical": "eliminateOddFields (Odd Lines, the harvested default); try eliminateEvenFields if the kept field looks worse"
+    },
+    {
+     "name": "interlaceCreateType",
+     "does": "how the removed rows are refilled: Duplication copies the kept row (crisper, jaggier), Interpolation averages the rows above and below (smoother, softer)",
+     "typical": "createInterpolation (Interpolation, default) for clean photo stills; createDroplet (Duplication) for hard graphics or when you want visible line doubling"
+    }
+   ],
+   "demo_settings": {
+    "interlaceEliminateType": "eliminateEvenFields",
+    "interlaceCreateType": "createDroplet"
+   },
+   "enum_labels": {
+    "interlaceEliminateType": {
+     "eliminateOddFields": "Odd Lines",
+     "eliminateEvenFields": "Even Lines"
+    },
+    "interlaceCreateType": {
+     "createDroplet": "Duplication",
+     "createInterpolation": "Interpolation"
+    }
+   },
+   "pairs_with": [
+    "Filter/Sharpen/Smart Sharpen afterwards to recover some of the lost vertical crispness",
+    "Filter/Noise/Reduce Noise on noisy broadcast frame grabs",
+    "Filter/Convert for Smart Filters first so it can be toggled, masked or deleted later"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putEnumerated(s(\"interlaceEliminateType\"), s(\"interlaceEliminateType\"), s(\"eliminateEvenFields\")); d.putEnumerated(s(\"interlaceCreateType\"), s(\"interlaceCreateType\"), s(\"createDroplet\")); executeAction(s(\"deInterlace\"), d, DialogModes.NO); // on the active Grayscale / RGB / Lab pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "harvest/ps/ps_filter.json records smart_filter = true (the probe applied it to a Smart Object as a Smart Filter; this batch file predates that field), but the stored Smart Filter showed hasoptions = false and no settings, so whether Odd/Even and Duplication/Interpolation can be re-edited there is unconfirmed; on a plain pixel layer it is destructive",
+   "cost": "light: 1014 ms on the 480x270 harvest test layer, longer in proportion on bigger images; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: scanline alternative was the vague Filter/Render, now Filter/Sketch/Halftone Pattern (Line); dropped the claim that a Premiere frame export deinterlaces; added Interlace Flicker Removal action for TV line flicker. params: 'pick the field that shows the tearing' / 'switch if the combing remains' was wrong (dropping either field removes combing). non_destructive: the full harvest records smart_filter = true with hasoptions = false, so the 'editable Smart Filter' claim is now unconfirmed. demo_settings kept (inside enums; the most visible combination on the plate's hairlines and type)."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/62f485d68fa1.png",
+    "crop": "gallery/ps_filter/62f485d68fa1_1to1.png",
+    "note": "1:1 crop: every photo row now equals its pair (Duplication) and the single-pixel hairline is doubled to 2 px while 3-px lines become 2 or 4 px, the stair-stepped line doubling the card predicts for a progressive image; invisible in the 960 frame.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "NTSC Colors",
+   "id": "NTSC",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Video/NTSC Colors",
+   "status": "current",
+   "summary": "One-click, no-dialog filter meant to pull colours outside the NTSC television gamut back inside it, so over-saturated colours do not bleed across scan lines on analogue / SD TV. On the test plate it changed almost nothing: of the eight saturated sRGB colour blocks only the cyan moved, by 2 levels (0/163/224 to 0/161/222); red, orange, yellow, green, blue, violet, magenta and the photo came through unchanged. On ordinary 8-bit sRGB artwork expect no visible change.",
+   "use_for": [
+    "a last technical pass on graphics, lower thirds and title cards for SD NTSC or legacy video delivery (ordinary sRGB colours come through unchanged)",
+    "checking a colour against the filter's limit: run it on a duplicate set to Difference; on the plate only a strong cyan showed any change, 2 levels"
+   ],
+   "avoid": [
+    "HD / web / social delivery (Rec. 709, sRGB): NTSC limits are not the target there; use a broadcast-safe limiter in the video app (Premiere Video Limiter) or a Hue/Saturation pass instead",
+    "a visible stylistic effect: on the plate's photo and its saturated sRGB blocks it changed nothing visible; it is a technical gamut clip, not a look",
+    "CMYK, Grayscale or Lab documents: harvest supported_modes is RGB only",
+    "fine control: there are no settings, it clips by a fixed rule; for chosen amounts use a Hue/Saturation adjustment layer or the Video Actions.atn 'Broadcast Safe Saturation' action",
+    "relying on it to tame hot sRGB colours: it treated pure-channel red (232/32/42), yellow (255/212/0), blue (30/63/255) and magenta (224/0/110) as legal and left them; for a stricter delivery spec use a broadcast-safe limiter or a Hue/Saturation pass checked on a scope"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Video/NTSC Colors"
+   },
+   "look": [
+    "broadcast safe",
+    "ntsc legal",
+    "gamut clip",
+    "tv safe colours",
+    "video legal",
+    "no visible change"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "apply to a duplicate layer and set it to Difference blend mode against the original to see which colours were clipped",
+    "Filter/Video/De-Interlace when preparing stills from or for SD video",
+    "Filter/Convert for Smart Filters first so it can be switched off later"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"NTSC\"), new ActionDescriptor(), DialogModes.NO); // no parameters; on the active RGB pixel layer",
+   "scriptable": "yes",
+   "non_destructive": "harvest/ps/ps_filter.json records smart_filter = true (the probe applied it to a Smart Object as a Smart Filter; this batch file predates that field); with no settings it can only be toggled, masked, blended or deleted there; on a plain pixel layer it is destructive",
+   "cost": "light: 1083 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'hot reds, magentas, pure blues come out duller and darker' was unsupported (darkening unharvested; by composite limits the plate's yellow block overshoots most), now hedged and yellow added. avoid: named the PS Broadcast Safe Saturation action. non_destructive: the full harvest records smart_filter = true, replacing 'not probed'."
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ps_filter/21a0e62f8f13.png",
+    "note": "Only the cyan block moved (0,163,224 to 0,161,222); the red, yellow, blue, violet and magenta blocks and the photo are unchanged, so the claim that intense reds, yellows, magentas and blues lose saturation is not borne out. Summary, look, use_for and avoid rewritten to what the frame shows.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Re-opened the frame against ref.png and re-sampled all eight blocks: only cyan moved (-2 G, -2 B), diff_vs_ref 0.014. Plate check: the strip holds some of the most saturated 8-bit sRGB colours (pure-channel red, yellow, blue, magenta), so the plate does test the claim; the filter ran (cyan changed) and left them, which is its real behaviour, not a harness limit or a broken render."
+    }
+   }
+  }
+ ]
+}

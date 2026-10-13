@@ -1,0 +1,441 @@
+{
+ "cards": [
+  {
+   "name": "IVGSnapPointRange",
+   "id": "class:IVGSnapPointRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSnapPointRange",
+   "status": "current",
+   "summary": "A working list of snap points (IVGSnapPoint) that you edit in one go: move, delete, change the connector direction or the auto-snap state of every point in the list, or turn the list into a snap-point selection. It is what IVGSnapPoints.All, .Selection and .Range(...) return; it holds references, so removing an item from the list does not delete the point.",
+   "use_for": [
+    "nudging several user snap points on a template shape together so connectors re-route to the new anchors",
+    "setting one outgoing direction on all anchors of a flowchart / org-chart box so right-angle connectors leave cleanly",
+    "clearing old user snap points off a reused logo or symbol before adding new ones",
+    "turning a scripted list of snap points into the current snap-point selection (CreateSelection / AddToSelection)"
+   ],
+   "avoid": [
+    "moving the shape itself: use the shape's own Move / position members, this only moves snap points",
+    "snap points that cannot be moved or deleted (bounding-box, object, edge or auto points follow the geometry): check IVGSnapPoint.IsMovable / IsDeletable or filter to Type = cdrSnapPointUser first; what Move / Delete do to the other points is unverified",
+    "Remove when you mean Delete: Remove only drops the point from this list"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface for a list of snap points. You never create it directly: get one from a shape's snap-point collection, e.g. ActiveShape.SnapPoints.All (every snap point), ActiveShape.SnapPoints.Selection (the snap points selected with the Shape tool) or ActiveShape.SnapPoints.Range(Array(...)) (an array of snap-point references, most likely SnapPoint.ReferenceData strings; unverified). Iterate it with Count / Item or For Each (_NewEnum), grow it with Add, shrink it with Remove / RemoveByReference, then apply a bulk action (Move, Delete, ChangeDirection, SetAutoSnap, CreateSelection).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of snap points in the list"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGSnapPoint by index (default member, so r(1) works)"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the list"
+    },
+    {
+     "name": "Add",
+     "use": "append an IVGSnapPoint to the list; returns a bool"
+    },
+    {
+     "name": "Remove",
+     "use": "drop the point at an index from the list without deleting it"
+    },
+    {
+     "name": "RemoveByReference",
+     "use": "drop a point by its ReferenceData string"
+    },
+    {
+     "name": "Find",
+     "use": "look up a point in the list by its ReferenceData string"
+    },
+    {
+     "name": "Move",
+     "use": "shift every point in the list by OffsetX, OffsetY (unit unverified, see gotchas)"
+    },
+    {
+     "name": "Delete",
+     "use": "delete all the listed snap points from their shapes"
+    },
+    {
+     "name": "ChangeDirection",
+     "use": "set the default connection direction and whether it is used (UsesDirection, a cdrTriState), on every point"
+    },
+    {
+     "name": "SetAutoSnap",
+     "use": "switch auto snapping on or off for every point in the list"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "make these snap points the current snap-point selection"
+    },
+    {
+     "name": "AddToSelection",
+     "use": "add these snap points to the current selection"
+    },
+    {
+     "name": "RemoveFromSelection",
+     "use": "take these snap points out of the current selection"
+    }
+   ],
+   "gotchas": [
+    "Remove / RemoveByReference only edit the list; Delete removes the physical snap points. Whether the list updates itself after a Delete is not stated, so re-read SnapPoints.All afterwards (unverified).",
+    "ChangeDirection defaults (-9999 and cdrUndefined = -2) mean 'leave unchanged': pass both arguments, e.g. ChangeDirection 90, cdrTrue, to actually force a direction (unverified that -9999 is the 'keep' sentinel).",
+    "Item / Remove index base is not stated for this list; IVGSnapPoints.Item is base 1, assume the same here (unverified).",
+    "Move offsets are probably in the document's current unit (ActiveDocument.Unit), not the ruler unit; neither the unit nor its default is stated in the harvest (unverified).",
+    "Delete / Move on non-user points (bbox, object, edge, auto) are likely ignored or raise an error (unverified)."
+   ],
+   "example": "Set s = ActiveShape\ns.SnapPoints.AddUserSnapPointEx \"in\", s.LeftX, s.CenterY, 180, True\ns.SnapPoints.AddUserSnapPointEx \"out\", s.RightX, s.CenterY, 0, True\nSet r = s.SnapPoints.All\nFor Each p In s.SnapPoints            ' keep only the user snap points in the list\n  If p.Type <> cdrSnapPointUser Then r.RemoveByReference p.ReferenceData\nNext p\nr.Move 0, 0.25\nr.SetAutoSnap True\nDebug.Print r.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "Example no longer calls SnapPoints.Range with user IDs (\"in\", \"out\"). Range's parameter is named References, and this class's Find and RemoveByReference take ReferenceData strings, so those IDs probably fail. The list is now built with All plus RemoveByReference(p.ReferenceData), which uses only members whose meaning the harvest states. Marked as unverified: Move's unit (the key_member had stated document units as fact), the 'list is a snapshot' gotcha and the inches default. Removed the unsourced 'degrees' from ChangeDirection. The avoid entry no longer claims that Move and Delete are meant only for user points; it points to IsMovable / IsDeletable and the Type filter instead. The CreateSelection use_for no longer mentions the Shape tool."
+   }
+  },
+  {
+   "name": "IVGSnapPoints",
+   "id": "class:IVGSnapPoints",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSnapPoints",
+   "status": "current",
+   "summary": "The snap points of one shape (Shape.SnapPoints): its bounding-box handles, object points, edge points, the auto point and any user-added snap points. Use it to find an exact anchor on a shape (centre, a corner, a side, the closest point to a position) or to add named user snap points, typically to hook connectors and dimension lines onto shapes from a script.",
+   "use_for": [
+    "flowcharts and org charts: get the side midpoints of two boxes and join them with Layer.CreateConnector",
+    "dimension lines on packaging dielines or technical drawings, anchored to bbox corners",
+    "adding named anchor points to a reusable symbol so later scripts can attach arrows to them",
+    "snapping a new object to the closest point of an existing shape"
+   ],
+   "avoid": [
+    "plain alignment of shapes to each other: shape positions (LeftX, CenterX ...), Shape.AlignToShape or ShapeRange.AlignAndDistribute are simpler",
+    "editing curve nodes: snap points are anchors, use the curve's nodes/segments to change the outline"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface returned by IVGShape.SnapPoints (all types) or IVGShape.SnapPointsOfType(TypeSet) (filtered by cdrPointType flags). Look points up with BBox(cdrReferencePoint), Object(cdrObjectSnapPointType), Edge(SegmentIndex, SegmentOffset), Auto, User(ID) or FindClosest(TypeSet, x, y); add your own with AddUserSnapPoint / AddUserSnapPointEx; get lists (IVGSnapPointRange) with All, Selection or Range. The returned IVGSnapPoint objects feed IVGLayer.CreateConnector, CreateRightAngleConnector, CreateLinearDimension and CreateAngularDimension.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of snap points on the shape"
+    },
+    {
+     "name": "Item",
+     "use": "one snap point by index, base 1"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk every snap point"
+    },
+    {
+     "name": "Parent",
+     "use": "the shape these snap points belong to"
+    },
+    {
+     "name": "BBox",
+     "use": "bounding-box snap point by cdrReferencePoint (cdrCenter, cdrTopLeft, cdrMiddleRight ...)"
+    },
+    {
+     "name": "Object",
+     "use": "object snap point by cdrObjectSnapPointType (top / bottom / left / right)"
+    },
+    {
+     "name": "Edge",
+     "use": "snap point on an outline segment at a given segment index and offset"
+    },
+    {
+     "name": "Auto",
+     "use": "the shape's auto snap point"
+    },
+    {
+     "name": "User",
+     "use": "find a user snap point by its ID"
+    },
+    {
+     "name": "FindClosest",
+     "use": "closest snap point of the given cdrPointType set to an x, y position"
+    },
+    {
+     "name": "AddUserSnapPoint",
+     "use": "add a user snap point (no ID of your own) at x, y; Direction defaults to 0, UseDirection to False"
+    },
+    {
+     "name": "AddUserSnapPointEx",
+     "use": "same, with your own ID first so it can be found again with User(ID)"
+    },
+    {
+     "name": "All",
+     "use": "every snap point as an IVGSnapPointRange"
+    },
+    {
+     "name": "Selection",
+     "use": "the selected snap points as an IVGSnapPointRange"
+    },
+    {
+     "name": "Range",
+     "use": "an IVGSnapPointRange of the points named in an array of references"
+    },
+    {
+     "name": "ClearSelection",
+     "use": "deselect all snap points"
+    }
+   ],
+   "gotchas": [
+    "Item is base 1 (stated in the type library).",
+    "FindClosest's TypeSet is a cdrPointType flag set: combine with Or (cdrSnapPointBBox Or cdrSnapPointUser). cdrSnapPoint = 0 and cdrFreePoint shares value 1 with cdrSnapPointUser, so 0 is not a safe 'all types' value (unverified what 0 returns).",
+    "AddUserSnapPoint positions are absolute page coordinates in the document unit (ActiveDocument.Unit), not offsets from the shape (unverified).",
+    "Direction is in degrees and only matters when UseDirection is True; it steers which way a connector leaves the point (unverified).",
+    "Object(...) and Edge(...) need a shape type that has object / edge points; on others they probably return Nothing or raise (unverified).",
+    "Range expects a VBA Array (SAFEARRAY of Variant); from Python win32com pass a list of strings. Its parameter is named References and IVGSnapPointRange.Find / RemoveByReference take SnapPoint.ReferenceData strings, so pass ReferenceData values; whether plain user IDs also work is unverified."
+   ],
+   "example": "Set a = ActiveSelectionRange(1)\nSet b = ActiveSelectionRange(2)\nSet p1 = a.SnapPoints.BBox(cdrMiddleRight)\nSet p2 = b.SnapPoints.BBox(cdrMiddleLeft)\nActiveLayer.CreateConnector p1, p2\na.SnapPoints.AddUserSnapPointEx \"tip\", a.CenterX, a.TopY\nDebug.Print a.SnapPoints.User(\"tip\").PositionY",
+   "review": {
+    "by": "adversarial",
+    "changes": "The vague 'Align and Distribute' now names the real members, Shape.AlignToShape and ShapeRange.AlignAndDistribute. Added the harvested defaults of AddUserSnapPoint / AddUserSnapPointEx (Direction 0, UseDirection False). The Range gotcha now says to pass SnapPoint.ReferenceData strings, because the parameter is named References and the matching range methods take ReferenceData; plain IDs are left unverified. The other facts (Item base 1, the enum values, the access routes and the CreateConnector / dimension signatures) are correct."
+   }
+  },
+  {
+   "name": "IVGSpread",
+   "id": "class:IVGSpread",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSpread",
+   "status": "current",
+   "summary": "One page spread of a document: a single page, or two facing pages side by side when Facing Pages is on. It gives the spread's size and edge coordinates, its pages, its layers (including the guides, desktop and grid layers), its guidelines and its shapes, so a script can place art across both pages of a spread (a double-page background or a gutter-crossing image).",
+   "use_for": [
+    "brochure or magazine layouts: a background or photo that runs across both facing pages",
+    "finding the full width of a spread to place a gutter-crossing headline",
+    "collecting all guidelines on a spread before a layout script snaps objects to them",
+    "creating a layer that belongs to a whole spread"
+   ],
+   "avoid": [
+    "single-page work in a non-facing document: IVGPage gives the same information more directly",
+    "switching the active layer through the spread: Spread.ActiveLayer is read-only; call Activate on the IVGLayer itself"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface for a page spread. Reach it with ActiveDocument.ActiveSpread (or Application.ActiveSpread), ActiveDocument.Spreads(i), Page.Spread or Shape.Spread; walk the document with Next / Previous. Geometry members (LeftX, RightX, TopY, BottomY, CenterX, CenterY, SizeWidth, SizeHeight, BoundingBox, GetBoundingBox) are read-only and in the document unit; Pages lists the pages it contains; Layers / AllLayers / CreateLayer, Shapes / SelectableShapes and Guides give its content.",
+   "key_members": [
+    {
+     "name": "Index",
+     "use": "position of this spread in the document"
+    },
+    {
+     "name": "Pages",
+     "use": "the page or pages that make up the spread"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "spread width (both pages when facing)"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "spread height"
+    },
+    {
+     "name": "LeftX",
+     "use": "left edge X"
+    },
+    {
+     "name": "RightX",
+     "use": "right edge X"
+    },
+    {
+     "name": "TopY",
+     "use": "top edge Y"
+    },
+    {
+     "name": "BottomY",
+     "use": "bottom edge Y"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal centre of the spread (the gutter only on a two-page facing spread of equal page widths)"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "spread bounds as an IVGRect"
+    },
+    {
+     "name": "GetBoundingBox",
+     "use": "spread bounds into four ByRef doubles x, y, width, height"
+    },
+    {
+     "name": "Layers",
+     "use": "non-master layers of the spread"
+    },
+    {
+     "name": "AllLayers",
+     "use": "all layers of the spread (unlike Layers, master layers too)"
+    },
+    {
+     "name": "CreateLayer",
+     "use": "add a new named layer to the spread"
+    },
+    {
+     "name": "Shapes",
+     "use": "all shapes on the spread"
+    },
+    {
+     "name": "SelectableShapes",
+     "use": "only shapes that can be selected"
+    },
+    {
+     "name": "Guides",
+     "use": "guidelines of the spread, filtered by cdrGuideType"
+    },
+    {
+     "name": "Next",
+     "use": "following spread"
+    },
+    {
+     "name": "Previous",
+     "use": "preceding spread"
+    }
+   ],
+   "gotchas": [
+    "In a non-facing document every page is its own spread; with Facing Pages on, the first page can sit alone, so the spread count is not simply pages / 2 (behaviour not in the harvest; unverified).",
+    "Geometry comes back in ActiveDocument.Unit, so set the unit before you read LeftX / SizeWidth. The harvest does not give the unit or its default (inches is commonly assumed; unverified).",
+    "GetBoundingBox returns through ByRef arguments; from Python win32com the four values come back as a returned tuple (unverified for this method).",
+    "Guides(Type) defaults to -1 (cdrAllGuides); pass cdrHorizontalGuide / cdrVerticalGuide / cdrSlantedGuide to filter. Whether master-layer guides are included is not stated (unverified).",
+    "Next on the last spread and Previous on the first probably return Nothing (unverified); test with Is Nothing.",
+    "Index base and whether a master spread exists at index 0 are not stated (unverified)."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet sp = ActiveDocument.ActiveSpread\nDebug.Print sp.Index, sp.Pages.Count, sp.SizeWidth, sp.SizeHeight\nSet lyr = sp.CreateLayer(\"Spread background\")\nlyr.CreateRectangle sp.LeftX, sp.TopY, sp.RightX, sp.BottomY\nDebug.Print sp.Guides(cdrVerticalGuide).Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "Reworded the confusing avoid entry about reading the active layer: Spread.ActiveLayer is read-only, so call Layer.Activate (checked in the harvest). CenterX no longer says it is always the gutter. AllLayers is now worded against the harvest descriptions. Marked as unverified the facing-pages pairing and the 'inches by default' unit, which are not in the harvest. The example and the access routes (ActiveSpread, Spreads, Page.Spread, Shape.Spread) are correct."
+   }
+  },
+  {
+   "name": "IVGSpreads",
+   "id": "class:IVGSpreads",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGSpreads",
+   "status": "current",
+   "summary": "Read-only collection of all page spreads in a document (ActiveDocument.Spreads): count them, get one by index, or jump to the first or last. A spread is one page, or a pair of facing pages when Facing Pages is on.",
+   "use_for": [
+    "looping over every spread of a brochure or catalogue to stamp folios, crop marks or backgrounds",
+    "checking how pages pair up into spreads before exporting a facing-pages layout",
+    "jumping to the last spread to add a back-cover element"
+   ],
+   "avoid": [
+    "adding or removing pages: this collection has no Add / Delete; use the document's page members (AddPages, InsertPages) and the spreads follow",
+    "page-by-page work: ActiveDocument.Pages is the direct route when facing pairs do not matter"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "VGCore dual dispinterface returned by IVGDocument.Spreads. Item(Index) (the default member) returns an IVGSpread, Count gives the number of spreads, First / Last return the ends, and _NewEnum lets For Each walk them in order.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of spreads in the document"
+    },
+    {
+     "name": "Item",
+     "use": "one IVGSpread by index (default member, so Spreads(2) works)"
+    },
+    {
+     "name": "First",
+     "use": "first spread"
+    },
+    {
+     "name": "Last",
+     "use": "last spread"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk all spreads"
+    }
+   ],
+   "gotchas": [
+    "Spreads.Count changes when Facing Pages is toggled or pages are added; re-read it after changing pages instead of caching it.",
+    "Index base is not stated in the harvest; other VGCore collections are base 1, assume Spreads(1) is the first spread (unverified).",
+    "From Python win32com, call Item(i) explicitly; default-member indexing like Spreads(1) may not work through late binding (unverified)."
+   ],
+   "example": "Set sps = ActiveDocument.Spreads\nDebug.Print sps.Count, ActiveDocument.Pages.Count\nFor Each sp In sps\n  Debug.Print sp.Index, sp.Pages.Count, sp.SizeWidth\nNext sp\nSet back = sps.Last",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGStructAlignProperties",
+   "id": "class:IVGStructAlignProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGStructAlignProperties",
+   "status": "hidden",
+   "summary": "A legacy value object holding paragraph alignment settings of a text object: alignment, first-line / left / right indents, min and max word spacing, max character spacing, and horizontal / vertical character shift and character rotation (the same set as the Align tab of the old Format Text dialog; unverified). It is only reached through hidden members (Text.AlignProperties, Text.AlignPropertiesInRange, Application.CreateStructAlignProperties); the type library gives no member descriptions, so exact units are not confirmed.",
+   "use_for": [
+    "reading or copying the whole paragraph-alignment block of one text object to another in an old macro",
+    "maintaining legacy CorelDRAW VBA that already uses AlignProperties"
+   ],
+   "avoid": [
+    "new scripts: set the same values on a text range instead (Text.Story.Alignment, FirstLineIndent, LeftIndent, RightIndent, MinWordSpacing, MaxWordSpacing, MaxCharSpacing, HorizShift, VertShift, CharAngle), which are documented and visible",
+    "per-paragraph or per-character changes: rather than the hidden AlignPropertiesInRange, take a range with Text.Range(Start, End) or Story.Paragraphs / Characters and set its visible IVGTextRange members"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:ParagraphAttributes",
+    "PS": "class:TextItem"
+   },
+   "how": "VGCore dual dispinterface used as a settings struct. Get a filled one from a text shape with ActiveShape.Text.AlignProperties(Frames) (Frames is cdrTextFrames, default cdrAllFrames = 2), or for part of the text with Text.AlignPropertiesInRange(StartIndex, Count, IndexingType) (IndexingType is cdrTextIndexingType, default cdrCharacterIndexing = 0; word or paragraph indexing also exist); get a new one with Application.CreateStructAlignProperties (its starting values are unverified). Change its read/write properties, then write it back with a plain assignment to Text.AlignProperties: the type library declares that property as propput with no propputref, so it does not take Set. All three routes are hidden in the type library (FUNCFLAG_FHIDDEN), so they do not show in the VBA Object Browser.",
+   "key_members": [
+    {
+     "name": "Alignment",
+     "use": "cdrAlignment: none, left, right, center, full justify, force justify (cdrMixedAlignment = 6, mixed)"
+    },
+    {
+     "name": "FirstLineIndent",
+     "use": "indent of the first line (double)"
+    },
+    {
+     "name": "LeftIndent",
+     "use": "left indent of the paragraph (double)"
+    },
+    {
+     "name": "RightIndent",
+     "use": "right indent of the paragraph (double)"
+    },
+    {
+     "name": "MinWordSpacing",
+     "use": "minimum word spacing for justified text (single)"
+    },
+    {
+     "name": "MaxWordSpacing",
+     "use": "maximum word spacing for justified text (single)"
+    },
+    {
+     "name": "MaxCharacterSpacing",
+     "use": "maximum character spacing for justified text (single)"
+    },
+    {
+     "name": "HorizontalCharacterShift",
+     "use": "horizontal shift of characters (long)"
+    },
+    {
+     "name": "VerticalCharacterShift",
+     "use": "vertical shift of characters (long)"
+    },
+    {
+     "name": "CharacterRotation",
+     "use": "rotation of characters (single)"
+    }
+   ],
+   "gotchas": [
+    "Every route to it (Text.AlignProperties, Text.AlignPropertiesInRange, Application.CreateStructAlignProperties) is flagged hidden; it may be dropped in a later version.",
+    "Write-back: VGCoreAuto.tlb declares Text.AlignProperties and AlignPropertiesInRange as propput, not propputref, so assign without Set (t.AlignProperties(cdrAllFrames) = ap); Set ... = ap is likely to fail (unverified). Whether the object you read is a detached copy, so that edits do nothing until written back, is unverified.",
+    "cdrMixedAlignment (6, 'mixed alignment') is probably only a read result for text with several alignments; do not set it (unverified).",
+    "Units are not given: indents are probably in the document unit, word / character spacing in percent of the space width, character shift in percent of point size and rotation in degrees (unverified).",
+    "The type library has empty descriptions for every member, so meanings come from the old Format Text dialog, not from the harvest."
+   ],
+   "example": "Set t = ActiveShape.Text\nSet ap = t.AlignProperties(cdrAllFrames)\nDebug.Print ap.Alignment, ap.FirstLineIndent, ap.LeftIndent, ap.RightIndent\nap.Alignment = cdrCenterAlignment\nap.MaxWordSpacing = 150            ' unit unverified (percent of a space?)\nt.AlignProperties(cdrAllFrames) = ap   ' propput in the typelib: no Set",
+   "review": {
+    "by": "adversarial",
+    "changes": "Fixed the example's write-back. It used 'Set t.AlignProperties(cdrAllFrames) = ap', but VGCoreAuto.tlb (read with pythoncom) declares AlignProperties and AlignPropertiesInRange as INVOKE_PROPERTYPUT with no PUTREF, so the write-back is a plain assignment; how and the gotcha now say so. The same read confirmed that all three routes carry FUNCFLAG_FHIDDEN and the class does not (status hidden is kept). Alignment now lists cdrNoAlignment. Added CharAngle (for CharacterRotation) to the visible TextRange alternatives. Replaced the wrong 'whole-frame struct' avoid entry, because AlignPropertiesInRange is range-bound. how now documents IndexingType and its default, and no longer calls the CreateStructAlignProperties result 'empty'. Marked the Format Text Align tab origin and the cdrMixedAlignment 'do not set' as unverified. Equivalents kept (AI ParagraphAttributes, PS TextItem); both exist. PS TextItem covers justification and indents but has no word or letter spacing members."
+   }
+  }
+ ]
+}

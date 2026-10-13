@@ -1,0 +1,863 @@
+{
+ "cards": [
+  {
+   "name": "Pixel Aspect Ratio Correction",
+   "id": "1112",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio Correction",
+   "status": "needs_input",
+   "summary": "Toggles on-screen correction for a document whose pixel aspect ratio is not Square: when on, Photoshop stretches or squeezes the display so non-square video pixels look as they will on a TV or video monitor, without changing the stored pixels. The harvest found it disabled in every scratch state (all square-pixel documents), so it needs a document set to a non-square ratio under View > Pixel Aspect Ratio first.",
+   "use_for": [
+    "painting on an HDV 1080 or anamorphic video frame without it looking squeezed",
+    "switching the stretch off to inspect the real stored pixels of a video still before export",
+    "comparing an SD lower-third graphic with and without the aspect correction"
+   ],
+   "avoid": [
+    "square-pixel documents for web, print or full-raster HD: the command stays disabled and is not needed",
+    "converting a non-square frame to square pixels for good: resample with Image > Image Size, then set View > Pixel Aspect Ratio > Square"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "scriptable": "no",
+   "script_api": "No confirmed route. The label-matched candidate app.runMenuItem(stringIDToTypeID('toggleProofVideo')) failed live with 'General Photoshop error occurred. This functionality may not be available in this version of Photoshop', followed by a note that the command \"Select\" is not currently available; the item was disabled in every state the harvest tried, so it may work on a non-square document (unverified). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 1112}). To make the item available from a script, first set app.activeDocument.pixelAspectRatio (writable in the PS API harvest) to a non-square value (unverified).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: quoted the harvested error (a general error that names the Select command, not this one); added the unverified UXP performMenuCommand route from extra.uxp_command_id and the PS API harvest's writable Document.pixelAspectRatio as the way to get the item enabled; use_for / avoid: dropped unharvested frame sizes (1440x1080, 1920x1080)"
+   }
+  },
+  {
+   "name": "Anamorphic 2:1 (2)",
+   "id": "View/Pixel Aspect Ratio/Anamorphic 2:1 (2)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/Anamorphic 2:1 (2)",
+   "status": "current",
+   "summary": "Assigns the 2 pixel aspect ratio of 2x anamorphic film footage to the document: each stored pixel is treated as twice as wide as it is tall. With Pixel Aspect Ratio Correction on, the canvas is displayed stretched to double width so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "a title card or matte painting to drop into 2x anamorphic film footage",
+    "retouching a still frame exported from an anamorphic sequence without it looking squeezed",
+    "previewing how squeezed anamorphic plates will look once unsqueezed in the edit"
+   ],
+   "avoid": [
+    "web, social or print graphics: keep Square pixels, since non-square documents look distorted in browsers and image viewers",
+    "video with a different squeeze (HDV 1.33, DVCPRO HD 1.5): pick the matching preset or the frame is stretched wrongly"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 2, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "Custom Pixel Aspect Ratio",
+   "id": "1202",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/Custom Pixel Aspect Ratio",
+   "status": "current",
+   "summary": "Opens the Save Pixel Aspect Ratio dialog to define your own pixel aspect ratio: the value is applied to the current document and saved by name in the View > Pixel Aspect Ratio menu for later use. Pixels are not resampled. Needs an open document.",
+   "how": "Type a Factor (pixel width divided by height) and a Name for the menu entry, then OK.",
+   "use_for": [
+    "frames for a camera, anamorphic adapter or LED wall whose pixel shape is not in the preset list",
+    "matching a stills template to footage shot through an anamorphic lens whose squeeze is not a preset",
+    "saving one named ratio so everyone on a video job picks the same value"
+   ],
+   "avoid": [
+    "a ratio that is already a preset: choose the preset instead of adding a duplicate",
+    "web, social or print graphics: keep Square pixels, since non-square documents look distorted in browsers and image viewers"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('customScaleFactor')) opens the Save Pixel Aspect Ratio dialog (verified live). Without the dialog (not run): app.activeDocument.pixelAspectRatio = <factor>, a writable Document property in the PS API harvest (harvested range 0.100 to 10.000); it sets the ratio but adds no named menu entry.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "how / use_for: dropped the invented 1.8 and 1.55 example factors; script_api: Document.pixelAspectRatio cited from the PS API harvest with its harvested range (still not run)"
+   }
+  },
+  {
+   "name": "D1/DV NTSC (0.91)",
+   "id": "View/Pixel Aspect Ratio/D1/DV NTSC (0.91)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/D1/DV NTSC (0.91)",
+   "status": "current",
+   "summary": "Assigns the 0.91 pixel aspect ratio of standard (non-widescreen) NTSC D1/DV video to the document: pixels are treated as slightly narrower than they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed slightly squeezed horizontally so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "lower thirds and title graphics for a standard-definition NTSC DV or DVD timeline",
+    "cleaning up a frame grab from non-widescreen NTSC DV footage",
+    "menu backgrounds for an NTSC DVD"
+   ],
+   "avoid": [
+    "widescreen NTSC material: use D1/DV NTSC Widescreen (1.21)",
+    "PAL frames: use D1/DV PAL (1.09)",
+    "full-raster HD or web video: use Square"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 0.91, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "D1/DV NTSC Widescreen (1.21)",
+   "id": "View/Pixel Aspect Ratio/D1/DV NTSC Widescreen (1.21)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/D1/DV NTSC Widescreen (1.21)",
+   "status": "current",
+   "summary": "Assigns the 1.21 pixel aspect ratio of anamorphic widescreen standard-definition NTSC video (D1/DV frames shown widescreen) to the document: pixels are treated as wider than they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed stretched horizontally to a widescreen picture so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "graphics for a widescreen NTSC DV or DVD project",
+    "retouching a still taken from widescreen NTSC footage",
+    "widescreen NTSC DVD menu art"
+   ],
+   "avoid": [
+    "non-widescreen NTSC material: use D1/DV NTSC (0.91)",
+    "widescreen PAL frames: use D1/DV PAL Widescreen (1.46)",
+    "web, social or print graphics: keep Square pixels, since non-square documents look distorted in browsers and image viewers"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 1.21, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "D1/DV PAL (1.09)",
+   "id": "View/Pixel Aspect Ratio/D1/DV PAL (1.09)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/D1/DV PAL (1.09)",
+   "status": "current",
+   "summary": "Assigns the 1.09 pixel aspect ratio of standard (non-widescreen) PAL D1/DV video to the document: pixels are treated as slightly wider than they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed slightly stretched horizontally so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "titles and lower thirds for a standard-definition PAL DV or DVD project",
+    "cleaning up a frame grab from non-widescreen PAL broadcast or DV footage",
+    "menu backgrounds for a PAL DVD"
+   ],
+   "avoid": [
+    "widescreen PAL material: use D1/DV PAL Widescreen (1.46)",
+    "NTSC frames: use D1/DV NTSC (0.91)",
+    "full-raster HD or web video: use Square"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 1.09, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "D1/DV PAL Widescreen (1.46)",
+   "id": "View/Pixel Aspect Ratio/D1/DV PAL Widescreen (1.46)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/D1/DV PAL Widescreen (1.46)",
+   "status": "current",
+   "summary": "Assigns the 1.46 pixel aspect ratio of anamorphic widescreen standard-definition PAL video (D1/DV frames shown widescreen) to the document: pixels are treated as clearly wider than they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed stretched horizontally to a widescreen picture so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "graphics for a 16:9 widescreen PAL DV or DVD project",
+    "retouching a still taken from widescreen PAL footage",
+    "widescreen PAL DVD menu art"
+   ],
+   "avoid": [
+    "non-widescreen PAL material: use D1/DV PAL (1.09)",
+    "widescreen NTSC frames: use D1/DV NTSC Widescreen (1.21)",
+    "web, social or print graphics: keep Square pixels, since non-square documents look distorted in browsers and image viewers"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 1.46, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "Delete Pixel Aspect Ratio",
+   "id": "1203",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/Delete Pixel Aspect Ratio",
+   "status": "current",
+   "summary": "Opens the Delete Pixel Aspect Ratio dialog, where you pick a pixel aspect ratio from a list and remove it from the View > Pixel Aspect Ratio menu. It edits the menu, not the current document's pixels. Needs an open document.",
+   "how": "Choose the ratio to remove from the dialog's pop-up list and confirm; Cancel leaves the menu unchanged.",
+   "use_for": [
+    "clearing out custom ratios left over from a finished video project",
+    "removing a mistyped custom ratio before someone applies it",
+    "keeping a shared workstation's ratio menu short and unambiguous"
+   ],
+   "avoid": [
+    "getting the factory list back: use Reset Pixel Aspect Ratios",
+    "changing the current document's ratio: pick another ratio from the menu instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('deleteScaleFactor')) opens the Delete Pixel Aspect Ratio dialog (verified live).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DVCPRO HD 1080 (1.5)",
+   "id": "View/Pixel Aspect Ratio/DVCPRO HD 1080 (1.5)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/DVCPRO HD 1080 (1.5)",
+   "status": "current",
+   "summary": "Assigns the 1.5 pixel aspect ratio of DVCPRO HD 1080 video (frames recorded narrower than full HD and shown widescreen) to the document: pixels are treated as one and a half times as wide as they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed stretched horizontally to a widescreen picture so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "graphics at the native frame size of a DVCPRO HD 1080 edit",
+    "retouching a frame grab from DVCPRO HD 1080 footage",
+    "checking a broadcast bug or lower third on DVCPRO HD 1080 material"
+   ],
+   "avoid": [
+    "HDV 1080 or DVCPRO HD 720 frames: use HDV 1080/DVCPRO HD 720 (1.33)",
+    "full-raster HD: use Square"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 1.5, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "HDV 1080/DVCPRO HD 720 (1.33)",
+   "id": "View/Pixel Aspect Ratio/HDV 1080/DVCPRO HD 720 (1.33)",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/HDV 1080/DVCPRO HD 720 (1.33)",
+   "status": "current",
+   "summary": "Assigns the 1.33 pixel aspect ratio of HDV 1080 and DVCPRO HD 720 video (frames recorded narrower than they are shown) to the document: pixels are treated as a third wider than they are tall. With Pixel Aspect Ratio Correction on, the canvas is displayed stretched horizontally to a widescreen picture so it previews as it will on a video display. The pixel dimensions are not resampled; only how the pixels are interpreted and shown changes. Needs an open document.",
+   "use_for": [
+    "graphics for an HDV 1080 timeline",
+    "retouching a frame grab from HDV or DVCPRO HD 720 footage",
+    "checking titles drawn on HDV 1080 broadcast frames"
+   ],
+   "avoid": [
+    "DVCPRO HD 1080 frames: use DVCPRO HD 1080 (1.5)",
+    "full-raster HD: use Square"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested (the entry has a per-session negative command id; address it by path). DOM route (not run): app.activeDocument.pixelAspectRatio = 1.33, a writable Document property in the PS API harvest; the harvest has only the factor printed in the menu label, so an exact match with the preset is unchecked.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes and 4:3 / 16:9 figures that are not in the batch; scriptable no -> partial: Document.pixelAspectRatio is a writable property in the PS API harvest, so the DOM route is cited from it (still not run)"
+   }
+  },
+  {
+   "name": "Reset Pixel Aspect Ratios",
+   "id": "1204",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/Reset Pixel Aspect Ratios",
+   "status": "current",
+   "summary": "Restores the View > Pixel Aspect Ratio menu to Photoshop's default list, dropping custom ratios added with Custom Pixel Aspect Ratio and bringing back deleted presets. The harvest's candidate route opened an alert titled 'Adobe Photoshop' that does not name the command, so the alert's wording is unconfirmed; an Append choice (add the defaults back while keeping custom ratios) is likely but also unconfirmed. Needs an open document.",
+   "how": "Confirm with OK to replace the list with the defaults; Cancel leaves it unchanged (an Append choice is likely but unconfirmed).",
+   "use_for": [
+    "bringing back preset ratios that were deleted by mistake",
+    "cleaning a shared workstation's ratio menu back to factory settings",
+    "starting a new video job from the standard ratio list"
+   ],
+   "avoid": [
+    "removing just one custom ratio: use Delete Pixel Aspect Ratio",
+    "changing the current document's ratio: pick a ratio from the menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('resetScaleFactor')) is the label-matched candidate; tried live it opened an alert titled 'Adobe Photoshop' that does not name the command (not confirmed as this command's alert).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: removed the first-person 'I believe' and stated the alert's wording and the Append option as unconfirmed (the batch records only an alert titled 'Adobe Photoshop'); said it brings deleted presets back, matching use_for"
+   }
+  },
+  {
+   "name": "Square",
+   "id": "1205",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Pixel Aspect Ratio/Square",
+   "status": "current",
+   "summary": "Assigns the Square pixel aspect ratio to the document, so each pixel is shown as square, as used for web, print, photos and full-raster HD or UHD video. It is the normal setting (the PS API harvest gives Documents.add a pixelAspectRatio default of 1.0); choosing it turns off any non-square display stretch without resampling pixels. Needs an open document.",
+   "use_for": [
+    "resetting a document that was tagged with a video ratio before exporting it for web or social",
+    "graphics for full-raster HD or UHD video timelines",
+    "the final step after resampling an anamorphic frame to its full display width"
+   ],
+   "avoid": [
+    "SD DV, HDV 1080 or DVCPRO HD video frames: those need their non-square preset or they display distorted",
+    "unsqueezing anamorphic pixels: Square alone only reinterprets them, so resample width with Image > Image Size first"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "scriptable": "partial",
+   "script_api": "No menu route harvested. DOM route (not run): app.activeDocument.pixelAspectRatio = 1, a writable Document property in the PS API harvest (Documents.add defaults it to 1.0). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 1205}).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / use_for / avoid: dropped frame sizes not in the batch (1920x1080, 3840x2160, 720x480 ...); avoid said every non-square frame displays squeezed, but NTSC 0.91 frames display stretched, now 'distorted'; scriptable no -> partial with Document.pixelAspectRatio cited from the PS API harvest (still not run) and the unverified UXP route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Print Size",
+   "id": "1191",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Print Size",
+   "status": "current",
+   "summary": "Zooms the view so the document appears at about the physical size it will print, worked out from the image's print size (Image > Image Size) and the Screen Resolution set in Edit > Preferences > Units & Rulers; nothing in the image changes. How true the on-screen size is depends on that preference matching the monitor. The harvest ran it but recorded no change, so this is not confirmed for 27.4, which also has a separate View > Actual Size command. Needs an open document.",
+   "use_for": [
+    "checking body text on a flyer or business card is readable at its printed size",
+    "judging logo and headline size on a poster or packaging mock-up before print",
+    "seeing the real-world size of a sticker or label design"
+   ],
+   "avoid": [
+    "exact physical measurement: set Screen Resolution to the monitor's real ppi first, or measure with the rulers in cm or inches",
+    "true size on this monitor: also try View > Actual Size (how it differs from Print Size is not confirmed by the harvest)",
+    "checking pixel-level detail for screen work: view at 100% zoom instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "View/Actual Size"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('printSize')); ran without error live under DialogModes.NO (audit 2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / avoid: the Screen Resolution mechanism is unharvested and 27.4 has a separate View > Actual Size (harvest id 1217), so both are now flagged and the sibling is named; confidence high -> medium; script_api: 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Proof Colors",
+   "id": "1105",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Colors",
+   "status": "current",
+   "summary": "Toggles a soft proof on screen: the document is displayed through the condition chosen in View > Proof Setup (Working CMYK by default), simulating how colours will reproduce on that output, for example bright RGB blues and greens dulling in CMYK. The colour data is not changed; the proof name shows in the document tab while it is on. Needs an open document.",
+   "use_for": [
+    "previewing how a vivid RGB poster or social graphic will dull when printed in CMYK",
+    "checking a brand colour on packaging before sending files to the printer",
+    "switching a colour-blindness proof on and off while reviewing an infographic"
+   ],
+   "avoid": [
+    "converting the file for print: use Image > Mode > CMYK Color or Edit > Convert to Profile",
+    "judging proofs on an uncalibrated monitor: calibrate first or the simulation misleads"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proofColors",
+    "CDR": "View/Proof Colors"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleProofColors')); ran without error live under DialogModes.NO (audit 2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": "Ctrl+Y",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Color Blindness - Deuteranopia-type",
+   "id": "2816",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Color Blindness - Deuteranopia-type",
+   "status": "current",
+   "summary": "Sets the soft proof to simulate deuteranopia-type colour blindness (green-cone deficiency; deutan deficiencies are the most common red-green type), so while Proof Colors is on the document is shown roughly as such a viewer sees it: reds and greens collapse toward similar yellow-brown tones. The file is not changed.",
+   "use_for": [
+    "checking a red/green chart, map or traffic-light infographic stays readable for colour-blind viewers",
+    "testing whether text on a red or green sale badge or button still stands out",
+    "reviewing a brand palette for accessibility before sign-off"
+   ],
+   "avoid": [
+    "covering red-weak viewers too: also check the Protanopia-type proof",
+    "measuring text contrast: the simulation shows hue confusion, not a contrast ratio"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "View/Proof Setup/Color blindness - Deuteranopia-type"
+   },
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches this command). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2816}).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: 'most common' moved from full deuteranopia to deutan deficiencies in general; script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Color Blindness - Protanopia-type",
+   "id": "2815",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Color Blindness - Protanopia-type",
+   "status": "current",
+   "summary": "Sets the soft proof to simulate protanopia-type colour blindness (missing red cones), so while Proof Colors is on the document is shown roughly as such a viewer sees it: reds lose brightness and look dark brown or olive, and red and green become hard to tell apart. The file is not changed.",
+   "use_for": [
+    "checking red warning text or red-on-black headlines still read for red-blind viewers",
+    "testing a red/green status palette in a dashboard mock-up or chart",
+    "accessibility review of a poster or ad that relies on red accents"
+   ],
+   "avoid": [
+    "covering green-weak viewers too: also check the Deuteranopia-type proof",
+    "measuring text contrast: the simulation shows hue confusion, not a contrast ratio"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "View/Proof Setup/Color blindness - Protanopia-type"
+   },
+   "scriptable": "no",
+   "script_api": "No script route harvested (no menuItemType or event label matches this command). UXP (unverified): require('photoshop').core.performMenuCommand({commandID: 2815}).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: added the unverified UXP performMenuCommand route from extra.uxp_command_id"
+   }
+  },
+  {
+   "name": "Custom",
+   "id": "2802",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Custom",
+   "status": "current",
+   "summary": "Opens the Customize Proof Condition dialog to soft-proof against any output profile, such as a specific press, paper or printer, instead of the working CMYK; saved conditions appear in the Proof Setup menu. The harvest found it enabled even with no document open.",
+   "how": "Device to Simulate (the ICC profile), Preserve Numbers (show the file's numbers sent unconverted), Rendering Intent and Black Point Compensation, and Display Options: Simulate Paper Color and Simulate Black Ink. Save and Load store the condition as a .psf file.",
+   "use_for": [
+    "previewing a design on the exact paper profile the printer supplied (uncoated, newsprint)",
+    "checking how a photo will look from a specific inkjet or photo-lab profile",
+    "saving a client's press condition so the whole team proofs against it"
+   ],
+   "avoid": [
+    "a standard CMYK check: Working CMYK is quicker",
+    "converting the file: use Edit > Convert to Profile; this only changes the display"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proof-custom",
+    "CDR": "Window/Dockers/Color Proofing"
+   },
+   "scriptable": "partial",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofCustom')) opens the Customize Proof Condition dialog (verified live).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Internet Standard RGB (sRGB)",
+   "id": "2810",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Internet Standard RGB (sRGB)",
+   "status": "current",
+   "summary": "Sets the soft proof to sRGB with the RGB numbers preserved, showing how the document's RGB values will look on a typical sRGB screen or in a viewer that treats files as sRGB. It mainly matters for files in a wider space such as Adobe RGB, whose colours look duller or shifted there. The file is not changed.",
+   "use_for": [
+    "checking an Adobe RGB or ProPhoto photo before posting it to the web or social media",
+    "spotting colour shifts in web banners made in a non-sRGB document",
+    "previewing how an untagged export will look in a browser"
+   ],
+   "avoid": [
+    "fixing the shift: convert with Edit > Convert to Profile > sRGB or Export As with sRGB",
+    "print checks: use Working CMYK or a Custom proof"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proof-win-rgb"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofWindows')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Legacy Macintosh RGB (Gamma 1.8)",
+   "id": "2809",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Legacy Macintosh RGB (Gamma 1.8)",
+   "status": "current",
+   "summary": "Sets the soft proof to the old Macintosh RGB space (gamma 1.8, the former Mac display standard) with the RGB numbers preserved, so the document is shown lighter and flatter, as it looked on those older Mac displays. The file is not changed.",
+   "use_for": [
+    "checking artwork destined for legacy Mac software or old kiosk systems",
+    "comparing how gamma differences change midtones in a design",
+    "matching a vintage digital asset's original appearance"
+   ],
+   "avoid": [
+    "modern Mac or web output: current Macs no longer use gamma 1.8, so use Internet Standard RGB (sRGB)",
+    "print checks: use Working CMYK or a Custom proof"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proof-mac-rgb"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofMacintosh')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary / avoid: dropped the unharvested 'Mac OS 10.5' and 'gamma 2.2' figures; script_api: removed 'under DialogModes.NO' (not recorded for this item) and stated what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Monitor RGB",
+   "id": "2811",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Monitor RGB",
+   "status": "current",
+   "summary": "Sets the soft proof to the current monitor profile with the RGB numbers preserved, so the document is shown as it would look in a non-colour-managed program on this monitor, where the raw RGB values are sent straight to the screen. The file is not changed.",
+   "use_for": [
+    "predicting how a web graphic looks in apps that ignore colour profiles",
+    "checking a UI mock-up or game texture for non-colour-managed display",
+    "explaining why an exported image looks different outside Photoshop"
+   ],
+   "avoid": [
+    "judging other people's screens: it simulates only your own monitor; use Internet Standard RGB (sRGB) instead",
+    "print checks: use Working CMYK or a Custom proof"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proof-monitor-rgb"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofMonitor')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working Black Plate",
+   "id": "2807",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working Black Plate",
+   "status": "current",
+   "summary": "Sets the soft proof to show only the black (K) plate that the CMYK working space (Edit > Color Settings) would produce, so you see, as a grey image, where black ink would print and how heavily. The document data is not converted; the proof is seen while Proof Colors is on.",
+   "use_for": [
+    "checking that small body text and thin lines will print on the black plate",
+    "seeing how much black the CMYK conversion uses (GCR) in shadows of a photo for print",
+    "spotting rich-black areas versus K-only areas on a poster or brochure"
+   ],
+   "avoid": [
+    "checking the colour inks: use Working CMY Plates or a single cyan, magenta or yellow plate",
+    "exact ink percentages: read them in the Info panel with CMYK readouts"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Separations Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofBlack')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: grammar; script_api: removed 'under DialogModes.NO' (not recorded for this item) and stated what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working CMY Plates",
+   "id": "2808",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working CMY Plates",
+   "status": "current",
+   "summary": "Sets the soft proof to show only the cyan, magenta and yellow plates combined (black removed) that the CMYK working space (Edit > Color Settings) would produce, so you see the image as it would print without its black ink. The document data is not converted; the proof is seen while Proof Colors is on.",
+   "use_for": [
+    "seeing how much detail and depth lives in the black plate of a print photo",
+    "checking that rich-black backgrounds contain enough colour under the K",
+    "spotting where grey or neutral areas are built from CMY rather than black"
+   ],
+   "avoid": [
+    "seeing the full press result: use Working CMYK",
+    "checking a single ink: use the separate cyan, magenta, yellow or black plate proofs"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Separations Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofCMY')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working CMYK",
+   "id": "2803",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working CMYK",
+   "status": "current",
+   "summary": "Sets the soft proof to the CMYK working space chosen in Edit > Color Settings (the default proof), so while Proof Colors is on the RGB document is shown as it would look converted for that press condition: out-of-gamut colours such as saturated blues, greens and oranges dull. The file is not converted. The harvest found it enabled even with no document open.",
+   "use_for": [
+    "previewing an RGB flyer, poster or brochure as it will print on a standard press",
+    "catching neon or electric colours that will not survive CMYK before sending to print",
+    "editing an RGB file while watching the CMYK result side by side in a second window"
+   ],
+   "avoid": [
+    "a printer-supplied or paper-specific profile: use Custom",
+    "the actual conversion: use Image > Mode > CMYK Color or Edit > Convert to Profile"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "proof-document"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofCMYK')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working Cyan Plate",
+   "id": "2804",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working Cyan Plate",
+   "status": "current",
+   "summary": "Sets the soft proof to show only the cyan plate that the CMYK working space (Edit > Color Settings) would produce, so you see where cyan ink would print and how heavily. The document data is not converted; the proof is seen while Proof Colors is on.",
+   "use_for": [
+    "checking a blue or green brand colour is built with the expected amount of cyan",
+    "finding unwanted cyan in skin tones of a print photo",
+    "checking cyan coverage in a navy or teal background before print"
+   ],
+   "avoid": [
+    "the full press result: use Working CMYK",
+    "exact ink percentages: read them in the Info panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Separations Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofCyan')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working Magenta Plate",
+   "id": "2805",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working Magenta Plate",
+   "status": "current",
+   "summary": "Sets the soft proof to show only the magenta plate that the CMYK working space (Edit > Color Settings) would produce, so you see where magenta ink would print and how heavily. The document data is not converted; the proof is seen while Proof Colors is on.",
+   "use_for": [
+    "checking reds, pinks and purples in a print design are built with the expected magenta",
+    "spotting a magenta cast in neutral greys or skin tones before print",
+    "inspecting the magenta coverage under a rich-black background"
+   ],
+   "avoid": [
+    "the full press result: use Working CMYK",
+    "exact ink percentages: read them in the Info panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Separations Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofMagenta')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Working Yellow Plate",
+   "id": "2806",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Proof Setup/Working Yellow Plate",
+   "status": "current",
+   "summary": "Sets the soft proof to show only the yellow plate that the CMYK working space (Edit > Color Settings) would produce, so you see where yellow ink would print and how heavily. The document data is not converted; the proof is seen while Proof Colors is on.",
+   "use_for": [
+    "checking yellows, oranges and greens in a print design carry the expected yellow",
+    "spotting stray yellow in a cool blue sky or in neutral greys",
+    "checking fine yellow text, which is hard to judge in the composite"
+   ],
+   "avoid": [
+    "the full press result: use Working CMYK",
+    "exact ink percentages: read them in the Info panel"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Separations Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('proofYellow')) (hand-mapped candidate); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Rulers",
+   "id": "1002",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Rulers",
+   "status": "current",
+   "summary": "Shows or hides the rulers along the top and left edges of the document window; units follow Preferences > Units & Rulers (right-click a ruler to change them), and dragging out of a ruler creates a guide. Needs an open document.",
+   "use_for": [
+    "measuring margins and bleed on a print flyer or business card",
+    "dragging guides to set up a poster or social-post layout grid",
+    "placing a logo a set distance from the edges of a banner"
+   ],
+   "avoid": [
+    "exact numeric placement: use the Properties panel or New Guide Layout instead of eyeballing on the rulers",
+    "measuring distances or angles inside the image: use the Ruler tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "ruler",
+    "CDR": "View/Rulers"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('toggleRulers')) toggles them; verified live (rulersVisibility false -> true, a second run restored it).",
+   "shortcut": "Ctrl+R",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Full Screen Mode",
+   "id": "5993",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Screen Mode/Full Screen Mode",
+   "status": "current",
+   "summary": "Switches the document window to full screen with no menu bar, title bar, scroll bars or panels, on a black background, for viewing the image distraction-free; panels can still be revealed at the screen edges. Needs an open document.",
+   "use_for": [
+    "presenting a poster or key visual to a client on screen without the interface",
+    "judging a photo retouch or composition at the largest possible size",
+    "a clean full-screen screenshot or screen-recording of a design"
+   ],
+   "avoid": [
+    "day-to-day editing with panels: use Standard Screen Mode",
+    "keeping the menu bar available: use Full Screen Mode With Menu Bar"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "View/Screen Mode/Full Screen Mode",
+    "CDR": "View/Full-screen Preview"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('screenModeFullScreen')); verified live (all panels hidden; the harvest restored Standard Screen Mode afterwards).",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Full Screen Mode With Menu Bar",
+   "id": "5992",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Screen Mode/Full Screen Mode With Menu Bar",
+   "status": "current",
+   "summary": "Switches the document window to a full-screen view with the menu bar kept but no title bar or scroll bars, on a grey background, giving more room to the image while menus stay at hand. Needs an open document.",
+   "use_for": [
+    "working on a large retouch or layout with maximum canvas space and the menus still available",
+    "reviewing a design at large size while still able to change view options",
+    "showing work on a second monitor with minimal chrome"
+   ],
+   "avoid": [
+    "a completely clean presentation: use Full Screen Mode",
+    "juggling several tabbed documents: use Standard Screen Mode"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "View/Screen Mode/Full Screen with Menu Bar Mode"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('screenModeFullScreenWithMenubar')); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  },
+  {
+   "name": "Standard Screen Mode",
+   "id": "5991",
+   "app": "PS",
+   "kind": "ps_menu",
+   "path": "View/Screen Mode/Standard Screen Mode",
+   "status": "current",
+   "summary": "Returns to the normal workspace: menu bar, options bar, panels, and document windows with title bars or tabs and scroll bars. It is the default mode and the way back from either full-screen mode; the harvest found it enabled even with no document open.",
+   "use_for": [
+    "getting the panels and tabs back after presenting a design full screen",
+    "everyday editing with several documents open in tabs",
+    "resetting the view before a scripted batch so panels are where actions expect them"
+   ],
+   "avoid": [
+    "distraction-free review or client presentation: use Full Screen Mode",
+    "more canvas space with menus kept: use Full Screen Mode With Menu Bar"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "View/Screen Mode/Normal Screen Mode"
+   },
+   "scriptable": "yes",
+   "script_api": "app.runMenuItem(stringIDToTypeID('screenModeStandard')); ran without error live (2026-10-04), but the harvest recorded no observable change, so the effect is not confirmed.",
+   "shortcut": null,
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: removed 'under DialogModes.NO' (the batch records it only for the audited items) and 'could not observe the view state' -> what the batch records (no observable change)"
+   }
+  }
+ ]
+}

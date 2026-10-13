@@ -1,0 +1,1289 @@
+{
+ "cards": [
+  {
+   "name": "CGMExport",
+   "id": "class:CGMExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterCGMLib/CGMExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports to Computer Graphics Metafile (.cgm); it carries the CGM writer's options (version/profile, binary or text encoding, S1000D/ATA identifiers) until Finish writes the file.",
+   "use_for": [
+    "technical-illustration delivery as .cgm for S1000D / ATA manuals",
+    "WebCGM figures for an IETM viewer",
+    "batch-exporting parts drawings to CGM"
+   ],
+   "avoid": [
+    "general print or web delivery: CGM is a technical-publishing format; use PDF, EPS or SVG export instead"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass of the CGM export filter (FilterCGMLib). A script never news it up: ActiveDocument.ExportEx(path, cdrCGM) returns this object typed as ICorelExportFilter, and its settings are the ICGMExport members (Format, FileEncoding, ICN, ExportLayers ...), applied before Finish.",
+   "key_members": [
+    {
+     "name": "Format",
+     "use": "CgmFormat: CGM version or profile (plain versions, WebCGM, GREX, S1000D issues) (on default interface ICGMExport)"
+    },
+    {
+     "name": "FileEncoding",
+     "use": "CgmFileEncoding: binary (compact, usual) or clear-text CGM (on default interface ICGMExport)"
+    },
+    {
+     "name": "ICN",
+     "use": "string: Information Control Number for S1000D-style illustration naming (meaning per profile is unverified) (on default interface ICGMExport)"
+    },
+    {
+     "name": "ExportLayers",
+     "use": "bool: write CorelDRAW layers as CGM layers (on default interface ICGMExport)"
+    },
+    {
+     "name": "Reset",
+     "use": "restore the filter's default options (on default interface ICGMExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .cgm (on default interface ICGMExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing CGMExport is not bound to any document or file; get it from the ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' CGMExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\fig01.cgm\", cdrCGM)\nf.Reset   ' start from the filter defaults\nf.Finish  ' writes the .cgm",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name ICGMExport, which is not a member; replaced with the default interface's real members (Format, FileEncoding, ICN, ExportLayers, Reset, Finish)"
+   }
+  },
+  {
+   "name": "CGMImport",
+   "id": "class:CGMImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterCGMLib/CGMImport",
+   "status": "current",
+   "summary": "The object CorelDRAW returns when a script imports a Computer Graphics Metafile (.cgm) onto a layer; it holds the CGM reader's options (an optional XML companion file) until Finish places the artwork.",
+   "use_for": [
+    "bringing customer CGM technical illustrations into CorelDRAW for touch-up",
+    "batch-converting legacy .cgm figures to CDR/PDF"
+   ],
+   "avoid": [
+    "sources that also exist as PDF/SVG/EPS: those keep more styling than CGM"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass of the CGM import filter (FilterCGMLib). ActiveLayer.ImportEx(path, cdrCGM) returns it typed as ICorelImportFilter; its one specific setting is ICGMImport.XCFFileName, set before Finish.",
+   "key_members": [
+    {
+     "name": "XCFFileName",
+     "use": "string: full path of the XML companion file to read with the CGM (unverified) (on default interface ICGMImport)"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default import options (on default interface ICGMImport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import; the CGM content lands on the target layer (on default interface ICGMImport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing CGMImport is not bound to any document or file; get it from the ImportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' CGMImport behind ICorelImportFilter\nSet f = ActiveLayer.ImportEx(\"C:\\in\\fig01.cgm\", cdrCGM)\nf.Reset\nf.Finish  ' places the drawing on the layer",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name ICGMImport, which is not a member; replaced with the default interface's real members (XCFFileName, Reset, Finish)"
+   }
+  },
+  {
+   "name": "ICGMExport",
+   "id": "class:ICGMExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterCGMLib/ICGMExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's CGM (Computer Graphics Metafile) export: picks the CGM version or industry profile (WebCGM, GREX, S1000D issues), binary vs clear-text encoding, number precision, colour model and text encoding, and the ICN / GNBR identifiers that technical-publication profiles expect.",
+   "use_for": [
+    "S1000D / ATA GREX illustration delivery as .cgm",
+    "WebCGM output for interactive electronic manuals",
+    "keeping layers as CGM layers for a tech-pubs CMS"
+   ],
+   "avoid": [
+    "ordinary print/web artwork: CGM viewers are niche and effects/transparency flatten or drop; use PDF, EPS or SVG export",
+    "guessing profile values: the Format value must match the customer's CGM profile spec"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. Reach it through ActiveDocument.ExportEx(\"x.cgm\", cdrCGM), which returns the filter; set the properties, then call Finish. Enum-typed properties take values of CgmFormat, CgmFileEncoding, CgmOutputPrecision, CgmCharsetMode, CgmFallbackCode, CgmTextEncoding and CgmColorMode (see those enum cards).",
+   "key_members": [
+    {
+     "name": "Format",
+     "use": "CgmFormat: CGM version or profile (plain versions, WebCGM, GREX, S1000D issues)"
+    },
+    {
+     "name": "FileEncoding",
+     "use": "CgmFileEncoding: binary (compact, usual) or clear-text CGM"
+    },
+    {
+     "name": "ICN",
+     "use": "string: Information Control Number for S1000D-style illustration naming (meaning per profile is unverified)"
+    },
+    {
+     "name": "GNBR",
+     "use": "string: graphic number used by ATA-style profiles (unverified)"
+    },
+    {
+     "name": "OutputPrecision",
+     "use": "CgmOutputPrecision: integer 16-bit vs real 32-bit coordinates"
+    },
+    {
+     "name": "ColorMode",
+     "use": "CgmColorMode: indexed palette vs direct colour"
+    },
+    {
+     "name": "TextEncoding",
+     "use": "CgmTextEncoding: how text strings are encoded in the file"
+    },
+    {
+     "name": "CharsetMode",
+     "use": "CgmCharsetMode: strict vs relaxed character-set handling"
+    },
+    {
+     "name": "FallbackCode",
+     "use": "CgmFallbackCode: Unicode encoding used when a character falls outside the chosen set (unverified)"
+    },
+    {
+     "name": "ExportLayers",
+     "use": "bool: write CorelDRAW layers as CGM layers"
+    },
+    {
+     "name": "IncludeXCF",
+     "use": "bool: also write an XML companion file (XCF) next to the CGM (unverified)"
+    },
+    {
+     "name": "Reset",
+     "use": "restore the filter's default options"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .cgm"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the CGM filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open that dialog (optional hWnd owner); returns bool"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExternalSettings is a hidden, read-only string; do not build on it (what it serialises is unverified)",
+    "A profile Format (WebCGM / S1000D) may constrain what the other options can be; check the written file in the target validator (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\fig01.cgm\", cdrCGM)\nf.ExportLayers = True\nf.ICN = \"ICN-DEMO-00001-A-01\"\nf.IncludeXCF = False\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for: 'ATA iSpec 2200' replaced with the harvested GREX profile name"
+   }
+  },
+  {
+   "name": "ICGMImport",
+   "id": "class:ICGMImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterCGMLib/ICGMImport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's CGM import filter: beyond the shared import-filter members it has only XCFFileName, the path of an XML companion file (XCF) to read along with the metafile; what the filter does with the XCF data is not confirmed.",
+   "use_for": [
+    "importing WebCGM / S1000D illustrations that ship with an XCF companion",
+    "scripted import of a folder of .cgm files"
+   ],
+   "avoid": [
+    "expecting hotspot/metadata round-trips: XCF handling on import is unverified, check the result by eye"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelImportFilter. ActiveLayer.ImportEx(\"x.cgm\", cdrCGM) returns the filter; set XCFFileName if a companion file exists, then call Finish to place the artwork.",
+   "key_members": [
+    {
+     "name": "XCFFileName",
+     "use": "string: full path of the XML companion file to read with the CGM (unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import; the CGM content lands on the target layer"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default import options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the CGM import filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open that dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "The objects only land on the layer when Finish is called (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveLayer.ImportEx(\"C:\\in\\fig01.cgm\", cdrCGM)\nf.XCFFileName = \"C:\\in\\fig01.xml\"\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DSFImport",
+   "id": "class:DSFImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDSFLib/DSFImport",
+   "status": "current",
+   "summary": "The object CorelDRAW returns when a script imports a Micrografx Designer drawing (.dsf); it holds that reader's options (drop invisible objects, default line style) until Finish places the drawing. cdrDSF and cdrDRW are the same filter constant, so .drw Designer files go through it too; the exact file versions supported are not confirmed.",
+   "use_for": [
+    "recovering old Micrografx Designer technical drawings into CorelDRAW",
+    "batch-converting a .dsf archive"
+   ],
+   "avoid": [
+    "files the source app can still save as SVG/EPS/PDF: those import with fewer surprises"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass of the DSF (Micrografx / iGrafx Designer) import filter, FilterDSFLib. ActiveLayer.ImportEx(path, cdrDSF) returns it as ICorelImportFilter; the specific settings are IDSFImport.DeleteInvisibleObjects and DefaultLinestyle.",
+   "key_members": [
+    {
+     "name": "DeleteInvisibleObjects",
+     "use": "bool: skip objects that are invisible in the source drawing (on default interface IDSFImport)"
+    },
+    {
+     "name": "DefaultLinestyle",
+     "use": "DsfLinestyle: line pattern (solid, dashed, dotted, dash-dot ...) used as the default line style (when it applies is unverified) (on default interface IDSFImport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import (on default interface IDSFImport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing DSFImport is not bound to any document or file; get it from the ImportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' DSFImport behind ICorelImportFilter\nSet f = ActiveLayer.ImportEx(\"C:\\in\\plan.dsf\", cdrDSF)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IDSFImport, which is not a member; replaced with the default interface's real members (DeleteInvisibleObjects, DefaultLinestyle, Finish); summary: replaced the writer's reasoning note with the harvested fact (cdrDSF = cdrDRW)"
+   }
+  },
+  {
+   "name": "IDSFImport",
+   "id": "class:IDSFImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDSFLib/IDSFImport",
+   "status": "current",
+   "summary": "Option interface of the Micrografx Designer (.dsf) import filter: whether objects hidden in the source are dropped (DeleteInvisibleObjects) and which DsfLinestyle pattern (solid, dashed, dotted, dash-dot ...) is used as the default line style; exactly when that default applies is not confirmed.",
+   "use_for": [
+    "cleaning hidden helper objects out of a legacy Designer drawing on import",
+    "scripted conversion of a .dsf archive to CDR"
+   ],
+   "avoid": [
+    "assuming dash styles map one-to-one: check line styles after import"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelImportFilter. ActiveLayer.ImportEx(\"x.dsf\", cdrDSF) returns the filter; set the two properties, then Finish. DefaultLinestyle takes a DsfLinestyle value (see that enum card).",
+   "key_members": [
+    {
+     "name": "DeleteInvisibleObjects",
+     "use": "bool: skip objects that are invisible in the source drawing"
+    },
+    {
+     "name": "DefaultLinestyle",
+     "use": "DsfLinestyle: line pattern (solid, dashed, dotted, dash-dot ...) used as the default line style (when it applies is unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the options dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "The objects only land on the layer when Finish is called (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveLayer.ImportEx(\"C:\\in\\plan.dsf\", cdrDSF)\nf.DeleteInvisibleObjects = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "DefaultLinestyle described as a dash pattern; DsfLinestyle includes dsfSolid, now 'line pattern (solid, dashed, dotted ...)'"
+   }
+  },
+  {
+   "name": "DXFExport",
+   "id": "class:DXFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDXFLib/DXFExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports to AutoCAD DXF; it holds the DXF writer's options (AutoCAD release, units, text as curves, embedded-bitmap format) until Finish writes the file.",
+   "use_for": [
+    "laser-cut / CNC / vinyl-cut outlines for a fabricator",
+    "sending a logo outline to an architect's CAD drawing"
+   ],
+   "avoid": [
+    "artwork that relies on gradients, transparency or effects: DXF keeps geometry, not appearance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "ExportOptionsAutoCAD"
+   },
+   "how": "COM coclass of the AutoCAD DXF export filter, FilterDXFLib. ActiveDocument.ExportEx(path, cdrDXF) returns it as ICorelExportFilter; the settings are IDXFExport members (Version, Units, TextAsCurves, BitmapType ...), set before Finish.",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "DxfVersion: AutoCAD release the DXF is written for (older = wider compatibility) (on default interface IDXFExport)"
+    },
+    {
+     "name": "Units",
+     "use": "DxfUnits: drawing units written into the file (match the CAD user's template) (on default interface IDXFExport)"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "bool: convert text to outlines so no font is needed (cut files) (on default interface IDXFExport)"
+    },
+    {
+     "name": "BitmapType",
+     "use": "DxfBitmapType: format for bitmaps placed in the drawing (on default interface IDXFExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .dxf (on default interface IDXFExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing DXFExport is not bound to any document or file; get it from the ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' DXFExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\cut.dxf\", cdrDXF)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IDXFExport, which is not a member; replaced with the default interface's real members (Version, Units, TextAsCurves, BitmapType, Finish)"
+   }
+  },
+  {
+   "name": "DXFImport",
+   "id": "class:DXFImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDXFLib/DXFImport",
+   "status": "current",
+   "summary": "The object CorelDRAW returns when a script imports an AutoCAD DXF; it holds the reader's options (3D view projection, unit scaling, node reduction) until Finish places the drawing.",
+   "use_for": [
+    "bringing a CAD floor plan or part outline into a layout",
+    "importing fabricator DXF templates (die lines, cut paths)"
+   ],
+   "avoid": [
+    "DWG sources: use the DWG filter (cdrDWG) rather than asking for a DXF re-save, if available"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "OpenOptionsAutoCAD"
+   },
+   "how": "COM coclass of the AutoCAD DXF import filter, FilterDXFLib. ActiveLayer.ImportEx(path, cdrDXF) returns it as ICorelImportFilter; the settings are IDXFImport.Projection, Scaling and AutoReduceNodes, set before Finish.",
+   "key_members": [
+    {
+     "name": "Projection",
+     "use": "DxfProjections: view used to flatten 3D entities (top, bottom, left, right, front, back, isometric SW/SE/NE/NW) (on default interface IDXFImport)"
+    },
+    {
+     "name": "Scaling",
+     "use": "DxfScale: auto, English or metric interpretation of drawing units (on default interface IDXFImport)"
+    },
+    {
+     "name": "AutoReduceNodes",
+     "use": "bool: thin out nodes on the imported curves (on default interface IDXFImport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import (on default interface IDXFImport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing DXFImport is not bound to any document or file; get it from the ImportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' DXFImport behind ICorelImportFilter\nSet f = ActiveLayer.ImportEx(\"C:\\in\\plan.dxf\", cdrDXF)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IDXFImport, which is not a member; replaced with the default interface's real members (Projection, Scaling, AutoReduceNodes, Finish)"
+   }
+  },
+  {
+   "name": "IDXFExport",
+   "id": "class:IDXFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDXFLib/IDXFExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's AutoCAD DXF export: target AutoCAD release (Version), drawing units, whether text is converted to curves, and the format used for embedded bitmaps; FillUnmapped / FillColor / SetFillColorRGB control a fill colour whose exact role in the DXF is not confirmed.",
+   "use_for": [
+    "laser / CNC / plotter cut files with text converted to curves",
+    "DXF for a CAD user who needs a specific AutoCAD release",
+    "logo outlines in millimetres for engineering drawings"
+   ],
+   "avoid": [
+    "colour-critical artwork: DXF carries geometry and indexed colours, not CorelDRAW fills/effects; send PDF or EPS for appearance",
+    "text the CAD user must edit when TextAsCurves is on"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "ExportOptionsAutoCAD"
+   },
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. ActiveDocument.ExportEx(\"x.dxf\", cdrDXF) returns the filter; set Version / Units / TextAsCurves / BitmapType, then Finish. Version, Units and BitmapType take DxfVersion, DxfUnits and DxfBitmapType values (see those enum cards).",
+   "key_members": [
+    {
+     "name": "Version",
+     "use": "DxfVersion: AutoCAD release the DXF is written for (older = wider compatibility)"
+    },
+    {
+     "name": "Units",
+     "use": "DxfUnits: drawing units written into the file (match the CAD user's template)"
+    },
+    {
+     "name": "TextAsCurves",
+     "use": "bool: convert text to outlines so no font is needed (cut files)"
+    },
+    {
+     "name": "BitmapType",
+     "use": "DxfBitmapType: format for bitmaps placed in the drawing"
+    },
+    {
+     "name": "FillUnmapped",
+     "use": "bool: fill-related switch; exact effect unverified"
+    },
+    {
+     "name": "FillColor",
+     "use": "long: fill colour value tied to FillUnmapped (unverified)"
+    },
+    {
+     "name": "SetFillColorRGB",
+     "use": "method(Red, Green, Blue): set that fill colour from RGB components"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .dxf"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the DXF options dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExternalSettings is a hidden, read-only string; do not build on it (what it serialises is unverified)",
+    "Units must match the unit the CAD user's drawing expects, or the part opens at the wrong size; check the real size of a test shape in the CAD app before sending cut files (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\cut.dxf\", cdrDXF)\nf.TextAsCurves = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "gotcha 'Units only label the file' had no support in the harvest; reworded to a unit-mismatch check"
+   }
+  },
+  {
+   "name": "IDXFImport",
+   "id": "class:IDXFImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterDXFLib/IDXFImport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's AutoCAD DXF import: which 3D view a DXF is flattened to (Projection: top, bottom, left, right, front, back or one of four isometric views), how drawing units are scaled (Scaling: auto, English, metric) and whether nodes are reduced automatically.",
+   "use_for": [
+    "importing a CAD plan at true scale for a signage or exhibition layout",
+    "flattening a 3D DXF to an isometric view for an illustration",
+    "lighter, cleaner paths from dense CAD polylines (AutoReduceNodes)"
+   ],
+   "avoid": [
+    "DXFs that need hatches, blocks or dimensions kept editable: CorelDRAW turns them into plain curves (unverified for every entity type)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "OpenOptionsAutoCAD"
+   },
+   "how": "Dispinterface (dual) inheriting ICorelImportFilter. ActiveLayer.ImportEx(\"x.dxf\", cdrDXF) returns the filter; set Projection / Scaling / AutoReduceNodes, then Finish. Projection and Scaling take DxfProjections and DxfScale values (see those enum cards).",
+   "key_members": [
+    {
+     "name": "Projection",
+     "use": "DxfProjections: view used to flatten 3D entities (top, bottom, left, right, front, back, isometric SW/SE/NE/NW)"
+    },
+    {
+     "name": "Scaling",
+     "use": "DxfScale: auto, English or metric interpretation of drawing units"
+    },
+    {
+     "name": "AutoReduceNodes",
+     "use": "bool: thin out nodes on the imported curves"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the DXF import dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "The objects only land on the layer when Finish is called (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "A unitless DXF can come in at the wrong size under auto scaling; measure a known dimension after import (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveLayer.ImportEx(\"C:\\in\\plan.dxf\", cdrDXF)\nf.AutoReduceNodes = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "Projection list said 'top, front, side or isometric'; DxfProjections has top/bottom/left/right/front/back and four isometric views"
+   }
+  },
+  {
+   "name": "CEPSExport",
+   "id": "class:CEPSExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterEPSLib/CEPSExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports Encapsulated PostScript (.eps); it holds the EPS writer's options until Finish writes the file.",
+   "use_for": [
+    "EPS logo files for printers and sign shops",
+    "stock-vector submissions that require EPS",
+    "placing CorelDRAW art in an older layout app"
+   ],
+   "avoid": [
+    "modern print delivery: a PDF/X export keeps transparency and colour management better than EPS"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "EPSSaveOptions",
+    "PS": "EPSSaveOptions"
+   },
+   "how": "COM coclass of the Encapsulated PostScript export filter, FilterEPSLib. ActiveDocument.ExportEx(path, cdrEPS) returns it as ICorelExportFilter; all settings (preview header, PostScript level, fonts, bleed, overprint, colour conversion ...) are IEPSExport members, set before Finish.",
+   "key_members": [
+    {
+     "name": "TextAsCurves",
+     "use": "bool: convert text to outlines (no fonts needed at the printer) (on default interface IEPSExport)"
+    },
+    {
+     "name": "IncludeFonts",
+     "use": "bool: embed fonts when text stays live (on default interface IEPSExport)"
+    },
+    {
+     "name": "PSLevel",
+     "use": "EpsPSLevel: PostScript language level 1, 2 or 3 (on default interface IEPSExport)"
+    },
+    {
+     "name": "Header",
+     "use": "EpsImageHeader: preview image written into the EPS (none, TIFF, WMF) (on default interface IEPSExport)"
+    },
+    {
+     "name": "UseBleed",
+     "use": "bool: extend the bounding box by the bleed (on default interface IEPSExport)"
+    },
+    {
+     "name": "CropMarks",
+     "use": "bool: add crop marks (on default interface IEPSExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .eps (on default interface IEPSExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing CEPSExport is not bound to any document or file; get it from the ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' CEPSExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.eps\", cdrEPS)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IEPSExport, which is not a member; replaced with the default interface's real members (TextAsCurves, IncludeFonts, PSLevel, Header, UseBleed, CropMarks, Finish)"
+   }
+  },
+  {
+   "name": "IEPSExport",
+   "id": "class:IEPSExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterEPSLib/IEPSExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's EPS export: preview header (none, TIFF or WMF, its colour depth, resolution and transparency), PostScript level, text as curves or embedded fonts, JPEG compression of bitmaps, fountain steps, overprint and trapping settings, bounding box, bleed and crop marks, and how object and spot colours are converted.",
+   "use_for": [
+    "print-shop EPS with text converted to curves",
+    "stock-site EPS (often a specific PostScript level and no fonts)",
+    "EPS with bleed and crop marks for an older RIP",
+    "CMYK-only EPS by converting spots"
+   ],
+   "avoid": [
+    "artwork with live transparency, lenses or mesh effects: EPS flattens them, prefer PDF/X",
+    "web delivery: use SVG or PNG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "EPSSaveOptions",
+    "PS": "EPSSaveOptions"
+   },
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. ActiveDocument.ExportEx(\"x.eps\", cdrEPS) returns the filter; set its properties, then Finish. Enum-typed members take EpsImageHeader, EpsTIFFHeaderType, EpsPSLevel, EpsBBoxType, EpsObjectsColorType and EpsSpotToColorType values (see those enum cards). Trapping lives in AutoSpread, FixedWidth, MaxSpread and TextSpread; spot conversion in ConvertSpot + ConvertSpotColorsTo.",
+   "key_members": [
+    {
+     "name": "TextAsCurves",
+     "use": "bool: convert text to outlines (no fonts needed at the printer)"
+    },
+    {
+     "name": "IncludeFonts",
+     "use": "bool: embed fonts when text stays live"
+    },
+    {
+     "name": "PSLevel",
+     "use": "EpsPSLevel: PostScript language level 1, 2 or 3"
+    },
+    {
+     "name": "Header",
+     "use": "EpsImageHeader: preview image written into the EPS (none, TIFF, WMF)"
+    },
+    {
+     "name": "TIFFHeaderType",
+     "use": "EpsTIFFHeaderType: colour depth of a TIFF preview"
+    },
+    {
+     "name": "Resolution",
+     "use": "long: resolution of the preview header in dpi (unverified that it is the header only)"
+    },
+    {
+     "name": "Transparent",
+     "use": "bool: transparent background in the preview header"
+    },
+    {
+     "name": "UseJPEGCompression",
+     "use": "bool: JPEG-compress bitmaps inside the EPS"
+    },
+    {
+     "name": "JPEGCompression",
+     "use": "long: JPEG compression amount (scale unverified)"
+    },
+    {
+     "name": "AdjustFountainSteps",
+     "use": "bool: override the number of steps in fountain fills"
+    },
+    {
+     "name": "FountainSteps",
+     "use": "long: steps used when AdjustFountainSteps is on (more = smoother, larger)"
+    },
+    {
+     "name": "PreserveOverprints",
+     "use": "bool: keep overprint attributes set in the document"
+    },
+    {
+     "name": "OverprintBlack",
+     "use": "bool: force black to overprint"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "EpsBBoxType: bounding box from the objects or the whole page"
+    },
+    {
+     "name": "UseBleed",
+     "use": "bool: extend the bounding box by the bleed"
+    },
+    {
+     "name": "Bleed",
+     "use": "double: bleed amount (units unverified)"
+    },
+    {
+     "name": "CropMarks",
+     "use": "bool: add crop marks"
+    },
+    {
+     "name": "OutputObjectColorMode",
+     "use": "EpsObjectsColorType: output objects as CMYK, RGB, grayscale or native"
+    },
+    {
+     "name": "ConvertSpotColorsTo",
+     "use": "EpsSpotToColorType: target model when ConvertSpot is on"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .eps"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExternalSettings is a hidden, read-only string; do not build on it (what it serialises is unverified)",
+    "ApplyICCProfile, SendBitmapsAs and UseSeparationProfile are hidden members; prefer the visible OutputObjectColorMode / ConvertSpot route (unverified)",
+    "Bleed and MaxSpread / TextSpread are doubles with no harvested unit; test with a known value (unverified)",
+    "UserName and UseFloatNumbers are not described anywhere in the harvest; leave them at defaults (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\logo.eps\", cdrEPS)\nf.TextAsCurves = True\nf.UseBleed = True\nf.CropMarks = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GEMExport",
+   "id": "class:GEMExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterGEMLib/GEMExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports to the legacy GEM metafile format (.gem, from the Digital Research GEM desktop era); whether current tools still read the output is not confirmed.",
+   "use_for": [
+    "feeding a legacy GEM-based publishing/vector tool"
+   ],
+   "avoid": [
+    "any modern destination: use SVG, EPS, PDF or WMF/EMF"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass of the GEM metafile export filter, FilterGEMLib. ActiveDocument.ExportEx(path, cdrGEM) returns it as ICorelExportFilter; its one specific setting is IGEMExport.CurvesAsPolylines, set before Finish.",
+   "key_members": [
+    {
+     "name": "CurvesAsPolylines",
+     "use": "bool: approximate curves with straight polyline segments (unverified) (on default interface IGEMExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .gem (on default interface IGEMExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing GEMExport is not bound to any document or file; get it from the ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' GEMExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\art.gem\", cdrGEM)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IGEMExport, which is not a member; replaced with the default interface's real members (CurvesAsPolylines, Finish)"
+   }
+  },
+  {
+   "name": "IGEMExport",
+   "id": "class:IGEMExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterGEMLib/IGEMExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's GEM metafile export: besides the shared export-filter members it only has CurvesAsPolylines, which writes Bezier curves as polyline segments for readers that cannot handle curves (behaviour inferred from the name, not confirmed).",
+   "use_for": [
+    "legacy GEM interchange where curve support in the reader is doubtful"
+   ],
+   "avoid": [
+    "modern interchange: use SVG / EPS / PDF"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. ActiveDocument.ExportEx(\"x.gem\", cdrGEM) returns the filter; set CurvesAsPolylines, then Finish.",
+   "key_members": [
+    {
+     "name": "CurvesAsPolylines",
+     "use": "bool: approximate curves with straight polyline segments (unverified)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .gem"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the options dialog (optional hWnd owner)"
+    },
+    {
+     "name": "ExternalSettings",
+     "use": "hidden read-only string, leave alone"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\art.gem\", cdrGEM)\nf.CurvesAsPolylines = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GIFExport",
+   "id": "class:GIFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterGIFLib/GIFExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports a single-frame GIF; it holds the GIF writer's options (interlace, transparent colour or mask) until Finish writes the file.",
+   "use_for": [
+    "small flat-colour web graphics and email images with one transparent colour",
+    "legacy banner slots that only take GIF"
+   ],
+   "avoid": [
+    "animated GIF: that is a separate filter (cdrGIFAnimation)",
+    "photos or soft shadows: GIF's limited palette bands; use PNG or JPEG"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "GIFSaveOptions",
+    "AI": "ExportOptionsGIF"
+   },
+   "how": "COM coclass of the static GIF export filter, FilterGIFLib. ActiveDocument.ExportBitmap(path, cdrGIF, ...) (or ExportEx with cdrGIF) returns it as ICorelExportFilter; interlacing and transparency are IGIFExport members, set before Finish.",
+   "key_members": [
+    {
+     "name": "Interlaced",
+     "use": "bool: write an interlaced GIF that loads in passes (on default interface IGIFExport)"
+    },
+    {
+     "name": "Transparency",
+     "use": "GifTransparency: none, a chosen image colour, or the masked area (on default interface IGIFExport)"
+    },
+    {
+     "name": "ColorIndex",
+     "use": "long: palette index made transparent in image-colour mode (on default interface IGIFExport)"
+    },
+    {
+     "name": "MaskPresent",
+     "use": "read-only bool: the image has a mask that the masked-area mode can use (on default interface IGIFExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .gif (on default interface IGIFExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing GIFExport is not bound to any document or file; get it from the ExportBitmap / ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExportBitmap's ImageType defaults to cdrRGBColorImage; pass cdrPalettedImage for GIF so Paletted / NumColors describe a real palette (what the filter does with an RGB image is unverified)"
+   ],
+   "example": "Dim f As Object  ' GIFExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\badge.gif\", cdrGIF, cdrCurrentPage, cdrPalettedImage)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IGIFExport, which is not a member; replaced with the default interface's real members (Interlaced, Transparency, ColorIndex, MaskPresent, Finish); example called ExportBitmap with the default ImageType (cdrRGBColorImage); now passes cdrCurrentPage, cdrPalettedImage, plus a gotcha on that default; avoid: removed a number not in the harvest ('256-colour')"
+   }
+  },
+  {
+   "name": "IGIFExport",
+   "id": "class:IGIFExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterGIFLib/IGIFExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's static GIF export: interlacing, the transparency mode (GifTransparency: none, one image colour, or the masked area), which palette entry or colour becomes transparent, mask inversion, and read-only facts about the palette being written (Paletted, NumColors, PaletteColor, MaskPresent).",
+   "use_for": [
+    "web/email graphics with a single transparent background colour",
+    "interlaced GIF for slow-loading placements",
+    "checking the palette CorelDRAW produced before writing"
+   ],
+   "avoid": [
+    "animation (use cdrGIFAnimation)",
+    "anti-aliased edges over unknown backgrounds: GIF's on/off transparency leaves halos, use PNG"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "GIFSaveOptions",
+    "AI": "ExportOptionsGIF"
+   },
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. Typically reached with ActiveDocument.ExportBitmap(path, cdrGIF, Range, ImageType, Width, Height, ResolutionX, ResolutionY, ...), which returns the filter; set Interlaced / Transparency / ColorIndex, then Finish. Transparency takes a GifTransparency value (see that enum card).",
+   "key_members": [
+    {
+     "name": "Interlaced",
+     "use": "bool: write an interlaced GIF that loads in passes"
+    },
+    {
+     "name": "Transparency",
+     "use": "GifTransparency: none, a chosen image colour, or the masked area"
+    },
+    {
+     "name": "ColorIndex",
+     "use": "long: palette index made transparent in image-colour mode"
+    },
+    {
+     "name": "Color",
+     "use": "long: colour value made transparent (encoding unverified)"
+    },
+    {
+     "name": "InvertMask",
+     "use": "bool: swap which side of the mask is transparent"
+    },
+    {
+     "name": "TransparentColors",
+     "use": "variant: set of transparent colours (shape of the value unverified)"
+    },
+    {
+     "name": "Paletted",
+     "use": "read-only bool: the image being written is palette-based"
+    },
+    {
+     "name": "NumColors",
+     "use": "read-only long: number of palette entries"
+    },
+    {
+     "name": "PaletteColor",
+     "use": "read-only, takes Index: the colour at one palette entry"
+    },
+    {
+     "name": "MaskPresent",
+     "use": "read-only bool: the image has a mask that the masked-area mode can use"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .gif"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the GIF options dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExternalSettings is a hidden, read-only string; do not build on it (what it serialises is unverified)",
+    "Masked-area transparency needs a mask, i.e. ExportBitmap called with Transparent:=True; check MaskPresent first (unverified)",
+    "Read palette facts (NumColors, PaletteColor) only after ExportBitmap has built the paletted image (unverified)",
+    "ExportBitmap's ImageType defaults to cdrRGBColorImage; pass cdrPalettedImage for GIF so Paletted / NumColors describe a real palette (what the filter does with an RGB image is unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportBitmap(\"C:\\out\\badge.gif\", cdrGIF, cdrCurrentPage, cdrPalettedImage)\nf.Interlaced = False\nIf f.MaskPresent Then f.InvertMask = False\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "example called ExportBitmap with the default ImageType (cdrRGBColorImage); now passes cdrCurrentPage, cdrPalettedImage, plus a gotcha on that default; avoid: removed a number not in the harvest ('1-bit')"
+   }
+  },
+  {
+   "name": "HPGLExport",
+   "id": "class:HPGLExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterHPGLLib/HPGLExport",
+   "status": "current",
+   "summary": "The object CorelDRAW hands back when a script exports an HPGL plot file (.plt) for pen plotters and vinyl/contour cutters; it holds the plotter options until Finish writes the file.",
+   "use_for": [
+    "vinyl-cut sign lettering and decals",
+    "contour-cut paths for a cutting plotter",
+    "pen-plotter line art"
+   ],
+   "avoid": [
+    "anything that needs fills, colour or bitmaps reproduced: HPGL is pen/blade paths only"
+   ],
+   "confidence": "high",
+   "how": "COM coclass of the HPGL plotter-file export filter, FilterHPGLLib. ActiveDocument.ExportEx(path, cdrHPGL) (cdrPLT has the same value) returns it as ICorelExportFilter; pen library, scaling, fill hatching and plotter origin are IHPGLExport members, set before Finish.",
+   "key_members": [
+    {
+     "name": "PenLibIndex",
+     "use": "int: which pen library entry/definition to use (unverified) (on default interface IHPGLExport)"
+    },
+    {
+     "name": "FitToPage",
+     "use": "bool: scale the drawing to the plot page (on default interface IHPGLExport)"
+    },
+    {
+     "name": "ScaleFactor",
+     "use": "double: scale applied when not fitting to page (on default interface IHPGLExport)"
+    },
+    {
+     "name": "AutomaticWeld",
+     "use": "bool: weld overlapping same-colour shapes so the blade does not cut through overlaps (on default interface IHPGLExport)"
+    },
+    {
+     "name": "PlotterOrigin",
+     "use": "pltOriginType: page centre, bottom-left or top-left origin (on default interface IHPGLExport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .plt (on default interface IHPGLExport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing HPGLExport is not bound to any document or file; get it from the ExportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' HPGLExport behind ICorelExportFilter\nSet f = ActiveDocument.ExportEx(\"C:\\out\\decal.plt\", cdrHPGL)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IHPGLExport, which is not a member; replaced with the default interface's real members (PenLibIndex, FitToPage, ScaleFactor, AutomaticWeld, PlotterOrigin, Finish)"
+   }
+  },
+  {
+   "name": "HPGLImport",
+   "id": "class:HPGLImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterHPGLLib/HPGLImport",
+   "status": "current",
+   "summary": "The object CorelDRAW returns when a script imports an HPGL plot file (.plt); it holds the reader's pen and scale options until Finish places the plotted paths as curves.",
+   "use_for": [
+    "recovering artwork from old cutter/plotter files",
+    "checking a .plt before sending it to a cutter"
+   ],
+   "avoid": [
+    "sources that exist as DXF, EPS or PDF: those keep more structure"
+   ],
+   "confidence": "medium",
+   "how": "COM coclass of the HPGL plotter-file import filter, FilterHPGLLib. ActiveLayer.ImportEx(path, cdrHPGL) returns it as ICorelImportFilter; pen library, scale and plotter units are IHPGLImport members, set before Finish.",
+   "key_members": [
+    {
+     "name": "ScaleFactor",
+     "use": "double: scale applied to the plot geometry (on default interface IHPGLImport)"
+    },
+    {
+     "name": "PlotterUnits",
+     "use": "short: plotter units per inch assumed for the file (unverified) (on default interface IHPGLImport)"
+    },
+    {
+     "name": "OverridePenColors",
+     "use": "bool: take pen colours from the pen library instead of the file (on default interface IHPGLImport)"
+    },
+    {
+     "name": "OverridePenWidths",
+     "use": "bool: take pen widths from the pen library instead of the file (on default interface IHPGLImport)"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import (on default interface IHPGLImport)"
+    }
+   ],
+   "gotchas": [
+    "Creatable (cancreate), but a free-standing HPGLImport is not bound to any document or file; get it from the ImportEx call instead (unverified)",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)"
+   ],
+   "example": "Dim f As Object  ' HPGLImport behind ICorelImportFilter\nSet f = ActiveLayer.ImportEx(\"C:\\in\\decal.plt\", cdrHPGL)\nf.Reset\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "key_members listed the interface name IHPGLImport, which is not a member; replaced with the default interface's real members (ScaleFactor, PlotterUnits, OverridePenColors, OverridePenWidths, Finish); summary: dropped the unharvested .hgl extension"
+   }
+  },
+  {
+   "name": "IHPGLExport",
+   "id": "class:IHPGLExport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterHPGLLib/IHPGLExport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's HPGL (.plt) export for plotters and cutters: pen library, fit-to-page or scale factor and page size, simulated fills (none, parallel lines, crosshatch) with spacing and angles, curve resolution, hidden-line removal, automatic weld, plotter units and plotter origin.",
+   "use_for": [
+    "vinyl cutter files with overlapping letters welded (AutomaticWeld)",
+    "contour-cut lines at true size (ScaleFactor, PlotterUnits)",
+    "pen-plotter art with hatched fills (FillType crosshatch)"
+   ],
+   "avoid": [
+    "colour or bitmap reproduction: HPGL only carries pen/blade paths; use PDF or EPS",
+    "cut jobs without a test cut: wrong plotter units or origin scale or shift the whole job"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelExportFilter. ActiveDocument.ExportEx(\"x.plt\", cdrHPGL) returns the filter; set the properties, then Finish. FillType takes HpglFillType and PlotterOrigin takes pltOriginType (see those enum cards).",
+   "key_members": [
+    {
+     "name": "PenLibIndex",
+     "use": "int: which pen library entry/definition to use (unverified)"
+    },
+    {
+     "name": "FitToPage",
+     "use": "bool: scale the drawing to the plot page"
+    },
+    {
+     "name": "ScaleFactor",
+     "use": "double: scale applied when not fitting to page"
+    },
+    {
+     "name": "PageWidth",
+     "use": "double: plot page width (units unverified)"
+    },
+    {
+     "name": "PageHeight",
+     "use": "double: plot page height (units unverified)"
+    },
+    {
+     "name": "FillType",
+     "use": "HpglFillType: no fill, parallel-line hatch or crosshatch"
+    },
+    {
+     "name": "FillSpacing",
+     "use": "double: distance between hatch lines"
+    },
+    {
+     "name": "FillAngle",
+     "use": "double: angle of the hatch lines"
+    },
+    {
+     "name": "HatchAngle",
+     "use": "double: angle of the second crosshatch direction (unverified)"
+    },
+    {
+     "name": "CurveResolution",
+     "use": "double: how finely curves are broken into plotter segments"
+    },
+    {
+     "name": "RemoveHiddenLines",
+     "use": "bool: drop path parts covered by objects above"
+    },
+    {
+     "name": "AutomaticWeld",
+     "use": "bool: weld overlapping same-colour shapes so the blade does not cut through overlaps"
+    },
+    {
+     "name": "ExcludeWVC",
+     "use": "bool: exclusion switch; the abbreviation is not confirmed, leave default"
+    },
+    {
+     "name": "PlotterUnits",
+     "use": "short: plotter units per inch (unverified; confirm against the cutter's spec)"
+    },
+    {
+     "name": "PlotterOrigin",
+     "use": "pltOriginType: page centre, bottom-left or top-left origin"
+    },
+    {
+     "name": "CenterOrigin",
+     "use": "hidden bool; use PlotterOrigin instead"
+    },
+    {
+     "name": "Finish",
+     "use": "run the export and write the .plt"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the PLT export dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "Nothing is written until Finish is called; a script that sets properties and stops leaves no file (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "ExternalSettings is a hidden, read-only string; do not build on it (what it serialises is unverified)",
+    "Text and outlines are exported as paths; convert text and check closed paths before a cut (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveDocument.ExportEx(\"C:\\out\\decal.plt\", cdrHPGL)\nf.FitToPage = False\nf.ScaleFactor = 1\nf.AutomaticWeld = True\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "PlotterUnits: removed the '1016' figure, which is not in the harvest"
+   }
+  },
+  {
+   "name": "IHPGLImport",
+   "id": "class:IHPGLImport",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "FilterHPGLLib/IHPGLImport",
+   "status": "current",
+   "summary": "Option interface of CorelDRAW's HPGL (.plt) import: pen library, scale factor and plotter units used to turn plot commands into curves, and whether the pen colours and widths from the library override those in the file (OverridePenColors, OverridePenWidths; exact precedence unverified).",
+   "use_for": [
+    "opening a cutter/plotter file at true size",
+    "re-colouring imported plot paths through the pen library"
+   ],
+   "avoid": [
+    "expecting fills or text objects back: HPGL brings back pen strokes as curves"
+   ],
+   "confidence": "medium",
+   "how": "Dispinterface (dual) inheriting ICorelImportFilter. ActiveLayer.ImportEx(\"x.plt\", cdrHPGL) returns the filter; set scale / pen options, then Finish.",
+   "key_members": [
+    {
+     "name": "ScaleFactor",
+     "use": "double: scale applied to the plot geometry"
+    },
+    {
+     "name": "PlotterUnits",
+     "use": "short: plotter units per inch assumed for the file (unverified)"
+    },
+    {
+     "name": "PenLibIndex",
+     "use": "int: pen library entry/definition to use (unverified)"
+    },
+    {
+     "name": "OverridePenColors",
+     "use": "bool: take pen colours from the pen library instead of the file"
+    },
+    {
+     "name": "OverridePenWidths",
+     "use": "bool: take pen widths from the pen library instead of the file"
+    },
+    {
+     "name": "Finish",
+     "use": "run the import"
+    },
+    {
+     "name": "Reset",
+     "use": "restore default options"
+    },
+    {
+     "name": "HasDialog",
+     "use": "read-only: whether the filter has an options dialog"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the PLT import dialog (optional hWnd owner)"
+    }
+   ],
+   "gotchas": [
+    "The objects only land on the layer when Finish is called (unverified)",
+    "ShowDialog opens a modal options dialog and blocks an unattended run; never call it in a headless pipeline",
+    "Python win32com with makepy/EnsureDispatch wraps the return value as the generic ICorelExportFilter / ICorelImportFilter, so filter-specific properties raise AttributeError; re-wrap late-bound with win32com.client.dynamic.Dispatch(f._oleobj_) (unverified)",
+    "Wrong PlotterUnits makes the whole import the wrong size; measure a known length after import (unverified)"
+   ],
+   "example": "Dim f As Object\nSet f = ActiveLayer.ImportEx(\"C:\\in\\decal.plt\", cdrHPGL)\nf.ScaleFactor = 1\nf.OverridePenWidths = False\nf.Finish",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

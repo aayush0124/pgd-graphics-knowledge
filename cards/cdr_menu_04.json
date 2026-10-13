@@ -1,0 +1,564 @@
+{
+ "cards": [
+  {
+   "name": "Save",
+   "id": "3c4ccfbb-1e60-4700-8092-715b3e3fc699",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Save",
+   "status": "current",
+   "summary": "Saves the active drawing to its current file (CDR) in place. The menu caption is \"Save...\" (live menu walk) because on a drawing that has never been saved it opens the Save Drawing dialog to pick a name, type and version first. Enabled only when a document is open and has unsaved changes.",
+   "use_for": [
+    "checkpointing a layout between automated build steps",
+    "writing the final editable CDR master of a logo, poster or booklet before export"
+   ],
+   "avoid": [
+    "first save of a new drawing from a script: the dialog blocks it; call ActiveDocument.SaveAs with a full path instead",
+    "making a PNG / PDF / SVG deliverable: Save writes the native CDR; use File > Export or Publish to PDF",
+    "a document with no changes: the command is disabled (its enable rule needs IsModified)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save",
+    "AI": "File/Save"
+   },
+   "how": "Untitled drawing only: the Save Drawing dialog asks for File name, Save as type (CDR by default) and Version (save down to an older CorelDRAW version for a client or printer on an old release). A drawing that already has a file saves with no dialog.",
+   "shortcut": "Ctrl+S",
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"3c4ccfbb-1e60-4700-8092-715b3e3fc699\"); object model: ActiveDocument.Save() (IVGDocument.Save, harvested member; behaviour on an untitled drawing unverified)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: named the live caption \"Save...\" instead of an unexplained reference to the caption's ellipsis"
+   }
+  },
+  {
+   "name": "Save As",
+   "id": "b8d0e1d8-c2f0-46f2-9bd2-4e927e2ae81c",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Save As",
+   "status": "needs_input",
+   "summary": "Saves the active drawing under a new name, location, file type or CorelDRAW version, and the open document then points at the new file. Always opens the Save Drawing dialog, so it needs a path.",
+   "use_for": [
+    "saving a numbered variant of a layout (v2, client revision) without overwriting the master",
+    "saving down to an older CorelDRAW version for a printer or a client",
+    "starting a new project from a copy of an existing design file"
+   ],
+   "avoid": [
+    "unattended scripts: the dialog blocks; call ActiveDocument.SaveAs(path, options) instead",
+    "keeping the original document open and linked: use ActiveDocument.SaveAsCopy (the copy is not linked)",
+    "producing PNG / JPG / PDF deliverables: use Export or Publish to PDF"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "File/Save As",
+    "AI": "File/Save As..."
+   },
+   "how": "Save Drawing dialog: File name and folder; Save as type (CDR drawing, CDT template and other native formats); Version, to save down for someone on an older CorelDRAW. The scripted options object carries the same choices: Version, Range (selection only), thumbnail size, embed ICC profile, embed VBA project, overwrite.",
+   "shortcut": "Ctrl+Shift+S",
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"b8d0e1d8-c2f0-46f2-9bd2-4e927e2ae81c\") opens the dialog only; object model: opts = Application.CreateStructSaveAsOptions(); opts.Version = cdrCurrentVersion; opts.Overwrite = True; ActiveDocument.SaveAs(\"<full path>.cdr\", opts) (unverified)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save as Template",
+   "id": "8a1ee996-54d2-3287-4f3e-fa4f5f39355f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Save as Template",
+   "status": "needs_input",
+   "summary": "Saves the active drawing as a CorelDRAW template (CDT) so new drawings can start from its page setup, styles and placeholder artwork via File > New from Template. Opens a save dialog for the template's name and place, then a template-properties dialog.",
+   "use_for": [
+    "turning a finished flyer, social post or letterhead layout into a reusable house template",
+    "locking a client's page size, colour styles and logo placement for repeat jobs"
+   ],
+   "avoid": [
+    "scripted template creation: the dialogs block; SaveAs with the CDT filter is the scriptable route (unverified)",
+    "sharing a one-off design: Save As CDR is enough"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "File/Save as Template..."
+   },
+   "how": "Pick the template file name and folder (type CDT). The template-properties step that follows takes descriptive metadata for the template browser, such as a display name, page layout and type / category notes; these fields are from memory of earlier releases and were not harvested.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"8a1ee996-54d2-3287-4f3e-fa4f5f39355f\") opens the dialog only; object model: opts = Application.CreateStructSaveAsOptions(); opts.Filter = cdrCDT; ActiveDocument.SaveAs(\"<full path>.cdt\", opts) (unverified; does not fill template properties)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Save to Cloud",
+   "id": "95d7454c-db4a-49d3-aab4-b44a7d886a30",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Save to Cloud",
+   "status": "needs_input",
+   "summary": "Uploads the active drawing to Corel's cloud storage so it can be opened from the cloud or shared for review and collaboration. Needs a Corel cloud connection (its enable rule checks IsCloudOnline) and a file name typed in its dialog; the menu entry shows only when the corporate cloud features flag is on.",
+   "use_for": [
+    "putting a draft logo or layout online so a client can review and comment",
+    "moving work between machines through Corel's cloud"
+   ],
+   "avoid": [
+    "automated pipelines: needs a signed-in cloud account and a dialog; save locally with ActiveDocument.SaveAs and move the file yourself",
+    "confidential client work under a no-cloud policy"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "The dialog asks for the cloud file name (and location in the cloud store). The file then lives online rather than on disk; reopen it with File > Open from Cloud.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"95d7454c-db4a-49d3-aab4-b44a7d886a30\") opens the dialog only; no object-model call for cloud saving is known",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Mail",
+   "id": "8f29b2d6-5a4e-454f-9517-45ad66ea483d",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "File/Send To/Mail",
+   "status": "needs_input",
+   "summary": "Sends the active drawing as an e-mail attachment through the default Windows (MAPI) mail program, opening a new message for the user to address and send. Needs a configured MAPI mail client and a recipient; enabled only when the document has changes and something to export.",
+   "use_for": [
+    "quickly mailing a draft layout to a colleague from inside CorelDRAW"
+   ],
+   "avoid": [
+    "any unattended run: it would hand a message to a mail client; export the file and send it through your own reviewed channel",
+    "machines without a MAPI mail client (common with webmail-only setups): nothing useful happens",
+    "large print files: export a compressed PDF instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "The new message opens in the system mail client with the drawing attached; the user fills in recipients and text and sends it from there. Exact attachment format and any intermediate prompt were not harvested.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"8f29b2d6-5a4e-454f-9517-45ad66ea483d\") opens the mail hand-off only; no object-model equivalent is known",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Account Settings",
+   "id": "a3347bda-4e93-0082-4544-319a5496c708",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Account Settings",
+   "status": "current",
+   "summary": "Opens the user's Corel account information (sign-in, subscription / licence details) from inside CorelDRAW. Account administration only, it does nothing to the drawing.",
+   "use_for": [
+    "checking which licence or subscription the install runs under before a client job"
+   ],
+   "avoid": [
+    "design automation: nothing here changes a document; never drive account settings from a script"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/Manage My Account..."
+   },
+   "how": "Shows the account panel or page; any change (plan, profile, sign-in) is made there by the user.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"a3347bda-4e93-0082-4544-319a5496c708\") opens the account view only",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Corel Support",
+   "id": "5c57ab14-92b3-445d-8e08-93c9853db546",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Corel Support",
+   "status": "current",
+   "summary": "Opens Corel's technical support resources (the support site / knowledge base) so the user can look up a problem or contact support. No effect on the drawing.",
+   "use_for": [
+    "looking up a crash, install or licensing problem with CorelDRAW"
+   ],
+   "avoid": [
+    "learning a feature: Product Help or the User Guide is the right place",
+    "scripts: it only opens an external page"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"5c57ab14-92b3-445d-8e08-93c9853db546\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "CorelDRAW Community",
+   "id": "9cd4acde-5d49-4ae6-94be-d6da445ed86b",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/CorelDRAW Community",
+   "status": "current",
+   "summary": "Opens the CorelDRAW community website (user forums, tips and shared macros) in the web browser. No effect on the drawing.",
+   "use_for": [
+    "finding user-written macros or answers to a how-to question",
+    "asking other users about a workflow problem"
+   ],
+   "avoid": [
+    "official product documentation: use Product Help or the User Guide"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/Support Community"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9cd4acde-5d49-4ae6-94be-d6da445ed86b\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Download Full Trial",
+   "id": "c8100800-3b1a-4c6f-b0a6-efc2e35bae09",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Download Full Trial",
+   "status": "hidden",
+   "summary": "Opens the page to download the full trial of CorelDRAW Graphics Suite. Its menu entry is visible only when the app is not the desktop edition (visible = Not IsDesktopApp), and the visibility probe (work/cdr/enabled_probe.json) read IsDesktopApp as true on this install, so it is hidden here.",
+   "use_for": [
+    "nothing in design work: only relevant on a non-desktop or limited edition that wants the full trial"
+   ],
+   "avoid": [
+    "any script: hidden on this install and it only leads to a download page"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "FrameWork.Automation.InvokeItem(\"c8100800-3b1a-4c6f-b0a6-efc2e35bae09\") (menu entry hidden on this desktop install; effect of invoking it while hidden unverified)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: sourced the IsDesktopApp reading to the visibility probe instead of quoting a value absent from the batch"
+   }
+  },
+  {
+   "name": "Message Settings",
+   "id": "08FA5BC1-BC36-4d04-B6ED-3042C8FB759E",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Message Settings",
+   "status": "current",
+   "summary": "Opens settings for the in-product messages CorelDRAW shows (notifications such as tips, news and offers), letting the user control which messages appear or how often. What exactly the settings cover was not harvested.",
+   "use_for": [
+    "turning down in-app notification pop-ups on a production machine so they do not interrupt work"
+   ],
+   "avoid": [
+    "scripts: a preferences window with no design effect"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"08FA5BC1-BC36-4d04-B6ED-3042C8FB759E\") opens the settings only",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Product Help",
+   "id": "9ffda614-bd45-4896-98a1-e594a00bb946",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Product Help",
+   "status": "current",
+   "summary": "Opens CorelDRAW's product help (the help system for menus, tools and dialogs). No effect on the drawing.",
+   "use_for": [
+    "checking what a command or dialog option does before automating it",
+    "looking up a tool's settings while laying out a design"
+   ],
+   "avoid": [
+    "scripting reference: the help describes the user interface, not the VBA / COM object model"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Help/Photoshop Help",
+    "AI": "Help/Illustrator Help..."
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"9ffda614-bd45-4896-98a1-e594a00bb946\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Quick Start Guide",
+   "id": "4eaca129-c36e-22a9-4b70-b324dcfb0f8a",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Quick Start Guide",
+   "status": "current",
+   "summary": "Opens CorelDRAW's Quick Start Guide, a short introductory guide to the workspace and basic tasks (shown when internet use is allowed; the probe read it visible here). No effect on the drawing.",
+   "use_for": [
+    "onboarding a new designer to the CorelDRAW workspace"
+   ],
+   "avoid": [
+    "detailed feature reference: use Product Help or the User Guide"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4eaca129-c36e-22a9-4b70-b324dcfb0f8a\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Refresh your Account",
+   "id": "630efad4-7d85-a2be-4479-bd22f048508f",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Refresh your Account",
+   "status": "current",
+   "summary": "Re-checks the signed-in Corel account with Corel's servers so the app picks up a changed subscription or licence state (for example right after a renewal) without signing out. Shown only while a subscription account is signed in. No effect on the drawing.",
+   "use_for": [
+    "unlocking features after renewing or upgrading a subscription mid-session"
+   ],
+   "avoid": [
+    "scripts: account maintenance only; a licence problem is fixed by the user"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"630efad4-7d85-a2be-4479-bd22f048508f\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Restore Purchases",
+   "id": "fbc046c4-da74-4f4a-a12a-a671e7e99bde",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Restore Purchases",
+   "status": "current",
+   "summary": "Restores content bought earlier from Corel's in-app store (for example extra fonts, fills or add-ons) to this installation, typically after a reinstall or on a new machine. The probe read the entry visible here. No effect on the drawing.",
+   "use_for": [
+    "getting purchased font packs or add-ons back after moving to a new computer"
+   ],
+   "avoid": [
+    "scripts: account and store dialogs need the user"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"fbc046c4-da74-4f4a-a12a-a671e7e99bde\") starts the restore only",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Sign out of Cloud",
+   "id": "42e27a61-091e-46b1-92a2-55afae3ad2a1",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Sign out of Cloud",
+   "status": "needs_input",
+   "summary": "Signs the user out of Corel's cloud account, ending access to cloud files and sharing until they sign in again. Enabled only while signed in to the cloud: the probe found it greyed out in every state, so no cloud session existed during the harvest. The entry is visible only when the corporate cloud features flag is on outside a sandboxed app, or on a non-desktop edition; this install is the desktop edition and the cloud flag was not probed, so whether it shows here is unknown.",
+   "use_for": [
+    "signing a shared or studio machine out of a personal Corel cloud account"
+   ],
+   "avoid": [
+    "any automated run: signing the user out breaks their cloud access; leave account sessions to the user"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"42e27a61-091e-46b1-92a2-55afae3ad2a1\") (disabled unless signed in to the cloud)",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: added the batch's visible rule (IsCorporateCloudFeaturesOn and not sandboxed, or not IsDesktopApp) and that its visibility here is unprobed"
+   }
+  },
+  {
+   "name": "Submit Ideas and Feedback",
+   "id": "fafd28e8-21db-45b7-8e5b-97ec22322e85",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Submit Ideas and Feedback",
+   "status": "current",
+   "summary": "Opens Corel's online ideas / feedback portal where users suggest features and vote on ideas. Shown and enabled only when online. No effect on the drawing.",
+   "use_for": [
+    "requesting a missing feature or reporting a workflow gap to Corel"
+   ],
+   "avoid": [
+    "urgent bugs blocking a job: use Corel Support"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Help/Submit Bug/Feature Request..."
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"fafd28e8-21db-45b7-8e5b-97ec22322e85\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Updates",
+   "id": "6e7e871a-e9f9-4cb4-4030-b927c7f84a69",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Updates",
+   "status": "current",
+   "summary": "Checks Corel's servers for program updates (service packs and patches) for this version and offers to download and install them. No effect on the drawing.",
+   "use_for": [
+    "patching CorelDRAW before a production run when a known bug is fixed in an update"
+   ],
+   "avoid": [
+    "mid-job: installing an update can close the app; save first and update between jobs",
+    "scripts: installing software needs the user's decision"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Help/Updates",
+    "AI": "Help/Updates..."
+   },
+   "how": "The updates window lists available updates; the user chooses whether to download and install, which usually needs the app to close.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "FrameWork.Automation.InvokeItem(\"6e7e871a-e9f9-4cb4-4030-b927c7f84a69\") opens the update check only",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "User Guide",
+   "id": "7ac8a763-5fc7-4ed5-ba82-14d873f11a43",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/User Guide",
+   "status": "current",
+   "summary": "Opens the CorelDRAW User Guide, the full manual covering tools, effects, text, colour and output (shown when internet use is allowed; the probe read it visible here). No effect on the drawing.",
+   "use_for": [
+    "reading the full background on a feature (colour management, prepress, PowerClip) before building a design around it"
+   ],
+   "avoid": [
+    "quick lookups of a single dialog: Product Help is faster"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Help/Photoshop Help",
+    "AI": "Help/Illustrator Help..."
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"7ac8a763-5fc7-4ed5-ba82-14d873f11a43\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Video Tutorials",
+   "id": "4304e5ee-0640-b390-4dad-3183200055b4",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Video Tutorials",
+   "status": "current",
+   "summary": "Opens Corel's video tutorials for CorelDRAW (shown when internet use is allowed; the probe read it visible here). No effect on the drawing.",
+   "use_for": [
+    "learning a technique such as PowerClip, blends or the Contour effect by watching it done"
+   ],
+   "avoid": [
+    "looking up an exact option: Product Help or the User Guide is quicker"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Help/Hands-on Tutorials",
+    "AI": "Help/Tutorials..."
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"4304e5ee-0640-b390-4dad-3183200055b4\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Welcome Screen",
+   "id": "77dc1224-1733-44e1-8af1-ad940c9fc8a7",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/Welcome Screen",
+   "status": "current",
+   "summary": "Shows CorelDRAW's Welcome Screen, the start page with recent files, new-document / template shortcuts, workspace choice, learning content and what's new. Works with or without a document open.",
+   "use_for": [
+    "getting back to recent files and templates after closing the start page",
+    "switching workspace from the start page"
+   ],
+   "avoid": [
+    "scripts: it is a navigation page; open or create documents with the object model (Application.OpenDocument / CreateDocument)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "Help/Home"
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"77dc1224-1733-44e1-8af1-ad940c9fc8a7\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "What's New?",
+   "id": "e59e82df-4d00-4eab-9805-60d79d38b4c4",
+   "app": "CDR",
+   "kind": "cdr_menu",
+   "path": "Help/What's New?",
+   "status": "current",
+   "summary": "Opens the What's New page (on the Welcome Screen) describing the features added in this CorelDRAW release. No effect on the drawing.",
+   "use_for": [
+    "checking which new 2024 features are available before planning a workflow"
+   ],
+   "avoid": [
+    "learning older, established features: use the User Guide"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Help/What's New",
+    "AI": "Help/What's New..."
+   },
+   "shortcut": null,
+   "scriptable": "yes",
+   "script_api": "FrameWork.Automation.InvokeItem(\"e59e82df-4d00-4eab-9805-60d79d38b4c4\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

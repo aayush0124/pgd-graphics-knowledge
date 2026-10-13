@@ -1,0 +1,772 @@
+{
+ "cards": [
+  {
+   "name": "Solarize",
+   "id": "solarize",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Solarize",
+   "status": "current",
+   "summary": "Blends a negative and a positive of the image, like briefly exposing a photo print to light in the darkroom: tones above mid-grey are inverted, tones below stay, so highlights turn dark and the whole image drops to a dim, low-contrast, slightly psychedelic version with no bright values left. No dialog and no settings.",
+   "use_for": [
+    "retro darkroom / solarised portrait look for a poster",
+    "psychedelic or surreal album-cover and gig artwork",
+    "a quick dark, eerie variant of a photo to sit behind light type"
+   ],
+   "avoid": [
+    "on its own the result is muddy (nothing brighter than mid-grey): follow with Image/Adjustments/Levels or Image/Auto Contrast to stretch it back",
+    "you need control over where the inversion starts: use a Curves adjustment layer with an inverted-V curve instead, which is also editable",
+    "Lab documents: not supported (harvest supported_modes: RGB, CMYK, Grayscale, Duotone, Multichannel); in CMYK each ink channel is inverted separately, so colours shift differently than in RGB"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Color Transform/Solarize"
+   },
+   "look": [
+    "solarized",
+    "solarisation",
+    "darkroom",
+    "partial negative",
+    "psychedelic",
+    "inverted highlights",
+    "retro photo"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Image/Adjustments/Levels or Image/Auto Contrast right after, to restore brightness",
+    "Image/Adjustments/Hue/Saturation to colour-tint the result",
+    "Filter/Convert for Smart Filters so it can be toggled"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"solarize\"), new ActionDescriptor(), DialogModes.NO);  // no parameters; runs on the active pixel layer",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no settings to reopen (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "522 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'; avoid/pairs_with: Auto Contrast is Image/Auto Contrast, not under Image/Adjustments"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/4350c9f1a0d8.png",
+    "note": "Dim, low-contrast psychedelic frame: highlights inverted to dark, the grey ramp runs black-grey-black, no bright values left.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Tiles",
+   "id": "tiles",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Tiles",
+   "status": "current",
+   "summary": "Cuts the image into a grid of square tiles and nudges each tile off its original position by a random amount, leaving gaps between them filled with the Background colour, the Foreground colour, an inverted copy of the image or the unaltered image; the result looks like a photo printed on shuffled ceramic tiles or a broken-up puzzle.",
+   "use_for": [
+    "broken / shattered-grid treatment of a photo for a tech or glitch poster",
+    "tiled-wall or puzzle look behind a headline",
+    "a quick fragmented background texture from any photo"
+   ],
+   "avoid": [
+    "fine control of tile placement: the offsets are random, so a rerun gives a different layout",
+    "Fill Empty With Background / Foreground depends on the current swatches: set them first, or use Inverse Image / Unaltered Image for a swatch-independent result",
+    "an even pixel-block look without gaps: use Filter/Pixelate/Mosaic instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Distort/Blocks"
+   },
+   "look": [
+    "tiles",
+    "shattered grid",
+    "broken up",
+    "puzzle",
+    "fragmented",
+    "offset squares",
+    "mosaic grid"
+   ],
+   "params": [
+    {
+     "name": "Number Of Tiles",
+     "does": "minimum number of tiles in each row and column, so higher = smaller tiles",
+     "typical": "1-99; 10 default, 8-16 on a full HD image"
+    },
+    {
+     "name": "Maximum Offset",
+     "does": "how far a tile may move from its place, as a percent of the tile size; higher = wider gaps and a more broken look",
+     "typical": "1-99; 10 default, 20-40 for a clearly shattered look"
+    },
+    {
+     "name": "Fill Empty With",
+     "does": "what shows in the gaps between tiles: Background colour, Foreground colour, Inverse Image (a negative) or Unaltered Image (the original peeks through)",
+     "typical": "Background Color for clean grout in the swatch colour; Inverse Image for a graphic, colourful look"
+    }
+   ],
+   "demo_settings": {
+    "Number Of Tiles": 12,
+    "Maximum Offset": 30,
+    "Fill Empty With": "fileInfo"
+   },
+   "enum_labels": {
+    "fillBack": "Background Color",
+    "fillFore": "Foreground Color",
+    "fileInfo": "Inverse Image",
+    "fillSame": "Unaltered Image"
+   },
+   "pairs_with": [
+    "set the Background swatch to the grout colour you want first",
+    "Layer Style Drop Shadow / Bevel on a duplicate for raised tiles",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"tileNumber\"), 12); d.putInteger(s(\"tileOffset\"), 30); d.putEnumerated(s(\"fillColor\"), s(\"fillColor\"), s(\"fileInfo\")); executeAction(s(\"tiles\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "480 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/e20f8d1fef60.png",
+    "note": "Image cut into a grid of shuffled square tiles with gaps filled by an inverted copy (light blue against the beige wall).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Trace Contour",
+   "id": "traceContour",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Trace Contour",
+   "status": "current",
+   "summary": "Finds where brightness crosses a chosen level and draws a thin outline there in each colour channel, wiping everything else to white: the photo becomes a sparse topographic-map drawing of thin coloured contour lines on white.",
+   "use_for": [
+    "contour-map / topographic line art from a photo for a poster background",
+    "thin-line technical-drawing look from a photo",
+    "a starting outline to colour or trace over"
+   ],
+   "avoid": [
+    "scripts trusting a Level value: the harvest read no range; sending +/-1e6 left Level at 128 (inconclusive, the value was apparently refused rather than clamped), so read 'level' back from the descriptor executeAction returns, or from the Smart Filter, to confirm it was used",
+    "soft or low-contrast photos give few, broken lines: raise contrast first, or move Level to the tone where the subject edge sits",
+    "clean black outlines: in RGB the lines come out in mixed channel colours; desaturate afterwards, or use Filter/Stylize/Find Edges for darker, fuller edges"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Contour/Trace Contour"
+   },
+   "look": [
+    "contour lines",
+    "topographic",
+    "line art",
+    "outline",
+    "thin lines on white",
+    "map lines",
+    "line drawing"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "brightness threshold whose crossing is outlined; moves the lines between shadow and highlight regions",
+     "typical": "128 (the value the harvest saw); move it toward the tone where the subject's edge sits"
+    },
+    {
+     "name": "Edge",
+     "does": "which side of the threshold is outlined: lower = where values fall below Level, upper = where they rise above it",
+     "typical": "upper or lower; small visual difference"
+    }
+   ],
+   "demo_settings": {
+    "Level": 128,
+    "Edge": "upper"
+   },
+   "enum_labels": {
+    "upper": "upper",
+    "lower": "lower"
+   },
+   "pairs_with": [
+    "Image/Adjustments/Desaturate or Threshold for single-colour line art",
+    "Layer blend mode Multiply over the original photo",
+    "Image/Adjustments/Levels first to boost contrast"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"level\"), 128); d.putEnumerated(s(\"edge\"), s(\"contourEdge\"), s(\"upper\")); executeAction(s(\"traceContour\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values; the harvest could not confirm a sent level is honoured, so check 'level' in the returned descriptor",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes an editable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back with its settings stored (hasoptions true: level, edge) plus blending options",
+   "cost": "161 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'; avoid/params: removed the invented 0-255 Level range (the harvest read none; its probe was inconclusive); look/use_for: 'blueprint' (white lines on blue) replaced, the filter gives coloured lines on white; scripting: comment says to read level back"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/7f4189690e73.png",
+    "crop": "gallery/ps_filter/7f4189690e73_1to1.png",
+    "note": "Thin coloured contour lines on white, everything else wiped to white, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Wind",
+   "id": "wind",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Wind",
+   "status": "current",
+   "summary": "Draws fine horizontal streaks out of the edges and bright areas of the image, as if the picture were being blown sideways: Wind gives short thin streaks, Blast longer and stronger ones, Stagger shifts the streaked lines out of register.",
+   "use_for": [
+    "speed / motion streaks on a product, car or sports headline",
+    "windswept or melting-text effects on poster type",
+    "the light-burst trick: Polar Coordinates, rotate, Wind, rotate back, Polar Coordinates again"
+   ],
+   "avoid": [
+    "it only blows horizontally: for vertical streaks rotate the canvas 90 degrees (Image/Image Rotation), apply, rotate back",
+    "a soft blur-like motion: use Filter/Blur/Motion Blur; Wind makes hard, hairline streaks",
+    "a single pass can be subtle on a soft image: run it again (Filter/Last Filter) or use Blast",
+    "which way the streaks run for each Direction value was not checked by the harvest: preview once before a batch run"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Distort/Wind"
+   },
+   "look": [
+    "wind",
+    "speed lines",
+    "windswept",
+    "streaks",
+    "motion streak",
+    "blown",
+    "melting"
+   ],
+   "params": [
+    {
+     "name": "Method",
+     "does": "streak style: Wind = short fine streaks, Blast = longer, heavier streaks, Stagger = lines offset out of place",
+     "typical": "Wind for subtle, Blast for a clear effect"
+    },
+    {
+     "name": "Direction",
+     "does": "which side the wind blows from (the dialog's From the Left / From the Right)",
+     "typical": "Left or Right; match the motion of the subject"
+    }
+   ],
+   "demo_settings": {
+    "Method": "blast",
+    "Direction": "left"
+   },
+   "enum_labels": {
+    "wind": "Wind",
+    "blast": "Blast",
+    "stagger": "Stagger",
+    "left": "Left",
+    "right": "Right"
+   },
+   "pairs_with": [
+    "Image/Image Rotation 90 degrees for vertical streaks",
+    "Filter/Distort/Polar Coordinates for radial bursts",
+    "Filter/Blur/Motion Blur to soften the streaks",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putEnumerated(s(\"windMethod\"), s(\"windMethod\"), s(\"blast\")); d.putEnumerated(s(\"direction\"), s(\"direction\"), s(\"left\")); executeAction(s(\"wind\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values; on a Smart Object an empty descriptor opened the dialog even with DialogModes.NO (harvest), so pass both",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes an editable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json) applied it to a Smart Object and read it back with its settings stored (hasoptions true: windMethod, direction) plus blending options; harvest note: with an empty descriptor it opened its own dialog on the Smart Object even under DialogModes.NO, so always pass both keys",
+   "cost": "634 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'; avoid: removed the unharvested Ctrl+F shortcut (repeat via Filter/Last Filter); scripting: added the harvest's pass-every-key note"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/e70091e7cdb7.png",
+    "note": "Horizontal streaks blown leftward out of the edges (type, block borders, photo outlines) with Blast strength.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Craquelure",
+   "id": "craquelure",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Craquelure",
+   "status": "current",
+   "summary": "Paints the image onto an embossed, high-relief plaster surface covered in a fine network of cracks that follow the image's contours, like the crazed varnish of an old oil painting or dried mud.",
+   "use_for": [
+    "aged, antique or cracked-varnish look for a vintage poster or heritage campaign",
+    "dry-earth / drought texture on a photo",
+    "distressed background texture behind type"
+   ],
+   "avoid": [
+    "fine cracks vanish when a big image is shown small: raise Crack Spacing on full-HD and larger images",
+    "it also embosses and flattens the colours somewhat; if you only want cracks on top, apply it to a copy and blend with Overlay / Soft Light",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Craquelure"
+   },
+   "look": [
+    "cracked",
+    "craquelure",
+    "aged paint",
+    "old varnish",
+    "plaster",
+    "dry mud",
+    "distressed",
+    "embossed"
+   ],
+   "params": [
+    {
+     "name": "Crack Spacing",
+     "does": "distance between cracks; higher = larger cells and fewer cracks",
+     "typical": "2-100; 15 default, 30-50 on a full HD image"
+    },
+    {
+     "name": "Crack Depth",
+     "does": "how deep and dark the cracks are embossed",
+     "typical": "0-10; 6-9"
+    },
+    {
+     "name": "Crack Brightness",
+     "does": "how light the cracks themselves are; low = dark cracks",
+     "typical": "0-10; 7-9"
+    }
+   ],
+   "demo_settings": {
+    "Crack Spacing": 35,
+    "Crack Depth": 9,
+    "Crack Brightness": 8
+   },
+   "pairs_with": [
+    "apply to a duplicate layer set to Overlay or Soft Light",
+    "Image/Adjustments/Hue/Saturation to warm it to a sepia antique tone",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"crackSpacing\"), 35); d.putInteger(s(\"crackDepth\"), 9); d.putInteger(s(\"crackBrightness\"), 8); executeAction(s(\"craquelure\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "529 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/f612539b5d46.png",
+    "note": "Fine crack network over an embossed surface across the whole frame, colours kept.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Grain",
+   "id": "grain",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Grain",
+   "status": "current",
+   "summary": "Adds a grain texture to the image in one of ten patterns (regular, soft, sprinkles, clumped, contrasty, enlarged, stippled, horizontal, vertical, speckle), giving a film-grain, gritty print or textured-paper feel; Intensity sets how much grain and Contrast how punchy it is.",
+   "use_for": [
+    "film-grain / analog print feel on a poster photo",
+    "gritty texture so flat digital art looks printed",
+    "horizontal- or vertical-line textures for retro TV or fabric looks"
+   ],
+   "avoid": [
+    "fine grain disappears when the image is shown small or compressed for social media: use a coarser Grain Type or higher Intensity",
+    "the Grain Types differ a lot and some (e.g. Stippled) change the colours strongly; the per-type look was not rendered by the harvest, so preview the type before a batch run",
+    "grain you can retune later or in 16-bit / CMYK work: Layer/New Adjustment Layer/Grain, or Filter/Noise/Add Noise as a Smart Filter",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Grain",
+    "CDR": "Effects/Noise/Add Noise"
+   },
+   "look": [
+    "grain",
+    "film grain",
+    "gritty",
+    "noise texture",
+    "analog",
+    "speckle",
+    "stipple",
+    "textured print"
+   ],
+   "params": [
+    {
+     "name": "Intensity",
+     "does": "amount of grain",
+     "typical": "0-100; 40 default, 60-85 for a clearly grainy look"
+    },
+    {
+     "name": "Contrast",
+     "does": "contrast of the grain against the image (harvested key: center)",
+     "typical": "0-100; 50 default, 55-70"
+    },
+    {
+     "name": "Grain Type",
+     "does": "pattern of the grain: Regular, Soft, Sprinkles, Clumped, Contrasty, Enlarged, Stippled, Horizontal, Vertical, Speckle",
+     "typical": "Regular or Enlarged for film grain; Horizontal / Vertical for line textures"
+    }
+   ],
+   "demo_settings": {
+    "Intensity": 75,
+    "Contrast": 60,
+    "Grain Type": "grainEnlarged"
+   },
+   "enum_labels": {
+    "grainRegular": "Regular",
+    "grainSoft": "Soft",
+    "grainSprinkles": "Sprinkles",
+    "grainClumped": "Clumped",
+    "grainContrasty": "Contrasty",
+    "grainEnlarged": "Enlarged",
+    "grainStippled": "Stippled",
+    "grainHorizontal": "Horizontal",
+    "grainVertical": "Vertical",
+    "grainSpeckle": "Speckle"
+   },
+   "pairs_with": [
+    "apply on a 50% grey layer set to Overlay for editable grain",
+    "Edit/Fade right after to tone it down",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"intensity\"), 75); d.putInteger(s(\"center\"), 60); d.putEnumerated(s(\"grainType\"), s(\"grainType\"), s(\"grainEnlarged\")); executeAction(s(\"grain\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "629 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'; avoid: dropped the false 'resolution-independent' claim for Add Noise; points to Layer/New Adjustment Layer/Grain"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/ee4dddc76b9d.png",
+    "crop": "gallery/ps_filter/ee4dddc76b9d_1to1.png",
+    "note": "Strong enlarged colour grain over everything, clearly visible on the 1:1 crop, with higher contrast.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Mosaic Tiles",
+   "id": "mosaicPlugin",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Mosaic Tiles",
+   "status": "current",
+   "summary": "Redraws the image as if it were made of small, irregular ceramic chips or tiles set in grout, with embossed grout lines between them; the image stays recognisable but gains a tiled-wall surface.",
+   "use_for": [
+    "tiled-wall / ceramic mosaic texture on a photo for a restaurant or travel poster",
+    "craft or heritage-style mosaic background",
+    "a tactile surface texture behind type"
+   ],
+   "avoid": [
+    "square colour blocks (pixelation) are a different filter: use Filter/Pixelate/Mosaic for that",
+    "small tiles are lost when a full-HD image is shown small: raise Tile Size",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Mosaic Tiles",
+    "CDR": "Effects/Creative/Mosaic"
+   },
+   "look": [
+    "mosaic",
+    "ceramic tiles",
+    "tiled wall",
+    "grout",
+    "chips",
+    "embossed tiles",
+    "craft"
+   ],
+   "params": [
+    {
+     "name": "Tile Size",
+     "does": "size of each tile chip",
+     "typical": "2-100; 12 default, 25-40 on a full HD image"
+    },
+    {
+     "name": "Grout Width",
+     "does": "width of the grout lines between tiles",
+     "typical": "1-15; 3-5"
+    },
+    {
+     "name": "Lighten Grout",
+     "does": "how light the grout is; higher = paler grout",
+     "typical": "0-10; 9 default, 6-9"
+    }
+   ],
+   "demo_settings": {
+    "Tile Size": 30,
+    "Grout Width": 4,
+    "Lighten Grout": 8
+   },
+   "pairs_with": [
+    "Image/Adjustments/Vibrance to make the tiles read as glazed colour",
+    "Layer Style Bevel & Emboss on a duplicate for more depth",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"tileSize\"), 30); d.putInteger(s(\"groutWidth\"), 4); d.putInteger(s(\"lightenGrout\"), 8); executeAction(s(\"mosaicPlugin\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "486 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/0a07fda1352b.png",
+    "note": "Image set into irregular small tiles with embossed dark grout lines, still recognisable.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Patchwork",
+   "id": "patchwork",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Patchwork",
+   "status": "current",
+   "summary": "Breaks the image into small squares, each filled with the main colour of that area, and randomly raises or sinks each square so it catches highlight and shadow, giving a quilted, needlepoint or embossed-tile look.",
+   "use_for": [
+    "needlepoint / cross-stitch or quilt texture on a craft or textile poster",
+    "a tactile, embossed square-grid background from a photo",
+    "retro low-res but textured look behind type"
+   ],
+   "avoid": [
+    "Square Size tops out at 10, so on a full-HD or larger image the squares are tiny and vanish when shown small: downscale the image or a copy first, or use Filter/Pixelate/Mosaic for big flat squares",
+    "faces and small text become unreadable",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Patchwork"
+   },
+   "look": [
+    "patchwork",
+    "quilt",
+    "needlepoint",
+    "cross stitch",
+    "embossed squares",
+    "square grid",
+    "textile"
+   ],
+   "params": [
+    {
+     "name": "Square Size",
+     "does": "size of the squares",
+     "typical": "0-10; 4 default, 8-10 on a full HD image"
+    },
+    {
+     "name": "Relief",
+     "does": "how strongly squares are raised and sunk (depth of the highlights and shadows)",
+     "typical": "0-25; 8 default, 12-20 for a clear relief"
+    }
+   ],
+   "demo_settings": {
+    "Square Size": 10,
+    "Relief": 18
+   },
+   "pairs_with": [
+    "Image/Image Size to downsample before applying for bigger squares",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"squareSize\"), 10); d.putInteger(s(\"relief\"), 18); executeAction(s(\"patchwork\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "528 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/247504ca7bc2.png",
+    "note": "Small raised / sunk squares filled with the local colour, a quilted grid (squares about 5 px in the 960 frame).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Stained Glass",
+   "id": "stainedGlass",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Stained Glass",
+   "status": "current",
+   "summary": "Repaints the image as irregular single-colour cells, like pieces of a stained-glass window, outlined by lead lines in the Foreground colour; Light Intensity adds a glow as if light shone through the glass from the centre.",
+   "use_for": [
+    "stained-glass window look for a festival, church or heritage poster",
+    "bold cellular background from a photo",
+    "decorative frame or panel textures"
+   ],
+   "avoid": [
+    "the lead lines take the Foreground swatch colour (black by default): set it first",
+    "high Light Intensity washes the centre of the image out: keep it low (0-4) for colour-rich glass",
+    "faces dissolve into cells at large Cell Size: keep cells small, or mask the face out",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Stained Glass",
+    "CDR": "Effects/Creative/Stained Glass"
+   },
+   "look": [
+    "stained glass",
+    "cells",
+    "lead lines",
+    "church window",
+    "cellular",
+    "voronoi",
+    "mosaic glass"
+   ],
+   "params": [
+    {
+     "name": "Cell Size",
+     "does": "size of the glass cells",
+     "typical": "2-50; 10 default, 20-35 on a full HD image"
+    },
+    {
+     "name": "Border Thickness",
+     "does": "width of the lead lines between cells (drawn in the Foreground colour)",
+     "typical": "1-20; 4 default, 4-8"
+    },
+    {
+     "name": "Light Intensity",
+     "does": "strength of a light glow brightening the image toward the centre",
+     "typical": "0-10; 3 default, 0-4"
+    }
+   ],
+   "demo_settings": {
+    "Cell Size": 30,
+    "Border Thickness": 6,
+    "Light Intensity": 3
+   },
+   "pairs_with": [
+    "set the Foreground swatch to the lead-line colour first",
+    "Image/Adjustments/Vibrance or Hue/Saturation to make the glass glow",
+    "Filter/Convert for Smart Filters"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putInteger(s(\"cellSize\"), 30); d.putInteger(s(\"borderThickness\"), 6); d.putInteger(s(\"lightIntensity\"), 3); executeAction(s(\"stainedGlass\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "664 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/0699496e897b.png",
+    "note": "Irregular single-colour cells outlined in black lead lines, with a brighter glow toward the centre.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Texturizer",
+   "id": "texturizer",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Texture/Texturizer",
+   "status": "current",
+   "summary": "Embosses a surface texture (brick, burlap, canvas, sandstone and other built-in textures) across the image with lighting from a chosen direction, so the photo looks printed or painted on that material.",
+   "use_for": [
+    "canvas texture so a photo or digital painting looks like a printed canvas",
+    "brick-wall or burlap surface for posters and mock-ups",
+    "subtle paper / sandstone texture under flat artwork"
+   ],
+   "avoid": [
+    "Blocks, Frosted and Tiny Lens in the textureType enum are the shared Filter/Distort/Glass textures; the Texturizer dialog offers Brick, Burlap, Canvas and Sandstone (plus Load Texture, not in the harvested params), and the harvest did not check the other three here, so stick to those four",
+    "high Relief looks like a cheap emboss: keep it 4-15 for a believable surface",
+    "a real photographic texture: place a texture photo on a layer in Overlay / Multiply instead",
+    "not listed in the Filter menu by default (harvest: menu_visible false): open it from Filter > Filter Gallery > Texture, or tick 'Show all Filter Gallery groups and names' in Edit > Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK, Lab, Duotone or Multichannel documents: the harvest lists only Grayscale and RGB as supported for this Filter Gallery effect; convert a copy first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Texture/Texturizer",
+    "CDR": "Effects/Texture/Canvas"
+   },
+   "look": [
+    "canvas texture",
+    "brick",
+    "burlap",
+    "sandstone",
+    "embossed texture",
+    "printed on canvas",
+    "fabric"
+   ],
+   "params": [
+    {
+     "name": "Texture Type",
+     "does": "which surface texture is embossed onto the image",
+     "typical": "Canvas for art prints, Brick or Burlap for strong surfaces"
+    },
+    {
+     "name": "Scaling",
+     "does": "size of the texture pattern in percent",
+     "typical": "50-200; 100 default, 150-200 on a full HD image"
+    },
+    {
+     "name": "Relief",
+     "does": "depth of the embossed texture",
+     "typical": "0-50; 4 default, 8-15 for a clear surface"
+    },
+    {
+     "name": "Light Direction",
+     "does": "side the light comes from, which sets where texture highlights and shadows fall",
+     "typical": "Top Left or Top"
+    },
+    {
+     "name": "Invert Texture",
+     "does": "flips the texture's highs and lows (raised becomes sunken)",
+     "typical": "false"
+    }
+   ],
+   "demo_settings": {
+    "Texture Type": "texTypeBrick",
+    "Scaling": 200,
+    "Relief": 14,
+    "Light Direction": "lightDirTopLeft",
+    "Invert Texture": false
+   },
+   "enum_labels": {
+    "texTypeBrick": "Brick",
+    "texTypeBurlap": "Burlap",
+    "texTypeCanvas": "Canvas",
+    "texTypeSandstone": "Sandstone",
+    "texTypeBlocks": "Blocks",
+    "texTypeFrosted": "Frosted",
+    "texTypeTinyLens": "Tiny Lens",
+    "lightDirBottom": "Bottom",
+    "lightDirBottomLeft": "Bottom Left",
+    "lightDirLeft": "Left",
+    "lightDirTopLeft": "Top Left",
+    "lightDirTop": "Top",
+    "lightDirTopRight": "Top Right",
+    "lightDirRight": "Right",
+    "lightDirBottomRight": "Bottom Right"
+   },
+   "pairs_with": [
+    "Edit/Fade right after to soften the texture",
+    "Filter/Convert for Smart Filters",
+    "Filter/Artistic filters first, then Texturizer Canvas, for a painted-print look"
+   ],
+   "scripting": "var s = stringIDToTypeID, d = new ActionDescriptor(); d.putEnumerated(s(\"textureType\"), s(\"textureType\"), s(\"texTypeBrick\")); d.putInteger(s(\"scaling\"), 200); d.putInteger(s(\"relief\"), 14); d.putEnumerated(s(\"lightDirection\"), s(\"lightDirection\"), s(\"lightDirTopLeft\")); d.putBoolean(s(\"invertTexture\"), false); executeAction(s(\"texturizer\"), d, DialogModes.NO);  // on the active pixel layer; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "no on a plain pixel layer (it rewrites the pixels); on a Smart Object it becomes a removable Smart Filter: the harvest's smart-filter probe (work/ps/probe_smart.json, smart_filter true in harvest/ps/ps_filter.json) applied it to a Smart Object and read it back as a Smart Filter entry with no filter settings in the read-back (hasoptions false), only its blending options (opacity, mode)",
+   "cost": "993 ms on the harvest's 480x270 test layer (full HD not timed); 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "cost: dropped the unharvested 'light/medium' label; avoid: dropped the unharvested '8-bit' / '16/32-bit' and 'Photoshop 2026' wording (colour-mode entry now says only what supported_modes shows); non_destructive: the harvest DID probe it as a Smart Filter (work/ps/probe_smart.json; smart_filter true in harvest/ps/ps_filter.json), was wrongly marked 'not probed'; avoid: Blocks/Frosted/Tiny Lens caveat reworded as actionable, naming Filter/Distort/Glass as their source"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/732057598494.png",
+    "note": "Brick texture embossed across the whole frame with top-left lighting, colours kept.",
+    "rerender": false
+   }
+  }
+ ]
+}

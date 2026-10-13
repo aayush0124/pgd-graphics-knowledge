@@ -1,0 +1,460 @@
+{
+ "cards": [
+  {
+   "name": "Count Tool",
+   "id": "countTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Click-to-count tool: each click drops a numbered marker (1, 2, 3 ...) on the image and keeps a running total per count group in the options bar. The markers are an overlay saved with the PSD, not pixels, so they do not show up in flattened exports.",
+   "use_for": [
+    "counting items in a photo: heads in a crowd, products on a shelf, windows, cells",
+    "numbered review markers on a draft for client feedback rounds",
+    "tallies logged to the Measurement Log for a report"
+   ],
+   "avoid": [
+    "numbers that must print or export: the markers are non-printing; draw text or shape layers (Type Tool, Ellipse Tool) instead",
+    "counting many similar blobs by hand: script Document.autoCount(channel, threshold) on a thresholded channel"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Pick it from the Eyedropper flyout (I; Shift+I cycles Eyedropper, Color Sampler, Ruler, Note, Count) or Image > Analysis > Count Tool. Click each object to add the next number; drag a marker to move it; Alt-click a marker to remove it. Options bar: Count Group (several groups, each with its own colour, total and show/hide), Marker Size, Label Size, the group colour swatch and Clear. Image > Analysis > Record Measurements writes the totals to the Measurement Log.",
+   "shortcut": "I",
+   "scriptable": "yes",
+   "script_api": "app.currentTool = \"countTool\" only selects the tool. A script places markers directly with Document.countItems.add([x, y]) (CountItems.add(position)), reads CountItem.position and deletes with CountItem.remove() / removeAll(). Document.autoCount(channel, threshold 0-255) counts objects in a channel automatically and Document.recordMeasurements() logs the totals (all in the ps_api harvest).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Crop Tool",
+   "id": "cropTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Draws a crop box over the whole document and trims the canvas to it when committed. The box can be rotated to straighten, locked to a ratio or to an exact width x height x resolution, and dragged past the edges to enlarge the canvas (new area transparent, background colour, Content-Aware or generative fill).",
+   "use_for": [
+    "reframing a photo to a social format: square post, portrait post, vertical story or reel cover",
+    "straightening a tilted horizon with the Straighten line",
+    "cropping to an exact print size and resolution (W x H x Resolution, e.g. the 'Crop 4 inch x 6 inch 300 ppi' tool preset)",
+    "extending a background to make room for headline text"
+   ],
+   "avoid": [
+    "a final, small file with Delete Cropped Pixels off: the cropped-away pixels stay hidden in the layers; switch it on for the final crop",
+    "perspective-skewed subjects such as documents, screens or signs: use the Perspective Crop Tool",
+    "adding a fixed margin without reframing: Image > Canvas Size",
+    "cropping many files the same way: script Document.crop(bounds) instead of dragging"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Crop Tool",
+    "CDR": "Toolbox/Crop Tools/Crop"
+   },
+   "how": "Press C (Shift+C cycles Crop, Perspective Crop, Slice, Slice Select). A box appears around the canvas: drag its handles or drag a new box; drag inside to move the image under it, drag just outside a corner to rotate. Shift keeps the ratio, Alt scales from the centre. Options bar: ratio or W x H x Resolution presets, Clear, Straighten, overlay (Rule of Thirds, Grid, Golden Ratio ...), Delete Cropped Pixels, Content-Aware. Enter or the tick commits, Esc cancels.",
+   "shortcut": "C",
+   "scriptable": "yes",
+   "script_api": "app.currentTool = \"cropTool\" only selects the tool. The crop itself is Document.crop(bounds [left, top, right, bottom], angle, width, height); Document.trim(TrimType, top, left, bottom, right) trims transparent or solid-colour edges. Image > Crop (ps_menu 1044, needs an active selection) runs as executeAction(stringIDToTypeID('crop'), d, DialogModes.NO) with d.putBoolean(charIDToTypeID('Dlt '), true), verified live in the menu harvest; app.runMenuItem(1044) is refused (the menu harvest records that numeric menu-bar ids do not work with runMenuItem). The tool's own options are the 'CrpO' object in the harvest.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: app.runMenuItem(1044) replaced by the menu harvest's verified executeAction('crop') route (numeric menu ids are refused by runMenuItem); use_for: dropped unsourced aspect-ratio numbers"
+   }
+  },
+  {
+   "name": "Curvature Pen Tool",
+   "id": "curvaturePenTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Draws paths by clicking points only: Photoshop fits smooth curves through the anchors as you place them, so curves form without dragging Bezier handles, and double-clicking an anchor toggles it between smooth and corner. The result is a work path or shape outline like the Pen Tool makes.",
+   "use_for": [
+    "tracing smooth product or body contours for a cut-out path",
+    "drawing flowing logo curves and lettering outlines",
+    "quick vector masks around rounded objects"
+   ],
+   "avoid": [
+    "outlines with many sharp corners (boxes, buildings): the Pen Tool with plain clicks is faster",
+    "type-grade curves that need exact handle lengths: Pen Tool plus Direct Selection Tool",
+    "hair, fur and soft edges: a path cannot follow strands; use Select and Mask"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Curvature Tool",
+    "CDR": "Toolbox/Curve Tools/B-Spline"
+   },
+   "how": "Pick it from the Pen flyout (the harvest found no default shortcut for it). Click to place anchors; from the second click on, the segment bends to pass smoothly through the points. Drag an anchor to reshape, click a segment to add an anchor, select an anchor and press Delete to remove it, double-click an anchor to switch corner / smooth, click the first anchor to close, Esc to leave the path open. Options bar: Path or Shape mode and the path operations (combine, subtract, intersect, exclude overlap).",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"curvaturePenTool\" only selects the tool; a script cannot click. It builds the same path with Document.pathItems.add(name, [SubPathInfo]), each SubPathInfo.entireSubPath being an array of PathPointInfo (anchor, leftDirection, rightDirection, kind). The automatic curve fitting is not available: compute the handles yourself (e.g. Catmull-Rom to Bezier), then use PathItem.makeSelection / fillPath / strokePath.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Custom Shape Tool",
+   "id": "customShapeTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Draws a vector shape from Photoshop's shape library by dragging: the default sets are Boats, Flowers, Leaf Trees and Wild Animals, and arrows, banners, ornaments, talk bubbles and the other older sets come with Legacy Shapes and More. In Shape mode it makes a resolution-independent shape layer with editable fill and stroke; Path mode makes a work path and Pixels mode fills pixels on the active layer.",
+   "use_for": [
+    "icons, arrows and badges on social graphics and thumbnails",
+    "decorative ornaments and simple frames on invitations",
+    "a library silhouette (heart, star burst, speech bubble) used as a vector mask"
+   ],
+   "avoid": [
+    "brand marks: place the real logo as a vector smart object from Illustrator rather than approximating it with a library shape",
+    "Pixels mode on a design that will be resized: use Shape mode so the edge stays crisp",
+    "multi-colour artwork: a shape layer has one fill and one stroke; place an SVG / AI file instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Toolbox/Shape Tools/Common Shapes"
+   },
+   "how": "Press U (Shift+U cycles the shape tools) and pick a shape in the options-bar Shape picker, or drag one from Window > Shapes; older sets load from the Shapes panel menu (Legacy Shapes and More). Drag on the canvas: Shift keeps the shape's proportions, Alt draws from the centre, Space moves it mid-drag; a single click opens a size dialog. Options bar: Shape / Path / Pixels, Fill, Stroke colour / width / type, W and H, path operations, Align Edges.",
+   "shortcut": "U",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"customShapeTool\" only selects the tool, and the DOM has no call that draws a shape layer. Use an Action Manager 'make' of a contentLayer whose shape is a customShape (shape name plus bounds); that descriptor is not in this harvest, so record it once with ScriptListener. The library shapes are presets, e.g. Required/Legacy Shapes and More.csh in the ps_preset harvest.",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: arrows / banners / ornaments are not in the default set (ps_preset: Default Custom Shapes.csh = Boats, Flowers, Leaf Trees, Wild Animals); said they come with Legacy Shapes and More"
+   }
+  },
+  {
+   "name": "Delete Anchor Point Tool",
+   "id": "deleteKnotTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Removes one anchor point from a path or shape outline per click; the two neighbouring segments merge into one, so the outline gets simpler instead of breaking open.",
+   "use_for": [
+    "simplifying an over-detailed traced path before turning it into a selection or vector mask",
+    "removing bumps from a product cut-out path",
+    "smoothing the silhouette of a custom shape by cutting points"
+   ],
+   "avoid": [
+    "deleting a segment or opening a path: select the segment with the Direct Selection Tool and press Delete",
+    "live rectangles, ellipses and polygons: deleting an anchor turns them into regular paths and they lose their live size and corner fields",
+    "thinning many points at once: redraw the outline with the Curvature Pen Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Delete Anchor Point Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "how": "Pick it from the Pen flyout (no default shortcut in the harvest). Select the path first (Paths panel or Path Selection Tool) so its anchors show, then click an anchor to delete it. The Pen Tool does the same when you hover an anchor with Auto Add/Delete on; holding Ctrl gives a temporary Direct Selection Tool for nudging the remaining points.",
+   "shortcut": null,
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"deleteKnotTool\" only selects the tool. PathPoint objects are read-only in the DOM, so a script removes a point by rebuilding: read PathItem.subPathItems[i].pathPoints (anchor, leftDirection, rightDirection, kind), leave the point out, create the new path with Document.pathItems.add(name, [SubPathInfo]) and remove() the old PathItem. A shape layer's vector mask has to be rebuilt through Action Manager.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Direct Selection Tool",
+   "id": "directSelectTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Selects individual anchor points, direction handles and segments of a path, shape layer or vector mask so they can be moved and reshaped; selected anchors show solid, unselected ones hollow.",
+   "use_for": [
+    "refining a Pen Tool cut-out path point by point",
+    "reshaping a vector shape or vector mask: tweaking a logo curve, bending a banner end",
+    "adjusting curve handles for smoother outlines"
+   ],
+   "avoid": [
+    "moving a whole path or shape: Path Selection Tool (same A key) or Move Tool",
+    "live rectangles / ellipses / polygons: editing an anchor turns the live shape into a regular path and drops its Properties-panel size and corner-radius fields",
+    "pixel layers: it only acts on paths; use selections and Free Transform for pixels"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Direct Selection Tool",
+    "CDR": "Toolbox/Edit Shape Tools/Shape"
+   },
+   "how": "Press A (Shift+A toggles with the Path Selection Tool). Click a segment or anchor of a path; Shift-click adds anchors, drag a marquee to pick several, Alt-click selects the whole subpath. Drag anchors or handles to reshape, arrow keys nudge, Delete removes the selected anchors (this opens the path). With any Pen tool active, hold Ctrl for a temporary Direct Selection Tool.",
+   "shortcut": "A",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"directSelectTool\" only selects the tool. There is no DOM call that moves one anchor: read Document.pathItems / PathItem.subPathItems[].pathPoints (anchor, leftDirection, rightDirection), change the coordinates in a PathPointInfo copy and rebuild with pathItems.add(name, [SubPathInfo]). Shape-layer vector masks need Action Manager.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Dodge Tool",
+   "id": "dodgeTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Brush that lightens the pixels it paints over, like darkroom dodging: Range limits the effect to shadows, midtones or highlights, Exposure sets the strength, and repeated strokes build up. It edits the pixels of the active layer directly.",
+   "use_for": [
+    "brightening eyes, teeth and catchlights in portrait retouching",
+    "lifting detail in dark areas of product and food shots",
+    "painting highlights and rim light into composites and matte paintings",
+    "adding sheen to hair, metal or glass"
+   ],
+   "avoid": [
+    "the original image layer: it is destructive; dodge a 50% grey layer set to Overlay / Soft Light, or use a masked Curves adjustment",
+    "high Exposure on skin: blotchy, washed-out patches; build up with low values",
+    "smart objects, text and shape layers: it needs a pixel layer; use the grey-layer method instead of rasterizing",
+    "hue shifts in shadows and midtones: keep Protect Tones on"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Press O (Shift+O cycles Dodge, Burn, Sponge). Pick a soft brush, set Range (Shadows / Midtones / Highlights; the harvest's mode values dodgeS / dodgeM / dodgeH), Exposure (key exposure, an int, read back as 50; keep it low and build up with several strokes) and keep Protect Tones on, then paint. Alt switches to the Burn Tool while held. Airbrush and tablet-pressure buttons sit on the options bar.",
+   "shortcut": "O",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"dodgeTool\" selects the tool. To dodge from a script, build a path along the area (Document.pathItems.add) and call PathItem.strokePath(ToolType.DODGE, simulatePressure): it strokes with the Dodge Tool's current brush, range and exposure (ToolType.DODGE is in the ps_api harvest). Set those options first (tool preset or Action Manager) and target a pixel layer. Freehand gestures and tablet pressure are not scriptable, and the DOM cannot set Range or Exposure.",
+   "review": {
+    "by": "adversarial",
+    "changes": "how: removed the unsourced Exposure range 5-15 (now quotes the read-back 50); scriptable yes -> partial (strokePath along a path only, options need AM; matches the reviewed Burn Tool card)"
+   }
+  },
+  {
+   "name": "Ellipse Tool",
+   "id": "ellipseTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Drags out an ellipse, or with Shift a perfect circle. In Shape mode it creates a live vector shape layer whose fill, stroke, width and height stay editable in the Properties panel; Path mode makes a work path, Pixels mode fills pixels on the active layer.",
+   "use_for": [
+    "circle badges, buttons and price stickers on posters and social posts",
+    "round photo backdrops and avatar circles",
+    "dots, bokeh and decorative circles in layouts",
+    "circular vector masks"
+   ],
+   "avoid": [
+    "a round selection for photo editing: use the Elliptical Marquee Tool",
+    "Pixels mode on artwork that will be resized: use Shape mode so it stays crisp",
+    "editing its anchors with the Direct Selection Tool: it becomes a regular path and loses the live W / H fields"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Ellipse Tool",
+    "CDR": "Toolbox/Ellipse Tools/Ellipse"
+   },
+   "how": "Press U (Shift+U cycles the shape tools). Drag on the canvas: Shift for a circle, Alt to draw from the centre, Space to reposition while dragging; a single click opens a dialog for an exact width and height. Options bar: Shape / Path / Pixels, Fill, Stroke colour / width / type, W and H, path operations, Align Edges. Fine-tune size and position afterwards in the Properties panel.",
+   "shortcut": "U",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"ellipseTool\" only selects the tool, and the DOM has no call that makes a shape layer. For a live shape use an Action Manager 'make' of a contentLayer with an ellipse shape (top, left, bottom, right); it is not in this harvest, so record it once with ScriptListener. For a pixel ellipse build a 4-anchor Bezier ellipse with Document.pathItems.add and call PathItem.fillPath, or makeSelection then Selection.fill.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Elliptical Marquee Tool",
+   "id": "marqueeEllipTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Drags an elliptical or circular selection (marching ants); nothing changes on the image until you fill, delete, copy, mask or adjust inside it. Feather softens the edge and Anti-alias keeps the curve smooth.",
+   "use_for": [
+    "round profile-picture and avatar crops through a layer mask",
+    "spotlight and vignette selections to brighten or darken around a subject",
+    "isolating round objects: plates, clock faces, wheels",
+    "circular call-out crops copied from a photo"
+   ],
+   "avoid": [
+    "a crisp, scalable circle in a design: draw it with the Ellipse Tool as a shape layer",
+    "baking in a feather you may want to change: feather the layer mask in the Properties panel instead, it stays editable",
+    "Anti-alias off: the curved edge comes out stair-stepped"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Press M (Shift+M toggles with the Rectangular Marquee). Drag; once dragging, Shift makes a circle, Alt grows it from the centre and holding Space moves it. Pressed before the drag, Shift adds to the current selection, Alt subtracts and Shift+Alt intersects. Options bar: new / add / subtract / intersect buttons, Feather (px), Anti-alias, Style (Normal, Fixed Ratio, Fixed Size), Select and Mask. The Add Layer Mask button turns the selection into a mask.",
+   "shortcut": "M",
+   "scriptable": "yes",
+   "script_api": "app.currentTool = \"marqueeEllipTool\" only selects the tool. Selection.select(region) takes polygon points only, so for a true ellipse build a 4-anchor Bezier ellipse with Document.pathItems.add(name, [SubPathInfo]), call PathItem.makeSelection(feather, antiAlias, SelectionType) and remove the helper path. An Action Manager 'set' of the selection to an ellipse descriptor does it in one call (record with ScriptListener; not in this harvest).",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Eraser Tool",
+   "id": "eraserTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Brush that removes pixels where you paint: on a normal layer they become transparent, on a locked Background layer they turn the background colour. Mode picks a soft Brush, hard-edged Pencil or square Block stroke, and Opacity / Flow give partial, see-through erasing.",
+   "use_for": [
+    "cleaning stray pixels and halos around a quick cut-out",
+    "soft fades of a texture or overlay into the image (on a duplicate layer)",
+    "erasing parts of scanned sketches or clip art",
+    "Erase to History to restore an earlier state in one area"
+   ],
+   "avoid": [
+    "anything you may want back: it is destructive; paint black on a layer mask instead",
+    "removing a plain background: Remove Background / Select Subject, or the Background Eraser and Magic Eraser",
+    "smart objects, type and shape layers: they would have to be rasterized; mask them instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Eraser Tool",
+    "CDR": "Toolbox/Crop Tools/Eraser"
+   },
+   "how": "Press E (Shift+E cycles Eraser, Background Eraser, Magic Eraser). Pick a brush tip and size ([ and ] resize), set Mode, Opacity, Flow and Smoothing, then paint over the area. Holding Alt while dragging erases to the selected History state instead (Erase to History).",
+   "shortcut": "E",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"eraserTool\" selects the tool. PathItem.strokePath(ToolType.ERASER, simulatePressure) erases along a path with the tool's current brush and opacity (ToolType.ERASER is in the ps_api harvest); Selection.clear() erases a whole selected area at once, like Edit > Clear. Freehand gestures and tablet pressure are not scriptable, and the DOM cannot set the eraser Mode, Opacity or Flow.",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial (strokePath along a path or a hard Selection.clear only; matches the reviewed Brush / Burn cards)"
+   }
+  },
+  {
+   "name": "Eyedropper Tool",
+   "id": "eyedropperTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Samples a colour from the image with a click and makes it the foreground colour (Alt-click: background colour). Sample Size reads one pixel or averages an area, Sample chooses which layers are read, and a sampling ring compares the new colour with the current one.",
+   "use_for": [
+    "matching text or shape colour to a product or brand colour in a photo",
+    "picking skin, sky or shadow tones for retouching and painting",
+    "building a palette from a reference image"
+   ],
+   "avoid": [
+    "noisy photos with Point Sample: you get one noisy pixel; pick one of the Average sample sizes",
+    "sampling the raw layer while adjustment layers sit above it: set Sample to Current Layer",
+    "watching a spot's values while you adjust: place a Color Sampler Tool point instead"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Eyedropper Tool",
+    "CDR": "Toolbox/Eyedropper flyout/Color Eyedropper"
+   },
+   "how": "Press I (Shift+I cycles Eyedropper, Color Sampler, Ruler, Note, Count). Click to set the foreground colour, Alt-click for the background colour; start a drag on the canvas and move anywhere on screen to sample outside Photoshop. With a painting tool active, hold Alt for a temporary eyedropper. Options bar: Sample Size, Sample (Current Layer, All Layers ...), Show Sampling Ring; the harvest keys eyeDropperSample, eyeDropperSampleSheet (ints) and eyeDropperHUD (bool) appear to be these three.",
+   "shortcut": "I",
+   "scriptable": "yes",
+   "script_api": "app.currentTool = \"eyedropperTool\" only selects the tool. A script samples with Document.colorSamplers.add([x, y]), reads ColorSampler.color (a SolidColor), assigns it to app.foregroundColor or app.backgroundColor and then remove()s the sampler (all in the ps_api harvest).",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed unsourced sample-size numbers (5 x 5 / 11 x 11)"
+   }
+  },
+  {
+   "name": "Frame Tool",
+   "id": "framedGroupTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Draws a rectangular or elliptical placeholder frame that masks whatever image goes into it; the image comes in as a smart object scaled to fill the frame and can be moved or resized inside it without changing the frame.",
+   "use_for": [
+    "photo placeholders in social-carousel, collage and grid templates",
+    "mockups where the client swaps images later",
+    "quick square or round photo crops on posters without building masks"
+   ],
+   "avoid": [
+    "frames in other shapes: draw a shape or text, then Layer > New > Convert to Frame",
+    "soft or painted edges: use a layer mask; frame edges are hard",
+    "heavy pixel editing of the content: it is a smart object; edit inside it or use a normal masked layer"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "makeMask",
+    "CDR": "Object/PowerClip/Create Empty PowerClip Frame"
+   },
+   "how": "Press K. Choose rectangle or ellipse frame in the options bar and drag on the canvas (Shift for a square / circle). Fill the frame by dragging an image from Explorer or the Libraries panel onto it, or through the Properties panel / File > Place Embedded; drawing a frame while an image layer is selected should put that image into it. In the Layers panel click the frame thumbnail to move the frame, the content thumbnail to move the image inside.",
+   "shortcut": "K",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"framedGroupTool\" only selects the tool; its options are the 'FpoI' object in the harvest. To put an existing image layer into a frame, select the layer and run app.runMenuItem(stringIDToTypeID('framedGroupFromLayersEvent')) (Layer > New > Frame from Layers, ps_menu 9252), verified live: the layer became 'Frame 1', a group with a vector mask at the layer's bounds. Layer > New > Convert to Frame (ps_menu 9255) has no working script route: its candidate runMenuItem(stringIDToTypeID('convertToFramedGroupEvent')) failed with a General Photoshop error, and app.runMenuItem(9255) is refused (the menu harvest records that numeric menu-bar ids do not work with runMenuItem). Drawing an empty frame of a chosen size has no recorded call: record it once with ScriptListener.",
+   "review": {
+    "by": "adversarial",
+    "changes": "script_api: app.runMenuItem(9255) is refused and the Convert to Frame candidate failed live; now names the verified Frame from Layers route (ps_menu 9252, framedGroupFromLayersEvent)"
+   }
+  },
+  {
+   "name": "Freeform Pen Tool",
+   "id": "freeformPenTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Draws a path by dragging freehand, like a pencil, and places the anchor points for you (Curve Fit sets how closely). With Magnetic switched on it becomes the Magnetic Pen and snaps the path to contrasting edges as you trace.",
+   "use_for": [
+    "quick rough paths and loose vector masks",
+    "tracing an object with clear, high-contrast edges using the Magnetic option",
+    "hand-drawn organic shapes in Shape mode"
+   ],
+   "avoid": [
+    "clean geometric or logo curves: hand jitter makes lumpy anchors; use the Pen Tool or Curvature Pen Tool",
+    "low-contrast or busy edges with Magnetic on: the path jumps; use Select Subject / Object Selection or the Pen Tool",
+    "paths with too many anchors: raise Curve Fit, or thin them with the Delete Anchor Point Tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Freehand Tool",
+    "CDR": "Toolbox/Curve Tools/Freehand"
+   },
+   "how": "Press P (Shift+P cycles Pen and Freeform Pen). Drag to draw; release to end an open path, or finish on the start point to close it. Options bar: Path / Shape mode, path operations, the Magnetic checkbox and the gear menu with Curve Fit and the magnetic Width, Contrast and Frequency settings. With Magnetic on, click once to start, move along the edge (click to force an anchor), then double-click or press Enter to finish.",
+   "shortcut": "P",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"freeformPenTool\" only selects the tool; a script cannot drag. It builds the same kind of path from a point list with Document.pathItems.add(name, [SubPathInfo]) (PathPointInfo anchors; handles equal to the anchor give straight segments), then PathItem.makeSelection / fillPath / strokePath. Magnetic edge snapping has no scripted equivalent.",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Generative Fill Source Tool",
+   "id": "tooltip/GenerativeFillSourceTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "unusable",
+   "summary": "Not established. Photoshop.exe holds a toolbar tooltip 'Generative Fill Source Tool', but the harvest could not select any tool id for it and records no shortcut or toolbar group, so it may be a contextual or not-yet-exposed tool tied to Generative Fill. The name suggests marking a source area for Generative Fill; that is a guess, not confirmed.",
+   "use_for": [
+    "nothing confirmed; for generative edits use Edit > Generative Fill with an active selection"
+   ],
+   "avoid": [
+    "building a pipeline step on it: no id could be selected by script, and Edit > Generative Fill (ps_menu 1750, needs a selection) has no recorded script route either; do generative edits by hand",
+    "assuming what it does from its name: check the live toolbar and the Generative Fill UI first"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "how": "Unknown. It did not show up as a selectable tool in the harvest. If it exists in this build it most likely appears only inside the Generative Fill workflow (contextual task bar); check there before relying on it.",
+   "shortcut": null,
+   "scriptable": "no",
+   "script_api": "None: the harvest tried app.currentTool and no id was accepted, and no invoke was recorded. Edit > Generative Fill (ps_menu 1750, needs an active selection) has no script route either: the menu harvest did not run it (it spends generative credits) and app.runMenuItem(1750) is refused (the menu harvest records that numeric menu-bar ids do not work with runMenuItem).",
+   "review": {
+    "by": "adversarial",
+    "changes": "status hidden -> unusable (nothing shows it exists but is hidden; same evidence as the reviewed Type Recognition Tool); script_api/avoid: removed app.runMenuItem(1750), which is refused and has no recorded route; summary: 'no default shortcut' rephrased to what the harvest records"
+   }
+  },
+  {
+   "name": "Gradient Tool",
+   "id": "gradientTool",
+   "app": "PS",
+   "kind": "ps_tool",
+   "status": "current",
+   "summary": "Drags a colour gradient across the layer or selection: Linear, Radial, Angle, Reflected or Diamond, from a preset or custom colour stops. In its live Gradient mode it makes an editable Gradient Fill layer with on-canvas stops; in Classic mode it paints the gradient into the active pixel layer or mask.",
+   "use_for": [
+    "background gradients for posters, thumbnails and social posts",
+    "fading a photo into a colour with a black-to-white gradient on a layer mask",
+    "sky and lighting gradients in composites",
+    "colour washes over a photo with a blend mode"
+   ],
+   "avoid": [
+    "visible banding in long, smooth 8-bit gradients: keep Dither on or work in 16-bit",
+    "a gradient you will need to restyle later drawn in Classic mode: use the live Gradient mode or a Gradient Fill layer",
+    "free-form multi-point colour blends: stack several gradient layers or paint with a soft brush"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Gradient Vector Tool",
+    "CDR": "Toolbox/Fill Tools/Interactive Fill"
+   },
+   "how": "Press G (Shift+G toggles with the Paint Bucket). Choose a preset in the gradient picker or edit stops in the Gradient Editor, pick the type (Linear, Radial, Angle, Reflected, Diamond) and Method (Perceptual, Linear, Classic, Smooth, Stripes), then drag across the canvas: the start point takes the first stop, Shift constrains the drag to horizontal, vertical or diagonal. In live mode drag the on-canvas stops and midpoints afterwards. Options bar also has Mode, Opacity, Reverse and Dither.",
+   "shortcut": "G",
+   "scriptable": "partial",
+   "script_api": "app.currentTool = \"gradientTool\" only selects the tool. The live-mode result, an editable Gradient Fill layer, is Layer > New Fill Layer > Gradient (ps_menu 6301), verified live as executeAction(stringIDToTypeID('make'), d, DialogModes.NO) where d's null is a reference to class contentLayer and its using is a contentLayer object whose type is an (empty) gradientLayer descriptor; angle, type and stops need keys recorded with ScriptListener. A classic pixel gradient is the Action Manager event gradientClassEvent (the harvest shows that class on the tool's 'With' param): executeAction(stringIDToTypeID(\"gradientClassEvent\"), desc) with from / to points, type and stops; that descriptor is not in the harvest, so record it once with ScriptListener.",
+   "review": {
+    "by": "adversarial",
+    "changes": "scriptable yes -> partial (no DOM call, classic descriptor unrecorded; same standard as the Ellipse / Rectangle cards); script_api now names the verified Gradient Fill layer route (ps_menu 6301); how: removed unsourced 45-degree number"
+   }
+  }
+ ]
+}

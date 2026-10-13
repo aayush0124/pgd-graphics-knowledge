@@ -1,0 +1,942 @@
+{
+ "cards": [
+  {
+   "name": "Zipper",
+   "id": "vector:Distort:Zipper",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Distort/Zipper",
+   "status": "current",
+   "summary": "Distort tool mode that turns an object's outline into a row of sharp zigzag teeth, like a zipper or a pinking-shear edge: Amplitude sets how tall the teeth are and Frequency how many there are, Smooth rounds them into scallops / waves, Random varies their height for a ragged edge and Local makes them tallest at the origin and shrink away from it. The distortion stays live (editable or clearable) until the object is converted to curves.",
+   "use_for": [
+    "starburst / price-sticker badge from a circle or rounded box",
+    "pinking-shear or torn-ticket edge on a coupon, label or tag",
+    "electric, shocked or jittery outline on a comic shape or callout",
+    "scalloped seal or wavy frame border (Smooth on)"
+   ],
+   "avoid": [
+    "body text or detailed logos: every path segment gets teeth, so glyphs turn hairy and unreadable; distort a simple backing shape instead",
+    "an exact star or seal with a fixed point count: the Star / Polygon tool gives clean, even geometry",
+    "precise die-cut lines: tooth spacing follows the object's segments, so uneven segments give uneven teeth; convert to curves and check the nodes",
+    "groups such as the imported SVG plate: not verified whether it distorts a group as one object; apply per object if it refuses",
+    "bitmaps: this is a vector-only effect; use a bitmap Distort effect on photos"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Live Zig Zag"
+   },
+   "look": [
+    "zigzag edge",
+    "sawtooth",
+    "pinking shears",
+    "jagged outline",
+    "serrated",
+    "starburst",
+    "zipper",
+    "scalloped (Smooth)",
+    "torn edge (Random)"
+   ],
+   "params": [
+    {
+     "name": "OriginX",
+     "does": "horizontal position of the distortion centre, in document units; matters most with Local on",
+     "typical": "the object's centre (s.CenterX)"
+    },
+    {
+     "name": "OriginY",
+     "does": "vertical position of the distortion centre, in document units",
+     "typical": "the object's centre (s.CenterY)"
+    },
+    {
+     "name": "Amplitude",
+     "does": "height of the teeth (long; the harvest gives no range)",
+     "typical": "10-30 for a crisp serrated edge; 50+ for a spiky starburst"
+    },
+    {
+     "name": "Frequency",
+     "does": "how many teeth are laid along each segment of the outline (long; the harvest gives no range)",
+     "typical": "5-15 for badges; 20-40 for a fine pinked edge"
+    },
+    {
+     "name": "Random",
+     "does": "varies tooth heights randomly for a rough, torn or electric edge",
+     "typical": "false; true for torn paper or a shock outline"
+    },
+    {
+     "name": "Smooth",
+     "does": "rounds the sharp points into smooth waves / scallops",
+     "typical": "true for scalloped seals and wavy borders"
+    },
+    {
+     "name": "Local",
+     "does": "teeth are tallest at the origin and fade out with distance from it",
+     "typical": "false; true to concentrate the effect on one area"
+    }
+   ],
+   "demo_settings": {
+    "OriginX": 10.0,
+    "OriginY": 5.625,
+    "Amplitude": 20,
+    "Frequency": 10,
+    "Random": false,
+    "Smooth": false,
+    "Local": false
+   },
+   "pairs_with": [
+    "Drop Shadow on the toothed badge for a sticker look",
+    "Contour (outside) around the distorted shape for a seal border",
+    "Object > Convert to Curves to bake the teeth before node editing or cutting"
+   ],
+   "scripting": "VBA: Set eff = s.CreateZipperDistortion(s.CenterX, s.CenterY, 20, 10, False, False, False) (Shape.CreateZipperDistortion(OriginX, OriginY, Amplitude, Frequency, Random, Smooth, Local) -> Effect; the harvest apply test returned effect_type 7). pywin32: s.CreateZipperDistortion(s.CenterX, s.CenterY, 20, 10, False, False, False). Offsets / origins are in ActiveDocument.Unit (inches for a script unless the document unit was changed; the harvest tests used inches). The demo origin 10.0 / 5.625 assumes the 1920x1080 plate sits 1:1 at 96 px/in from the page origin; pass the shape's CenterX / CenterY in practice. Interactive route: Distort tool (cdr_guid f42edc69-976b-4917-802a-1c4fed6297ef) in Zipper mode.",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live distortion effect on the object (edit it on the property bar or clear it) until Convert to Curves bakes the nodes",
+   "cost": "light: pure vector, but node count grows with Frequency x segments, so heavy Frequency on text slows redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented 0-100 property-bar ranges from Amplitude and Frequency (harvest has type long only)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/f95a9dbbc0b2.png",
+    "note": "The star's outline is turned into rows of sharp sawtooth teeth along every edge (Amplitude 20, Frequency 10), a pinking-shear edge; Random, Smooth and Local off.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Drop Shadow",
+   "id": "vector:DropShadow",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Shadow/Drop Shadow tool",
+   "status": "current",
+   "summary": "Interactive drop shadow: adds a live, editable shadow behind a vector or bitmap object, either a flat offset shadow (Type Flat) or a perspective cast shadow anchored to the object's bottom, top, left or right edge, with colour, opacity, feathering (edge softness), feather direction / edge shape and merge mode, plus angle, stretch and fade for perspective shadows. The shadow is rendered as a soft bitmap linked to the object and follows it when the object is moved or edited.",
+   "use_for": [
+    "lift a product cut-out, logo or card off its background",
+    "soft shadow under headline type on a poster or thumbnail",
+    "perspective cast shadow (Bottom) to stand an object on a floor",
+    "button / card elevation in UI mock-ups"
+   ],
+   "avoid": [
+    "coloured or busy backgrounds where a Normal black shadow greys them out: use Merge Mode Multiply or a dark shade of the background colour; on a very dark background a dark shadow barely reads at all",
+    "hard flat shadows for vinyl cutting or screen print: the shadow is a bitmap; use Block Shadow or an offset vector duplicate",
+    "a shadow inside the shape: use Inner Shadow",
+    "very large Feather on big objects: soft, slow and heavy at export; keep feather modest"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "dropShadow",
+    "AI": "Live Adobe Drop Shadow"
+   },
+   "look": [
+    "drop shadow",
+    "soft shadow",
+    "cast shadow",
+    "perspective shadow",
+    "depth",
+    "elevation",
+    "floating object"
+   ],
+   "params": [
+    {
+     "name": "Type",
+     "does": "flat offset shadow, or a perspective shadow cast from the object's bottom / top / left / right edge",
+     "typical": "0 (Flat) for lift; 1 (Bottom) for a floor shadow"
+    },
+    {
+     "name": "Opacity",
+     "does": "shadow opacity, in percent",
+     "typical": "40-60 subtle; 70-90 strong"
+    },
+    {
+     "name": "Feather",
+     "does": "softness of the shadow edge (0 = hard)",
+     "typical": "5-15 soft; 20+ very diffuse"
+    },
+    {
+     "name": "OffsetX",
+     "does": "horizontal shadow offset in document units (flat shadows)",
+     "typical": "0.05-0.3 in"
+    },
+    {
+     "name": "OffsetY",
+     "does": "vertical shadow offset in document units; negative moves it down",
+     "typical": "-0.05 to -0.3 in"
+    },
+    {
+     "name": "Color",
+     "does": "shadow colour; the harvested default is Nothing (pass None from Python) for the app's default colour",
+     "typical": "black, or a dark shade of the background colour"
+    },
+    {
+     "name": "FeatherType",
+     "does": "how the softness spreads: inside, middle, outside, average, or Gaussian blur",
+     "typical": "4 (Gaussian blur, default)"
+    },
+    {
+     "name": "FeatherEdge",
+     "does": "fall-off curve of the feathered edge",
+     "typical": "0 (Linear, default)"
+    },
+    {
+     "name": "PerspectiveAngle",
+     "does": "direction of a perspective shadow, in degrees",
+     "typical": "-45 (default) to -60"
+    },
+    {
+     "name": "PerspectiveStretch",
+     "does": "length of a perspective shadow relative to the object",
+     "typical": "0.5-1.5"
+    },
+    {
+     "name": "Fade",
+     "does": "how much a perspective shadow fades out along its length",
+     "typical": "30-70 for a natural cast shadow"
+    },
+    {
+     "name": "MergeMode",
+     "does": "how the shadow blends with what is below it",
+     "typical": "9 (Multiply)"
+    }
+   ],
+   "demo_settings": {
+    "Type": 0,
+    "Opacity": 75,
+    "Feather": 12,
+    "OffsetX": 0.4,
+    "OffsetY": -0.4,
+    "Color": "#000000",
+    "FeatherType": 4,
+    "FeatherEdge": 0,
+    "MergeMode": 9
+   },
+   "enum_labels": {
+    "Type": {
+     "0": "Flat",
+     "1": "Bottom (perspective)",
+     "2": "Top (perspective)",
+     "3": "Left (perspective)",
+     "4": "Right (perspective)"
+    },
+    "FeatherType": {
+     "0": "Inside",
+     "1": "Middle",
+     "2": "Outside",
+     "3": "Average",
+     "4": "Gaussian blur (default)"
+    },
+    "FeatherEdge": {
+     "0": "Linear (default)",
+     "1": "Squared",
+     "2": "Flat",
+     "3": "Inverse squared",
+     "4": "Mesa",
+     "5": "Gaussian"
+    },
+    "MergeMode": {
+     "0": "Normal",
+     "1": "AND",
+     "2": "OR",
+     "3": "XOR",
+     "6": "Invert",
+     "7": "Add",
+     "8": "Subtract",
+     "9": "Multiply",
+     "10": "Divide",
+     "11": "If lighter",
+     "12": "If darker",
+     "13": "Texturize",
+     "14": "Color",
+     "15": "Hue",
+     "16": "Saturation",
+     "17": "Lightness",
+     "18": "Red",
+     "19": "Green",
+     "20": "Blue",
+     "24": "Difference",
+     "27": "Behind",
+     "28": "Screen",
+     "29": "Overlay",
+     "30": "Soft light",
+     "31": "Hard light",
+     "33": "Color dodge",
+     "34": "Color burn",
+     "36": "Exclusion"
+    }
+   },
+   "pairs_with": [
+    "Inner Shadow on a neighbouring panel for an inset / raised pair",
+    "Zipper-distorted badge + Drop Shadow for a sticker look",
+    "Block Shadow instead when a solid vector shadow is needed for print"
+   ],
+   "scripting": "VBA: Set eff = s.CreateDropShadow(cdrDropShadowFlat, 75, 12, 0.4, -0.4, CreateRGBColor(0, 0, 0), cdrFeatherGaussianBlur, cdrEdgeLinear, -45, 1, 1, cdrMergeMultiply) (Shape.CreateDropShadow(Type, Opacity, Feather, OffsetX, OffsetY, Color, FeatherType, FeatherEdge, PerspectiveAngle, PerspectiveStretch, Fade, MergeMode) -> Effect; harvest test and audit returned effect_type 5). pywin32: s.CreateDropShadow(0, 75, 12, 0.4, -0.4, app.CreateRGBColor(0, 0, 0), 4, 0, -45.0, 1.0, 1, 9); pass None for Color to keep the default. Offsets / origins are in ActiveDocument.Unit (inches for a script unless the document unit was changed; the harvest tests used inches).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live shadow effect linked to the object; edit or clear it any time, or break it apart to get a separate bitmap",
+   "cost": "moderate: the shadow is rendered as a bitmap; big Feather on large objects slows redraw and export",
+   "review": {
+    "by": "adversarial",
+    "changes": "Color param: default is Nothing per harvest, not black; Opacity: dropped the unharvested 0-100 range; reworded the dark-background avoid (Multiply does not rescue a dark backdrop)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/050546a46e81.png",
+    "note": "A soft black flat drop shadow at 75 % opacity, feathered 12, sits down-right of the star, making it float above the page.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Inner Shadow",
+   "id": "vector:InnerShadow",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Shadow/Inner Shadow Tool",
+   "status": "current",
+   "summary": "Adds a live shadow inside a closed vector shape, cast inward from its edges in the direction of the offset (an offset down-right darkens the top and left inner edges), so the shape looks recessed, cut out or debossed into the page. Controls mirror Drop Shadow (opacity, feather, offset, colour, feather direction / edge, merge mode) plus Depth, whose exact role is not documented in the harvest.",
+   "use_for": [
+    "debossed / letterpress look on a label, logo panel or type",
+    "inset buttons, wells and input fields in UI mock-ups",
+    "cut-out window or hole effect in a poster shape",
+    "adding depth to flat-colour headline type"
+   ],
+   "avoid": [
+    "open paths (like the plate's zigzag line): it needs a closed vector object",
+    "photos and other bitmaps: the harvest lists it for closed vector objects only",
+    "light shapes with a Normal merge: the shadow barely reads; use Multiply and a darker colour",
+    "a shadow outside the shape: use Drop Shadow",
+    "groups such as the imported SVG plate: not verified whether it shades each closed child; apply per object if needed"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "innerShadow"
+   },
+   "look": [
+    "inner shadow",
+    "inset",
+    "debossed",
+    "recessed",
+    "cut-out",
+    "letterpress",
+    "pressed button"
+   ],
+   "params": [
+    {
+     "name": "Opacity",
+     "does": "shadow opacity, in percent",
+     "typical": "50-85"
+    },
+    {
+     "name": "Feather",
+     "does": "softness of the inner shadow edge",
+     "typical": "8-20"
+    },
+    {
+     "name": "OffsetX",
+     "does": "horizontal shift of the shadow in document units; the shadow gathers on the opposite inner edge",
+     "typical": "0.05-0.25 in"
+    },
+    {
+     "name": "OffsetY",
+     "does": "vertical shift in document units; negative (down) darkens the top inner edge",
+     "typical": "-0.05 to -0.25 in"
+    },
+    {
+     "name": "Color",
+     "does": "shadow colour; the harvested default is Nothing (pass None from Python) for the app's default colour",
+     "typical": "black or a dark shade of the fill"
+    },
+    {
+     "name": "FeatherType",
+     "does": "how the softness spreads",
+     "typical": "4 (Gaussian blur, default)"
+    },
+    {
+     "name": "FeatherEdge",
+     "does": "fall-off curve of the feathered edge",
+     "typical": "0 (Linear, default)"
+    },
+    {
+     "name": "MergeMode",
+     "does": "how the shadow blends with the shape's fill",
+     "typical": "9 (Multiply)"
+    },
+    {
+     "name": "Depth",
+     "does": "not explained by the harvest (default -1.0, probably automatic); leave at the default unless tested",
+     "typical": "-1.0"
+    }
+   ],
+   "demo_settings": {
+    "Opacity": 85,
+    "Feather": 15,
+    "OffsetX": 0.25,
+    "OffsetY": -0.25,
+    "Color": "#000000",
+    "FeatherType": 4,
+    "FeatherEdge": 0,
+    "MergeMode": 9
+   },
+   "enum_labels": {
+    "FeatherType": {
+     "0": "Inside",
+     "1": "Middle",
+     "2": "Outside",
+     "3": "Average",
+     "4": "Gaussian blur (default)"
+    },
+    "FeatherEdge": {
+     "0": "Linear (default)",
+     "1": "Squared",
+     "2": "Flat",
+     "3": "Inverse squared",
+     "4": "Mesa",
+     "5": "Gaussian"
+    },
+    "MergeMode": {
+     "0": "Normal",
+     "1": "AND",
+     "2": "OR",
+     "3": "XOR",
+     "6": "Invert",
+     "7": "Add",
+     "8": "Subtract",
+     "9": "Multiply",
+     "10": "Divide",
+     "11": "If lighter",
+     "12": "If darker",
+     "13": "Texturize",
+     "14": "Color",
+     "15": "Hue",
+     "16": "Saturation",
+     "17": "Lightness",
+     "18": "Red",
+     "19": "Green",
+     "20": "Blue",
+     "24": "Difference",
+     "27": "Behind",
+     "28": "Screen",
+     "29": "Overlay",
+     "30": "Soft light",
+     "31": "Hard light",
+     "33": "Color dodge",
+     "34": "Color burn",
+     "36": "Exclusion"
+    }
+   },
+   "pairs_with": [
+    "Drop Shadow on surrounding shapes for a raised / sunken contrast",
+    "Fountain Transparency on a highlight shape for a bevelled, pressed look"
+   ],
+   "scripting": "VBA: Set eff = s.CreateInnerShadow(85, 15, 0.25, -0.25, CreateRGBColor(0, 0, 0), cdrFeatherGaussianBlur, cdrEdgeLinear, cdrMergeMultiply, -1) (Shape.CreateInnerShadow(Opacity, Feather, OffsetX, OffsetY, Color, FeatherType, FeatherEdge, MergeMode, Depth) -> Effect; harvest test and audit returned effect_type 11). pywin32: s.CreateInnerShadow(85, 15, 0.25, -0.25, app.CreateRGBColor(0, 0, 0), 4, 0, 9, -1.0). Offsets / origins are in ActiveDocument.Unit (inches for a script unless the document unit was changed; the harvest tests used inches).",
+   "scriptable": "yes",
+   "non_destructive": "yes: a live shadow effect linked to the shape; edit or clear it any time",
+   "cost": "moderate: rendered as a bitmap clipped inside the shape",
+   "review": {
+    "by": "adversarial",
+    "changes": "Color param: default is Nothing per harvest, not black; Opacity: dropped the unharvested 0-100 range"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/93e2b46bbcf4.png",
+    "note": "A dark feathered shadow runs inside the star along its upper and left edges (offset down-right), so the star looks recessed into the page, as the card says.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Bitmap Pattern Transparency",
+   "id": "vector:Transparency:Bitmap",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Bitmap Pattern Transparency",
+   "status": "current",
+   "summary": "Transparency type that uses a tiled bitmap image as the mask: the image's tones are read as grayscale and mapped between the Front and Back transparency values, so the object turns see-through in a photographic or grunge texture and whatever lies underneath shows through it. Applied with the Transparency tool's bitmap pattern type, or by script with an image file.",
+   "use_for": [
+    "grunge / distressed texture knocked into a headline or logo",
+    "photo-textured shapes or type over a contrasting background",
+    "subtle paper or fabric texture on flat vector colour"
+   ],
+   "avoid": [
+    "crisp repeating geometric screens: Two-color Pattern Transparency gives hard-edged 1-bit patterns",
+    "when the picture itself should appear: use a bitmap pattern fill or PowerClip; transparency only modulates see-through",
+    "large high-resolution tiles: they bloat the file and slow printing",
+    "the harvest never applied this call (typelib only); which pattern is used without FileName is unverified"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "textured transparency",
+    "grunge knockout",
+    "photo texture mask",
+    "distressed",
+    "see-through texture",
+    "ghosted"
+   ],
+   "params": [
+    {
+     "name": "FileName",
+     "does": "image file used as the pattern tile",
+     "typical": "a grayscale grunge or paper texture"
+    },
+    {
+     "name": "Front",
+     "does": "transparency % given to one end of the image's tonal range",
+     "typical": "0"
+    },
+    {
+     "name": "Back",
+     "does": "transparency % given to the other end of the tonal range",
+     "typical": "100"
+    },
+    {
+     "name": "TransformWithShape",
+     "does": "pattern scales / rotates with the object when it is transformed",
+     "typical": "true for logos that will be resized"
+    }
+   ],
+   "demo_settings": {
+    "FileName": "media/plate_photo.png",
+    "Front": 0,
+    "Back": 100,
+    "TransformWithShape": false
+   },
+   "pairs_with": [
+    "heavy display type or solid badges, whose big fill areas show the texture",
+    "a contrasting background colour so the see-through areas read",
+    "Convert to Bitmap before export to bake the texture for print"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyPatternTransparency cdrBitmapPattern, \"<PGD folder>\\media\\plate_photo.png\", 1, 0, 100, False (Transparency.ApplyPatternTransparency(Type=2, FileName, PatternCanvasIndex, Front, Back, TransformWithShape) -> PatternFill). pywin32: s.Transparency.ApplyPatternTransparency(2, r\"<PGD folder>\\media\\plate_photo.png\", 1, 0, 100, False). Pass a native Windows path. Signature from the typelib only: not applied in the harvest.",
+   "scriptable": "yes",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "moderate: the bitmap tile is stored and composited at redraw and print",
+   "review": {
+    "by": "adversarial",
+    "changes": "Front/Back: dropped the unharvested 0-100 range; otherwise none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/209a32092ded.png",
+    "note": "The star is see-through in the tones of the tiled photo: it shows a pale blue, photo-textured knockout (stripes, mid-tones and radial detail legible as light and dark) with the white page showing through, a photographic texture mask as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Fountain Transparency",
+   "id": "vector:Transparency:Fountain",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Fountain Transparency",
+   "status": "current",
+   "summary": "Graduated transparency: the object fades from the Start transparency to the End transparency along a linear, elliptical (radial), conical or rectangular (square) path, with angle, midpoint, edge pad, steps and centre-offset controls. It is the standard way to fade a shape, photo or type into the background or to make a mirror reflection fade out.",
+   "use_for": [
+    "fade a photo or shape edge into the background",
+    "reflection under a product or logo that fades away",
+    "radial vignette or spotlight (elliptical type)",
+    "headline type that fades out over a busy background"
+   ],
+   "avoid": [
+    "an even see-through level: use Uniform Transparency",
+    "PS / EPS print workflows that flatten transparency into bands or bitmaps: export PDF and check",
+    "a soft edge all around a shape: a feathered shadow or a bitmap blur may read better than one fade",
+    "non-zero Steps if you want a smooth fade: steps can band it"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "gradientTool",
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "fade",
+    "gradient transparency",
+    "fade to transparent",
+    "reflection",
+    "vignette",
+    "graduated opacity"
+   ],
+   "params": [
+    {
+     "name": "Start",
+     "does": "transparency % at the start node (0 = opaque, 100 = invisible)",
+     "typical": "0"
+    },
+    {
+     "name": "End",
+     "does": "transparency % at the end node",
+     "typical": "100 to vanish; 60-80 for a partial fade"
+    },
+    {
+     "name": "Type",
+     "does": "shape of the fade: linear, elliptical (radial), conical, rectangular (square)",
+     "typical": "1 (Linear); 2 for vignettes"
+    },
+    {
+     "name": "Angle",
+     "does": "direction of a linear fade, in degrees",
+     "typical": "0 left-right; 90 or -90 vertical"
+    },
+    {
+     "name": "Steps",
+     "does": "number of bands in the fade; the default 0 keeps it smooth",
+     "typical": "0"
+    },
+    {
+     "name": "EdgePad",
+     "does": "how much of each end stays at the pure Start / End value before blending, %",
+     "typical": "0-20"
+    },
+    {
+     "name": "MidPoint",
+     "does": "where the halfway level falls between the nodes",
+     "typical": "50; 30-70 to bias"
+    },
+    {
+     "name": "CenterOffsetX",
+     "does": "moves the centre of elliptical / conical / rectangular fades horizontally",
+     "typical": "0"
+    },
+    {
+     "name": "CenterOffsetY",
+     "does": "moves that centre vertically",
+     "typical": "0"
+    }
+   ],
+   "demo_settings": {
+    "Start": 0,
+    "End": 100,
+    "Type": 1,
+    "Angle": 0.0,
+    "Steps": 0,
+    "EdgePad": 0,
+    "MidPoint": 50,
+    "CenterOffsetX": 0.0,
+    "CenterOffsetY": 0.0
+   },
+   "enum_labels": {
+    "Type": {
+     "1": "Linear",
+     "2": "Elliptical (radial)",
+     "3": "Conical",
+     "4": "Rectangular (square)"
+    }
+   },
+   "pairs_with": [
+    "a mirrored duplicate (reflection) with End 100 and Angle -90 / 90",
+    "Drop Shadow (Bottom) for a floor shadow plus reflection",
+    "PowerClip of a photo inside a shape that then fades"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyFountainTransparency 0, 100, cdrLinearFountainFill, 0, 0, 0, 50, 0, 0 (Transparency.ApplyFountainTransparency(Start, End, Type, Angle, Steps, EdgePad, MidPoint, CenterOffsetX, CenterOffsetY) -> FountainFill; harvest test: transparency_type 2). pywin32: s.Transparency.ApplyFountainTransparency(0, 100, 1, 0.0, 0, 0, 50, 0.0, 0.0).",
+   "scriptable": "yes",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "light to edit; transparency may be flattened at PS / EPS export",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/8ce5159532b6.png",
+    "note": "The star fades linearly from fully opaque blue at its left point to fully transparent at its right point (Start 0, End 100, linear).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Texture Transparency",
+   "id": "vector:Transparency:Texture",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Texture Transparency",
+   "status": "needs_input",
+   "summary": "Transparency type that uses one of CorelDRAW's procedural bitmap textures from a texture library as the mask, mapping its tones between the Front and Back transparency values so the object turns see-through in an organic, mottled pattern. It needs a texture name (and usually its library); the preset harvest lists the libraries (Custom Data/texture.txr, library.txr) only as CorelDefaultID_<n> resource ids that the app resolves, so no usable name is known.",
+   "use_for": [
+    "cloudy or smoky dissolve on shapes and type",
+    "organic mottled texture knocked into a flat background shape",
+    "weathered, stone-like see-through effect on a label"
+   ],
+   "avoid": [
+    "scripting without known names: TextureName (required) and LibraryName must be the resolved display names, not the CorelDefaultID_<n> ids in texture.txr / library.txr; read them from the Transparency tool's texture picker first",
+    "crisp repeating patterns: use Two-color or Vector Pattern Transparency",
+    "large objects at high texture resolution: heavy to render and print",
+    "the harvest never applied this call (typelib only)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "texture transparency",
+    "cloud dissolve",
+    "mottled",
+    "organic see-through",
+    "smoky",
+    "stone texture mask"
+   ],
+   "params": [
+    {
+     "name": "TextureName",
+     "does": "name of the texture inside the library (required)",
+     "typical": "a cloud or mineral texture"
+    },
+    {
+     "name": "LibraryName",
+     "does": "texture library that holds the texture",
+     "typical": "the library shown in the texture picker"
+    },
+    {
+     "name": "Front",
+     "does": "transparency % given to one end of the texture's tonal range",
+     "typical": "0"
+    },
+    {
+     "name": "Back",
+     "does": "transparency % given to the other end",
+     "typical": "100"
+    }
+   ],
+   "demo_settings": {
+    "Front": 0,
+    "Back": 100
+   },
+   "pairs_with": [
+    "solid dark shapes over a light background so the mottling reads",
+    "Convert to Bitmap before export to bake the texture"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyTextureTransparency \"<texture name>\", \"<library name>\", 0, 100 (Transparency.ApplyTextureTransparency(TextureName, LibraryName, Front, Back) -> TextureFill). pywin32: s.Transparency.ApplyTextureTransparency(\"<texture name>\", \"<library name>\", 0, 100). The demo settings omit TextureName because no texture name was harvested: supply one before rendering.",
+   "scriptable": "partial",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "moderate to heavy: the texture is generated as a bitmap at its own resolution",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary/avoid now say the texture libraries ARE in the preset harvest but only as unresolved CorelDefaultID ids (status needs_input kept); Front/Back: dropped the 0-100 range"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "",
+    "note": "Listed in gallery/cdr_effect/not_rendered.json (status 'needs_input' (only current cards are rendered)), so there is no frame to check.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Agree: listed in not_rendered.json by rule (status needs_input); harness check: no render was attempted, so there is no frame to misread and the card makes no frame-based claim."
+    }
+   }
+  },
+  {
+   "name": "Two-color Pattern Transparency",
+   "id": "vector:Transparency:TwoColor",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Two-color Pattern Transparency",
+   "status": "current",
+   "summary": "Transparency type that uses a two-colour (1-bit) pattern tile such as dots, lines, checks or hatching as the mask: the pattern's foreground pixels take the Front transparency and its background pixels the Back transparency, giving a crisp screen- or stencil-like see-through pattern.",
+   "use_for": [
+    "halftone-dot or line-screen look on a shape or type",
+    "retro striped or hatched see-through overlays",
+    "stencil-style pattern knockout for screen print or apparel graphics"
+   ],
+   "avoid": [
+    "soft or photographic textures: use Bitmap Pattern or Texture Transparency",
+    "very fine patterns printed small: they can moire or fill in",
+    "PatternCanvasIndex picks a pattern by its position in the installed list, which the harvest does not show; check which pattern you got",
+    "the harvest never applied this call (typelib only)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "pattern transparency",
+    "halftone dots",
+    "line screen",
+    "hatching",
+    "stencil pattern",
+    "checker knockout",
+    "1-bit pattern"
+   ],
+   "params": [
+    {
+     "name": "PatternCanvasIndex",
+     "does": "which two-colour pattern is used (index into the pattern list)",
+     "typical": "1 (default)"
+    },
+    {
+     "name": "Front",
+     "does": "transparency % of the pattern's foreground pixels",
+     "typical": "0"
+    },
+    {
+     "name": "Back",
+     "does": "transparency % of the pattern's background pixels",
+     "typical": "100"
+    },
+    {
+     "name": "TransformWithShape",
+     "does": "pattern scales / rotates with the object when it is transformed",
+     "typical": "true for artwork that will be resized"
+    }
+   ],
+   "demo_settings": {
+    "PatternCanvasIndex": 1,
+    "Front": 0,
+    "Back": 100,
+    "TransformWithShape": false
+   },
+   "pairs_with": [
+    "bold shapes or heavy type that leave room for the pattern",
+    "a solid contrasting background so the screen reads"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyPatternTransparency cdrTwoColorPattern, PatternCanvasIndex:=1, Front:=0, Back:=100, TransformWithShape:=False (Transparency.ApplyPatternTransparency(Type=0, FileName, PatternCanvasIndex, Front, Back, TransformWithShape) -> PatternFill). pywin32 (early-bound): s.Transparency.ApplyPatternTransparency(0, PatternCanvasIndex=1, Front=0, Back=100, TransformWithShape=False). Signature from the typelib only: not applied in the harvest.",
+   "scriptable": "yes",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "light: a small 1-bit tile",
+   "review": {
+    "by": "adversarial",
+    "changes": "Front/Back: dropped the unharvested 0-100 range; otherwise none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/d04e0808fe9a.png",
+    "note": "The star is knocked out by a two-colour dot pattern: large round dots of the 1-bit tile are transparent (pale page shows through) while the rest stays solid blue, a crisp stencil-like pattern transparency.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Uniform Transparency",
+   "id": "vector:Transparency:Uniform",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Uniform Transparency",
+   "status": "current",
+   "summary": "Applies one even transparency level to the whole object (Value 0 = opaque, 100 = invisible), so what lies underneath shows through uniformly: CorelDRAW's equivalent of an opacity slider, inverted (Value 60 is about 40% opacity). It stays live and editable from the Transparency tool or property bar.",
+   "use_for": [
+    "tinted box behind text on a photo",
+    "ghosted watermark or background logo",
+    "overlapping semi-transparent shapes for colour-mix effects",
+    "knocking a colour block back so it does not compete with the headline"
+   ],
+   "avoid": [
+    "fading only part of an object: use Fountain Transparency",
+    "a lighter print tint of a spot colour: a tint value is safer than transparency (no flattening at output)",
+    "PS / EPS output over spot colours or overprints: transparency gets flattened; export PDF and check"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "transparent",
+    "see-through",
+    "opacity",
+    "ghosted",
+    "tint overlay",
+    "semi-transparent"
+   ],
+   "params": [
+    {
+     "name": "Value",
+     "does": "transparency in percent: 0 opaque, 100 fully transparent",
+     "typical": "20-40 subtle; 50-70 overlays and watermarks; 85+ faint ghost"
+    }
+   ],
+   "demo_settings": {
+    "Value": 60
+   },
+   "pairs_with": [
+    "a dark rectangle behind white type on a photo",
+    "white or light headline type set on top of the see-through box"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyUniformTransparency 60 (Transparency.ApplyUniformTransparency(Value) -> void; harvest test: transparency_type 1). pywin32: s.Transparency.ApplyUniformTransparency(60).",
+   "scriptable": "yes",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "light; transparency may be flattened at PS / EPS export",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/359a5c2c9a84.png",
+    "note": "The whole star is evenly see-through at Value 60: solid blue becomes a uniform pale blue (about 40 % opacity).",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Vector Pattern Transparency",
+   "id": "vector:Transparency:FullColor",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Toolbox/Transparency/Vector Pattern Transparency",
+   "status": "needs_input",
+   "summary": "Transparency type that uses a vector (formerly full-colour) pattern tile as the mask: the tile's colours are read as grayscale tones and mapped between the Front and Back transparency values, giving a crisp, resolution-independent decorative see-through pattern. By script it takes a vector pattern file, such as the installed Starter pack .fill patterns.",
+   "use_for": [
+    "ornament or geometric pattern knocked into a background panel",
+    "brand-pattern watermark through a shape or photo frame",
+    "pattern knockout that stays sharp at any print size"
+   ],
+   "avoid": [
+    "simple dot or line screens: Two-color Pattern Transparency is lighter",
+    "photographic textures: use Bitmap Pattern Transparency",
+    "trusting the script route blindly: the harvest never applied this call (typelib only) and does not show whether FileName accepts the installed .fill vector patterns the demo uses; if it fails, pick the pattern in the Transparency tool's pattern picker",
+    "scripts: the 2026-10-13 gallery render found no working scripted call (com_error: (-2147352567, 'Exception occurred.', (0, 'Transparency', 'Failed to load pattern file: <CorelDRAW install>/.../Vector Pattern 174.fill', None, 0, [...]); apply it from the menu, dialog or docker"
+   ],
+   "confidence": "low",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "look": [
+    "vector pattern transparency",
+    "ornamental knockout",
+    "geometric pattern mask",
+    "decorative see-through",
+    "brand pattern watermark"
+   ],
+   "params": [
+    {
+     "name": "FileName",
+     "does": "vector pattern file used as the tile",
+     "typical": "an installed vector pattern .fill, e.g. Starter pack/Vector Pattern 174.fill (Candy Polka Dot)"
+    },
+    {
+     "name": "Front",
+     "does": "transparency % given to one end of the pattern's tonal range",
+     "typical": "0"
+    },
+    {
+     "name": "Back",
+     "does": "transparency % given to the other end",
+     "typical": "100"
+    },
+    {
+     "name": "TransformWithShape",
+     "does": "pattern scales / rotates with the object when it is transformed",
+     "typical": "true for logos that will be resized"
+    }
+   ],
+   "demo_settings": {
+    "FileName": "C:\\Program Files\\Corel\\CorelDRAW Graphics Suite\\25\\Content\\Fills\\Starter pack\\Vector Pattern 174.fill",
+    "Front": 0,
+    "Back": 100,
+    "TransformWithShape": false
+   },
+   "pairs_with": [
+    "large flat panels where the pattern has room to repeat",
+    "Uniform Transparency on a second copy for a softer ghost"
+   ],
+   "scripting": "VBA: s.Transparency.ApplyPatternTransparency cdrFullColorPattern, \"<CorelDRAW install>\\Content\\Fills\\Starter pack\\Vector Pattern 174.fill\", 1, 0, 100, False (Transparency.ApplyPatternTransparency(Type=1, FileName, PatternCanvasIndex, Front, Back, TransformWithShape) -> PatternFill). pywin32: s.Transparency.ApplyPatternTransparency(1, r\"<CorelDRAW install>\\Content\\Fills\\Starter pack\\Vector Pattern 174.fill\", 1, 0, 100, False). The file is the harvested cdr_preset 'Candy Polka Dot' (Content/Fills/Starter pack). Signature from the typelib only: not applied in the harvest, and .fill acceptance by FileName is unverified.",
+   "scriptable": "partial",
+   "non_destructive": "yes: transparency is a live object property; change its type and values or remove it at any time with the Transparency tool / property bar",
+   "cost": "light to moderate: vector tiles repeat across the object; complex tiles slow redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "status needs_input -> current, scriptable partial -> yes, confidence medium -> low: the cdr_preset harvest lists installed vector pattern .fill files, so the writer's 'none is listed' was wrong; demo FileName = Starter pack Vector Pattern 174.fill (Candy Polka Dot); scripting, summary and avoid updated; Front/Back: dropped the 0-100 range"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "No frame: failed.json says \"com_error: (-2147352567, 'Exception occurred.', (0, 'Transparency', 'Failed to load pattern file: <CorelDRAW install>/.../Vector Pattern 174.fill', None, 0, -2147467259), None)\"; the installed file exists (checked on disk), so ApplyPatternTransparency cannot load a .fill vector pattern; pick the pattern in the Transparency tool; harness, not the effect: no working scripted route was found, so the effect itself is untested; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "note": "Harness check: the error is 'Failed to load pattern file' for an installed .fill that exists on disk (Starter pack, 15 files), so ApplyPatternTransparency does not take a .fill vector pattern from a script; that is a route limit, not a plate fault, and no other file form is known; needs_input stands."
+    }
+   }
+  }
+ ]
+}

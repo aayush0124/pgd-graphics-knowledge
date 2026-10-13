@@ -1,0 +1,798 @@
+{
+ "cards": [
+  {
+   "name": "Reticulation",
+   "id": "reticulation",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sketch/Reticulation",
+   "status": "current",
+   "summary": "Filter Gallery Sketch filter that imitates the controlled shrinking and cracking of film emulsion: the image is rebuilt from clumped, irregular grain in the Foreground and Background swatch colours (black and white by default), dense and dark in the shadows and lightly speckled in the highlights. The original colours are replaced by the two swatches.",
+   "use_for": [
+    "gritty darkroom / aged-film texture on a black-and-white poster photo",
+    "turning a soft or low-quality video still into a deliberate grainy graphic so the softness reads as style",
+    "two-colour grain treatment in brand colours (set the swatches first) for a zine or gig flyer",
+    "grainy texture layer blended in Multiply or Overlay over the colour original"
+   ],
+   "avoid": [
+    "keeping the photo's colours: everything is remapped to the two swatches; for coloured grain use Filter/Noise/Add Noise or Filter/Artistic/Film Grain",
+    "unpredictable colours: the result uses the current Foreground / Background swatches, so reset them to black / white or set them in the script before running",
+    "small type and thin lines (the white 'PGD 2026' and hairlines on the plate): the grain clumps break them up",
+    "not listed in the Filter menu by default in Photoshop 2026 (harvest: menu_visible false): open it from Filter > Filter Gallery > Sketch, or tick 'Show all Filter Gallery groups and names' in Preferences > Plugins; scripts reach it directly with executeAction",
+    "CMYK or Lab documents: Filter Gallery effects run only on Grayscale / RGB (harvest supported_modes); 16/32-bit documents also block the Filter Gallery (general Photoshop behaviour, not probed)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Sketch/Reticulation"
+   },
+   "look": [
+    "reticulation",
+    "film grain",
+    "clumped grain",
+    "emulsion",
+    "darkroom",
+    "gritty",
+    "speckled",
+    "two-tone texture",
+    "monochrome"
+   ],
+   "params": [
+    {
+     "name": "Density",
+     "does": "how densely the grain clumps are packed; higher gives a heavier, more obvious grain",
+     "typical": "0-50; 12 harvest default, 25-40 for a strong texture"
+    },
+    {
+     "name": "Foreground Level",
+     "does": "weight of the Foreground (dark) colour: raising it pushes more of the image into the dark grain",
+     "typical": "0-50; 40 harvest default, 25-35 to keep mid-tones readable"
+    },
+    {
+     "name": "Background Level",
+     "does": "weight of the Background (light) colour: raising it keeps more of the light areas clean",
+     "typical": "0-50; 5 harvest default, 5-15"
+    }
+   ],
+   "demo_settings": {
+    "Density": 32,
+    "Foreground Level": 34,
+    "Background Level": 10
+   },
+   "pairs_with": [
+    "Image/Adjustments/Levels or Curves before it (more contrast gives cleaner clumping on a soft photo)",
+    "blending the result in Multiply / Overlay over a colour copy to bring colour back",
+    "Filter/Convert for Smart Filters (keeps the settings editable and fadeable)"
+   ],
+   "scripting": "var fg = new SolidColor(); fg.rgb.hexValue = \"000000\"; app.foregroundColor = fg; var bg = new SolidColor(); bg.rgb.hexValue = \"FFFFFF\"; app.backgroundColor = bg; var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"density\"), 32); d.putInteger(stringIDToTypeID(\"blackLevel\"), 34); d.putInteger(stringIDToTypeID(\"whiteLevel\"), 10); executeAction(stringIDToTypeID(\"reticulation\"), d, DialogModes.NO);  // keys from the harvest (Foreground Level = blackLevel, Background Level = whiteLevel); keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 449 ms on the 480x270 harvest test layer, longer in proportion on bigger images; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "Filter Gallery modes line now separates the harvest's Grayscale/RGB-only fact from the unprobed 16/32-bit claim; non_destructive: was 'not probed', but the harvest did apply it as a Smart Filter (probe_smart.json, extra.smart_filter true); scripting: swatches now set through new SolidColor() assigned to app.foreground/backgroundColor instead of editing the returned colour in place; removed the 'D' shortcut (not in the harvest); avoid: dropped the unsupported 'grain differs on each run' claim. Keys density/blackLevel/whiteLevel, 0-50 ranges, demo 32/34/10 and AI Rtcl checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/217b16d0869f.png",
+    "note": "Clumped black-and-white grain, dense in shadows and lightly speckled in the highlights, colour replaced by the swatches.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Stamp",
+   "id": "stamp",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sketch/Stamp",
+   "status": "current",
+   "summary": "Filter Gallery Sketch filter that simplifies the image into flat, smoothed two-tone shapes in the Foreground and Background swatch colours, as if printed with a rubber or wood stamp. Light/Dark Balance sets where tones split into the dark or light colour and Smoothness rounds the shape edges into blobs.",
+   "use_for": [
+    "rubber-stamp or woodcut-style portrait or silhouette for a poster or badge",
+    "two-tone graphic of a press photo for a bold social card (set the swatches to brand colours)",
+    "clean black-and-white base to trace into a vector logo or stencil",
+    "stencil / screen-print look for merchandise mock-ups"
+   ],
+   "avoid": [
+    "low-contrast or soft subjects whose tones sit close together: they fall to one side of the split and merge into one blob; raise contrast with Levels / Curves first",
+    "fine detail and small type: Smoothness rounds counters and thin strokes away",
+    "unpredictable colours: it uses the current Foreground / Background swatches; reset them to black / white or set them in the script",
+    "a plain threshold without smoothing: Image/Adjustments/Threshold gives hard pixel-exact black and white",
+    "not listed in the Filter menu by default in Photoshop 2026 (harvest: menu_visible false): open it from Filter > Filter Gallery > Sketch; scripts reach it directly with executeAction",
+    "CMYK or Lab documents: Filter Gallery effects run only on Grayscale / RGB (harvest supported_modes); 16/32-bit documents also block the Filter Gallery (general Photoshop behaviour, not probed)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Sketch/Stamp",
+    "CDR": "Effects/Transform/Threshold"
+   },
+   "look": [
+    "rubber stamp",
+    "woodcut",
+    "two-tone",
+    "black and white",
+    "stencil",
+    "silhouette",
+    "screen print",
+    "high contrast",
+    "blobby"
+   ],
+   "params": [
+    {
+     "name": "Light/Dark Balance",
+     "does": "tone split point: raising it turns more of the image into the Foreground (dark) colour",
+     "typical": "0-50; 25 harvest default, 20-32 depending on how light the photo is"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how much the shape edges are smoothed and simplified; higher gives rounder, inkier blobs with less detail",
+     "typical": "1-50; 5 harvest default keeps detail, 10-20 for a soft stamp look"
+    }
+   ],
+   "demo_settings": {
+    "Light/Dark Balance": 26,
+    "Smoothness": 12
+   },
+   "pairs_with": [
+    "Image/Adjustments/Levels or Curves first (separates the tones so the split is clean)",
+    "Filter/Sketch/Torn Edges (rougher edge variant of the same two-tone idea)",
+    "Select/Color Range on the result, then a fill layer, to recolour the two tones"
+   ],
+   "scripting": "var fg = new SolidColor(); fg.rgb.hexValue = \"000000\"; app.foregroundColor = fg; var bg = new SolidColor(); bg.rgb.hexValue = \"FFFFFF\"; app.backgroundColor = bg; var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"lightDark\"), 26); d.putInteger(stringIDToTypeID(\"smoothness\"), 12); executeAction(stringIDToTypeID(\"stamp\"), d, DialogModes.NO);  // keys from the harvest; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 409 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "Filter Gallery modes line now separates the harvest's Grayscale/RGB-only fact from the unprobed 16/32-bit claim; non_destructive: was 'not probed', but the harvest did apply it as a Smart Filter (probe_smart.json, extra.smart_filter true); scripting: swatches now set through new SolidColor() assigned to app.foreground/backgroundColor instead of editing the returned colour in place; removed the 'D' shortcut (not in the harvest). Keys lightDark 0-50 / smoothness 1-50, demo 26/12, AI Stmp and CDR Threshold (same choice as the AI Stamp card) checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/bf8f805833a7.png",
+    "note": "Flat smoothed black-and-white two-tone shapes like a rubber stamp.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Torn Edges",
+   "id": "tornEdges",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sketch/Torn Edges",
+   "status": "current",
+   "summary": "Filter Gallery Sketch filter that rebuilds the image as two-tone areas in the Foreground and Background swatch colours whose borders are ragged and fibrous, as if the shapes were torn out of paper. Image Balance sets the dark/light split, Smoothness how jagged the tears are and Contrast how hard the torn rim is.",
+   "use_for": [
+    "torn-paper headline or title treatment on bold, high-contrast type",
+    "ripped-edge silhouettes of people for a collage, punk or zine poster",
+    "distressed two-tone label, badge or stencil graphic",
+    "rough-edged mask: run it on a black-and-white copy and use the result as a layer mask"
+   ],
+   "avoid": [
+    "keeping colour: everything becomes the two swatch colours; for a coloured torn edge, mask the colour photo with a Torn Edges result",
+    "soft, low-contrast photos: subjects merge into one mass with no visible tear; add contrast with Levels / Curves first",
+    "unpredictable colours: it uses the current Foreground / Background swatches; reset them to black / white or set them in the script",
+    "the 'Contrast' param is sent under the key 'center' (harvest), not 'contrast'",
+    "not listed in the Filter menu by default in Photoshop 2026 (harvest: menu_visible false): open it from Filter > Filter Gallery > Sketch; scripts reach it directly with executeAction",
+    "CMYK or Lab documents: Filter Gallery effects run only on Grayscale / RGB (harvest supported_modes); 16/32-bit documents also block the Filter Gallery (general Photoshop behaviour, not probed)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Sketch/Torn Edges"
+   },
+   "look": [
+    "torn paper",
+    "ripped edges",
+    "ragged",
+    "fibrous edge",
+    "two-tone",
+    "black and white",
+    "distressed",
+    "collage",
+    "zine"
+   ],
+   "params": [
+    {
+     "name": "Image Balance",
+     "does": "where tones split into the Foreground (dark) or Background (light) colour; shifts how much of the image ends up dark",
+     "typical": "0-50; 25 harvest default for an even split"
+    },
+    {
+     "name": "Smoothness",
+     "does": "how smooth the torn borders are: low values give rough, fibrous tears, high values cleaner edges",
+     "typical": "1-15; 11 harvest default, 3-6 for a clearly ragged tear"
+    },
+    {
+     "name": "Contrast",
+     "does": "hardness of the torn rim: low leaves soft grey fringes, high gives crisp torn outlines",
+     "typical": "1-25; 17 harvest default, 18-25 for a crisp paper edge"
+    }
+   ],
+   "demo_settings": {
+    "Image Balance": 25,
+    "Smoothness": 4,
+    "Contrast": 22
+   },
+   "pairs_with": [
+    "Image/Adjustments/Levels or Curves first (gives the split something to tear)",
+    "Filter/Sketch/Stamp (smooth-edged version of the same two-tone look)",
+    "Layer Style Drop Shadow on the torn shapes (paper-cut depth)"
+   ],
+   "scripting": "var fg = new SolidColor(); fg.rgb.hexValue = \"000000\"; app.foregroundColor = fg; var bg = new SolidColor(); bg.rgb.hexValue = \"FFFFFF\"; app.backgroundColor = bg; var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"imageBalance\"), 25); d.putInteger(stringIDToTypeID(\"smoothness\"), 4); d.putInteger(stringIDToTypeID(\"center\"), 22); executeAction(stringIDToTypeID(\"tornEdges\"), d, DialogModes.NO);  // keys from the harvest (Contrast = center); keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 377 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "Filter Gallery modes line now separates the harvest's Grayscale/RGB-only fact from the unprobed 16/32-bit claim; non_destructive: was 'not probed', but the harvest did apply it as a Smart Filter (probe_smart.json, extra.smart_filter true); scripting: swatches now set through new SolidColor() assigned to app.foreground/backgroundColor instead of editing the returned colour in place; removed the 'D' shortcut (not in the harvest). Keys imageBalance/smoothness/center, ranges 0-50/1-15/1-25, demo 25/4/22, AI TrnE checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/4524f6545850.png",
+    "note": "Two-tone black / white areas with ragged, grainy, fibrous borders.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Water Paper",
+   "id": "waterPaper",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Sketch/Water Paper",
+   "status": "current",
+   "summary": "Filter Gallery Sketch filter that makes the image look daubed onto damp, fibrous paper: colours soak in and bleed along paper fibres into soft, blotchy, streaky patches, with Brightness and Contrast setting the overall tone. Unlike most Sketch filters it keeps the image's own colours rather than the swatches; the exact fibre texture on this plate is not verified.",
+   "use_for": [
+    "soft wet-paper or ink-bleed look on a photo for a greeting card, invitation or cultural poster",
+    "handmade, organic texture over a background photo behind type",
+    "hiding the blur and compression of a soft video still under a deliberate painterly texture"
+   ],
+   "avoid": [
+    "a clear watercolour painting look: Filter/Artistic/Watercolor gives stronger painted washes",
+    "faces in close-up: the fibre streaks run through skin and features",
+    "type or logos that must stay sharp: the bleed softens their edges; apply it to the photo layer only",
+    "not listed in the Filter menu by default in Photoshop 2026 (harvest: menu_visible false): open it from Filter > Filter Gallery > Sketch; scripts reach it directly with executeAction",
+    "CMYK or Lab documents: Filter Gallery effects run only on Grayscale / RGB (harvest supported_modes); 16/32-bit documents also block the Filter Gallery (general Photoshop behaviour, not probed)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Effect/Sketch/Water Paper"
+   },
+   "look": [
+    "wet paper",
+    "ink bleed",
+    "fibrous",
+    "blotchy",
+    "soaked paper",
+    "handmade paper",
+    "painterly",
+    "soft streaks"
+   ],
+   "params": [
+    {
+     "name": "Fiber Length",
+     "does": "length of the paper fibres the colour bleeds along; longer gives more spreading and longer streaks",
+     "typical": "3-50; 15 harvest default, 30-45 for an obvious bleed"
+    },
+    {
+     "name": "Brightness",
+     "does": "overall brightness of the result",
+     "typical": "0-100; 60 harvest default, 45-60 to keep colours rich"
+    },
+    {
+     "name": "Contrast",
+     "does": "contrast of the result; higher deepens the blotch structure, lower washes it out",
+     "typical": "0-100; 80 harvest default, 65-85"
+    }
+   ],
+   "demo_settings": {
+    "Fiber Length": 42,
+    "Brightness": 55,
+    "Contrast": 80
+   },
+   "pairs_with": [
+    "Filter/Texture/Texturizer (Canvas or Sandstone) for a visible paper surface",
+    "Image/Adjustments/Vibrance after it (puts back saturation the bleed dulls)",
+    "Filter/Convert for Smart Filters (fade with the Smart Filter blending options)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"fiberLength\"), 42); d.putInteger(stringIDToTypeID(\"brightness\"), 55); d.putInteger(stringIDToTypeID(\"center\"), 80); executeAction(stringIDToTypeID(\"waterPaper\"), d, DialogModes.NO);  // keys from the harvest (Contrast = center); keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 515 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "Filter Gallery modes line now separates the harvest's Grayscale/RGB-only fact from the unprobed 16/32-bit claim; non_destructive: was 'not probed', but the harvest did apply it as a Smart Filter (probe_smart.json, extra.smart_filter true). Keys fiberLength/brightness/center, ranges 3-50/0-100/0-100, demo 42/55/80, AI WtrP checked; medium confidence kept."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/fe8803278805.png",
+    "note": "Colours kept but blurred and bled into a fine vertical fibre-streak texture; the white type almost vanishes.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Diffuse",
+   "id": "diffuse",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Diffuse",
+   "status": "current",
+   "summary": "Shuffles pixels a short random distance to soften focus, giving edges a speckled, frosted-glass fringe: Normal moves pixels randomly, Darken Only lets only darker pixels spread, Lighten Only only lighter ones, and Anisotropic moves pixels along the direction of least colour change, which smooths tones into a soft painterly look. There is no strength control, so on a large image the change is fine-grained and shows mostly along hard edges.",
+   "use_for": [
+    "frosted-glass or dithered edge on hard graphics and type",
+    "faux painting: Anisotropic mode, repeated a few times, smooths a photo into soft brush-like tones",
+    "breaking up hard pixel edges or banding before another stylize filter",
+    "Darken Only / Lighten Only to thin or thicken light details with a speckled edge"
+   ],
+   "avoid": [
+    "a visible soft-focus blur on a big, already soft photo: the shift is only a pixel or two (general knowledge, not measured here), so the 1920 px plate's photo barely changes; use Filter/Blur/Gaussian Blur or run Diffuse on a smaller copy",
+    "a fixed amount: there is no amount or radius setting; re-run the filter (Filter/Last Filter) to build it up",
+    "the 'Lighten Only' option is sent as the enum value 'lightOmni' (harvest), not 'lightenOnly'"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/Camera/Diffuse"
+   },
+   "look": [
+    "frosted glass",
+    "speckled edges",
+    "dithered",
+    "pixel scatter",
+    "soft focus",
+    "painterly (anisotropic)",
+    "grainy edge"
+   ],
+   "params": [
+    {
+     "name": "Mode",
+     "does": "how pixels move: normal = random scatter; darken only = only darker pixels spread; lighten only = only lighter pixels spread; anisotropic = smooth along tones",
+     "typical": "normal for a dithered edge; anisotropic for a painterly smoothing"
+    }
+   ],
+   "demo_settings": {
+    "Mode": "normal"
+   },
+   "enum_labels": {
+    "Mode": {
+     "normal": "Normal",
+     "lightOmni": "Lighten Only",
+     "darkenOnly": "Darken Only",
+     "anisotropic": "Anisotropic"
+    }
+   },
+   "pairs_with": [
+    "Image/Image Size down then back up around it (makes the scatter coarser and visible)",
+    "Filter/Stylize/Emboss or Find Edges afterwards (textured, rough-edged outlines)",
+    "Edit/Fade Diffuse straight after (lowers its strength)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putEnumerated(stringIDToTypeID(\"mode\"), stringIDToTypeID(\"diffuseMode\"), stringIDToTypeID(\"normal\")); executeAction(stringIDToTypeID(\"diffuse\"), d, DialogModes.NO);  // values: normal / lightOmni / darkenOnly / anisotropic (harvest enum diffuseMode)",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true) with its mode key; destructive on a plain pixel layer",
+   "cost": "very light: 114 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid: removed the Ctrl+Alt+F shortcut (not in the harvest), now Filter/Last Filter; non_destructive: harvest did store it as a Smart Filter with its mode key (was 'not probed'). Enum diffuseMode incl. lightOmni, demo normal (most visible on the crisp strip), CDR Camera/Diffuse checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/68c1822a6b21.png",
+    "crop": "gallery/ps_filter/68c1822a6b21_1to1.png",
+    "note": "1:1 crop: the hairlines and bar edges break up into a speckled dither fringe while flat areas stay; the 960 frame barely changes, as the card says.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Emboss",
+   "id": "emboss",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Emboss",
+   "status": "current",
+   "summary": "Makes the image look raised or stamped into a surface: flat areas turn mid-grey and each edge is drawn as a light ridge on one side and a dark ridge on the other, lit from the Angle, with a little of the original colour left along the edges. Height sets how far the relief is offset and Amount how strong (and how colourful) the edges are.",
+   "use_for": [
+    "embossed metal, stone or paper relief look for a logo, coin or plaque mock-up",
+    "grey relief map to blend in Overlay / Hard Light over the photo for a carved texture",
+    "bas-relief poster backgrounds from a photo",
+    "grey height / bump map to export for a texture or 3D app (Lighting Effects and 3D are not in the Photoshop 27.4 harvest)"
+   ],
+   "avoid": [
+    "scripts that leave keys out: the harvest shows Photoshop rejects an empty descriptor with 'Could not complete the Emboss command because of a program error', so always send angle, height and amount",
+    "keeping the photo's colours: most of the image turns grey; blend the result in Overlay / Soft Light over the original to keep colour",
+    "soft, low-contrast photos at the default Height 3 / Amount 100: edges are weak and the relief barely shows; raise Height and Amount",
+    "reading the scripted values back: the harvest's probes (even angle / height / amount = 1) all reported 135 / 3 / 100 because the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels; the gallery frame at 8 / 300 confirms sent values are applied. Keep values inside the dialog ranges (Height 1-100 px, Amount 1-500 %, general knowledge)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Effects/3D Effects/Emboss"
+   },
+   "look": [
+    "emboss",
+    "relief",
+    "bas-relief",
+    "stamped metal",
+    "grey relief",
+    "carved",
+    "raised edges",
+    "chiselled"
+   ],
+   "params": [
+    {
+     "name": "Angle",
+     "does": "direction of the light in degrees; decides which side of each edge is light and which is dark",
+     "typical": "135 (read back by the harvest) = light from the upper left; 120-150 for the usual top-left lighting"
+    },
+    {
+     "name": "Height",
+     "does": "offset of the relief in pixels; bigger gives a thicker, deeper-looking edge",
+     "typical": "3 (read back by the harvest); 6-12 on a soft 1920 px photo (dialog range 1-100 px, general knowledge, not harvested)"
+    },
+    {
+     "name": "Amount",
+     "does": "strength of the edge relief in percent; higher makes edges brighter, darker and more colourful",
+     "typical": "100 (read back by the harvest); 200-350 for a bold relief (dialog range 1-500 %, general knowledge, not harvested)"
+    }
+   ],
+   "demo_settings": {
+    "Angle": 135,
+    "Height": 8,
+    "Amount": 300
+   },
+   "pairs_with": [
+    "Image/Adjustments/Desaturate after it (pure grey relief without colour fringes)",
+    "the embossed copy in Overlay / Hard Light over the original (carved texture that keeps colour)",
+    "Filter/Blur/Gaussian Blur at a small radius before it (smoother, rounder relief)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"angle\"), 135); d.putInteger(stringIDToTypeID(\"height\"), 8); d.putInteger(stringIDToTypeID(\"amount\"), 300); executeAction(stringIDToTypeID(\"emboss\"), d, DialogModes.NO);  // all three keys are required (empty descriptor fails, harvest); the result descriptor reports the dialog's last-used values (135 / 3 / 100), not these; the gallery confirmed 8 / 300 are applied",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true) with its angle / height / amount keys; destructive on a plain pixel layer",
+   "cost": "light: 237 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "confidence high -> medium and scripting comment + avoid rewritten: probe_filter.json shows even the in-range fallback 1/1/1 read back as 135/3/100, so the harvest never confirmed scripted values apply (card said only the 1e6 probe was inconclusive); dropped the unharvested Angle -180..180 range, Height/Amount dialog ranges kept but flagged general knowledge in params; use_for: Lighting Effects and 3D are not in the PS 27.4.0 harvest; non_destructive: Smart Filter confirmed by the harvest. CDR 3D Effects/Emboss checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/b586e4be78bb.png",
+    "crop": "gallery/ps_filter/b586e4be78bb_1to1.png",
+    "note": "Flat areas mid grey with light / dark ridges along edges and coloured fringes along the colour-block borders; the stale read-back (3 / 100) is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid + scripting: stale descriptor, sent values confirmed"
+   }
+  },
+  {
+   "name": "Extrude",
+   "id": "extrude",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Extrude",
+   "status": "current",
+   "summary": "Breaks the image into a grid of square blocks or four-sided pyramids that seem to project out of the screen toward the viewer, giving a 3D tiled texture with shaded sides. Size sets the base of each block, Depth how far the tallest ones stick out, and Random / Level-based decides whether depth is random or follows brightness (bright areas protrude more); Solid Front Faces fills each block's front with its average colour instead of the image.",
+   "use_for": [
+    "3D block / pixel-tower background for tech, data or gaming graphics",
+    "abstract pyramid-stud texture from a photo for a poster backdrop",
+    "transition-style 'exploding tiles' still for a video thumbnail",
+    "retro 90s 3D effect on a bold graphic"
+   ],
+   "avoid": [
+    "subjects that must stay recognisable: faces and type are cut into blocks with perspective sides; apply it to a background layer or mask it",
+    "small Size on a large image: blocks become tiny and the result reads as noise; on a 1920 px image use 30-60 px",
+    "a flat mosaic without 3D sides: use Filter/Pixelate/Mosaic",
+    "the 'Blocks' type is sent as the enum value 'blacks' (harvest), not 'blocks'"
+   ],
+   "confidence": "high",
+   "look": [
+    "3D blocks",
+    "pyramids",
+    "extruded tiles",
+    "pixel towers",
+    "studded",
+    "exploding mosaic",
+    "retro 3D",
+    "geometric texture"
+   ],
+   "params": [
+    {
+     "name": "Type",
+     "does": "shape of each element: Blocks (square front face and four sides) or Pyramids (four triangular sides meeting in a point)",
+     "typical": "Blocks for a mosaic-tower look, Pyramids for a studded texture"
+    },
+    {
+     "name": "Size",
+     "does": "length of each block's or pyramid's base side in pixels",
+     "typical": "2-255; 30 harvest default, 30-60 on a 1920 px image"
+    },
+    {
+     "name": "Depth",
+     "does": "how far the tallest elements extend toward the viewer",
+     "typical": "1-255; 30 harvest default, 40-90 for strong 3D"
+    },
+    {
+     "name": "Random",
+     "does": "Random gives each element an arbitrary depth; Level-based makes depth follow brightness so light areas stick out most",
+     "typical": "Level-based keeps the image's shapes readable; Random for chaotic texture"
+    },
+    {
+     "name": "Solid Front Faces",
+     "does": "fills each block's front face with its average colour instead of the image (Blocks only)",
+     "typical": "on for a clean mosaic-tower look, off to keep the picture on the faces"
+    },
+    {
+     "name": "Mask Incomplete Blocks",
+     "does": "hides blocks that would project beyond the selection or canvas edge",
+     "typical": "off, on for a tidy edge"
+    }
+   ],
+   "demo_settings": {
+    "Type": "blacks",
+    "Size": 40,
+    "Depth": 70,
+    "Random": "levelBased",
+    "Solid Front Faces": true,
+    "Mask Incomplete Blocks": false
+   },
+   "enum_labels": {
+    "Type": {
+     "blacks": "Blocks",
+     "pyramids": "Pyramids"
+    },
+    "Random": {
+     "random": "Random",
+     "levelBased": "Level-based"
+    }
+   },
+   "pairs_with": [
+    "Image/Adjustments/Curves afterwards (more contrast between the lit and shaded block sides)",
+    "a layer mask to keep the subject or headline area flat",
+    "Image/Adjustments/Hue/Saturation to push the tiles into brand colours"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putEnumerated(stringIDToTypeID(\"extrudeType\"), stringIDToTypeID(\"extrudeType\"), stringIDToTypeID(\"blacks\")); d.putInteger(stringIDToTypeID(\"extrudeSize\"), 40); d.putInteger(stringIDToTypeID(\"extrudeDepth\"), 70); d.putEnumerated(stringIDToTypeID(\"extrudeRandom\"), stringIDToTypeID(\"extrudeRandom\"), stringIDToTypeID(\"levelBased\")); d.putBoolean(stringIDToTypeID(\"extrudeSolidFace\"), true); d.putBoolean(stringIDToTypeID(\"extrudeMaskIncomplete\"), false); executeAction(stringIDToTypeID(\"extrude\"), d, DialogModes.NO);  // keys and enum values from the harvest; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 385 ms on the 480x270 harvest test layer; runs in RGB, CMYK and Grayscale (harvest supported_modes); 0 cr, local",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "pairs_with: Filter/Render/Lighting Effects is not in the PS 27.4.0 harvest, replaced with Curves; non_destructive: Smart Filter confirmed by the harvest (was 'not probed'). Keys, blacks/levelBased enums, 2-255/1-255 ranges and demo checked; no AI/CDR counterpart (their Extrude is vector 3D)."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/db7c5c40c4b9.png",
+    "note": "The frame is a grid of 3D blocks with shaded sides and solid front faces, brighter blocks standing out further.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Find Edges",
+   "id": "findEdges",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Find Edges",
+   "status": "current",
+   "summary": "One-click filter with no settings that finds areas of strong change and draws them as dark, coloured lines on a near-white background, so the photo becomes a coloured-pencil or ink outline drawing. Strong, crisp edges give bold lines; soft or blurry areas fade to white.",
+   "use_for": [
+    "coloured line-drawing or sketch version of a photo for a poster or storyboard look",
+    "edge layer blended in Multiply over a painted or flattened photo for a comic / cel look",
+    "base for a glowing-outline look: Find Edges, then Image/Adjustments/Invert",
+    "quick edge map to build a selection or mask from"
+   ],
+   "avoid": [
+    "soft or blurry photos (like the plate's video frame): edges are weak, so the result is a washed-out pale image with faint lines; sharpen or add contrast first",
+    "any control over line width or strength: there are no settings; use Edit/Fade Find Edges, Levels afterwards, or Filter/Stylize/Glowing Edges for adjustable edges",
+    "noisy or grainy images: every speck becomes a line; reduce noise first"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Contour/Find Edges"
+   },
+   "look": [
+    "line drawing",
+    "outline",
+    "coloured pencil",
+    "edge detect",
+    "sketch",
+    "ink drawing",
+    "white background"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Image/Adjustments/Desaturate and Levels after it (clean black pencil sketch)",
+    "Image/Adjustments/Invert after it (glowing lines on black)",
+    "Filter/Sharpen/Unsharp Mask before it on soft photos (stronger lines)",
+    "the result in Multiply over the original photo"
+   ],
+   "scripting": "executeAction(stringIDToTypeID(\"findEdges\"), undefined, DialogModes.NO);  // no parameters (harvest declared_params empty)",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "very light: 178 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive: Smart Filter confirmed by the harvest (was 'not probed'). No params, parameterless findEdges call, CDR Contour/Find Edges checked; no AI counterpart."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/dba70ef30157.png",
+    "crop": "gallery/ps_filter/dba70ef30157_1to1.png",
+    "note": "Dark coloured outline drawing on near-white; soft photo areas fade to white, the crisp strip and hairlines give bold lines.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Glowing Edges",
+   "id": "glowingEdges",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Glowing Edges",
+   "status": "current",
+   "summary": "Filter Gallery Stylize filter that finds colour edges and turns them into bright, neon-like lines on black: flat areas go black and only the outlines glow, in colours taken from the image. Edge Width sets line thickness, Edge Brightness the glow strength and Smoothness how much small detail is dropped.",
+   "use_for": [
+    "neon / blacklight outline look for a nightlife, gaming or tech poster",
+    "X-ray or sci-fi treatment of a photo for a thumbnail",
+    "glowing line layer blended in Screen over a darkened original",
+    "abstract edge-glow background texture"
+   ],
+   "avoid": [
+    "light layouts: every flat area turns black; use the result in Screen mode over a dark image instead",
+    "soft or blurry photos at default settings: few edges are found; raise Edge Width and Edge Brightness",
+    "noisy images with low Smoothness: every speck glows; raise Smoothness",
+    "a single-colour neon tube on type or shapes: use Layer Style Outer Glow on a stroked layer",
+    "not listed in the Filter menu by default in Photoshop 2026 (harvest: menu_visible false): open it from Filter > Filter Gallery > Stylize; scripts reach it directly with executeAction",
+    "CMYK or Lab documents: Filter Gallery effects run only on Grayscale / RGB (harvest supported_modes); 16/32-bit documents also block the Filter Gallery (general Photoshop behaviour, not probed)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Effect/Stylize/Glowing Edges"
+   },
+   "look": [
+    "neon",
+    "glowing outlines",
+    "edges on black",
+    "blacklight",
+    "x-ray",
+    "electric",
+    "tron",
+    "dark"
+   ],
+   "params": [
+    {
+     "name": "Edge Width",
+     "does": "thickness of the glowing lines",
+     "typical": "1-14; 2 harvest default for fine lines, 4-7 for bold neon"
+    },
+    {
+     "name": "Edge Brightness",
+     "does": "brightness and intensity of the glow",
+     "typical": "0-20; 6 harvest default is dim, 12-18 for a vivid glow"
+    },
+    {
+     "name": "Smoothness",
+     "does": "smooths the detected edges, dropping small noisy ones for cleaner, softer lines",
+     "typical": "1-15; 5 harvest default, 5-10 on photos"
+    }
+   ],
+   "demo_settings": {
+    "Edge Width": 5,
+    "Edge Brightness": 16,
+    "Smoothness": 5
+   },
+   "pairs_with": [
+    "Image/Adjustments/Hue/Saturation (recolour the glow to brand colours)",
+    "Screen blend mode over a darkened copy of the original (glow with the photo kept)",
+    "Filter/Blur/Gaussian Blur on a duplicate set to Screen (extra bloom)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putInteger(stringIDToTypeID(\"edgeWidth\"), 5); d.putInteger(stringIDToTypeID(\"edgeBrightness\"), 16); d.putInteger(stringIDToTypeID(\"smoothness\"), 5); executeAction(stringIDToTypeID(\"glowingEdges\"), d, DialogModes.NO);  // keys from the harvest; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "yes: the harvest applied it to a Smart Object and Photoshop stored it as an editable Smart Filter (work/ps/probe_smart.json, harvest extra.smart_filter true); destructive on a plain pixel layer",
+   "cost": "light: 336 ms on the 480x270 harvest test layer; 0 cr, local",
+   "review": {
+    "by": "adversarial",
+    "changes": "Filter Gallery modes line now separates the harvest's Grayscale/RGB-only fact from the unprobed 16/32-bit claim; non_destructive: was 'not probed', but the harvest did apply it as a Smart Filter (probe_smart.json, extra.smart_filter true). Keys edgeWidth/edgeBrightness/smoothness, ranges 1-14/0-20/1-15, demo 5/16/5, AI GlwE checked."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/6cfce918037e.png",
+    "crop": "gallery/ps_filter/6cfce918037e_1to1.png",
+    "note": "Bright coloured outlines on black, flat areas black, as described.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "Oil Paint",
+   "id": "oilPaint",
+   "app": "PS",
+   "kind": "ps_filter",
+   "path": "Filter/Stylize/Oil Paint",
+   "status": "current",
+   "summary": "Repaints the image as thick oil paint: tones are swept into directional brush strokes, and with lighting on the strokes get raised impasto ridges with highlights lit from a chosen angle. Stylization sets the stroke style (daubed to smooth, swept), Cleanliness the stroke length, Scale the paint thickness, Bristle Detail the bristle grooves and Shine the gloss of the ridges.",
+   "use_for": [
+    "painted-portrait or fine-art poster look from a photo",
+    "hiding the softness and compression of a video still under a painterly finish",
+    "storybook / illustrated backgrounds behind headline type",
+    "brush-stroke texture layer blended over a photo at low opacity"
+   ],
+   "avoid": [
+    "small images or tiny Scale on a big image: strokes are too fine to read; on a 1920 px image raise Scale and Stylization",
+    "faces in close-up at high Stylization: features swirl into abstraction; mask the face or lower the values",
+    "a graphics processor switched off: the harvest notes Oil Paint is GPU-dependent; that it is greyed out without Preferences > Performance > Use Graphics Processor is general knowledge, not checked",
+    "script key names: the harvest read back brushScale (dialog Scale), microBrush (Bristle Detail), lightDirection (Angle) and specularity (Shine), while the terminology declares scale / bristleDetail / angularDirection / shine; the range probe was inconclusive because the result descriptor executeAction returns is not a read-back for this filter: it reports the dialog's last-used values (proven in the PS effect gallery: re-applying the reported values gives different pixels, the values sent reproduce the frame exactly), so judge a scripted run by its pixels, so stay inside the dialog ranges and check the render",
+    "the mapping of brushScale / microBrush / lightDirection / specularity to the dialog sliders is inferred from their names and defaults, not confirmed by the harvest",
+    "scripted Smart Filter workflows: applying it to a Smart Object failed in the harvest (see non_destructive); apply it to a pixel layer"
+   ],
+   "confidence": "medium",
+   "look": [
+    "oil painting",
+    "impasto",
+    "brush strokes",
+    "painterly",
+    "swirling",
+    "fine art",
+    "van gogh",
+    "glossy paint"
+   ],
+   "params": [
+    {
+     "name": "Stylization",
+     "does": "stroke style: low values give a daubed look, high values smooth, long swept strokes",
+     "typical": "4 harvest default; 6-10 for an obvious painted look (dialog range about 0.1-10, general knowledge, not harvested)"
+    },
+    {
+     "name": "Cleanliness",
+     "does": "stroke length and smoothness: low gives short, choppy, textured strokes, high long and clean ones",
+     "typical": "2.3 harvest default; 4-8 (dialog range about 0-10, general knowledge, not harvested)"
+    },
+    {
+     "name": "brushScale",
+     "does": "paint thickness (dialog Scale): low gives a thin coat, high thick paint with bigger, more visible raised strokes",
+     "typical": "0.8 harvest default; 3-8 on a 1920 px image (dialog range about 0.1-10, general knowledge, not harvested)"
+    },
+    {
+     "name": "microBrush",
+     "does": "bristle detail (dialog Bristle Detail): how strongly individual bristle grooves show inside each stroke",
+     "typical": "10 harvest default; 4-10 (dialog range about 0-10, general knowledge, not harvested)"
+    },
+    {
+     "name": "lightingOn",
+     "does": "turns the impasto lighting on or off; off gives flat strokes with no raised ridges",
+     "typical": "true for thick paint, false for a flat painted look"
+    },
+    {
+     "name": "lightDirection",
+     "does": "angle the light comes from (dialog Angle), which sets where the stroke ridges catch highlights",
+     "typical": "-60 harvest default; change it to move where the ridges catch the light"
+    },
+    {
+     "name": "specularity",
+     "does": "shine of the paint surface (dialog Shine): higher gives glossier, more pronounced ridges",
+     "typical": "1.3 harvest default; 2-4 for strong relief (dialog range about 0-10, general knowledge, not harvested)"
+    }
+   ],
+   "demo_settings": {
+    "lightingOn": true,
+    "Stylization": 8,
+    "Cleanliness": 5,
+    "brushScale": 5,
+    "microBrush": 6,
+    "lightDirection": -60,
+    "specularity": 3
+   },
+   "pairs_with": [
+    "a duplicate of the photo layer (blend or mask the painted copy; Smart Filter apply failed in the harvest)",
+    "Image/Adjustments/Vibrance or Curves after it (richer paint colours)",
+    "Filter/Texture/Texturizer Canvas (painted-on-canvas surface)"
+   ],
+   "scripting": "var d = new ActionDescriptor(); d.putBoolean(stringIDToTypeID(\"lightingOn\"), true); d.putDouble(stringIDToTypeID(\"stylization\"), 8); d.putDouble(stringIDToTypeID(\"cleanliness\"), 5); d.putDouble(stringIDToTypeID(\"brushScale\"), 5); d.putDouble(stringIDToTypeID(\"microBrush\"), 6); d.putInteger(stringIDToTypeID(\"lightDirection\"), -60); d.putDouble(stringIDToTypeID(\"specularity\"), 3); executeAction(stringIDToTypeID(\"oilPaint\"), d, DialogModes.NO);  // keys and types as read back by the harvest; keys left out fall back to the filter's last-used values",
+   "scriptable": "yes",
+   "non_destructive": "not confirmed: the harvest's attempt to apply it to a Smart Object as a Smart Filter failed with 'General Photoshop error occurred' with both the empty and the full descriptor, and the empty descriptor opened the dialog on the Smart Object even under DialogModes.NO (harvest extra.smart_filter false; GPU-dependent, may differ on another machine); destructive on a pixel layer, so run it on a duplicate layer",
+   "cost": "medium: 734 ms on the 480x270 harvest test layer (the slowest of this batch), GPU-accelerated and scaling with image size; 0 cr, local",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "non_destructive was 'yes as a Smart Filter (not probed)' but the harvest's Smart Object apply FAILED (IOError, extra.smart_filter false): rewritten, pairs_with 'Convert for Smart Filters first' replaced by a duplicate layer, avoid line added; summary/params: Stylization (daubed to smooth) and Scale (paint thickness) followed Adobe's slider meanings, not 'bigger and more abstract'; dialog ranges flagged general knowledge, unharvested -180..180 angle dropped; GPU note now cites the harvest's GPU-dependent note. Keys/types and demo unchanged; still medium."
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ps_filter/1b7a800f493d.png",
+    "note": "Swirling directional impasto strokes with lit ridges over the whole frame; the stale read-back is not what was applied.",
+    "rerender": false,
+    "text_fixed": "avoid: stale descriptor"
+   }
+  }
+ ]
+}

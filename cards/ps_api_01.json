@@ -1,0 +1,2599 @@
+{
+ "cards": [
+  {
+   "name": "IAction",
+   "id": "class:IAction",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IAction",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions COM interface for one recorded action from the Actions panel: read its name and play it on the active document. Part of the old Photoshop Type Library, separate from the scripting DOM.",
+   "use_for": [
+    "replay a recorded house action (web resize + sharpen, watermark) on the open document from a COM client",
+    "list the loaded actions by name before choosing which one to run"
+   ],
+   "avoid": [
+    "new automation: the scripting DOM's app.doAction(action, from) names both the action and its set",
+    "running with no document open: Play always targets the active document"
+   ],
+   "how": "Reached from the legacy IActions collection: IPhotoshopApplication.Actions.Item(i) returns an IAction. name gives the action's name, Play runs it on the active document. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "read-only name of the action as shown in the Actions panel"
+    },
+    {
+     "name": "Play",
+     "use": "plays the action on the active document; no arguments, returns nothing"
+    }
+   ],
+   "gotchas": [
+    "Play takes no target: make the right document active first (IAutoPSDoc.Activate)",
+    "only the action name is exposed, not its set, so two sets holding an action of the same name cannot be told apart (unverified)",
+    "an action step that needs a selection or a pixel layer fails inside Play as a COM error or a blocking dialog (unverified)",
+    "binding to this legacy object model from Python / VBScript in 27.4 is not confirmed by the harvest (unverified)"
+   ],
+   "example": "# app: legacy IPhotoshopApplication (TypeLibrary.tlb)\nacts = app.Actions\nfor i in range(acts.count):          # index base unverified\n    a = acts.Item(i)\n    if a.name == 'Web Resize':\n        a.Play()",
+   "equivalents": {
+    "CDR": "GMSMacro"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IActionControl",
+   "id": "class:IActionControl",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IActionControl",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions control object: plays any Action Manager event by numeric ID with a parameter descriptor, reads properties through a reference, and converts between string IDs and numeric type IDs. The COM ancestor of the DOM's executeAction / executeActionGet / stringIDToTypeID.",
+   "use_for": [
+    "play a filter or command that has no DOM method (an event captured with ScriptListener) from a COM client",
+    "read a document or layer property the DOM does not expose, via GetActionProperty",
+    "translate stringIDs such as 'gaussianBlur' into the numeric IDs that descriptor keys need"
+   ],
+   "avoid": [
+    "new automation: the DOM Application's executeAction / executeActionGet / stringIDToTypeID do the same job and return values instead of filling byref out-parameters"
+   ],
+   "how": "Created with IPhotoshopApplication.MakeControlObject(). Play(eventID, parameters, dialogOptions) runs an event: eventID is a numeric type ID (a PSConstants phEvent* value or StringIDToTypeID result), parameters an IActionDescriptor, dialogOptions a PSConstants dialog value: phDialogDontDisplay 0, phDialogDisplay 1, phDialogSilent 2. Play returns the result descriptor. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "Play",
+     "use": "run an event (eventID, parameter descriptor, dialog mode); returns the result IActionDescriptor"
+    },
+    {
+     "name": "GetActionProperty",
+     "use": "read the property a reference points at into a descriptor (byref propertyDesc)"
+    },
+    {
+     "name": "StringIDToTypeID",
+     "use": "stringID ('gaussianBlur', 'radius') to numeric type ID, delivered through the byref typeID"
+    },
+    {
+     "name": "TypeIDToStringID",
+     "use": "numeric type ID back to its stringID, delivered through the byref stringID"
+    }
+   ],
+   "gotchas": [
+    "StringIDToTypeID, TypeIDToStringID and GetActionProperty return void and hand the result back through a byref parameter (harvested signatures); late-bound callers must handle out-parameters (win32com usually returns them as the call result, unverified)",
+    "dialogOptions is a plain long: pass 0 (phDialogDontDisplay) or 2 (phDialogSilent) in unattended runs, 1 opens the event's dialog and blocks the call",
+    "Play needs a descriptor even for events without settings: pass an empty one from MakeDescriptor (unverified whether a null is accepted)",
+    "type IDs for stringID-only terms are assigned at run time; resolve them each session instead of hard-coding the numbers (unverified)"
+   ],
+   "example": "ctl = app.MakeControlObject()        # app: legacy IPhotoshopApplication\ndesc = app.MakeDescriptor()\nphEventGaussianBlur, phKeyRadius = 1198747202, 1382314784\nphUnitPixels = 592476268              # PSConstants values from the harvest\ndesc.PutUnitDouble(phKeyRadius, phUnitPixels, 8.0)\nctl.Play(phEventGaussianBlur, desc, 0)   # 0 = phDialogDontDisplay",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IActionDescriptor",
+   "id": "class:IActionDescriptor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IActionDescriptor",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions key/value container: holds the parameters of an Action Manager event or the properties returned by one. Every value is keyed by a numeric type ID and written with a typed Put* or read with a typed Get* method.",
+   "use_for": [
+    "build the settings of a filter or command (radius, amount, mode) before IActionControl.Play",
+    "read back a returned descriptor (layer bounds, document size) after GetActionProperty",
+    "nest objects such as a colour or an offset with PutObject for Fill / Make events"
+   ],
+   "avoid": [
+    "new automation: the DOM ActionDescriptor class (createable over COM) returns values directly instead of through byref out-parameters"
+   ],
+   "how": "Created with IPhotoshopApplication.MakeDescriptor(); passed to IActionControl.Play or filled by IActionControl.GetActionProperty. Keys, class IDs, enum types and unit IDs are all longs (PSConstants ph* values or StringIDToTypeID results). The harvest pairs it with the DOM ActionDescriptor (compare_omv): every Get*/Put* here is TypeLibrary-only. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "PutInteger",
+     "use": "store a long under a key"
+    },
+    {
+     "name": "PutDouble",
+     "use": "store a plain double"
+    },
+    {
+     "name": "PutUnitDouble",
+     "use": "store a double with a unit ID (pixels, percent, angle ...)"
+    },
+    {
+     "name": "PutString",
+     "use": "store text, e.g. a layer name"
+    },
+    {
+     "name": "PutBoolean",
+     "use": "store a flag (passed as long 0 / nonzero)"
+    },
+    {
+     "name": "PutEnumerated",
+     "use": "store an enum value with its enum type ID"
+    },
+    {
+     "name": "PutObject",
+     "use": "nest a descriptor of a given class (colour, offset, gradient)"
+    },
+    {
+     "name": "PutReference",
+     "use": "store a target reference, usually under the null key"
+    },
+    {
+     "name": "PutList",
+     "use": "store an IActionList"
+    },
+    {
+     "name": "PutClass",
+     "use": "store a class ID as the value"
+    },
+    {
+     "name": "PutPath",
+     "use": "store a file path (alias)"
+    },
+    {
+     "name": "GetType",
+     "use": "type of the value under a key (byref type)"
+    },
+    {
+     "name": "GetCount",
+     "use": "number of keys (byref count)"
+    },
+    {
+     "name": "GetKey",
+     "use": "key ID at a position, for walking a returned descriptor"
+    },
+    {
+     "name": "HasKey",
+     "use": "whether a key is present (byref long)"
+    },
+    {
+     "name": "GetUnitDouble",
+     "use": "read a unit double: byref unit ID and value"
+    },
+    {
+     "name": "GetString",
+     "use": "read text (byref)"
+    },
+    {
+     "name": "GetObject",
+     "use": "read a nested descriptor and its class ID (byref)"
+    },
+    {
+     "name": "Erase",
+     "use": "remove one key"
+    },
+    {
+     "name": "Clear",
+     "use": "remove every key"
+    }
+   ],
+   "gotchas": [
+    "every Get* returns void and passes values back through byref parameters, e.g. GetUnitDouble(key, &unitID, &retval) yields two values",
+    "booleans are longs here (PutBoolean, GetBoolean, HasKey, IsEqual), not COM booleans",
+    "a plain PutDouble where the event expects a unit double is rejected or misread (unverified)",
+    "GetData / PutData move raw bytes as a string; binary data can be mangled by string conversion over COM (unverified)"
+   ],
+   "example": "ctl = app.MakeControlObject()        # app: legacy IPhotoshopApplication\nd = app.MakeDescriptor()\nphKeyAmount, phUnitPercent = 1097690740, 592474723\nd.PutUnitDouble(phKeyAmount, phUnitPercent, 50.0)\nprint(d.GetCount())                  # out-param returned (unverified)\nprint(d.HasKey(phKeyAmount))",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IActionList",
+   "id": "class:IActionList",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IActionList",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions ordered list of action values (integers, unit doubles, strings, objects, references, nested lists), used where an event parameter is a list: several layers, curve points, gradient stops.",
+   "use_for": [
+    "pass several layer references to a select or link event",
+    "build a list of points or stops inside a descriptor",
+    "read list-valued properties back out of a returned descriptor"
+   ],
+   "avoid": [
+    "editing one item in place: Put* only appends, so rebuild the list",
+    "new automation: the DOM ActionList (createable over COM) returns values directly"
+   ],
+   "how": "Created with IPhotoshopApplication.MakeList(); filled with Put* (append), read with Get*(index), and attached to a descriptor with IActionDescriptor.PutList(key, list). Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "GetCount",
+     "use": "number of items (byref)"
+    },
+    {
+     "name": "GetType",
+     "use": "value type of the item at an index (byref)"
+    },
+    {
+     "name": "PutInteger",
+     "use": "append a long"
+    },
+    {
+     "name": "PutDouble",
+     "use": "append a double"
+    },
+    {
+     "name": "PutUnitDouble",
+     "use": "append a double with a unit ID"
+    },
+    {
+     "name": "PutString",
+     "use": "append text"
+    },
+    {
+     "name": "PutBoolean",
+     "use": "append a flag (long)"
+    },
+    {
+     "name": "PutEnumerated",
+     "use": "append an enum value with its type"
+    },
+    {
+     "name": "PutObject",
+     "use": "append a descriptor of a class (e.g. one curve point)"
+    },
+    {
+     "name": "PutReference",
+     "use": "append a reference (e.g. one layer)"
+    },
+    {
+     "name": "PutList",
+     "use": "append a nested list"
+    },
+    {
+     "name": "PutClass",
+     "use": "append a class ID"
+    },
+    {
+     "name": "PutPath",
+     "use": "append a file path"
+    },
+    {
+     "name": "PutData",
+     "use": "append raw data: explicit length plus the data string"
+    },
+    {
+     "name": "GetInteger",
+     "use": "read a long at an index (byref)"
+    },
+    {
+     "name": "GetUnitDouble",
+     "use": "read unit ID and value at an index (byref)"
+    },
+    {
+     "name": "GetString",
+     "use": "read text at an index (byref)"
+    },
+    {
+     "name": "GetObject",
+     "use": "read a nested descriptor and its class at an index (byref)"
+    },
+    {
+     "name": "GetReference",
+     "use": "read a reference at an index (byref)"
+    }
+   ],
+   "gotchas": [
+    "Put* methods take no index: the order of calls is the order of the list",
+    "Get* return void and give values back through byref parameters, like IActionDescriptor",
+    "PutData here takes (length, value), unlike IActionDescriptor.PutData(key, value)",
+    "lists in Photoshop events are normally one value type; mixed lists may be rejected by the event (unverified)"
+   ],
+   "example": "lst = app.MakeList()                 # app: legacy IPhotoshopApplication\nref = app.MakeReference()\nphClassLayer, phKeyNull = 1283027488, 1853189228\nref.PutName(phClassLayer, 'Logo')\nlst.PutReference(ref)                # appends\ndesc = app.MakeDescriptor()\ndesc.PutList(phKeyNull, lst)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IActionReference",
+   "id": "class:IActionReference",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IActionReference",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions reference that points an event at its target: a class plus a form (name, index, identifier, offset, enumerated or property), chained through containers, e.g. 'the layer named Logo in the current document'.",
+   "use_for": [
+    "target a specific layer, channel or document for an event without selecting it",
+    "name the single property to read when calling IActionControl.GetActionProperty",
+    "address the current target with an enumerated form (ordinal / target)"
+   ],
+   "avoid": [
+    "new automation: the DOM ActionReference with app.executeActionGet returns the descriptor directly"
+   ],
+   "how": "Created with IPhotoshopApplication.MakeReference(). Each Put* adds one level (desired class plus form value); GetForm tells the form of the current level and GetContainer walks to the next one. Passed inside a descriptor (IActionDescriptor.PutReference under the null key) or straight to GetActionProperty. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "PutClass",
+     "use": "level by class only"
+    },
+    {
+     "name": "PutName",
+     "use": "level by name, e.g. layer 'Logo'"
+    },
+    {
+     "name": "PutIndex",
+     "use": "level by index"
+    },
+    {
+     "name": "PutIdentifier",
+     "use": "level by numeric ID (stable when layers are reordered)"
+    },
+    {
+     "name": "PutOffset",
+     "use": "level by offset relative to the current item"
+    },
+    {
+     "name": "PutEnumerated",
+     "use": "level by enumerated value, e.g. ordinal / target = the active item"
+    },
+    {
+     "name": "PutProperty",
+     "use": "level that names one property of its container"
+    },
+    {
+     "name": "GetForm",
+     "use": "form of this level (byref)"
+    },
+    {
+     "name": "GetDesiredClass",
+     "use": "class of this level (byref)"
+    },
+    {
+     "name": "GetName",
+     "use": "name of a name-form level (byref)"
+    },
+    {
+     "name": "GetIndex",
+     "use": "index of an index-form level (byref)"
+    },
+    {
+     "name": "GetIdentifier",
+     "use": "ID of an identifier-form level (byref)"
+    },
+    {
+     "name": "GetOffset",
+     "use": "offset of an offset-form level (byref)"
+    },
+    {
+     "name": "GetEnumerated",
+     "use": "enum type and value of an enumerated level (byref)"
+    },
+    {
+     "name": "GetProperty",
+     "use": "property ID of a property-form level (byref)"
+    },
+    {
+     "name": "GetContainer",
+     "use": "the next (outer) level of the chain (byref)"
+    }
+   ],
+   "gotchas": [
+    "add the most specific level first (property, then layer, then document); that is the Action Manager convention and is assumed to hold for this legacy layer (unverified)",
+    "PutIdentifier with a layer ID survives reordering; PutIndex and PutName break when layers move or two layers share a name",
+    "all Get* return through byref parameters; GetEnumerated yields both the enum type and the value"
+   ],
+   "example": "ctl = app.MakeControlObject()        # app: legacy IPhotoshopApplication\nphClassLayer, phTypeOrdinal, phEnumTarget = 1283027488, 1332896878, 1416783732\nref = app.MakeReference()\nref.PutEnumerated(phClassLayer, phTypeOrdinal, phEnumTarget)   # active layer\nprops = app.MakeDescriptor()\nctl.GetActionProperty(ref, props)    # props filled via byref (unverified)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IActions",
+   "id": "class:IActions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IActions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE Actions collection of every action currently loaded in the Actions panel, with a count and index access to each IAction.",
+   "use_for": [
+    "list available actions before a batch run",
+    "find an action by name and play it from a COM client"
+   ],
+   "avoid": [
+    "choosing between sets: the collection is flat and carries no set names; use the DOM's app.doAction(action, from) when the set matters"
+   ],
+   "how": "IPhotoshopApplication.Actions returns it; count gives the size and Item(index) one IAction. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "count",
+     "use": "number of loaded actions"
+    },
+    {
+     "name": "Item",
+     "use": "the IAction at an integer index"
+    }
+   ],
+   "gotchas": [
+    "index base is not stated in the harvest; probe Item(0) and Item(1) before looping (unverified)",
+    "actions with the same name in different sets appear twice with no way to tell which set (unverified)",
+    "the list reflects what is loaded at the moment of the call; re-read Actions after loading a set (unverified)"
+   ],
+   "example": "acts = app.Actions                   # app: legacy IPhotoshopApplication\nprint(acts.count)\nfor i in range(acts.count):          # index base unverified\n    print(i, acts.Item(i).name)",
+   "equivalents": {
+    "CDR": "GMSMacros"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IAutoPSDoc",
+   "id": "class:IAutoPSDoc",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IAutoPSDoc",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Legacy OLE automation handle on an open image document: its title, making it the active target, saving a copy under another name, and closing it (which saves).",
+   "use_for": [
+    "open a file, activate it and run a recorded action on it from a COM client",
+    "write a processed copy next to the original while keeping it open"
+   ],
+   "avoid": [
+    "discarding changes: Close saves, use the DOM Document.close with SaveOptions.DONOTSAVECHANGES",
+    "anything about layers, size or pixels: go through IActionControl events or the DOM Document"
+   ],
+   "how": "Returned by IPhotoshopApplication.Open(fileName). Activate makes it the target of IAction.Play and IActionControl.Play. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "read-only document title"
+    },
+    {
+     "name": "Activate",
+     "use": "make this document the current target"
+    },
+    {
+     "name": "SaveTo",
+     "use": "save to another file name; the document stays open under its old name"
+    },
+    {
+     "name": "Close",
+     "use": "close the document, saving it first (harvested description)"
+    }
+   ],
+   "gotchas": [
+    "Close saves before closing ('Closes and saves this document'): calling it on an original overwrites it",
+    "SaveTo has no format argument; the format probably follows the extension or the document's own format (unverified)",
+    "only four members: everything else needs Action Manager events"
+   ],
+   "example": "doc = app.Open(r'C:\\work\\in.psd')    # app: legacy IPhotoshopApplication\nprint(doc.Title)\ndoc.Activate()\napp.PlayAction('Web Resize')         # runs on the active document\ndoc.SaveTo(r'C:\\work\\out.psd')",
+   "equivalents": {
+    "AI": "Document",
+    "CDR": "VGCore/Document"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IPhotoshopApplication",
+   "id": "class:IPhotoshopApplication",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/IPhotoshopApplication",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Root interface of the legacy Photoshop Type Library (OLE Actions; its own description still reads 'Adobe Photoshop 12.0 Application'): open files, play recorded actions, and create the control object, descriptor, list and reference objects used to drive any Action Manager event from a COM client.",
+   "use_for": [
+    "drive Photoshop from an old COM / VBScript tool built on the OLE Actions model",
+    "play a recorded action on a file opened from another program",
+    "create Action Manager objects for IActionControl.Play"
+   ],
+   "avoid": [
+    "new automation: the scripting DOM Application (activeDocument, documents, open, doAction, executeAction) covers far more",
+    "Quit in a shared session: it exits Photoshop for everyone"
+   ],
+   "how": "Default interface of the PhotoshopApplication coclass (appobject, cancreate) in TypeLibrary.tlb. MakeControlObject / MakeDescriptor / MakeList / MakeReference build what IActionControl.Play needs. Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "FullName",
+     "use": "full name of the application"
+    },
+    {
+     "name": "Visible",
+     "use": "show or hide the application window (long, 0 / nonzero)"
+    },
+    {
+     "name": "Open",
+     "use": "open a file; returns an IAutoPSDoc"
+    },
+    {
+     "name": "PlayAction",
+     "use": "play an action by name on the active document; returns a long"
+    },
+    {
+     "name": "Actions",
+     "use": "collection of the loaded actions (IActions)"
+    },
+    {
+     "name": "MakeControlObject",
+     "use": "create an IActionControl for playing events"
+    },
+    {
+     "name": "MakeDescriptor",
+     "use": "create an empty IActionDescriptor"
+    },
+    {
+     "name": "MakeList",
+     "use": "create an empty IActionList"
+    },
+    {
+     "name": "MakeReference",
+     "use": "create an empty IActionReference"
+    },
+    {
+     "name": "Quit",
+     "use": "exit Photoshop"
+    }
+   ],
+   "gotchas": [
+    "not the scripting DOM Application: compare_omv shows activeDocument, documents, executeAction, doAction and the rest exist only on the DOM side, while Actions, PlayAction and the Make* members exist only here",
+    "PlayAction's parameter is called fileName but the harvested description says it plays an action by name",
+    "PlayAction returns a long whose meaning is not documented in the harvest (unverified)",
+    "Quit exits Photoshop for every script sharing the instance; a pipeline that does not own the app must never call it",
+    "Visible is a long, not a boolean"
+   ],
+   "example": "# app: legacy IPhotoshopApplication (TypeLibrary.tlb)\nprint(app.FullName)\ndoc = app.Open(r'C:\\work\\in.jpg')\nctl = app.MakeControlObject()\nphEventFlattenImage = 1181512777     # PSConstants value\nctl.Play(phEventFlattenImage, app.MakeDescriptor(), 0)",
+   "equivalents": {
+    "AI": "Application",
+    "CDR": "VGCore/Application"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PhotoshopApplication",
+   "id": "class:PhotoshopApplication",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/PhotoshopApplication",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Creatable COM class (coclass, appobject) of the legacy Photoshop Type Library. It has no members of its own: its default interface IPhotoshopApplication carries open, play-action and the Action Manager object factories.",
+   "use_for": [
+    "the entry point a COM client binds to when it uses the legacy OLE Actions model",
+    "early-bound (typelib-imported) VB / C# / Python code that wants the IPhotoshopApplication interface"
+   ],
+   "avoid": [
+    "confusing it with the scripting DOM's Application coclass (library 'Photoshop'), which is the object model most automation uses"
+   ],
+   "how": "Coclass with GUID {6DECC242-87EF-11CF-86B4-444553540000} (extra.guid); implements IPhotoshopApplication (default) and IDispatch. Every member listed below lives on IPhotoshopApplication (extra.members_on). Legacy Photoshop Type Library (TypeLibrary.tlb, the OLE Actions automation layer); the harvest does not show which ProgID binds to it in 27.4 (unverified).",
+   "key_members": [
+    {
+     "name": "FullName",
+     "use": "on IPhotoshopApplication: full name of the application"
+    },
+    {
+     "name": "Visible",
+     "use": "on IPhotoshopApplication: show or hide the application window (long, 0 / nonzero)"
+    },
+    {
+     "name": "Open",
+     "use": "on IPhotoshopApplication: open a file; returns an IAutoPSDoc"
+    },
+    {
+     "name": "PlayAction",
+     "use": "on IPhotoshopApplication: play an action by name on the active document; returns a long"
+    },
+    {
+     "name": "Actions",
+     "use": "on IPhotoshopApplication: collection of the loaded actions (IActions)"
+    },
+    {
+     "name": "MakeControlObject",
+     "use": "on IPhotoshopApplication: create an IActionControl for playing events"
+    },
+    {
+     "name": "MakeDescriptor",
+     "use": "on IPhotoshopApplication: create an empty IActionDescriptor"
+    },
+    {
+     "name": "MakeList",
+     "use": "on IPhotoshopApplication: create an empty IActionList"
+    },
+    {
+     "name": "MakeReference",
+     "use": "on IPhotoshopApplication: create an empty IActionReference"
+    },
+    {
+     "name": "Quit",
+     "use": "on IPhotoshopApplication: exit Photoshop"
+    }
+   ],
+   "gotchas": [
+    "no members of its own: look them up on IPhotoshopApplication",
+    "as an appobject it attaches to the running Photoshop rather than a private instance (unverified)",
+    "whether creating it by CLSID returns the legacy interface or the DOM Application in 27.4 is not shown by the harvest (unverified)"
+   ],
+   "example": "import win32com.client\n# CLSID from the harvest; the binding route is unverified\napp = win32com.client.Dispatch('{6DECC242-87EF-11CF-86B4-444553540000}')\nprint(app.FullName)\nprint(app.Actions.count)",
+   "equivalents": {
+    "AI": "Application",
+    "CDR": "VGCore/Application"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PSConstants",
+   "id": "class:PSConstants",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "PhotoshopTypeLibrary/PSConstants",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Type alias in the legacy Photoshop Type Library for the big OLE Actions constant enum: about 2,000 ph* constants (phKey*, phEnum*, phEvent*, phClass*, phType*, phForm*, phUnit*, phDialog*) holding the numeric four-character codes that IActionControl, IActionDescriptor and IActionReference take.",
+   "use_for": [
+    "readable names for event, class, key, enum and unit IDs in legacy Action Manager code",
+    "the dialog mode argument of IActionControl.Play (phDialog*)",
+    "translating charID codes found in ScriptListener output to numbers"
+   ],
+   "avoid": [
+    "stringID-only terms added after the OLE era: they have no ph* constant, resolve them with IActionControl.StringIDToTypeID or the DOM's stringIDToTypeID"
+   ],
+   "how": "Alias of the enum __MIDL___MIDL_itf_OLEActions_0000_0000_0001 (extra.alias_of). Typelib-importing languages can write PSConstants values by name; late-bound Python / VBScript must use the raw numbers.",
+   "key_members": [
+    {
+     "name": "__MIDL___MIDL_itf_OLEActions_0000_0000_0001",
+     "use": "the aliased enum that holds every value (alias_of)"
+    },
+    {
+     "name": "phDialogDontDisplay",
+     "use": "0: Play without any dialog"
+    },
+    {
+     "name": "phDialogDisplay",
+     "use": "1: Play and show the event's dialog"
+    },
+    {
+     "name": "phDialogSilent",
+     "use": "2: Play silently"
+    },
+    {
+     "name": "phEventGaussianBlur",
+     "use": "1198747202 = 'GsnB', the Gaussian Blur event"
+    },
+    {
+     "name": "phClassLayer",
+     "use": "1283027488 = 'Lyr ', layer class for references"
+    },
+    {
+     "name": "phClassDocument",
+     "use": "1147366766 = 'Dcmn', document class"
+    },
+    {
+     "name": "phKeyNull",
+     "use": "1853189228 = 'null', the target key of a descriptor"
+    },
+    {
+     "name": "phUnitPixels",
+     "use": "592476268 = '#Pxl', pixel unit for PutUnitDouble"
+    },
+    {
+     "name": "phTypeOrdinal",
+     "use": "1332896878 = 'Ordn', with phEnumTarget addresses the active item"
+    }
+   ],
+   "gotchas": [
+    "the values are the four-character codes read as big-endian longs, the same numbers the DOM's charIDToTypeID returns (phClassDocument = 'Dcmn', not 'Docm')",
+    "phTypeFloat and phTypeDouble share one value (1685026146 = 'doub') in the harvest",
+    "the enum's real name is a MIDL-generated placeholder, so code that imports the typelib may see the constants under that name instead of PSConstants (unverified)"
+   ],
+   "example": "phEventGaussianBlur = 1198747202     # values from the aliased enum\nphKeyRadius, phUnitPixels = 1382314784, 592476268\nctl = app.MakeControlObject()        # app: legacy IPhotoshopApplication\nd = app.MakeDescriptor()\nd.PutUnitDouble(phKeyRadius, phUnitPixels, 4.0)\nctl.Play(phEventGaussianBlur, d, 0)  # 0 = phDialogDontDisplay",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ActionDescriptor",
+   "id": "class:ActionDescriptor",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Actions/ActionDescriptor",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Scripting-DOM Action Manager record of key/value pairs: the parameters handed to app.executeAction and the properties returned by app.executeActionGet. The route to any Photoshop command or property the DOM does not wrap.",
+   "use_for": [
+    "apply a filter, adjustment or layer command with exact settings (ScriptListener-style code)",
+    "read layer, document or app properties the DOM lacks (smart object info, layer IDs, bounds without effects)",
+    "batch tasks that must run with no dialogs (DialogModes.NO)"
+   ],
+   "avoid": [
+    "simple tasks the DOM already wraps (resizeImage, saveAs, artLayers.add): DOM calls are easier to read",
+    "hard-coding descriptors copied from one Photoshop version without testing them on 27.4"
+   ],
+   "how": "ExtendScript: new ActionDescriptor(), filled with typed put calls and passed to app.executeAction(eventID, descriptor, DialogModes.NO). COM: the createable coclass ActionDescriptor (interface _ActionDescriptor, harvested under extra.com) with PutString, PutInteger, PutUnitDouble, PutEnumerated, PutReference, PutObject, PutList, PutBoolean, PutClass, PutPath, PutLargeInteger and the matching getters (GetUnitDoubleValue, GetEnumerationValue, GetObjectValue ...), plus HasKey, GetKey, GetType, Count, Clear, Erase. Keys are numeric IDs from app.stringIDToTypeID / app.charIDToTypeID.",
+   "key_members": [
+    {
+     "name": "count",
+     "use": "number of keys in the descriptor (the only member the ExtendScript reflection recorded; the typed get/put methods are on the COM interface)"
+    }
+   ],
+   "gotchas": [
+    "harvest gap: the ExtendScript side reflected only count; the get/put method list comes from the COM interface, and the ExtendScript spellings are the same names in lowerCamel case (unverified against this harvest)",
+    "COM getters here return values directly (GetUnitDoubleValue plus GetUnitDoubleType), unlike the legacy IActionDescriptor which fills byref parameters",
+    "unit doubles need the right unit ID (pixelsUnit, percentUnit, angleUnit); a wrong unit is converted or rejected (unverified)",
+    "GetType returns a DescValueType (INTEGERTYPE, UNITDOUBLE, OBJECTTYPE ...); check it before reading a key of unknown type",
+    "type IDs of stringID-only terms are assigned at run time; never hard-code them across sessions (unverified)",
+    "the COM ProgID Photoshop.ActionDescriptor is the usual way to create it from Python (unverified in this harvest)"
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch('Photoshop.Application')\nd = win32com.client.Dispatch('Photoshop.ActionDescriptor')\ns = app.StringIDToTypeID\nd.PutUnitDouble(s('radius'), s('pixelsUnit'), 8.0)\n# needs an open document with a pixel layer active\napp.ExecuteAction(s('gaussianBlur'), d, 3)   # 3 = psDisplayNoDialogs\nprint(d.Count)",
+   "review": {
+    "by": "adversarial",
+    "changes": "example: noted that ExecuteAction(gaussianBlur) needs an open document with a pixel layer"
+   }
+  },
+  {
+   "name": "ActionList",
+   "id": "class:ActionList",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Actions/ActionList",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Scripting-DOM Action Manager list: an ordered, append-only list of values (references, numbers, strings, nested descriptors) for event parameters that take several items, such as selecting several layers or giving curve points.",
+   "use_for": [
+    "select or link several layers in one executeAction call",
+    "pass curve points, gradient stops or channel lists to an adjustment",
+    "read list properties (target layers, fonts) out of an executeActionGet result"
+   ],
+   "avoid": [
+    "a single value: put it straight into the ActionDescriptor"
+   ],
+   "how": "ExtendScript: new ActionList(), filled with typed put calls and stored in a descriptor with putList. COM: the createable coclass ActionList (interface _ActionList, extra.com) with Put* (append, no index), Get*(Index), GetType(Index), Count and Clear.",
+   "key_members": [
+    {
+     "name": "count",
+     "use": "number of items (the only member the ExtendScript reflection recorded; the typed methods are on the COM interface)"
+    }
+   ],
+   "gotchas": [
+    "Put* methods append; there is no insert or replace, so rebuild the list to change it",
+    "the harvested class description ('the list of commands that comprise an Action') is misleading: it is a generic value list",
+    "harvest gap: only count was reflected on the ExtendScript side; method names come from the COM interface (lowerCamel in ExtendScript, unverified against this harvest)",
+    "lists are normally one value type per event parameter; mixing types may be rejected (unverified)"
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch('Photoshop.Application')\nlst = win32com.client.Dispatch('Photoshop.ActionList')\nref = win32com.client.Dispatch('Photoshop.ActionReference')\nref.PutName(app.StringIDToTypeID('layer'), 'Logo')\nlst.PutReference(ref)\nprint(lst.Count)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ActionReference",
+   "id": "class:ActionReference",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Actions/ActionReference",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Scripting-DOM Action Manager reference: names the object an event acts on or the object/property to read, as a chain of class plus form (name, index, ID, offset, enumerated, property), e.g. 'the bounds of the active layer'.",
+   "use_for": [
+    "read one property of the active layer or document with executeActionGet",
+    "target a layer by ID for an executeAction without selecting it first",
+    "address 'current' items with ordinal / targetEnum"
+   ],
+   "avoid": [
+    "walking many layers by index in a large file: put a property level first so executeActionGet returns only that property (unverified speed-up)"
+   ],
+   "how": "ExtendScript: new ActionReference(), filled with put calls and passed to app.executeActionGet(ref) or stored in a descriptor under the null key. COM: the createable coclass ActionReference (interface _ActionReference, extra.com); the members below are its COM names (the ExtendScript reflection recorded none).",
+   "key_members": [
+    {
+     "name": "PutClass",
+     "use": "COM: level by class only"
+    },
+    {
+     "name": "PutName",
+     "use": "COM: level by name (layer 'Logo')"
+    },
+    {
+     "name": "PutIndex",
+     "use": "COM: level by index"
+    },
+    {
+     "name": "PutIdentifier",
+     "use": "COM: level by numeric ID, stable across reordering"
+    },
+    {
+     "name": "PutOffset",
+     "use": "COM: level by offset from the current item"
+    },
+    {
+     "name": "PutEnumerated",
+     "use": "COM: level by enumerated value, e.g. ordinal / targetEnum"
+    },
+    {
+     "name": "PutProperty",
+     "use": "COM: level naming one property to read"
+    },
+    {
+     "name": "GetForm",
+     "use": "COM: form of this level (ReferenceFormType)"
+    },
+    {
+     "name": "GetDesiredClass",
+     "use": "COM: class of this level"
+    },
+    {
+     "name": "GetContainer",
+     "use": "COM: next (outer) level"
+    },
+    {
+     "name": "GetEnumeratedType",
+     "use": "COM: enum type of an enumerated level"
+    },
+    {
+     "name": "GetEnumeratedValue",
+     "use": "COM: enum value of an enumerated level"
+    },
+    {
+     "name": "GetIdentifier",
+     "use": "COM: ID of an identifier-form level"
+    },
+    {
+     "name": "GetIndex",
+     "use": "COM: index of an index-form level"
+    },
+    {
+     "name": "GetName",
+     "use": "COM: name of a name-form level"
+    },
+    {
+     "name": "GetOffset",
+     "use": "COM: offset of an offset-form level"
+    },
+    {
+     "name": "GetProperty",
+     "use": "COM: property ID of a property-form level"
+    }
+   ],
+   "gotchas": [
+    "put the most specific level first: property, then layer, then document",
+    "harvest gap: the ExtendScript class recorded no members; the names above are the COM ones, and ExtendScript uses the same names in lowerCamel case (unverified against this harvest)",
+    "PutIndex follows Photoshop's own layer indexing, where a background layer shifts the numbers (unverified); PutIdentifier with a layer ID is the robust choice",
+    "GetForm returns ReferenceFormType: NAME, INDEX, IDENTIFIER, OFFSET, ENUMERATED, PROPERTY, CLASSTYPE"
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch('Photoshop.Application')\ns = app.StringIDToTypeID\nref = win32com.client.Dispatch('Photoshop.ActionReference')\nref.PutProperty(s('property'), s('bounds'))\nref.PutEnumerated(s('layer'), s('ordinal'), s('targetEnum'))\ndesc = app.ExecuteActionGet(ref)",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptions",
+   "id": "class:ExportOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when exporting documents/ExportOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Abstract base of the scripting DOM's export option classes. It has no members and is never created directly: Document.exportDocument takes one of its subclasses, ExportOptionsSaveForWeb or ExportOptionsIllustrator.",
+   "use_for": [
+    "knowing which options object exportDocument expects for each ExportType"
+   ],
+   "avoid": [
+    "instantiating it: create ExportOptionsSaveForWeb (ExportType.SAVEFORWEB) or ExportOptionsIllustrator (ExportType.ILLUSTRATORPATHS)",
+    "modern Export As / Quick Export formats such as WebP: not reachable through these classes"
+   ],
+   "how": "Not instantiated. Pass a subclass as the options argument of app.activeDocument.exportDocument(file, exportAs, options); ExportType offers only ILLUSTRATORPATHS and SAVEFORWEB.",
+   "key_members": [
+    {
+     "name": "ExportOptionsSaveForWeb",
+     "use": "subclass (not a member): legacy Save for Web export, used with ExportType.SAVEFORWEB"
+    },
+    {
+     "name": "ExportOptionsIllustrator",
+     "use": "subclass (not a member): Paths to Illustrator, used with ExportType.ILLUSTRATORPATHS"
+    }
+   ],
+   "gotchas": [
+    "no COM counterpart in the harvest (com: None); COM clients create the concrete coclasses",
+    "the options object must match exportAs; a mismatch fails (unverified)"
+   ],
+   "example": "var o = new ExportOptionsSaveForWeb();   // a concrete subclass\no.format = SaveDocumentType.PNG;\no.PNG8 = false;\napp.activeDocument.exportDocument(new File('~/Desktop/out.png'),\n    ExportType.SAVEFORWEB, o);",
+   "equivalents": {
+    "CDR": "StructExportOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ExportOptionsIllustrator",
+   "id": "class:ExportOptionsIllustrator",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when exporting documents/ExportOptionsIllustrator",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Options for File > Export > Paths to Illustrator: writes the document's vector paths (not pixels, not shape fills) to an .ai file, choosing all paths, one named path, or only the document bounds.",
+   "use_for": [
+    "hand a pen-tool cut-out path to Illustrator for a die-line, sticker or vinyl cut",
+    "move a product clipping path into a vector layout",
+    "keep canvas registration when lining Photoshop paths up with Illustrator art"
+   ],
+   "avoid": [
+    "shape layers or type you want as filled vector artwork: rebuild in Illustrator or export SVG",
+    "pixel content: only paths are written"
+   ],
+   "how": "var o = new ExportOptionsIllustrator(); set path (IllustratorPathType DOCUMENTBOUNDS, ALLPATHS or NAMEDPATH) and pathName, then app.activeDocument.exportDocument(file, ExportType.ILLUSTRATORPATHS, o). COM interface: _ExportOptionsIllustrator (Path, PathName).",
+   "key_members": [
+    {
+     "name": "path",
+     "use": "which paths: DOCUMENTBOUNDS, ALLPATHS or NAMEDPATH"
+    },
+    {
+     "name": "pathName",
+     "use": "name of the path to export; read only when path = NAMEDPATH"
+    }
+   ],
+   "gotchas": [
+    "the harvested default is DOCUMENTBOUNDS, which writes only the canvas bounds and no artwork paths (unverified what the .ai then holds): set ALLPATHS or NAMEDPATH explicitly",
+    "paths arrive in Illustrator as unpainted outlines (unverified)",
+    "pathName must match the Paths panel name exactly"
+   ],
+   "example": "var o = new ExportOptionsIllustrator();\no.path = IllustratorPathType.NAMEDPATH;\no.pathName = 'Cutline';\napp.activeDocument.exportDocument(new File('~/Desktop/cutline.ai'),\n    ExportType.ILLUSTRATORPATHS, o);",
+   "equivalents": {
+    "CDR": "AIExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "default DOCUMENTBOUNDS was attributed to COM; it is the harvested omv default"
+   }
+  },
+  {
+   "name": "ExportOptionsSaveForWeb",
+   "id": "class:ExportOptionsSaveForWeb",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when exporting documents/ExportOptionsSaveForWeb",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for the legacy Save for Web export: GIF, JPEG, PNG-8, PNG-24 or BMP with quality, palette size and reduction, dithering, transparency and matte, web-palette snapping, blur and ICC profile.",
+   "use_for": [
+    "web banner and social JPEGs at a fixed quality",
+    "PNG-24 with transparency for logos and stickers on websites",
+    "small PNG-8 / GIF icons with reduced palettes",
+    "batch exports of many documents to web sizes"
+   ],
+   "avoid": [
+    "print output: use saveAs with TiffSaveOptions or PDFSaveOptions",
+    "WebP / AVIF: not among the formats this class supports"
+   ],
+   "how": "var o = new ExportOptionsSaveForWeb(); set format and the format's options, then app.activeDocument.exportDocument(file, ExportType.SAVEFORWEB, o). COM interface _ExportOptionsSaveForWeb (PascalCase: Format, PNG8, Quality ...).",
+   "key_members": [
+    {
+     "name": "format",
+     "use": "SaveDocumentType: COMPUSERVEGIF, JPEG, PNG or BMP"
+    },
+    {
+     "name": "PNG8",
+     "use": "with format PNG: true = PNG-8 palette, false = PNG-24"
+    },
+    {
+     "name": "quality",
+     "use": "JPEG quality as a percentage, 0 to 100"
+    },
+    {
+     "name": "colors",
+     "use": "palette size for GIF / PNG-8"
+    },
+    {
+     "name": "colorReduction",
+     "use": "palette algorithm: PERCEPTUAL, SELECTIVE, ADAPTIVE ..."
+    },
+    {
+     "name": "dither",
+     "use": "dither type for palette formats"
+    },
+    {
+     "name": "ditherAmount",
+     "use": "amount, only with DIFFUSION dither"
+    },
+    {
+     "name": "transparency",
+     "use": "keep transparent areas"
+    },
+    {
+     "name": "transparencyDither",
+     "use": "dither algorithm for partly transparent edges"
+    },
+    {
+     "name": "transparencyAmount",
+     "use": "amount of transparency dither"
+    },
+    {
+     "name": "matteColor",
+     "use": "RGB colour that transparent edges are blended against"
+    },
+    {
+     "name": "interlaced",
+     "use": "progressive / interlaced download"
+    },
+    {
+     "name": "webSnap",
+     "use": "tolerance for snapping colours to the web palette"
+    },
+    {
+     "name": "lossy",
+     "use": "lossiness allowed (GIF)"
+    },
+    {
+     "name": "optimized",
+     "use": "smaller but less compatible files"
+    },
+    {
+     "name": "includeProfile",
+     "use": "embed the document's colour profile"
+    },
+    {
+     "name": "blur",
+     "use": "blur amount to reduce compression artifacts"
+    }
+   ],
+   "gotchas": [
+    "the harvested default format is COMPUSERVEGIF, so always set format",
+    "PNG8 defaults to true (harvested default): format PNG without PNG8 = false gives an 8-bit palette PNG",
+    "quality here is 0-100, unlike JPEGSaveOptions.quality",
+    "includeProfile defaults to false; a non-sRGB document then shifts colour in browsers (unverified)",
+    "lossy only affects GIF output (unverified)",
+    "metadata handling cannot be set through this class (unverified)"
+   ],
+   "example": "var o = new ExportOptionsSaveForWeb();\no.format = SaveDocumentType.JPEG;\no.quality = 80;\no.includeProfile = true;\napp.activeDocument.exportDocument(new File('~/Desktop/banner.jpg'),\n    ExportType.SAVEFORWEB, o);",
+   "equivalents": {
+    "AI": "ExportOptionsJPEG"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "defaults were attributed to COM; they are the harvested omv defaults; dropped the 'many artboards' use (exportDocument exports the whole document)"
+   }
+  },
+  {
+   "name": "CameraRAWOpenOptions",
+   "id": "class:CameraRAWOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/CameraRAWOpenOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for opening a camera raw file (CR2, NEF, DNG ...) through Adobe Camera Raw from a script: output colour space, bit depth, size and resolution plus the original Camera Raw slider set (white balance, exposure, shadows, brightness, contrast, saturation, sharpening, noise, lens corrections, hue and saturation per primary).",
+   "use_for": [
+    "batch-open a shoot as 16-bit Adobe RGB or ProPhoto for retouching",
+    "apply one white balance and exposure to a set of product photos on open",
+    "quick 8-bit sRGB proofs of raw files for client review"
+   ],
+   "avoid": [
+    "modern ACR controls (Texture, Clarity, Dehaze, masks, profiles): not in this class; set them in ACR, save them to the file's XMP and open with settings = SELECTEDIMAGE (unverified)",
+    "JPEG / TIFF files: these options apply to raw files"
+   ],
+   "how": "var o = new CameraRAWOpenOptions(); set settings, the slider values and the output options, then app.open(file, o). COM: _CameraRAWOpenOptions / coclass CameraRAWOpenOptions.",
+   "key_members": [
+    {
+     "name": "settings",
+     "use": "CAMERA defaults, SELECTEDIMAGE (the file's own settings) or CUSTOM"
+    },
+    {
+     "name": "whiteBalance",
+     "use": "ASSHOT, AUTO, DAYLIGHT, CLOUDY, SHADE, TUNGSTEN, FLUORESCENT, FLASH, CUSTOM"
+    },
+    {
+     "name": "temperature",
+     "use": "white balance temperature, 2000 to 50000"
+    },
+    {
+     "name": "tint",
+     "use": "green/magenta tint, -150 to 150"
+    },
+    {
+     "name": "exposure",
+     "use": "exposure, -4.0 to 4.0"
+    },
+    {
+     "name": "shadows",
+     "use": "shadows, 0 to 100"
+    },
+    {
+     "name": "brightness",
+     "use": "brightness, 0 to 150"
+    },
+    {
+     "name": "contrast",
+     "use": "contrast, -50 to 100"
+    },
+    {
+     "name": "saturation",
+     "use": "saturation, -100 to 100"
+    },
+    {
+     "name": "sharpness",
+     "use": "sharpening, 0 to 100"
+    },
+    {
+     "name": "luminanceSmoothing",
+     "use": "luminance noise reduction, 0 to 100"
+    },
+    {
+     "name": "colorNoiseReduction",
+     "use": "colour noise reduction, 0 to 100"
+    },
+    {
+     "name": "chromaticAberrationRC",
+     "use": "red/cyan fringe correction, -100 to 100"
+    },
+    {
+     "name": "vignettingAmount",
+     "use": "lens vignetting correction, -100 to 100"
+    },
+    {
+     "name": "colorSpace",
+     "use": "ADOBERGB, COLORMATCHRGB, PROPHOTORGB or SRGB"
+    },
+    {
+     "name": "bitsPerChannel",
+     "use": "output bit depth"
+    },
+    {
+     "name": "size",
+     "use": "output size step (CameraRAWSize MINIMUM to MAXIMUM), not pixels"
+    },
+    {
+     "name": "resolution",
+     "use": "output resolution in ppi"
+    }
+   ],
+   "gotchas": [
+    "the slider set and ranges are the original Camera Raw process; current process versions may ignore or remap brightness, shadows and similar fields (unverified)",
+    "individual slider values probably apply only with settings = CUSTOM (unverified)",
+    "the Camera Raw dialog can open and block the script unless app.displayDialogs = DialogModes.NO (unverified)",
+    "temperature and tint matter only with whiteBalance = CUSTOM (unverified)"
+   ],
+   "example": "var o = new CameraRAWOpenOptions();\no.settings = CameraRAWSettingsType.CUSTOM;\no.whiteBalance = WhiteBalanceType.DAYLIGHT;\no.exposure = 0.5;\no.colorSpace = ColorSpaceType.ADOBERGB;\no.bitsPerChannel = BitsPerChannelType.SIXTEEN;\napp.open(new File('C:/shoot/IMG_0001.CR2'), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DICOMOpenOptions",
+   "id": "class:DICOMOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/DICOMOpenOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for opening a DICOM medical image (X-ray, CT or MRI frames): anonymize patient data, show overlays, tile a multi-frame study into an n-up grid, set window width and level, and invert.",
+   "use_for": [
+    "anonymized scan images for a health-campaign poster, report or explainer",
+    "a contact grid of CT slices as one image (rows x columns)",
+    "an inverted X-ray look for an editorial graphic"
+   ],
+   "avoid": [
+    "clinical reading: Photoshop is not a diagnostic viewer",
+    "any image that leaves the machine without anonymize = true"
+   ],
+   "how": "var o = new DICOMOpenOptions(); set the options, then app.open(file, o). COM: _DICOMOpenOptions / coclass DICOMOpenOptions.",
+   "key_members": [
+    {
+     "name": "anonymize",
+     "use": "strip patient information"
+    },
+    {
+     "name": "showOverlays",
+     "use": "show overlays stored in the file"
+    },
+    {
+     "name": "rows",
+     "use": "rows of the n-up grid for multi-frame files"
+    },
+    {
+     "name": "columns",
+     "use": "columns of the n-up grid"
+    },
+    {
+     "name": "windowWidth",
+     "use": "window width in Hounsfield units"
+    },
+    {
+     "name": "windowLevel",
+     "use": "window level in Hounsfield units"
+    },
+    {
+     "name": "reverse",
+     "use": "invert the image"
+    }
+   ],
+   "gotchas": [
+    "the harvest describes windowWidth as brightness and windowLevel as contrast; in radiology width sets contrast and level sets brightness, so test which way Photoshop behaves (unverified)",
+    "the anonymize default is not in the harvest: set it explicitly (unverified)",
+    "rows and columns only matter for multi-frame files (unverified)"
+   ],
+   "example": "var o = new DICOMOpenOptions();\no.anonymize = true;\no.rows = 3;\no.columns = 4;\no.reverse = false;\napp.open(new File('C:/scans/study.dcm'), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GenericEPSOpenOptions",
+   "id": "class:GenericEPSOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/GenericEPSOpenOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for rasterizing a generic EPS on open (the Rasterize Generic EPS Format dialog): width, height, resolution, colour mode, anti-aliasing and proportion lock. The EPS becomes a flat pixel document.",
+   "use_for": [
+    "turn a client's EPS logo into a high-resolution raster for a photo composite",
+    "batch-rasterize vector clip art at a fixed print resolution",
+    "preview old EPS stock files"
+   ],
+   "avoid": [
+    "keeping the artwork editable or sharp at any size: place it as a Smart Object (app.open with asSmartObject) or open it in Illustrator"
+   ],
+   "how": "var o = new GenericEPSOpenOptions(); set resolution, mode and size, then app.open(file, o). COM name differs: _EPSOpenOptions / coclass EPSOpenOptions.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "rasterizing resolution in ppi"
+    },
+    {
+     "name": "width",
+     "use": "target width (UnitValue)"
+    },
+    {
+     "name": "height",
+     "use": "target height (UnitValue)"
+    },
+    {
+     "name": "mode",
+     "use": "OpenDocumentMode: GRAYSCALE, RGB, CMYK or LAB"
+    },
+    {
+     "name": "antiAlias",
+     "use": "smooth edges while rasterizing"
+    },
+    {
+     "name": "constrainProportions",
+     "use": "keep the aspect ratio when width / height change"
+    }
+   ],
+   "gotchas": [
+    "the COM class is EPSOpenOptions, not GenericEPSOpenOptions",
+    "width and height are UnitValue: give explicit units or the number is read in the current ruler units (unverified)",
+    "antiAlias false gives jagged edges on curves and type",
+    "Photoshop EPS files (saved by Photoshop) open from their own pixel data; these options are for generic EPS (unverified whether they are ignored there)"
+   ],
+   "example": "var o = new GenericEPSOpenOptions();\no.resolution = 300;\no.mode = OpenDocumentMode.CMYK;\no.antiAlias = true;\no.constrainProportions = true;\napp.open(new File('C:/assets/logo.eps'), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GenericPDFOpenOptions",
+   "id": "class:GenericPDFOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/GenericPDFOpenOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for rasterizing one page (or one embedded image) of a generic PDF on open, the Import PDF dialog: which page, which box to crop to, resolution, colour mode, bit depth, anti-aliasing and the new document's name.",
+   "use_for": [
+    "turn page 2 of a client brochure PDF into an editable raster for a mock-up",
+    "rasterize a vector PDF logo at print resolution",
+    "pull a page as a thumbnail for a portfolio or social post"
+   ],
+   "avoid": [
+    "keeping vectors: place the PDF as a Smart Object or open it in Illustrator",
+    "multi-page conversion in one call: open each page separately"
+   ],
+   "how": "var o = new GenericPDFOpenOptions(); choose page / usePageNumber, cropPage, resolution and mode, then app.open(file, o). COM name differs: _PDFOpenOptions / coclass PDFOpenOptions.",
+   "key_members": [
+    {
+     "name": "page",
+     "use": "page number, or image number when usePageNumber is false"
+    },
+    {
+     "name": "usePageNumber",
+     "use": "true = page is a page number, false = an image index"
+    },
+    {
+     "name": "cropPage",
+     "use": "box to crop to: BOUNDINGBOX, MEDIABOX, CROPBOX, BLEEDBOX, TRIMBOX, ARTBOX"
+    },
+    {
+     "name": "resolution",
+     "use": "rasterizing resolution in ppi; this is how size is controlled"
+    },
+    {
+     "name": "mode",
+     "use": "OpenDocumentMode: GRAYSCALE, RGB, CMYK or LAB"
+    },
+    {
+     "name": "bitsPerChannel",
+     "use": "bit depth of the new document"
+    },
+    {
+     "name": "antiAlias",
+     "use": "smooth edges while rasterizing"
+    },
+    {
+     "name": "name",
+     "use": "name of the new document"
+    },
+    {
+     "name": "suppressWarnings",
+     "use": "suppress warnings during opening (unattended runs)"
+    },
+    {
+     "name": "object",
+     "use": "number of the 3D object to open"
+    },
+    {
+     "name": "use3DObjectNumber",
+     "use": "use object instead of page"
+    }
+   ],
+   "gotchas": [
+    "width, height and constrainProportions are DEPRECATED in the harvest: control size with resolution",
+    "use3DObjectNumber's harvested description is a copy of usePageNumber's; object / use3DObjectNumber target 3D content, a feature removed from current Photoshop (unverified)",
+    "the COM class is PDFOpenOptions, not GenericPDFOpenOptions",
+    "cropPage decides whether bleed is included: TRIMBOX for the finished size, BLEEDBOX to keep bleed",
+    "PDFs saved by Photoshop with editing preserved reopen as Photoshop data and may ignore these options (unverified)"
+   ],
+   "example": "var o = new GenericPDFOpenOptions();\no.usePageNumber = true;\no.page = 2;\no.cropPage = CropToType.TRIMBOX;\no.resolution = 300;\no.mode = OpenDocumentMode.RGB;\napp.open(new File('C:/proofs/brochure.pdf'), o);",
+   "equivalents": {
+    "AI": "OpenOptionsPDF"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "OpenOptions",
+   "id": "class:OpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/OpenOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Abstract base of the scripting DOM's open option classes. It has no members and is never created directly: app.open takes one of its subclasses as the 'as' argument when a format needs settings.",
+   "use_for": [
+    "knowing which options object app.open expects for raw, DICOM, EPS, PDF and headerless Raw files"
+   ],
+   "avoid": [
+    "instantiating it: create the subclass for the file type"
+   ],
+   "how": "Not instantiated. Pass a subclass to app.open(file, options).",
+   "key_members": [
+    {
+     "name": "CameraRAWOpenOptions",
+     "use": "subclass (not a member): camera raw files"
+    },
+    {
+     "name": "DICOMOpenOptions",
+     "use": "subclass (not a member): DICOM medical images"
+    },
+    {
+     "name": "GenericEPSOpenOptions",
+     "use": "subclass (not a member): rasterizing generic EPS"
+    },
+    {
+     "name": "GenericPDFOpenOptions",
+     "use": "subclass (not a member): rasterizing a PDF page"
+    },
+    {
+     "name": "RawFormatOpenOptions",
+     "use": "subclass (not a member): headerless Photoshop Raw data"
+    },
+    {
+     "name": "PhotoCDOpenOptions",
+     "use": "subclass (not a member): deprecated Kodak Photo CD"
+    }
+   ],
+   "gotchas": [
+    "no COM counterpart in the harvest (com: None); COM clients create the concrete coclasses",
+    "files that need no settings (PSD, JPEG, PNG, TIFF) open without any options object"
+   ],
+   "example": "var o = new GenericPDFOpenOptions();   // a concrete subclass\no.page = 1;\no.resolution = 150;\napp.open(new File('C:/in/flyer.pdf'), o);",
+   "equivalents": {
+    "AI": "OpenOptions",
+    "CDR": "StructOpenOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PhotoCDOpenOptions",
+   "id": "class:PhotoCDOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/PhotoCDOpenOptions",
+   "status": "obsolete",
+   "confidence": "medium",
+   "summary": "Deprecated settings for opening Kodak Photo CD (PCD) images: pixel size step, colour profile, resolution, colour space (RGB or Lab, 8 or 16 bit) and orientation. The harvested class description is just 'DEPRECATED.'.",
+   "use_for": [
+    "reading an old Photo CD scan archive, if the installed Photoshop still opens PCD (unverified)"
+   ],
+   "avoid": [
+    "any current work: convert PCD scans with another tool and open the TIFF"
+   ],
+   "how": "var o = new PhotoCDOpenOptions(); set pixelSize, colorSpace and orientation, then app.open(file, o). COM: _PhotoCDOpenOptions / coclass PhotoCDOpenOptions.",
+   "key_members": [
+    {
+     "name": "pixelSize",
+     "use": "PhotoCDSize step MINIMUM to MAXIMUM, not pixels"
+    },
+    {
+     "name": "colorSpace",
+     "use": "RGB8, RGB16, LAB8 or LAB16"
+    },
+    {
+     "name": "colorProfileName",
+     "use": "profile used to read the image"
+    },
+    {
+     "name": "resolution",
+     "use": "resolution in ppi"
+    },
+    {
+     "name": "orientation",
+     "use": "LANDSCAPE or PORTRAIT"
+    }
+   ],
+   "gotchas": [
+    "marked DEPRECATED in the harvest; current Photoshop may not open .pcd files at all (unverified)",
+    "pixelSize is a size step, not a pixel count"
+   ],
+   "example": "var o = new PhotoCDOpenOptions();   // deprecated class\no.pixelSize = PhotoCDSize.LARGE;\no.colorSpace = PhotoCDColorSpace.RGB8;\no.orientation = Orientation.LANDSCAPE;\napp.open(new File('C:/archive/img0001.pcd'), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "RawFormatOpenOptions",
+   "id": "class:RawFormatOpenOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when opening documents/RawFormatOpenOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for opening a headerless Photoshop Raw (.raw) binary file, not camera raw: the file stores no dimensions, so the script states width, height, channel count, bit depth, byte order, interleaving and header size.",
+   "use_for": [
+    "load heightmaps and texture data exported by 3D or game tools as greyscale images",
+    "read sensor or scientific data dumps as pixels",
+    "round-trip data written with RawSaveOptions"
+   ],
+   "avoid": [
+    "camera raw photos (CR2, NEF, DNG): use CameraRAWOpenOptions"
+   ],
+   "how": "var o = new RawFormatOpenOptions(); set width, height, channelNumber, bitsPerChannel and the layout fields, then app.open(file, o). COM: _RawFormatOpenOptions / coclass RawFormatOpenOptions.",
+   "key_members": [
+    {
+     "name": "width",
+     "use": "image width in pixels"
+    },
+    {
+     "name": "height",
+     "use": "image height in pixels"
+    },
+    {
+     "name": "channelNumber",
+     "use": "number of channels, 1 to 56"
+    },
+    {
+     "name": "bitsPerChannel",
+     "use": "8 or 16 (plain int)"
+    },
+    {
+     "name": "interleaveChannels",
+     "use": "true when channel values are stored pixel by pixel"
+    },
+    {
+     "name": "byteOrder",
+     "use": "byte order for 16-bit data: IBM (PC) or MACOS"
+    },
+    {
+     "name": "headerSize",
+     "use": "bytes to skip before the image data, 0 to 1919999"
+    },
+    {
+     "name": "retainHeader",
+     "use": "keep the header when saving back"
+    }
+   ],
+   "gotchas": [
+    "wrong width, height or headerSize does not fail: the file opens as diagonal stripes or noise",
+    "byteOrder only matters with bitsPerChannel = 16 (harvest); IBM means PC little-endian, MACOS big-endian",
+    "bitsPerChannel here is a plain int (8 or 16), not BitsPerChannelType",
+    "the harvest names the byte order enum ByteOrderType; the ExtendScript constant object may be spelled ByteOrder (unverified)"
+   ],
+   "example": "var o = new RawFormatOpenOptions();\no.width = 1024;\no.height = 1024;\no.channelNumber = 1;\no.bitsPerChannel = 16;\no.headerSize = 0;\napp.open(new File('C:/terrain/height.raw'), o);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "BMPSaveOptions",
+   "id": "class:BMPSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/BMPSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a Windows Bitmap (BMP): bit depth from 1 to 32 bits including the 16- and 32-bit masked layouts (A8R8G8B8, R5G6B5 ...), target OS, alpha channel, RLE compression and row order.",
+   "use_for": [
+    "textures and UI assets for legacy software or engines that demand BMP",
+    "32-bit BMP with alpha for old Windows applications",
+    "1-bit BMP for embroidery, LED-sign or plotter software"
+   ],
+   "avoid": [
+    "web or print delivery: use PNG, JPEG or TIFF",
+    "keeping layers: BMP is always flat"
+   ],
+   "how": "var o = new BMPSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....bmp'), o, asCopy). COM: _BMPSaveOptions / coclass BMPSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "depth",
+     "use": "BMPDepthType: ONE ... THIRTYTWO or a masked layout such as BMP_A8R8G8B8"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "write the alpha channel"
+    },
+    {
+     "name": "osType",
+     "use": "WINDOWS or the old OS2 variant"
+    },
+    {
+     "name": "rleCompression",
+     "use": "RLE compression"
+    },
+    {
+     "name": "flipRowOrder",
+     "use": "change the row order (harvest: 'written from bottom to top')"
+    }
+   ],
+   "gotchas": [
+    "alpha survives only with a 32-bit depth and alphaChannels true (unverified)",
+    "RLE compression applies to 4- and 8-bit depths only (unverified)",
+    "leave osType at WINDOWS; OS2 BMPs are rejected by many readers",
+    "change flipRowOrder only when the target reader asks for it"
+   ],
+   "example": "var o = new BMPSaveOptions();\no.depth = BMPDepthType.THIRTYTWO;\no.alphaChannels = true;\no.osType = OperatingSystem.WINDOWS;\napp.activeDocument.saveAs(new File('~/Desktop/icon.bmp'), o, true);",
+   "equivalents": {
+    "CDR": "BMPExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DCS1_SaveOptions",
+   "id": "class:DCS1_SaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/DCS1_SaveOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for Photoshop DCS 1.0, the old pre-separated EPS format for CMYK images: one file per C, M, Y, K plate plus a master file, with a preview, encoding, optional composite and print flags. No spot channels.",
+   "use_for": [
+    "legacy prepress workflows that still require DCS separations",
+    "re-outputting an archived job for an old RIP"
+   ],
+   "avoid": [
+    "spot colours: DCS 1.0 cannot carry them, use DCS2_SaveOptions",
+    "modern print: PDF/X through PDFSaveOptions"
+   ],
+   "how": "var o = new DCS1_SaveOptions(); set the options, then app.activeDocument.saveAs(new File('....eps'), o, asCopy). COM: _DCS1_SaveOptions / coclass DCS1_SaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "DCS",
+     "use": "composite: NOCOMPOSITE, GRAYSCALECOMPOSITE or COLORCOMPOSITE"
+    },
+    {
+     "name": "preview",
+     "use": "preview type: NONE, MONOCHROMETIFF, EIGHTBITTIFF or MACOS* (harvested default MACOSEIGHTBIT)"
+    },
+    {
+     "name": "encoding",
+     "use": "ASCII, BINARY or a JPEG level"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "halftoneScreen",
+     "use": "include halftone screen settings"
+    },
+    {
+     "name": "transferFunction",
+     "use": "include transfer functions for dot gain"
+    },
+    {
+     "name": "vectorData",
+     "use": "keep vector data such as live type"
+    },
+    {
+     "name": "interpolation",
+     "use": "let the printer interpolate the image"
+    }
+   ],
+   "gotchas": [
+    "the document must be CMYK (or carry the plates you need) for a meaningful separation (unverified error otherwise)",
+    "JPEG encodings (JPEGLOW ... JPEGMAXIMUM) are lossy and some RIPs reject them; BINARY is the safe choice (unverified)",
+    "the harvested default preview is MACOSEIGHTBIT, a Mac-only preview: set MacPreviewType.EIGHTBITTIFF for Windows layout apps; COM's Preview (PsPreviewType) offers only psNoPreview, psMonochromeTIFF and psEightBitTIFF"
+   ],
+   "example": "var o = new DCS1_SaveOptions();\no.DCS = DCSType.COLORCOMPOSITE;\no.encoding = SaveEncoding.BINARY;\no.preview = MacPreviewType.EIGHTBITTIFF;\napp.activeDocument.saveAs(new File('~/Desktop/plate.eps'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "Mac-preview gotcha was unverified; replaced with the harvested MACOSEIGHTBIT default and the COM PsPreviewType values"
+   }
+  },
+  {
+   "name": "DCS2_SaveOptions",
+   "id": "class:DCS2_SaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/DCS2_SaveOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for Photoshop DCS 2.0, the pre-separated EPS format that also carries spot channels: single file or one file per plate, preview, encoding, optional composite and print flags.",
+   "use_for": [
+    "prepress hand-off of a CMYK + spot colour (Pantone) image to a workflow that requires DCS",
+    "packaging artwork with spot varnish or metallic plates for an older RIP"
+   ],
+   "avoid": [
+    "modern print: PDF/X through PDFSaveOptions keeps spot colours with far wider support",
+    "CMYK-only jobs: DCS 1.0 or TIFF is simpler"
+   ],
+   "how": "var o = new DCS2_SaveOptions(); set the options, then app.activeDocument.saveAs(new File('....eps'), o, asCopy). COM: _DCS2_SaveOptions / coclass DCS2_SaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "spotColors",
+     "use": "save the spot channels as plates"
+    },
+    {
+     "name": "multiFileDCS",
+     "use": "true = one file per plate, false = a single file"
+    },
+    {
+     "name": "DCS",
+     "use": "composite: NOCOMPOSITE, GRAYSCALECOMPOSITE or COLORCOMPOSITE"
+    },
+    {
+     "name": "preview",
+     "use": "preview type: NONE, MONOCHROMETIFF, EIGHTBITTIFF or MACOS* (harvested default MACOSEIGHTBIT)"
+    },
+    {
+     "name": "encoding",
+     "use": "ASCII, BINARY or a JPEG level"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "halftoneScreen",
+     "use": "include halftone screen settings"
+    },
+    {
+     "name": "transferFunction",
+     "use": "include transfer functions"
+    },
+    {
+     "name": "vectorData",
+     "use": "keep vector data such as live type"
+    },
+    {
+     "name": "interpolation",
+     "use": "let the printer interpolate"
+    }
+   ],
+   "gotchas": [
+    "spotColors must be true or the spot plates are dropped (unverified)",
+    "the document must be CMYK (or carry the plates you need) for a meaningful separation (unverified error otherwise)",
+    "JPEG encodings (JPEGLOW ... JPEGMAXIMUM) are lossy and some RIPs reject them; BINARY is the safe choice (unverified)",
+    "the harvested default preview is MACOSEIGHTBIT, a Mac-only preview: set MacPreviewType.EIGHTBITTIFF for Windows layout apps; COM's Preview (PsPreviewType) offers only psNoPreview, psMonochromeTIFF and psEightBitTIFF"
+   ],
+   "example": "var o = new DCS2_SaveOptions();\no.spotColors = true;\no.multiFileDCS = false;\no.DCS = DCSType.COLORCOMPOSITE;\no.encoding = SaveEncoding.BINARY;\no.preview = MacPreviewType.EIGHTBITTIFF;\napp.activeDocument.saveAs(new File('~/Desktop/pack.eps'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "Mac-preview gotcha was unverified; replaced with the harvested MACOSEIGHTBIT default and the COM PsPreviewType values; example now sets a TIFF preview instead of inheriting the Mac default"
+   }
+  },
+  {
+   "name": "EPSSaveOptions",
+   "id": "class:EPSSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/EPSSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving Photoshop EPS: preview type, encoding, colour profile, halftone and transfer functions, PostScript colour management, vector data, interpolation and transparent whites for Bitmap-mode art.",
+   "use_for": [
+    "a cut-out product image with a clipping path for older layout software",
+    "EPS with live vector type over an image for a PostScript RIP",
+    "Bitmap-mode line art whose white areas are transparent over other colours"
+   ],
+   "avoid": [
+    "modern layouts (InDesign, Illustrator): PSD, TIFF or PDF keep layers and real transparency"
+   ],
+   "how": "var o = new EPSSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....eps'), o, asCopy). COM: _EPSSaveOptions / coclass EPSSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "encoding",
+     "use": "ASCII, BINARY or a JPEG level"
+    },
+    {
+     "name": "preview",
+     "use": "preview type for placing the EPS"
+    },
+    {
+     "name": "vectorData",
+     "use": "keep vector data (un-rasterized type, shapes)"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "psColorManagement",
+     "use": "PostScript colour management"
+    },
+    {
+     "name": "transparentWhites",
+     "use": "white shows as transparent; Bitmap mode only"
+    },
+    {
+     "name": "halftoneScreen",
+     "use": "include halftone screen settings"
+    },
+    {
+     "name": "transferFunction",
+     "use": "include transfer functions for dot gain"
+    },
+    {
+     "name": "interpolation",
+     "use": "let the printer interpolate"
+    }
+   ],
+   "gotchas": [
+    "layer transparency is flattened: only a clipping path (PathItem.makeClippingPath) or transparentWhites in Bitmap mode gives see-through areas",
+    "transparentWhites is valid only for Bitmap-mode documents (harvest)",
+    "vectorData only keeps vectors the document actually has (un-rasterized type)",
+    "JPEG encodings are lossy and some RIPs reject them (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\ndoc.pathItems[0].makeClippingPath(0.5);   // optional cut-out\nvar o = new EPSSaveOptions();\no.encoding = SaveEncoding.BINARY;\no.vectorData = true;\no.preview = MacPreviewType.EIGHTBITTIFF;\ndoc.saveAs(new File('~/Desktop/product.eps'), o, true);",
+   "equivalents": {
+    "AI": "EPSSaveOptions",
+    "CDR": "CEPSExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GIFSaveOptions",
+   "id": "class:GIFSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/GIFSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a GIF through Save As: palette type and size, forced colours, dithering, exact-colour protection, transparency, matte for anti-aliased edges and interlacing. The saved file is a single indexed-colour frame.",
+   "use_for": [
+    "small flat-colour icons or badges for email and old web templates",
+    "indexed artwork for pixel-art or retro looks",
+    "transparent GIF stickers with a matched matte"
+   ],
+   "avoid": [
+    "animated GIFs: Save As writes one frame; use the timeline's Export or Save for Web (unverified)",
+    "photos: banding; use JPEG or PNG"
+   ],
+   "how": "var o = new GIFSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....gif'), o, asCopy). COM: _GIFSaveOptions / coclass GIFSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "palette",
+     "use": "PaletteType: EXACT, WEBPALETTE, UNIFORM, LOCAL / MASTER PERCEPTUAL, SELECTIVE, ADAPTIVE ...; harvested default LOCALSELECTIVE"
+    },
+    {
+     "name": "colors",
+     "use": "number of palette colours (not valid for every palette type)"
+    },
+    {
+     "name": "forced",
+     "use": "colours forced in: NONE, BLACKWHITE, PRIMARIES, WEB"
+    },
+    {
+     "name": "dither",
+     "use": "NONE, DIFFUSION, PATTERN or NOISE"
+    },
+    {
+     "name": "ditherAmount",
+     "use": "1 to 100, only with DIFFUSION"
+    },
+    {
+     "name": "preserveExactColors",
+     "use": "protect palette colours from dithering (DIFFUSION only)"
+    },
+    {
+     "name": "transparency",
+     "use": "keep transparent areas"
+    },
+    {
+     "name": "matte",
+     "use": "colour that fills anti-aliased edges next to transparency (default white)"
+    },
+    {
+     "name": "interlaced",
+     "use": "interlaced rows"
+    }
+   ],
+   "gotchas": [
+    "matte defaults to white: on a dark page set MatteType to the page colour or NONE to avoid a halo",
+    "colors is ignored by fixed palettes (EXACT, WEBPALETTE, MACOSPALETTE, WINDOWSPALETTE) (unverified)",
+    "layers are flattened into the GIF; asCopy keeps the open document layered",
+    "the harvest names the palette enum PaletteType; the ExtendScript constant object may be spelled Palette (unverified)"
+   ],
+   "example": "var o = new GIFSaveOptions();\no.colors = 64;\no.dither = DitherType.DIFFUSION;\no.ditherAmount = 75;\no.transparency = true;\no.matte = MatteType.NONE;\napp.activeDocument.saveAs(new File('~/Desktop/icon.gif'), o, true);",
+   "equivalents": {
+    "AI": "ExportOptionsGIF",
+    "CDR": "GIFExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "palette value WEB does not exist (enum has WEBPALETTE); added the harvested LOCALSELECTIVE default"
+   }
+  },
+  {
+   "name": "JPEGSaveOptions",
+   "id": "class:JPEGSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/JPEGSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a JPEG through Save As: quality, baseline / optimized / progressive format with scan count, embedded colour profile, and the matte colour that replaces transparency.",
+   "use_for": [
+    "client proofs and social posts straight from the master document",
+    "high-quality JPEG deliverables with an embedded profile",
+    "progressive JPEGs for web pages"
+   ],
+   "avoid": [
+    "anything needing transparency (logos, stickers): use PNG",
+    "repeated re-saving of the same file: JPEG loss accumulates; keep a PSD master"
+   ],
+   "how": "var o = new JPEGSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....jpg'), o, asCopy). COM: _JPEGSaveOptions / coclass JPEGSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "quality",
+     "use": "JPEG quality 0 to 12 (harvested min / max), harvested default 3"
+    },
+    {
+     "name": "formatOptions",
+     "use": "STANDARDBASELINE, OPTIMIZEDBASELINE or PROGRESSIVE"
+    },
+    {
+     "name": "scans",
+     "use": "number of scans, 3 to 5 (harvested range), progressive only"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "matte",
+     "use": "fill for transparent / anti-aliased areas (default white)"
+    }
+   ],
+   "gotchas": [
+    "quality is 0 to 12 (harvested range) with a harvested default of only 3: always set it; Save for Web's quality is 0-100",
+    "scans only applies with formatOptions = PROGRESSIVE (harvest)",
+    "JPEG has no alpha: transparent areas take the matte colour",
+    "the harvest names the format enum FormatOptionsType; the ExtendScript constant object may be spelled FormatOptions (unverified)"
+   ],
+   "example": "var o = new JPEGSaveOptions();\no.quality = 10;\no.embedColorProfile = true;\no.matte = MatteType.WHITE;\napp.activeDocument.saveAs(new File('~/Desktop/post.jpg'), o, true);",
+   "equivalents": {
+    "AI": "ExportOptionsJPEG",
+    "CDR": "JPGExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "quality / scans ranges were claimed missing from the harvest; the batch has quality 0-12 default 3 and scans 3-5, now stated with the low default flagged"
+   }
+  },
+  {
+   "name": "PDFSaveOptions",
+   "id": "class:PDFSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PDFSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving Photoshop PDF: Adobe PDF preset, compatibility version, PDF/X standard, image encoding and quality, downsampling, colour conversion and output intent, layers, spot colours, and whether Photoshop editing data is kept.",
+   "use_for": [
+    "print-ready PDF/X-1a or PDF/X-4 of a poster, flyer or banner",
+    "small client proofs (JPEG encoding plus downsampling)",
+    "a PDF that reopens fully editable in Photoshop (preserveEditing)"
+   ],
+   "avoid": [
+    "multi-page documents: one Photoshop document makes one page; build those in InDesign or Illustrator",
+    "web images: export JPEG or PNG instead"
+   ],
+   "how": "var o = new PDFSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....pdf'), o, asCopy). COM: _PDFSaveOptions / coclass PDFSaveOptions, used with Document.SaveAs. presetFile loads an Adobe PDF preset and overrides the other settings.",
+   "key_members": [
+    {
+     "name": "presetFile",
+     "use": "Adobe PDF preset to use; overrides the other settings"
+    },
+    {
+     "name": "PDFCompatibility",
+     "use": "PDF version: PDF13 to PDF17"
+    },
+    {
+     "name": "PDFStandard",
+     "use": "PDF/X standard: NONE, PDFX1A2001, PDFX1A2003, PDFX32002, PDFX32003, PDFX42008"
+    },
+    {
+     "name": "encoding",
+     "use": "image compression: NONE, ZIP or a JPEG / JPEG 2000 level"
+    },
+    {
+     "name": "jpegQuality",
+     "use": "0 to 12, JPEG-encoded PDFs only"
+    },
+    {
+     "name": "preserveEditing",
+     "use": "keep Photoshop data so the PDF reopens editable"
+    },
+    {
+     "name": "layers",
+     "use": "save layers"
+    },
+    {
+     "name": "spotColors",
+     "use": "save spot colours"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "colorConversion",
+     "use": "convert to the destination profile"
+    },
+    {
+     "name": "destinationProfile",
+     "use": "output device / press profile"
+    },
+    {
+     "name": "outputCondition",
+     "use": "output condition comment stored in the PDF/X file"
+    },
+    {
+     "name": "outputConditionID",
+     "use": "identifier of the output condition"
+    },
+    {
+     "name": "registryName",
+     "use": "URL where the output condition is registered"
+    },
+    {
+     "name": "downSample",
+     "use": "NONE, PDFAVERAGE, PDFSUBSAMPLE or PDFBICUBIC"
+    },
+    {
+     "name": "downSampleSize",
+     "use": "target ppi for downsampled images"
+    },
+    {
+     "name": "downSampleSizeLimit",
+     "use": "only images above this ppi are downsampled"
+    },
+    {
+     "name": "convertToEightBit",
+     "use": "convert 16-bit to 8-bit"
+    },
+    {
+     "name": "optimizeForWeb",
+     "use": "fast web view"
+    },
+    {
+     "name": "view",
+     "use": "open the PDF in Acrobat after saving"
+    }
+   ],
+   "gotchas": [
+    "presetFile overrides every other setting (harvest)",
+    "transparency, interpolation, vectorData, embedFonts, useOutlines and downgradeColorProfile are DEPRECATED in the harvest; do not rely on them",
+    "jpegQuality is 0-12 and only applies with a JPEG encoding (harvest)",
+    "PDF/X needs a CMYK document or a destination profile plus an output condition; without them the save fails or falls back (unverified)",
+    "preserveEditing embeds the full Photoshop data and makes the file much larger",
+    "view = true opens Acrobat after saving: keep it false in unattended runs"
+   ],
+   "example": "var o = new PDFSaveOptions();\no.embedColorProfile = true;\no.preserveEditing = false;\no.layers = false;\no.optimizeForWeb = true;\no.view = false;\napp.activeDocument.saveAs(new File('~/Desktop/poster.pdf'), o, true);",
+   "equivalents": {
+    "AI": "PDFSaveOptions",
+    "CDR": "PDFVBASettings"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PhotoshopSaveOptions",
+   "id": "class:PhotoshopSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PhotoshopSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a Photoshop document (PSD): whether layers, alpha channels, spot channels, notes (annotations) and the colour profile are written.",
+   "use_for": [
+    "the layered master file of a composite or poster",
+    "PSD hand-off to After Effects, Premiere or a developer with layers intact",
+    "template files that carry alpha masks and spot channels"
+   ],
+   "avoid": [
+    "documents larger than the PSD format allows: those need PSB (Large Document Format), which this class does not cover (unverified)",
+    "delivery to viewers without Photoshop: export a flat PNG or JPEG"
+   ],
+   "how": "var o = new PhotoshopSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....psd'), o, asCopy). COM: _PhotoshopSaveOptions / coclass PhotoshopSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "layers",
+     "use": "save the layers"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "save alpha channels"
+    },
+    {
+     "name": "spotColors",
+     "use": "save spot channels"
+    },
+    {
+     "name": "annotations",
+     "use": "save notes"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    }
+   ],
+   "gotchas": [
+    "saveAs with asCopy false re-points the open document at the new PSD",
+    "layers false writes a flattened file (unverified exactly what is kept)",
+    "Maximize Compatibility is not exposed here; it follows the preference (unverified)"
+   ],
+   "example": "var o = new PhotoshopSaveOptions();\no.layers = true;\no.alphaChannels = true;\no.embedColorProfile = true;\napp.activeDocument.saveAs(new File('~/Desktop/master.psd'), o, false);",
+   "equivalents": {
+    "AI": "ExportOptionsPhotoshop"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "removed the invented PSD limits (2 GB, 30,000 px), not in the batch"
+   }
+  },
+  {
+   "name": "PICTFileSaveOptions",
+   "id": "class:PICTFileSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PICTFileSaveOptions",
+   "status": "current",
+   "confidence": "low",
+   "summary": "Settings for saving a classic Mac PICT file: bits per pixel, optional JPEG compression, alpha channels and colour profile. PICT is a retired Mac format; current Photoshop may not offer it at all.",
+   "use_for": [
+    "feeding a legacy Mac application that only reads PICT (rare)"
+   ],
+   "avoid": [
+    "any current work: use PNG or TIFF"
+   ],
+   "how": "var o = new PICTFileSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....pct'), o, asCopy). COM: _PICTFileSaveOptions / coclass PICTFileSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "bits per pixel (PICTBitsPerPixels TWO ... THIRTYTWO), not ppi"
+    },
+    {
+     "name": "compression",
+     "use": "NONE or a JPEG PICT level"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "save alpha channels"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    }
+   ],
+   "gotchas": [
+    "resolution means bits per pixel here, not ppi",
+    "PICT saving may be missing from Photoshop 27.4 even though the class is in the DOM (unverified)",
+    "JPEG PICT compression depended on QuickTime and may fail (unverified)"
+   ],
+   "example": "var o = new PICTFileSaveOptions();\no.resolution = PICTBitsPerPixels.THIRTYTWO;\no.compression = PICTCompression.NONE;\napp.activeDocument.saveAs(new File('~/Desktop/legacy.pct'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PICTResourceSaveOptions",
+   "id": "class:PICTResourceSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PICTResourceSaveOptions",
+   "status": "obsolete",
+   "confidence": "low",
+   "summary": "Settings for saving the image as a PICT resource inside a classic Mac OS resource fork (resource ID and name, bits per pixel, compression, alpha, profile). Retired: the class appears only in the CC 2015.5 ExtendScript dictionary, not in the 27.4 COM library.",
+   "use_for": [
+    "very old Mac application resources (splash screens, icons) in archival work"
+   ],
+   "avoid": [
+    "Windows and all current work: resource forks do not exist there; use PNG or TIFF"
+   ],
+   "how": "var o = new PICTResourceSaveOptions(); set resourceID, name and the image options, then app.activeDocument.saveAs(file, o, true). ExtendScript only: the harvest has no COM counterpart (com: None).",
+   "key_members": [
+    {
+     "name": "resourceID",
+     "use": "ID of the PICT resource"
+    },
+    {
+     "name": "name",
+     "use": "name of the PICT resource"
+    },
+    {
+     "name": "resolution",
+     "use": "bits per pixel (PICTBitsPerPixels), not ppi"
+    },
+    {
+     "name": "compression",
+     "use": "NONE or a JPEG PICT level"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "save alpha channels"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    }
+   ],
+   "gotchas": [
+    "no COM class in the 27.4 COM library (com: None), while even the deprecated PhotoCDOpenOptions keeps one; the ExtendScript entry comes from a CC 2015.5 omv.xml, so the class may be gone at run time (unverified)",
+    "on Windows the save is unusable or fails because there is no resource fork (unverified)",
+    "the format may be gone from Photoshop 27.4 entirely (unverified)"
+   ],
+   "example": "var o = new PICTResourceSaveOptions();\no.resourceID = 128;\no.name = 'Splash';\no.resolution = PICTBitsPerPixels.THIRTYTWO;\napp.activeDocument.saveAs(new File('~/Desktop/splash.rsr'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "status current -> obsolete: absent from the 27.4 COM library (unlike every other concrete options class, PhotoCD included), Mac resource-fork only, ExtendScript evidence is the 2015.5 omv"
+   }
+  },
+  {
+   "name": "PixarSaveOptions",
+   "id": "class:PixarSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PixarSaveOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for saving in the Pixar image format (.pxr) of old Pixar image computers and RenderMan-era pipelines; the only option is whether alpha channels are written.",
+   "use_for": [
+    "texture or matte hand-off to a legacy 3D pipeline that reads Pixar files"
+   ],
+   "avoid": [
+    "current 3D / VFX tools: EXR, TIFF or PNG are far better supported"
+   ],
+   "how": "var o = new PixarSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....pxr'), o, asCopy). COM: _PixarSaveOptions / coclass PixarSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "alphaChannels",
+     "use": "write alpha channels"
+    }
+   ],
+   "gotchas": [
+    "the only setting is alpha; bit depth and compression follow the document (unverified)",
+    "few current applications read .pxr files"
+   ],
+   "example": "var o = new PixarSaveOptions();\no.alphaChannels = true;\napp.activeDocument.saveAs(new File('~/Desktop/plate.pxr'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PNGSaveOptions",
+   "id": "class:PNGSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/PNGSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a PNG through Save As: lossless PNG that keeps layer transparency, with only the compression level and interlacing to choose.",
+   "use_for": [
+    "logos, stickers and cut-outs with transparency",
+    "UI assets and screenshots with sharp edges",
+    "lossless intermediates between apps"
+   ],
+   "avoid": [
+    "small palette PNGs (PNG-8): use ExportOptionsSaveForWeb with PNG8",
+    "photos for the web where size matters: JPEG"
+   ],
+   "how": "var o = new PNGSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....png'), o, asCopy). COM: _PNGSaveOptions / coclass PNGSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "compression",
+     "use": "compression level 0 to 9 (harvested range), harvested default 0"
+    },
+    {
+     "name": "interlaced",
+     "use": "Adam7 interlacing"
+    }
+   ],
+   "gotchas": [
+    "compression is 0 to 9 (harvested range) with a harvested default of 0; set it explicitly, higher values give smaller files and slower saves (unverified)",
+    "there is no transparency switch: transparent pixels are kept automatically, a background layer is not",
+    "no bit-depth or palette option: the output follows the document; for a PNG-8 use ExportOptionsSaveForWeb with PNG8 = true (unverified for Indexed Color documents)"
+   ],
+   "example": "var o = new PNGSaveOptions();\no.compression = 6;\no.interlaced = false;\napp.activeDocument.saveAs(new File('~/Desktop/logo.png'), o, true);",
+   "equivalents": {
+    "AI": "ExportOptionsPNG24",
+    "CDR": "PNGExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "compression range was claimed missing from the harvest; batch has 0-9 default 0; removed the unsupported '24/32-bit only' claim"
+   }
+  },
+  {
+   "name": "RawSaveOptions",
+   "id": "class:RawSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/RawSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving headerless Photoshop Raw (.raw): bare channel bytes with no dimensions stored, optionally including alpha and spot channels. For heightmaps and data exchange, not camera raw.",
+   "use_for": [
+    "export a greyscale heightmap for a game engine or terrain tool",
+    "dump channel data for scientific or custom pipelines"
+   ],
+   "avoid": [
+    "photos or anything another person will open: the file has no header",
+    "DNG / camera raw output: Photoshop cannot write those through this class"
+   ],
+   "how": "var o = new RawSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....raw'), o, asCopy). COM: _RawSaveOptions / coclass RawSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "alphaChannels",
+     "use": "include alpha channels in the data"
+    },
+    {
+     "name": "spotColors",
+     "use": "include spot channels in the data"
+    }
+   ],
+   "gotchas": [
+    "no width, height or depth is stored: record them, RawFormatOpenOptions needs them to read the file back",
+    "byte order and header size cannot be set here (unverified)",
+    "16-bit documents write 16-bit samples (unverified byte order)"
+   ],
+   "example": "var o = new RawSaveOptions();\no.alphaChannels = false;\no.spotColors = false;\napp.activeDocument.saveAs(new File('~/Desktop/height.raw'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "SGIRGBSaveOptions",
+   "id": "class:SGIRGBSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/SGIRGBSaveOptions",
+   "status": "current",
+   "confidence": "medium",
+   "summary": "Settings for saving the SGI RGB format (.sgi / .rgb) of Silicon Graphics workstations, still read by some VFX and 3D tools; options are alpha and spot channels.",
+   "use_for": [
+    "texture or plate hand-off to a legacy VFX / 3D tool that reads SGI files"
+   ],
+   "avoid": [
+    "general delivery: TIFF, PNG or EXR are more widely supported"
+   ],
+   "how": "var o = new SGIRGBSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....sgi'), o, asCopy). COM: _SGIRGBSaveOptions / coclass SGIRGBSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "alphaChannels",
+     "use": "write alpha channels"
+    },
+    {
+     "name": "spotColors",
+     "use": "write spot channels"
+    }
+   ],
+   "gotchas": [
+    "only alpha and spot channels are configurable; compression and depth follow the document (unverified)",
+    "few current design tools open SGI files"
+   ],
+   "example": "var o = new SGIRGBSaveOptions();\no.alphaChannels = true;\no.spotColors = false;\napp.activeDocument.saveAs(new File('~/Desktop/plate.sgi'), o, true);",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TargaSaveOptions",
+   "id": "class:TargaSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/TargaSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving a Targa (TGA) file: 16, 24 or 32 bits per pixel, alpha channel and RLE compression. Common for game textures and video titling with alpha.",
+   "use_for": [
+    "game textures with alpha for engines that read TGA",
+    "lower-third or title graphics with alpha for older video systems",
+    "image sequences for legacy 3D renderers"
+   ],
+   "avoid": [
+    "web or print: use PNG, JPEG or TIFF"
+   ],
+   "how": "var o = new TargaSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....tga'), o, asCopy). COM: _TargaSaveOptions / coclass TargaSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "resolution",
+     "use": "bits per pixel: SIXTEEN, TWENTYFOUR or THIRTYTWO (not ppi); harvested default TWENTYFOUR"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "write the alpha channel"
+    },
+    {
+     "name": "rleCompression",
+     "use": "RLE compression; harvested default true"
+    }
+   ],
+   "gotchas": [
+    "resolution means bits per pixel here, not ppi",
+    "alpha is written only at THIRTYTWO with alphaChannels true, and it comes from an alpha channel rather than from layer transparency (unverified)",
+    "some engines mishandle RLE-compressed TGA; turn it off if the texture loads garbled (unverified)"
+   ],
+   "example": "var o = new TargaSaveOptions();\no.resolution = TargaBitsPerPixels.THIRTYTWO;\no.alphaChannels = true;\no.rleCompression = true;\napp.activeDocument.saveAs(new File('~/Desktop/title.tga'), o, true);",
+   "equivalents": {
+    "CDR": "TGAExport"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested defaults (TWENTYFOUR, rleCompression true) that the alpha and RLE gotchas depend on"
+   }
+  },
+  {
+   "name": "TiffSaveOptions",
+   "id": "class:TiffSaveOptions",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for specifying options when saving documents/TiffSaveOptions",
+   "status": "current",
+   "confidence": "high",
+   "summary": "Settings for saving TIFF: image compression (none, LZW, ZIP, JPEG) and JPEG quality, Photoshop layers and their compression, alpha and spot channels, transparency, notes, colour profile, byte order, image pyramid and channel interleaving.",
+   "use_for": [
+    "print-ready CMYK TIFF for a printer or a layout app",
+    "a layered TIFF master that still opens flat in other apps",
+    "lossless archival scans with LZW or ZIP"
+   ],
+   "avoid": [
+    "web delivery: JPEG or PNG",
+    "very large layered masters: PSB keeps layers more efficiently (unverified)"
+   ],
+   "how": "var o = new TiffSaveOptions(); set the options, then app.activeDocument.saveAs(new File('....tif'), o, asCopy). COM: _TiffSaveOptions / coclass TiffSaveOptions, used with Document.SaveAs.",
+   "key_members": [
+    {
+     "name": "imageCompression",
+     "use": "NONE, TIFFLZW, TIFFZIP or JPEG"
+    },
+    {
+     "name": "jpegQuality",
+     "use": "0 to 12, JPEG compression only"
+    },
+    {
+     "name": "layers",
+     "use": "keep Photoshop layers inside the TIFF"
+    },
+    {
+     "name": "layerCompression",
+     "use": "RLE or ZIP for the layer data, only when layers = true"
+    },
+    {
+     "name": "alphaChannels",
+     "use": "save alpha channels"
+    },
+    {
+     "name": "transparency",
+     "use": "save transparency as an extra alpha channel for other apps"
+    },
+    {
+     "name": "spotColors",
+     "use": "save spot channels"
+    },
+    {
+     "name": "embedColorProfile",
+     "use": "embed the colour profile"
+    },
+    {
+     "name": "annotations",
+     "use": "save notes"
+    },
+    {
+     "name": "byteOrder",
+     "use": "IBM (PC) or MACOS; defaults to the running OS"
+    },
+    {
+     "name": "saveImagePyramid",
+     "use": "store multi-resolution data"
+    },
+    {
+     "name": "interleaveChannels",
+     "use": "interleaved channel order"
+    }
+   ],
+   "gotchas": [
+    "jpegQuality (0-12) only applies with JPEG imageCompression (harvest)",
+    "layers = true stores Photoshop layer data that other apps ignore and that inflates the file; layerCompression only matters then",
+    "the harvest names the compression enum TiffEncodingType; the ExtendScript constant object is believed to be TIFFEncoding (unverified)",
+    "transparency adds an alpha channel some RIPs or layout apps treat as a mask (unverified)"
+   ],
+   "example": "var o = new TiffSaveOptions();\no.imageCompression = TIFFEncoding.TIFFLZW;   // enum object name unverified\no.layers = false;\no.alphaChannels = false;\no.embedColorProfile = true;\napp.activeDocument.saveAs(new File('~/Desktop/print.tif'), o, true);",
+   "equivalents": {
+    "AI": "ExportOptionsTIFF",
+    "CDR": "StructExportOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PathItem",
+   "id": "class:PathItem",
+   "app": "PS",
+   "kind": "ps_api",
+   "path": "Classes for working with art path items/PathItem",
+   "status": "current",
+   "confidence": "high",
+   "summary": "One path in the Paths panel (saved path, work path, clipping path, vector or text mask): read its sub-paths and kind, turn it into a selection, fill or stroke it with paint on the active layer, or make it the document's clipping path.",
+   "use_for": [
+    "cut-out selection from a client's clipping path for background removal",
+    "stroke a pen path with a brush for hand-drawn lines, signatures or route maps",
+    "set a clipping path on product shots before EPS / TIFF export",
+    "fill a vector outline with a brand colour on a pixel layer"
+   ],
+   "avoid": [
+    "editable vector artwork: fillPath and strokePath paint pixels; use shape layers or Illustrator for vectors",
+    "precise geometry editing: path points are read through subPathItems; heavy path work is easier in Illustrator"
+   ],
+   "how": "Reached through the document's pathItems collection (app.activeDocument.pathItems[0]); new paths come from PathItems.add(name, entirePath). COM: Document.PathItems.Item(1), with Delete instead of remove.",
+   "key_members": [
+    {
+     "name": "name",
+     "use": "name in the Paths panel"
+    },
+    {
+     "name": "kind",
+     "use": "NORMALPATH, CLIPPINGPATH, WORKPATH, VECTORMASK or TEXTMASK"
+    },
+    {
+     "name": "subPathItems",
+     "use": "the sub-paths (and through them the points) that make up the path"
+    },
+    {
+     "name": "makeSelection",
+     "use": "selection from the path: feather, antiAlias, SelectionType"
+    },
+    {
+     "name": "fillPath",
+     "use": "fill the enclosed area: colour, blend mode, opacity, feather ..."
+    },
+    {
+     "name": "strokePath",
+     "use": "stroke with a painting tool (ToolType), optionally simulating pressure"
+    },
+    {
+     "name": "makeClippingPath",
+     "use": "make this the document's clipping path, with a flatness value"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the path, optionally under a new name"
+    },
+    {
+     "name": "select",
+     "use": "make this the active path"
+    },
+    {
+     "name": "deselect",
+     "use": "deselect paths"
+    },
+    {
+     "name": "remove",
+     "use": "delete the path (COM: Delete)"
+    },
+    {
+     "name": "parent",
+     "use": "the containing document"
+    },
+    {
+     "name": "typename",
+     "use": "class name 'PathItem'"
+    }
+   ],
+   "gotchas": [
+    "fillPath and strokePath paint on the active layer, which must be a pixel layer (unverified error otherwise)",
+    "strokePath uses the chosen tool's current brush (size, hardness); set the brush before calling",
+    "the work path (kind WORKPATH) is temporary and the next pen drawing replaces it; duplicate it to keep it (unverified)",
+    "the harvest lists add and removeAll on PathItem and two duplicate signatures; add belongs to the PathItems collection, and COM uses Delete where ExtendScript uses remove (harvest diff)",
+    "makeSelection feather is in pixels; SelectionType REPLACE, EXTEND, DIMINISH or INTERSECT"
+   ],
+   "example": "var doc = app.activeDocument;\nvar p = doc.pathItems[0];\np.makeSelection(1, true, SelectionType.REPLACE);\np.fillPath(app.foregroundColor, ColorBlendMode.NORMAL, 100, false, 0, true, true);\np.strokePath(ToolType.BRUSH, false);\np.makeClippingPath(0.5);",
+   "equivalents": {
+    "AI": "PathItem",
+    "CDR": "VGCore/Curve"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  }
+ ]
+}

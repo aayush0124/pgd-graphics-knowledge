@@ -1,0 +1,703 @@
+{
+ "cards": [
+  {
+   "name": "Wireframe",
+   "id": "lens:cdrLensWireframe",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Lens/Wireframe",
+   "status": "current",
+   "summary": "Lens (a closed shape placed over the artwork) that redraws everything seen through it in one uniform outline colour and one uniform fill colour, so the area inside the lens looks like a flat, colour-coded wireframe / x-ray drawing while the artwork itself stays untouched. Not checked in this harvest: that Color1 is the dialog's Outline colour and Color2 its Fill colour (from general knowledge of the lens dialog), and how bitmaps under the lens are drawn.",
+   "use_for": [
+    "x-ray / blueprint reveal inside a circle or magnifier shape over an illustration or product drawing",
+    "cut-away panel on an infographic that shows the construction outlines of the art behind it",
+    "flat two-colour silhouette of part of a logo for a before/after split"
+   ],
+   "avoid": [
+    "you want the shapes' real outlines with their own fills kept: the lens recolours everything under it uniformly; use Contour or an Outline Pen on a copy instead",
+    "RateOrMagnification and ColorMapPalette are shared CreateLens arguments used by other lens types (Transparency, Magnify, Color Map ...); leave them at their defaults for Wireframe",
+    "the lens object must be a closed vector shape; an open curve cannot carry a lens",
+    "the result is live and depends on what sits under the lens: moving the lens or the art changes it"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "wireframe",
+    "outline view",
+    "x-ray",
+    "blueprint",
+    "see-through",
+    "two-colour silhouette",
+    "flat recolour",
+    "cut-away"
+   ],
+   "params": [
+    {
+     "name": "Color1",
+     "does": "outline colour given to every object under the lens (the dialog's Outline colour, assumed)",
+     "typical": "a strong contrasting colour such as red or cyan"
+    },
+    {
+     "name": "Color2",
+     "does": "fill colour given to every object under the lens (the dialog's Fill colour, assumed); white or the page colour gives a line-drawing look",
+     "typical": "white for a clean wireframe, a pale tint for a blueprint panel"
+    }
+   ],
+   "demo_settings": {
+    "Color1": "#FF0000",
+    "Color2": "#BFE8FF"
+   },
+   "pairs_with": [
+    "a circle or rounded rectangle drawn over the art as the lens shape for a magnifier-style reveal",
+    "a Magnify lens on a second shape for an enlarged x-ray inset",
+    "a visible outline on the lens shape so the reveal panel reads as a frame"
+   ],
+   "scripting": "Draw the lens shape over the art (e.g. Set s = ActiveLayer.CreateEllipse2(x, y, r)), then Set e = s.CreateLens(cdrLensWireframe, 50, CreateRGBColor(255, 0, 0), CreateRGBColor(191, 232, 255), 0) (cdrLensWireframe = 2; signature Shape.CreateLens(Type: cdrLensType, RateOrMagnification: double = 50.0, Color1: IVGColor* = 0, Color2: IVGColor* = 0, ColorMapPalette: cdrFountainFillBlendType = 0) -> IVGEffect). Which colour argument is the outline and which the fill is not harvested; to set them without guessing, use the lens object the call returns: e.Lens.OutlineColor / e.Lens.FillColor (IVGColor) and e.Lens.UseOutlineColor / e.Lens.UseFillColor (bool), all read-write members of IVGEffectLens in the typelib. From Python pass None for an omitted colour: the audit's first run, with the optional arguments left out, failed ('The Python instance can not be converted to a COM object'); the passing run sent the harvested defaults explicitly (args [2, 50.0, None, None, 0]) and read back an IVGEffect of type 9 (cdrLens) with LensType 2. The colour arguments were not exercised. The menu GUID 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 is Effects > Lens, a check button that toggles the Lens docker (where Wireframe is picked from the lens list); InvokeItem on it does not apply Wireframe.",
+   "scriptable": "yes",
+   "non_destructive": "yes: a lens is a live effect on its own shape; the artwork underneath is not changed and deleting or editing the lens shape restores or updates the view",
+   "cost": "light: recoloured live on redraw; many lenses over complex art or large bitmaps slow screen redraw and export",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: the InvokeItem GUID is the Effects > Lens docker toggle, not a Wireframe apply; scripting: the audit did not succeed with the optional arguments omitted (that run failed); it passed with the defaults sent explicitly [2, 50.0, None, None, 0]; scripting: added the harvested IVGEffectLens OutlineColor / FillColor / UseOutlineColor / UseFillColor members, which set the colours without relying on the unharvested Color1/Color2 roles; demo Color2 #FFFFFF -> #BFE8FF: a white fill on the plate's white page would make the star, circle and type simply vanish under the lens (unless outlines get added), which reads as deleted art, not a recolour; a pale cyan matches no plate colour and stays unmistakable even if the two colour roles are swapped"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/dfab8f127594.png",
+    "note": "Inside the lens every object is redrawn flat: the photo bitmap becomes one light blue (#BFE8FF) rectangle and the orange box a light blue fill with a thin red outline, the zigzag red, which confirms Color1 = outline and Color2 = fill.",
+    "rerender": false
+   }
+  },
+  {
+   "name": "3-D Stereo Noise",
+   "id": "a995ce40-5afd-4cfc-9a11-763efea3ba62",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/3-D Stereo Noise",
+   "status": "current",
+   "summary": "Noise effect that turns the image into a random-dot autostereogram (the 'Magic Eye' look): the visible picture is replaced by a field of dotty noise in which the image's brightness is encoded as depth, seen only when the viewer looks through the print wall-eyed. Depth sets how far the hidden image stands out; Show dots adds two focus dots as a viewing aid. How the plate's soft tones map to depth was not tested here.",
+   "use_for": [
+    "magic-eye puzzle poster or social post hiding a word or logo",
+    "retro 90s novelty print, packaging or merch easter egg",
+    "dense dot-noise background where the hidden shape is a bonus"
+   ],
+   "avoid": [
+    "soft, mid-grey photos (like the test plate) give a muddy hidden image; feed it a simple high-contrast grayscale source such as bold white type or a logo silhouette on black",
+    "it destroys the visible picture: for grain over a photo you still need to read use Add Noise",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu",
+    "this effect's command string was not applied in a harvest test, and the bool encoding for ShowDots (1/0) is not proven"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "stereogram",
+    "magic eye",
+    "random dot",
+    "autostereogram",
+    "3D illusion",
+    "hidden image",
+    "dot noise",
+    "optical illusion"
+   ],
+   "params": [
+    {
+     "name": "Depth",
+     "does": "how strongly the hidden image is pushed in depth; higher values give a deeper, more pronounced 3-D shape (and are harder to fuse)",
+     "typical": "3-6 (default 3, range 1-9)"
+    },
+    {
+     "name": "Show dots",
+     "does": "adds two focus dots to the image as a viewing aid for finding the 3-D picture (where they are placed was not checked)",
+     "typical": "on for print and social posts"
+    }
+   ],
+   "demo_settings": {
+    "DepthValue": 6,
+    "ShowDots": true
+   },
+   "pairs_with": [
+    "Effects > Adjust > Brightness/Contrast/Intensity or Bitmaps > Mode > Grayscale (8-bit) first, so the depth source is high-contrast",
+    "Object > Convert to Bitmap on bold type or a logo to make the hidden-image source",
+    "a caption such as 'relax your eyes' on the layout so viewers know to look"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"3-D Stereo Noise\", \"ThreeDStereoNoiseEffect DepthValue=6,ShowDots=1\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'ThreeDStereoNoiseEffect DepthValue=<number>,ShowDots=<bool>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"a995ce40-5afd-4cfc-9a11-763efea3ba62\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnThreeDStereoNoise and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it in the Properties docker Effects stack (ApplyOrDeleteEffect:ThreeDStereoNoiseEffect); whether the scripted Bitmap.ApplyBitmapEffect path adds a stack entry or bakes pixels was not checked",
+   "cost": "moderate: one per-pixel pass at the bitmap's resolution; seconds on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; pairs_with: 'Bitmaps > Convert to Bitmap' -> 'Object > Convert to Bitmap' (harvested path); grayscale conversion named as Bitmaps > Mode > Grayscale (8-bit); Show dots: dropped the unsourced 'near the top of the image' position"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/874305ab2a4d.png",
+    "crop": "gallery/cdr_effect/874305ab2a4d_1to1.png",
+    "note": "New frame (random effect, so it differs from the earlier one): the whole plate is a random-dot autostereogram field with faint repeating bands and the two focus dots in a small white box at the bottom; the 1:1 crop shows the field is pure black and white dots, so its grey look at 960x540 is the downsample; the dropped list is not evidence (repeat noise 70).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/874305ab2a4d.png",
+     "note": "The whole plate is replaced by a grey random-dot autostereogram field with faint repeating bands and the two black focus dots in a small white box at the bottom (Show dots on); the 'dropped' list is not evidence, because the dots are random (repeat-render noise 70 equals every probe).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Add Noise",
+   "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Add Noise",
+   "status": "current",
+   "summary": "Adds random grain to the image. NoiseMode sets the grain distribution (Gaussian: natural film-like grain with more light and dark pixels; Spike: thinner, lighter specks; Uniform: even, flat random grain), Level its strength and Density how many pixels get it; ColorMode makes it brightness-only grain (Intensity), multi-coloured noise (Random) or noise in one chosen colour (Single, picked in ColorItem).",
+   "use_for": [
+    "film-grain finish that unifies a composite or a flat AI-generated image",
+    "grit and texture for a poster, album cover or retro print look",
+    "break up banding in smooth gradients before print or export"
+   ],
+   "avoid": [
+    "high Level on skin and faces looks dirty rather than filmic; keep Level 10-25 with Gaussian + Intensity for subtle grain",
+    "Random colour mode at high Level reads as digital sensor noise, not film grain; use Intensity for classic grain",
+    "Single uses the ColorItem colour, whose encoding in the command string is not harvested: set it from the dialog or Properties docker",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "addNoise",
+    "AI": "Effect/Texture/Grain"
+   },
+   "look": [
+    "film grain",
+    "noise",
+    "grainy",
+    "grit",
+    "speckle",
+    "colour noise",
+    "analog texture",
+    "retro print"
+   ],
+   "params": [
+    {
+     "name": "NoiseMode",
+     "does": "grain distribution: Gaussian (natural film grain), Spike (thinner, lighter specks), Uniform (even random grain)",
+     "typical": "Gaussian"
+    },
+    {
+     "name": "Level",
+     "does": "strength of the noise, i.e. how far noisy pixels move from their original value",
+     "typical": "10-25 subtle grain, 50-80 heavy grit (default 50)"
+    },
+    {
+     "name": "Density",
+     "does": "share of pixels that receive noise",
+     "typical": "40-80 (default 50)"
+    },
+    {
+     "name": "ColorMode",
+     "does": "Intensity = brightness-only grain, Random = multi-coloured noise, Single = noise in the ColorItem colour",
+     "typical": "Intensity for film grain, Random for a glitchy colour look"
+    },
+    {
+     "name": "ColorItem",
+     "does": "the noise colour used when ColorMode is Single",
+     "typical": "a brand colour or warm sepia for tinted grain"
+    }
+   ],
+   "demo_settings": {
+    "NoiseMode": "Gaussian",
+    "Level": 80,
+    "Density": 80,
+    "ColorMode": "Random"
+   },
+   "pairs_with": [
+    "Gaussian Blur at a very small radius afterwards for softer, rounder grain",
+    "Effects > Adjust > Brightness/Contrast/Intensity to set contrast before adding grain",
+    "a transparent duplicate of the original bitmap on top to dial the grain back"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Add Noise\", \"AddNoiseEffect NoiseMode=Gaussian,Level=80,Density=80,ColorMode=Random\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'AddNoiseEffect NoiseMode=<enum>,Level=<number>,Density=<number>,ColorMode=<enum>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"b08950be-822b-491b-8fa8-74821cef12e8\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnAddNoise and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:AddNoiseEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "light: a single per-pixel pass; near-instant on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; Spike no longer described as 'sparse' (how many pixels get noise is Density, not the mode)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/62abfa3e25c5.png",
+    "crop": "gallery/cdr_effect/62abfa3e25c5_1to1.png",
+    "note": "New frame (random, 1.1 levels from the earlier one): fine grain over the whole plate with the picture otherwise unchanged; the 1:1 crop shows multicoloured per-pixel noise (swatches, ramp and black band speckled in red, green and blue, up to about 100 levels); which NoiseMode and ColorMode keys were read is not confirmed (random effect, dropped list not evidence).",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/62abfa3e25c5.png",
+     "note": "Fine multicoloured random grain covers the whole plate (clearly visible at 5x on the swatches and the dark areas) with the picture unchanged otherwise; Add Noise is random (repeat-render noise 14.7, probes 12-15), so the 'dropped' list cannot be trusted and which NoiseMode was used is not confirmed.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Maximum",
+   "id": "f4071ae8-98e1-4089-84c2-acee9a7226d5",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Maximum",
+   "status": "current",
+   "summary": "Neighbourhood (dilate) filter that replaces each pixel with the lightest value found within Radius pixels: light areas spread and dark detail shrinks, so white type and hairlines get bolder, thin dark lines thin out or vanish, and at larger radii the image lightens into blocky light patches. Percentage sets how much of that result is applied.",
+   "use_for": [
+    "thicken white or light lettering and line art in a scanned bitmap",
+    "spread (dilate) a white mask outward before using it as a cut-out or transparency source",
+    "remove small dark specks (pepper noise) on a light background"
+   ],
+   "avoid": [
+    "it lightens the whole image and blocks out fine detail at large radii; keep Radius 1-3 for clean-up",
+    "to thicken dark lines or shrink light ones use Minimum instead",
+    "for noise removal without shifting light and dark use Median",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "maximum"
+   },
+   "look": [
+    "dilate",
+    "spread highlights",
+    "thicken white",
+    "lighten",
+    "blocky",
+    "choke dark detail",
+    "morphology"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the effect: how much of the maximum-filtered result replaces the original",
+     "typical": "100 for clean-up, 50-80 for a gentler spread"
+    },
+    {
+     "name": "Radius",
+     "does": "size of the neighbourhood searched for the lightest pixel; each step widens light areas by about a pixel",
+     "typical": "1-3 for clean-up, 6-10 for a bold graphic effect (range 1-20)"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Radius": 8
+   },
+   "pairs_with": [
+    "Minimum afterwards at the same Radius (a morphological close/open) to remove specks while keeping shape size",
+    "Effects > Transform > Threshold before it when cleaning line art",
+    "Bitmaps > Outline Trace / PowerTRACE after cleaning a scan"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Maximum\", \"MaximumEffect Percentage=100,Radius=8\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'MaximumEffect Percentage=<number>,Radius=<number>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"f4071ae8-98e1-4089-84c2-acee9a7226d5\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnMaximum and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:MaximumEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "light to moderate: a per-pixel neighbourhood pass that slows as Radius grows; seconds at most on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; pairs_with: 'Threshold or Black and White conversion' named as the real Effects > Transform > Threshold item (a 1-bit Black and White bitmap may not take bitmap effects at all)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/5e3f86128fc4.png",
+    "crop": "gallery/cdr_effect/5e3f86128fc4_1to1.png",
+    "note": "1:1 crop: light areas spread about 8 px: the hairlines fuse into one solid white block, the light ramp widens over the colour bars, the small bright highlights bloom into blocky light patches and the crop lightens (mean 150 vs 113): the dilate filter described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/5e3f86128fc4.png",
+     "note": "Light areas spread: the white type swells into solid blocks, the hairlines merge into one white bar, highlights in the radial detail, mid-tones and dark-red blocks bloom into blocky light patches and the frame gets lighter (mean 153 vs 133).",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Median",
+   "id": "5699e589-2506-4e4c-94d6-80e434816678",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Median",
+   "status": "current",
+   "summary": "Noise filter that replaces each pixel with the median value of its neighbours within Radius: isolated specks and fine texture disappear while strong edges stay fairly crisp; at large radii the image flattens into smooth, rounded, painterly blobs and thin lines and small type vanish.",
+   "use_for": [
+    "remove salt-and-pepper specks, dust or JPEG mosquito noise from a scan",
+    "smooth photo or AI-image texture before tracing it to vectors (PowerTRACE) for cleaner shapes",
+    "flat, simplified painterly look from a photo at a high radius"
+   ],
+   "avoid": [
+    "hairlines, thin strokes and small text disappear even at moderate radii; mask or exclude them",
+    "you want an even soft-focus blur: use Gaussian Blur instead",
+    "large radii on faces flatten features into a waxy, plastic look",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "median"
+   },
+   "look": [
+    "despeckle",
+    "smooth",
+    "noise removal",
+    "painterly",
+    "rounded blobs",
+    "flattened",
+    "clean scan"
+   ],
+   "params": [
+    {
+     "name": "Radius",
+     "does": "size of the neighbourhood whose median replaces each pixel; larger values remove bigger specks and flatten more detail",
+     "typical": "1-3 for clean-up, 8-15 for a painterly flattening (range 1-20)"
+    }
+   ],
+   "demo_settings": {
+    "Radius": 12
+   },
+   "pairs_with": [
+    "Bitmaps > Outline Trace / PowerTRACE after it for smoother traced shapes",
+    "Sharpen or Unsharp Mask afterwards at a low amount to restore edge crispness",
+    "Posterize after a high-radius Median for a flat poster look"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Median\", \"MedianEffect Radius=12\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'MedianEffect Radius=<number>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"5699e589-2506-4e4c-94d6-80e434816678\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnMedian and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:MedianEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "moderate: a sorting neighbourhood pass that slows noticeably as Radius grows; seconds on a 1920x1080 plate at high radii",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/8a0cae24a698.png",
+    "crop": "gallery/cdr_effect/8a0cae24a698_1to1.png",
+    "note": "1:1 crop: the hairlines vanish into the black band except one merged bar at the bottom, the swatch corners round off and the panel detail turns into smooth rounded blobs: the large-radius median look described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/8a0cae24a698.png",
+     "note": "Specks and fine texture are gone and the photo looks smooth and slightly painterly, while the PGD type is broken into blobs and the hairlines merge into one line, the large-radius median look described.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Minimum",
+   "id": "2cb04839-02ba-49f0-a959-9a480d510951",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Minimum",
+   "status": "current",
+   "summary": "Neighbourhood (erode) filter that replaces each pixel with the darkest value found within Radius pixels: dark areas spread and light detail shrinks, so dark lines and outlines get bolder, white type and hairlines thin out or disappear, and at larger radii the image darkens into blocky dark patches. Percentage sets how much of that result is applied.",
+   "use_for": [
+    "bolden thin dark line art or text in a scanned bitmap",
+    "choke (shrink) a white mask so its edge sits inside the subject",
+    "remove small light specks (salt noise) on a dark background"
+   ],
+   "avoid": [
+    "it darkens the whole image and swallows light detail at large radii; keep Radius 1-3 for clean-up",
+    "to thicken light shapes or white type use Maximum instead",
+    "for neutral noise removal use Median",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "minimum"
+   },
+   "look": [
+    "erode",
+    "spread shadows",
+    "thicken dark lines",
+    "darken",
+    "blocky",
+    "choke highlights",
+    "morphology"
+   ],
+   "params": [
+    {
+     "name": "Percentage",
+     "does": "strength of the effect: how much of the minimum-filtered result replaces the original",
+     "typical": "100 for clean-up, 50-80 for a gentler spread"
+    },
+    {
+     "name": "Radius",
+     "does": "size of the neighbourhood searched for the darkest pixel; each step widens dark areas by about a pixel",
+     "typical": "1-3 for clean-up, 6-10 for a bold graphic effect (range 1-20)"
+    }
+   ],
+   "demo_settings": {
+    "Percentage": 100,
+    "Radius": 8
+   },
+   "pairs_with": [
+    "Maximum afterwards at the same Radius (a morphological open/close) to remove specks while keeping shape size",
+    "Effects > Transform > Threshold before it when cleaning line art",
+    "Bitmaps > Outline Trace / PowerTRACE after bolding faint scanned lines"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Minimum\", \"MinimumEffect Percentage=100,Radius=8\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'MinimumEffect Percentage=<number>,Radius=<number>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"2cb04839-02ba-49f0-a959-9a480d510951\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnMinimum and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:MinimumEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "light to moderate: a per-pixel neighbourhood pass that slows as Radius grows; seconds at most on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; pairs_with: 'Threshold or Black and White conversion' named as the real Effects > Transform > Threshold item (a 1-bit Black and White bitmap may not take bitmap effects at all)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/5453a43961a2.png",
+    "crop": "gallery/cdr_effect/5453a43961a2_1to1.png",
+    "note": "1:1 crop: dark areas spread about 8 px: every hairline disappears into the black band, dark blocky patches eat into the dark-red panel and the colour bars, and the crop darkens (mean 83 vs 113): the erode filter described.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/5453a43961a2.png",
+     "note": "Dark areas spread: the white PGD type and the hairlines disappear entirely, the radial detail and mid-tones get blocky dark patches and the whole frame darkens (mean 114 vs 133), the erode filter described.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Remove Moiré",
+   "id": "9431fae7-3451-4f65-9c80-0f2f91770097",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Remove Moiré",
+   "status": "current",
+   "summary": "Clean-up effect for scans of printed pictures: it suppresses moiré, the wavy interference patterns left when a halftone screen is scanned, photographed or resampled, by smoothing the screen frequency. Amount sets how strongly the pattern is removed, OptimizeMode trades Speed for Quality, and Output sets a (lower) output resolution; OriginalResolution only displays the current resolution. On an image without moiré, such as the soft test plate, the visible change is a slight softening of fine edges.",
+   "use_for": [
+    "descreen a scanned magazine or newspaper photo before reusing it in a layout",
+    "clean a photo of a screen or a printed poster that shows interference ripples",
+    "prepare a scanned printed logo or picture for reprint so the old screen does not clash with the new one"
+   ],
+   "avoid": [
+    "clean digital photos without moiré: it only softens detail. On the test plate the audit measured tiny changes (Amount=10 moved the sampled pixels 0.6 levels on average, Amount=1.5 0.49), so the demo frame will look almost identical to the plate",
+    "lowering Output resamples the bitmap to a lower resolution (from general knowledge, not tested here); keep it at the original value for print",
+    "OriginalResolution is a status readout, not a setting: leave it out of scripts",
+    "the scripted path accepted Amount=50 (beyond the dialog's 10) and gave different pixels; stay inside the dialog range 0-10",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "descreen",
+    "moire removal",
+    "halftone clean-up",
+    "scan clean-up",
+    "anti-moire",
+    "soften pattern"
+   ],
+   "params": [
+    {
+     "name": "Amount",
+     "does": "how strongly the moiré pattern is smoothed away; higher values also soften more real detail",
+     "typical": "4-8 for typical scans (default 6, range 0-10)"
+    },
+    {
+     "name": "OptimizeMode",
+     "does": "Speed for a quick pass, Quality for a slower, cleaner result",
+     "typical": "Quality for final output"
+    },
+    {
+     "name": "Output",
+     "does": "output resolution in dpi; values below the original resample the bitmap down",
+     "typical": "keep equal to the original resolution (default 300)"
+    }
+   ],
+   "demo_settings": {
+    "Amount": 8.5,
+    "OptimizeMode": "Quality"
+   },
+   "pairs_with": [
+    "Gaussian Blur at a small radius on stubborn screens, then Unsharp Mask to recover edges",
+    "Effects > Adjust > Brightness/Contrast/Intensity after descreening a faded scan",
+    "Remove Noise or Median for leftover scanner speckle"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Remove Moire\", \"RemoveMoireEffect Amount=8.5,OptimizeMode=Quality\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'RemoveMoireEffect Amount=<number>,OptimizeMode=<enum>,OutputResolution=<int>'). The audit proved the Amount key is honoured ('RemoveMoireEffect Amount=1.5' vs 'Amount=8.5' gave different, repeatable pixels); OptimizeMode and OutputResolution follow the same rule but were not each applied. A misspelled key does not fail: the audit's 'RemoveMoireEffect NoSuchKeyAmount=8.5' still changed the plate (0.49 mean levels, the same as Amount=1.5), so a typo silently runs the effect with a fallback amount; ApplyBitmapEffect also returns OK for strings it does not recognise at all (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"9431fae7-3451-4f65-9c80-0f2f91770097\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnRemoveMoire and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:RemoveMoireEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "moderate: Quality mode is slower than Speed; seconds on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; demo / scripting Amount 10 -> 8.5: the audit's exact string 'RemoveMoireEffect Amount=8.5' changed the plate at least 1.18 mean levels (A/B 1.67 minus base/A 0.49), about twice what Amount=10 did (0.6), so 8.5 is both proven and the most visible measured value; avoid line 1 now quotes the audit's measured change sizes instead of 'shows little change'; scripting: added that an unknown key is ignored (the BADKEY audit string still ran the effect)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/cdr_effect/1a8c54f65fe8.png",
+    "crop": "gallery/cdr_effect/1a8c54f65fe8_1to1.png",
+    "note": "1:1 crop: a slight softening with a faint dark undershoot at hard edges (colour-bar edge 30 | 122 -> 21, 54, 99, 125; each hairline spreads by a pixel) and the photo resampled about half a pixel to the right; the plate has no halftone pattern, so the descreen itself is not shown, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/cdr_effect/1a8c54f65fe8.png",
+     "note": "As the card predicts for a plate without moire, the change is only a slight softening of fine edges (the PGD type and hairlines, type band diff 7, body diff 1.5); the plate has no halftone pattern, so the descreen itself cannot be shown on it.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Remove Noise",
+   "id": "d3918d4f-aa47-4722-a07d-362f78301c57",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Remove Noise",
+   "status": "current",
+   "summary": "Noise-reduction effect that compares each pixel with its neighbours and averages away the speckle left by scanning or video capture, softening the image slightly; Threshold sets the cut-off for what is treated as noise and Auto picks it from the image. On the 2026-10 renders Threshold 255 changed no pixel and Threshold 0 deleted 1-px-wide detail (a 1-px hairline) while the photo moved by only 0.2 levels, so a lower Threshold removes more; whether Threshold is ignored while Auto is on was not tested (the script ignored Auto).",
+   "use_for": [
+    "clean grain and speckle from a scanned photo or a video frame grab before print",
+    "smooth a noisy low-light photo before tracing or posterizing it",
+    "pre-clean a bitmap before sharpening so the noise is not sharpened too"
+   ],
+   "avoid": [
+    "it softens real detail as well; for heavy noise with better edge keeping try Median at a small radius, or compare options in Tune Noise",
+    "isolated dust spots and scratches on a scan: Effects > Correction > Dust and Scratch is CorelDRAW's own counterpart of Photoshop's Dust & Scratches",
+    "already soft images (like the test plate) change very little; the effect shows mostly on crisp edges and hairlines",
+    "expecting a visibly smoother photo: even at Threshold 0 the render changed only 1-px detail; for stronger clean-up use Median at a small radius or Smart Blur",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "despeckle"
+   },
+   "look": [
+    "denoise",
+    "despeckle",
+    "noise reduction",
+    "smooth",
+    "soften",
+    "scan clean-up"
+   ],
+   "params": [
+    {
+     "name": "Threshold",
+     "does": "cut-off that decides which pixel differences count as noise; lower removes more (255 changed nothing on the render, 0 deleted a 1-px hairline and kept 2-px lines)",
+     "typical": "default 127; lower toward 0 for a stronger clean-up (range 0-255)"
+    },
+    {
+     "name": "Auto",
+     "does": "lets the effect choose the threshold from the image; turn it off to set Threshold yourself",
+     "typical": "on for quick clean-up, off when tuning by eye"
+    }
+   ],
+   "demo_settings": {
+    "Threshold": 0,
+    "Auto": false
+   },
+   "pairs_with": [
+    "Unsharp Mask or Sharpen afterwards at a low amount to restore crispness",
+    "Remove Moiré first on scans of printed matter",
+    "Median for stubborn isolated specks"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Remove Noise\", \"RemoveNoiseEffect Threshold=0,Auto=0\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'RemoveNoiseEffect Threshold=<number>,Auto=<bool>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test and the bool encoding for Auto (1/0) is not proven. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"d3918d4f-aa47-4722-a07d-362f78301c57\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnRemoveNoise and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "yes",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:RemoveNoiseEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "light: a small-neighbourhood per-pixel pass; near-instant on a 1920x1080 plate",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; equivalents PS dustAndScratches -> despeckle: CorelDRAW has its own Effects/Correction/Dust and Scratch (the PS Dust & Scratches card's CDR equivalent), while the PS Despeckle card maps to this Remove Noise; avoid line added pointing to Dust and Scratch"
+   },
+   "verified": {
+    "verdict": "weak",
+    "frame": "gallery/cdr_effect/f0d1007c6028.png",
+    "crop": "gallery/cdr_effect/f0d1007c6028_1to1.png",
+    "note": "Threshold 0 (Auto dropped): the 960x540 frame matches ref_photo to the eye (mean 0.22); the 1:1 crop shows one clear change, the 1-px hairline deleted into the dark ground while the 2-6 px lines stay, and the photo area moves by only 0.24 levels on average (no pixel more than 13), so no visible softening.",
+    "rerender": false,
+    "second_opinion": "effect works, plate limit: the route applies (255 changed nothing, 0 removes 1-px detail, so lower = stronger) but the plate has no speckle to remove, so the clean-up the card describes is untested; 0 is already the strongest end.",
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'RemoveNoiseEffect Threshold=255,Auto=0'\"; Threshold 255 changed no pixel and was not a server fault; the card's own avoid says to try Threshold 0 if the demo shows no change; demo now Threshold 0.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Harness check: Threshold=255,Auto=0 returned without a server fault and changed nothing, so the call ran; the card's own avoid predicts the direction may be inverted, so Threshold 0 is a fair single test (inside 0-255); on the soft plate expect only the type and hairlines to change."
+     }
+    }
+   }
+  },
+  {
+   "name": "Tune Noise",
+   "id": "8170eccd-cdb9-40ed-9d90-059581d372c8",
+   "app": "CDR",
+   "kind": "cdr_effect",
+   "path": "Effects/Noise/Tune Noise",
+   "status": "needs_input",
+   "summary": "Interactive noise 'lab': the dialog shows thumbnail variations (More Spike, More Gaussian, More Uniform, Diffuse, Minimum, Median, Maximum, Jaggy Despeckle, Remove Noise) and each one you pick is added to the result, with Level and Density setting the size of each step, so grain and clean-up treatments can be combined by eye. The variation choices live in the ImageNode_* list boxes, whose values were not harvested; a script can set only Level and Density, and with no variation picked the result may be unchanged. Low confidence: the step behaviour is from general knowledge of Corel's tune dialogs, not tested here.",
+   "use_for": [
+    "try several grain and clean-up treatments side by side on a photo before committing to one",
+    "build a custom combined grain (e.g. more Gaussian plus Diffuse) for a gritty poster texture",
+    "quick combined despeckle and median clean-up on a scan, judged visually"
+   ],
+   "avoid": [
+    "for a repeatable scripted result use the single effects instead: Add Noise, Median, Minimum, Maximum, Remove Noise",
+    "the ImageNode_* choices have no harvested values: do not put them in scripts or specs",
+    "the demo render may show no change, because Level and Density alone pick no variation",
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu",
+    "scripts: no scripted form applies it (2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route): TuneNoiseEffect accepted every form and changed no pixel); open the dialog (menu route) and pick the thumbnails by hand"
+   ],
+   "confidence": "low",
+   "equivalents": {},
+   "look": [
+    "noise variations",
+    "grain",
+    "diffuse",
+    "despeckle",
+    "noise tuning",
+    "thumbnail preview"
+   ],
+   "params": [
+    {
+     "name": "Level",
+     "does": "strength of each variation step picked from the thumbnails",
+     "typical": "10-40 (default 10, range 1-100)"
+    },
+    {
+     "name": "Density",
+     "does": "how many pixels each noise step affects",
+     "typical": "10-40 (default 10, range 1-100)"
+    },
+    {
+     "name": "More Gaussian",
+     "does": "thumbnail that adds another step of Gaussian grain (choice values not harvested)",
+     "typical": "pick once or twice in the dialog for visible grain"
+    },
+    {
+     "name": "Median",
+     "does": "thumbnail that applies a median clean-up step (choice values not harvested)",
+     "typical": "pick in the dialog to smooth speckle"
+    }
+   ],
+   "demo_settings": {
+    "Level": 60,
+    "Density": 60
+   },
+   "pairs_with": [
+    "Add Noise or Median as the scriptable single-step versions of what you settled on here",
+    "Effects > Adjust > Brightness/Contrast/Intensity after heavy grain",
+    "Object > Convert to Bitmap on vector art before the scripted path"
+   ],
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Tune Noise\", \"TuneNoiseEffect Level=60,Density=60\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'TuneNoiseEffect Level=<number>,Density=<number>,ImageNode_Spike=<enum>,...,ImageNode_RemoveNoise=<enum>'). The ImageNode_* values are unknown, so the variation picks cannot be scripted; the command format is proven on 6 other effects but this effect's string was not applied in a harvest test. ApplyBitmapEffect returns OK even for a string it does not recognise (the harvest's Pixelate and Invert test strings changed no pixels), so compare the pixels before and after. Menu route: Application.FrameWork.Automation.InvokeItem \"8170eccd-cdb9-40ed-9d90-059581d372c8\" opens the effect's dialog (the item is bound to EffectsDialogFactoryDS OnTuneNoise and its caption ends in '...'), which needs a person to click OK, so it is not an unattended route.",
+   "scriptable": "partial",
+   "non_destructive": "from the menu yes: kept in the Properties docker Effects stack (ApplyOrDeleteEffect:TuneNoiseEffect); the scripted Bitmap.ApplyBitmapEffect path was not checked for a stack entry vs baked pixels",
+   "cost": "moderate: the dialog renders a preview thumbnail for every variation; the applied cost was not measured",
+   "review": {
+    "by": "adversarial",
+    "changes": "scripting: InvokeItem opens the effect's modal dialog (EffectsDialogFactoryDS binding, '...' caption), not a silent apply with the current values; added that ApplyBitmapEffect returns OK on an unrecognised string; pairs_with: 'Bitmaps > Convert to Bitmap' -> 'Object > Convert to Bitmap' (harvested path); summary: thumbnail name 'More Uniform noise' -> harvested 'More Uniform'; cost: dropped the unsourced 'one pass per picked variation'"
+   },
+   "verified": {
+    "verdict": "broken",
+    "frame": "",
+    "note": "Untested: no frame (failed.json); the 2026-10-13 probe (44 forms: ListSize plus per-step Effect_n / Step_n / Percentage_n / Level_n keys, the sub-effect command names, the dialog thumbnail guids, the data-source route) found no scripted form: TuneNoiseEffect accepted every form and changed no pixel, so the look the card describes is not shown by any render; status set to needs_input.",
+    "rerender": false,
+    "second_opinion": "harness, not the effect: the dialog (menu GUID) is the only route, so nothing a script sends can show the effect; untested, not wrong, and no re-render can fix it.",
+    "previous": {
+     "verdict": "broken",
+     "frame": "",
+     "note": "No frame: failed.json says \"RuntimeError: ApplyBitmapEffect changed no pixel of the plate (or raised RPC_E_SERVERFAULT) for every form tried: 'TuneNoiseEffect Level=60,Density=60 (server fault)'\"; harness, not the effect: no working scripted route was found, so the effect itself is untested; renderer: CrlFX.dll lists indexed keys (ListSize, Effect_%d, Level_%d, Density_%d), not probed yet (live chain not_done); Level / Density alone raised RPC_E_SERVERFAULT.",
+     "rerender": true,
+     "second_opinion": {
+      "agree": true,
+      "note": "Harness check: no frame exists, failed.json names the scripted route (every command form tried), not the effect, so 'broken' here means the render broke; the card text hedges the script route and makes no look claim from a frame. Indexed keys (Level_%d, Density_%d) are untried, so rerender stays true."
+     }
+    }
+   }
+  }
+ ]
+}

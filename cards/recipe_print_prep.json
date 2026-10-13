@@ -1,0 +1,983 @@
+{
+ "cards": [
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "CMYK conversion for press",
+   "id": "recipe:print_prep:cmyk_conversion",
+   "app": "multi",
+   "status": "current",
+   "summary": "RGB artwork and photos are converted to the printer's CMYK profile once, at the end, with out-of-gamut colours tamed first, so the press result matches the approved proof.",
+   "use_for": [
+    "offset and digital press jobs",
+    "brochures, posters and packaging that started in RGB",
+    "photos placed in print layouts"
+   ],
+   "avoid": [
+    "screen, web or social output: stay in RGB",
+    "converting back and forth: every conversion loses colour; keep an RGB master and convert a copy",
+    "brand colours with official CMYK builds: type the official values instead of trusting a conversion",
+    "converting before the printer names a profile: ask first (coated, uncoated and newsprint profiles differ a lot)"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2344",
+       "note": "Edit > Color Settings: CMYK working space = the printer's profile, or a regional Prepress preset (app.colorSettings = '<settings name>')."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1152",
+       "note": "Select > Color Range > Out Of Gamut (with View > Proof Setup set to that profile) to select the colours that will clip."
+      },
+      {
+       "kind": "ps_adjustment",
+       "id": "adjustmentLayer:vibrance",
+       "settings": {
+        "useLegacy": false,
+        "vibrance": -10,
+        "saturation": -15
+       },
+       "note": "Masked by that selection: lower saturation a little so clipped colours fall back into gamut smoothly. Photoshop adjustment step: not render-verified yet (the Photoshop adjustment gallery is still being built), so its confidence is capped at medium."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1213",
+       "note": "Edit > Convert to Profile: destination = the printer's CMYK profile, Intent Relative Colorimetric + Black Point Compensation (Perceptual for very saturated photos). DOM: doc.convertProfile(profile, Intent.RELATIVECOLORIMETRIC, true, false). Run it on a copy: the verified event flattened a layered document."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "doc-color-cmyk",
+       "note": "File > Document Color Mode > CMYK Color (the only scripted switch; id paired by alignment, not confirmed by execution). Better: start the document in CMYK."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Colors8",
+       "note": "Edit > Edit Colors > Convert to CMYK on the selected art (confirmed); check spot and global swatches afterwards."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "5a54114e-af98-4180-b7c5-a27e3532db1d",
+       "note": "Tools > Color Management: default CMYK profile = the printer's; Preserve pure black and Map gray to CMYK black on (Application.ColorManager.PreservePureBlack / MapGrayToCMYKBlack for scripts)."
+      },
+      {
+       "kind": "cdr_preset",
+       "id": "Color/Settings/ColorSettings.xml#Europe Prepress",
+       "note": "A ready prepress colour-settings preset (ISO Coated v2 CMYK); use the North America Prepress one for SWOP-style presses."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "6ec34929-c4be-4f30-b12e-e10e5fde022f",
+       "note": "Bitmaps > Mode > CMYK Color (32-bit) on each placed photo."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Color",
+       "note": "Vector colours: Color.ConvertToCMYK() on each fill / outline colour; Color.IsInGamut flags colours the press cannot reach (unverified)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Soft-proof before and after (see the soft proof recipe); the Gamut Warning view in Photoshop cannot be scripted."
+   ],
+   "built_from": [
+    "2344",
+    "1152",
+    "adjustmentLayer:vibrance",
+    "1213",
+    "doc-color-cmyk",
+    "Colors8",
+    "5a54114e-af98-4180-b7c5-a27e3532db1d",
+    "Color/Settings/ColorSettings.xml#Europe Prepress",
+    "6ec34929-c4be-4f30-b12e-e10e5fde022f",
+    "class:Color",
+    "1106",
+    "Color/Settings/ColorSettings.xml#North America Prepress"
+   ],
+   "confidence": "medium",
+   "note": "Photoshop adjustment step: not render-verified yet (the Photoshop adjustment gallery is still being built), so its confidence is capped at medium."
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Rich black vs 100K black",
+   "id": "recipe:print_prep:rich_black_vs_100k",
+   "app": "multi",
+   "status": "current",
+   "summary": "Large solid black areas print as a rich black build (for example C60 M40 Y40 K100) while body text, thin rules and barcodes stay pure 100K so they cannot misregister into coloured fringes.",
+   "use_for": [
+    "black backgrounds and big black display type",
+    "posters and covers with large dark areas",
+    "keeping small type and barcodes crisp"
+   ],
+   "avoid": [
+    "rich black on small text, hairlines or barcodes: four plates must register exactly; use 100K",
+    "the 400 % registration black (C100 M100 Y100 K100): it never dries and smears; use the printer's build",
+    "exceeding the printer's total ink limit (often about 300 % on coated, lower on uncoated): ask for it",
+    "Photoshop photos: their black is already built by the CMYK conversion (GCR / UCR); do not repaint it"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_api",
+       "id": "class:CMYKColor",
+       "note": "Two global swatches: text and lines c0 m0 y0 k100; large areas and display type over about 24 pt c60 m40 y40 k100 (240 % total ink) or the printer's own build (doc.swatches.add(), swatch.color = new CMYKColor())."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Overprint2",
+       "note": "Edit > Edit Colors > Overprint Black: Add Black, 100 %, Fill and Stroke, so the 100K text overprints instead of knocking out (dialog; DOM: fillOverprint / strokeOverprint = true)."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "BlackPref",
+       "note": "Preferences > Appearance of Black: display and output all blacks accurately, so the screen shows the difference between 100K and rich black."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_preset",
+       "id": "Color/Palettes/defcmyk.xml#defcmyk",
+       "note": "Use the palette's K100 swatch for text and lines, never its last 400 % swatch."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Color",
+       "note": "Rich black for large areas: Color.CMYKAssign(60, 40, 40, 100) (or the printer's build); keep a named colour style for each black."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:PrintSeparations",
+       "note": "Separations: AlwaysOverprintBlack = True so 100K objects overprint at output (unverified)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Check the black plates in Illustrator's Separations Preview (no script route) or CorelDRAW's Print Preview with separations on."
+   ],
+   "built_from": [
+    "class:CMYKColor",
+    "Overprint2",
+    "BlackPref",
+    "Color/Palettes/defcmyk.xml#defcmyk",
+    "class:Color",
+    "class:PrintSeparations",
+    "path:Window/Separations Preview",
+    "51771ba9-7ada-4863-92f0-37148c401066"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Overprint black text and keylines",
+   "id": "recipe:print_prep:overprint_setup",
+   "app": "multi",
+   "status": "current",
+   "summary": "Black text, thin black keylines and trap strokes are set to overprint, so slight plate misregistration cannot open white gaps, and the result is checked in an overprint preview.",
+   "use_for": [
+    "black text on coloured backgrounds",
+    "thin black outlines around coloured shapes",
+    "spot-colour trap strokes"
+   ],
+   "avoid": [
+    "white or light objects: overprinting makes them disappear on press",
+    "coloured (non-black) objects over other colours: the inks mix into a new colour; preview first",
+    "RGB / screen work: overprint only matters in CMYK or spot separations",
+    "Photoshop: pixel layers have no overprint attribute; set it in the vector layout"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "internal palettes posing as plug-in menus-attributes",
+       "note": "Attributes panel: Overprint Fill / Overprint Stroke on the selected black objects. DOM: pathItem.fillOverprint = true, strokeOverprint = true; type: textRange.characterAttributes.overprintFill = true (unverified)."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "ink",
+       "note": "View > Overprint Preview to see the inks mix as on press."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "1651a600-66b1-4b83-b8f6-5245a55a15fe",
+       "note": "Object > Overprint Fill on the selected black text and shapes (Shape.OverprintFill = True)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "a86ade3d-a297-47c8-903a-324cabbb81e3",
+       "note": "Object > Overprint Outline on black keylines (Shape.OverprintOutline = True)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
+       "note": "View > Simulate Overprints (ActiveWindow.ActiveView.SimulateOverprints = True) to check."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Final check of the plates: Illustrator Separations Preview (by hand) or the printer's proof."
+   ],
+   "built_from": [
+    "internal palettes posing as plug-in menus-attributes",
+    "ink",
+    "1651a600-66b1-4b83-b8f6-5245a55a15fe",
+    "a86ade3d-a297-47c8-903a-324cabbb81e3",
+    "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
+    "path:Window/Separations Preview"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Bleed and crop marks",
+   "id": "recipe:print_prep:bleed_and_crop_marks",
+   "app": "multi",
+   "status": "current",
+   "summary": "Background art runs 3 mm (0.125 in) past the trim on every side, and the press PDF carries the bleed and crop marks.",
+   "use_for": [
+    "edge-to-edge flyers, posters and covers",
+    "business cards and postcards",
+    "any job trimmed after printing"
+   ],
+   "avoid": [
+    "important text or logos inside the bleed or close to the trim: keep a 3-5 mm safe zone",
+    "marks drawn inside the artboard: they get trimmed or printed; let the PDF export add them",
+    "screen-only output: bleed does not apply"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1031",
+       "note": "Image > Canvas Size, Relative: +6 mm width and height (3 mm a side), anchor centre, then extend the background art into the new strip; executeAction 'canvasSize' (verified live)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2101",
+       "note": "Crop marks for a Photoshop-only job: File > Print > Printing Marks (Corner Crop Marks); for a press PDF place the image in Illustrator or CorelDRAW and add marks there (Photoshop's PDFSaveOptions has no marks members)."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "document",
+       "note": "File > Document Setup: Bleed 3 mm (8.504 pt) on all four sides (scripts can set bleed only at creation, through a DocumentPreset)."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PDFSaveOptions",
+       "note": "o.pDFPreset first, then o.trimMarks = true; o.bleedOffsetRect = [8.504, 8.504, 8.504, 8.504] (pt); doc.saveAs(file, o)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Trim Marks",
+       "settings": {
+        "styl": 0
+       },
+       "note": "Only to mark one item on a larger artboard (a card on a sheet): apply it to a plain rectangle of the trim size (verified)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_api",
+       "id": "class:IVGPage",
+       "note": "Bleed is a page / document setting: set ActiveDocument.Unit first, then the Bleed property (0.125 in / 3 mm) (unverified)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "1e0034de-e3f1-41c1-9fcd-701d647e7a2f",
+       "note": "View > Page > Bleed shows the bleed line: pull the background past it."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IPDFVBASettings",
+       "note": "PDFSettings.IncludeBleed = True, Bleed (typelib unit 'tens of micron': check on a test export), CropMarks = True."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
+       "note": "File > Publish to PDF (ActiveDocument.PublishToPDF(path))."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "1031",
+    "2101",
+    "document",
+    "class:PDFSaveOptions",
+    "Live Trim Marks",
+    "class:IVGPage",
+    "1e0034de-e3f1-41c1-9fcd-701d647e7a2f",
+    "class:IPDFVBASettings",
+    "f5f7cfa8-2c29-4316-969a-47113b1c0a67"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Outline text for hand-off",
+   "id": "recipe:print_prep:outline_text",
+   "app": "multi",
+   "status": "current",
+   "summary": "Live type is converted to vector outlines (curves, shapes) in a copy of the file that goes to print, so missing or unembeddable fonts cannot reflow or substitute.",
+   "use_for": [
+    "logos and display type sent to printers, sign makers and cutters",
+    "files opened on machines without the fonts",
+    "fonts whose licence forbids embedding"
+   ],
+   "avoid": [
+    "the working master: outlines cannot be turned back into text; keep a live-type copy",
+    "long body copy: it bloats the file; embed the fonts in a PDF/X instead",
+    "type that still needs corrections: finish the copy first"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "outline",
+       "note": "On a saved copy: select the type (doc.textFrames) and Type > Create Outlines; DOM textFrame.createOutline() (id paired by its shortcut, not confirmed)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "68000526-6be1-4205-b2e9-6c9dff00f4c5",
+       "note": "On a copy: Object > Convert to Curves on the text (confirmed by the harvest); or at export time PDFSettings.TextAsCurves = True."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1229",
+       "note": "Type > Convert to Shape: the type layer becomes a vector shape layer that stays sharp in a Photoshop PDF (verified live); duplicate and hide the type layer first."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "outline",
+    "68000526-6be1-4205-b2e9-6c9dff00f4c5",
+    "1229"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Flatten transparency for press",
+   "id": "recipe:print_prep:flatten_transparency",
+   "app": "multi",
+   "status": "current",
+   "summary": "Opacity, blend modes, soft shadows and glows are flattened into opaque pieces at press resolution for workflows that cannot take live transparency (PDF/X-1a, older RIPs).",
+   "use_for": [
+    "PDF/X-1a deliveries",
+    "older print workflows and RIPs",
+    "spot-colour jobs with shadows or glows"
+   ],
+   "avoid": [
+    "the master file: flattening is destructive; keep transparency live and flatten a copy or at export",
+    "PDF/X-4 workflows: they keep live transparency, so nothing needs flattening",
+    "low flattener settings near text and thin lines: they rasterize or thicken; outline the text",
+    "judging CorelDRAW bitmap effects on a half-size preview: they lose pixel-scale detail; check at 1:1"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_effect",
+       "id": "Live Rasterize Effect Setting",
+       "settings": {
+        "resolution": 300
+       },
+       "note": "Raster effects (shadows, glows, Photoshop Effects) render at 300 ppi before anything is flattened (verified setting)."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Adobe Flattening Preview",
+       "note": "Flattener Preview with [High Resolution]: highlight Rasterized Complex Regions and All Affected Objects."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Flatten Transparency",
+       "note": "On a copy: preset [High Resolution], Convert All Text to Outlines; or keep the file live and let the PDF/X-1a export flatten (PDFSaveOptions.flattenerPreset)."
+      },
+      {
+       "kind": "ai_preset",
+       "id": "app.flattenerPresetsList#[High Resolution]",
+       "note": "The flattener preset for final press output (name only harvested)."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "File/Scripts/Flatten All Layer Effects",
+       "note": "Bakes layer styles into pixels first."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1141",
+       "note": "On a duplicate (Image > Duplicate): Layer > Flatten Image (verified live: one Background layer; transparent areas fill with white)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_effect",
+       "id": "6dda0e64-c885-47f8-b046-53407834bc58",
+       "note": "On a copy: s.FlattenEffects() bakes live bitmap effects into one bitmap (needs_input card, not render-tested)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+       "note": "Objects with drop shadows or transparency over spot colours: Convert to Bitmap, CMYK, 300 dpi (Shape.ConvertToBitmapEx; its default is only 72 dpi)."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IPDFVBASettings",
+       "note": "Then publish with pdfVersion = pdfVersionPDFX1a."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "Live Rasterize Effect Setting",
+    "Adobe Flattening Preview",
+    "Flatten Transparency",
+    "app.flattenerPresetsList#[High Resolution]",
+    "File/Scripts/Flatten All Layer Effects",
+    "1141",
+    "6dda0e64-c885-47f8-b046-53407834bc58",
+    "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
+    "class:IPDFVBASettings"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "PDF/X press export",
+   "id": "recipe:print_prep:pdfx_export",
+   "app": "multi",
+   "status": "current",
+   "summary": "The press PDF is written to a PDF/X standard: PDF/X-4 when the printer takes live transparency, PDF/X-1a when it wants everything flattened CMYK or spot.",
+   "use_for": [
+    "commercial print deliveries",
+    "print-shop uploads",
+    "archiving the exact print version"
+   ],
+   "avoid": [
+    "web or email PDFs: use a smallest-file-size preset",
+    "keeping Illustrator editing data in a press PDF: it makes big files anyone can reopen",
+    "PDF/X from an RGB Photoshop file without a destination profile and output condition: the save fails or falls back"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_preset",
+       "id": "app.PDFPresetsList#[PDF/X-4:2008]",
+       "note": "o.pDFPreset = '[PDF/X-4:2008]' (exact name, brackets included) before any override; use '[PDF/X-1a:2001]' for flattened CMYK."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PDFSaveOptions",
+       "note": "o.preserveEditability = false; o.trimMarks / o.bleedOffsetRect as needed; doc.saveAs(file, o). saveAs re-targets the open document: save the .ai master first."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_api",
+       "id": "class:PDFSaveOptions",
+       "note": "o.PDFStandard = PDFStandardType.PDFX42008 (or PDFX1A2001); o.preserveEditing = false; o.layers = false; doc.saveAs(file, o, true) on a CMYK document (or set destinationProfile and outputCondition)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_api",
+       "id": "class:IPDFVBASettings",
+       "note": "ActiveDocument.PDFSettings: Reset, pdfVersion = pdfVersionPDFX4 (or pdfVersionPDFX1a), IncludeBleed, CropMarks, EmbedFonts; then ActiveDocument.PublishToPDF(path)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
+       "note": "Dialog route: File > Publish to PDF with a PDF/X preset; read the Issues tab before saving."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "app.PDFPresetsList#[PDF/X-4:2008]",
+    "class:PDFSaveOptions",
+    "class:IPDFVBASettings",
+    "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
+    "app.PDFPresetsList#[PDF/X-1a:2001]",
+    "enum:PDFStandardType",
+    "enum:pdfVersion"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Soft proof on screen",
+   "id": "recipe:print_prep:soft_proof",
+   "app": "multi",
+   "status": "current",
+   "summary": "The design is viewed on screen through the press profile (soft proof), with out-of-gamut colours flagged and single plates inspected, before any conversion or hard proof.",
+   "use_for": [
+    "checking RGB art before CMYK conversion",
+    "spotting colours that will dull on press",
+    "showing a client roughly how the print will look"
+   ],
+   "avoid": [
+    "an uncalibrated monitor: the proof misleads; calibrate or ask for a hard proof",
+    "treating it as a contract proof: it is a preview only",
+    "leaving proofing on while picking colours for screen output"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "2803",
+       "note": "View > Proof Setup > Working CMYK (or Custom for the printer's own profile)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1105",
+       "note": "View > Proof Colors toggles the soft proof."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1106",
+       "note": "View > Gamut Warning greys the colours the press cannot reach (no confirmed script route)."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "2804",
+       "note": "Optional: Proof Setup > Working Cyan Plate (and the other plates) to inspect single separations."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "proof-document",
+       "note": "View > Proof Setup > Document CMYK."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "proofColors",
+       "note": "View > Proof Colors."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "ink",
+       "note": "View > Overprint Preview, so overprints and spot inks show as they will mix."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "6495e877-c511-4404-ba0d-4d86fe7c1804",
+       "note": "Color Proofing docker: pick the output profile and turn on the gamut warning."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "66dd7512-7f82-5cbf-4cde-87859b10a2c0",
+       "note": "View > Proof Colors (ActiveView.ShowProofColors = True)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
+       "note": "View > Simulate Overprints."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "2803",
+    "1105",
+    "1106",
+    "2804",
+    "proof-document",
+    "proofColors",
+    "ink",
+    "6495e877-c511-4404-ba0d-4d86fe7c1804",
+    "66dd7512-7f82-5cbf-4cde-87859b10a2c0",
+    "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
+    "2802"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Spot colours on their own plates",
+   "id": "recipe:print_prep:spot_colours",
+   "app": "multi",
+   "status": "current",
+   "summary": "Brand or special inks are defined as named spot colours from a colour book so they separate onto their own plates, and the plates are checked before output.",
+   "use_for": [
+    "one- and two-colour jobs",
+    "brand colours that must match exactly",
+    "metallic, fluorescent, white ink or varnish plates"
+   ],
+   "avoid": [
+    "process-only (CMYK) digital jobs: convert spots to process or they may print wrong",
+    "the wrong colour book for the stock: pick the coated / uncoated set that matches the paper",
+    "judging a spot ink on screen: the swatch shows an approximation; use a printed ink guide",
+    "the same ink defined twice under different names: it separates onto two plates"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_preset",
+       "id": "Swatches/Color Books/HKS N.acb",
+       "note": "Window > Swatch Libraries > Color Books: add the ink from the book that matches the stock (HKS N here, uncoated) to Swatches."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:Spots",
+       "note": "Scripted: var sp = doc.spots.add(); sp.name = '<ink name>'; sp.colorType = ColorModel.SPOT; sp.color = <alternate>; item.fillColor = new SpotColor() with .spot = sp, .tint = 100 (unverified)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_preset",
+       "id": "Color/Palettes/Spot/HKS/HKS_N.xml#HKS N",
+       "note": "Pick the ink from the spot palette (locked palette, one plate per swatch)."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IPDFVBASettings",
+       "note": "Keep spots on export: OutputSpotColorsAs (not the hidden SpotColors member)."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_api",
+       "id": "class:Channels",
+       "note": "Spot, white-ink or varnish plate: var c = doc.channels.add(); c.kind = ChannelType.SPOTCOLOR; c.name, c.color, c.opacity (unverified); save as Photoshop PDF with spotColors = true."
+      }
+     ]
+    }
+   },
+   "manual_steps": [
+    "Check every plate: Illustrator Separations Preview (by hand), CorelDRAW Print Preview with separations."
+   ],
+   "built_from": [
+    "Swatches/Color Books/HKS N.acb",
+    "class:Spots",
+    "Color/Palettes/Spot/HKS/HKS_N.xml#HKS N",
+    "class:IPDFVBASettings",
+    "class:Channels",
+    "path:Window/Separations Preview",
+    "class:SpotColor",
+    "enum:ChannelType"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Minimum line and type sizes",
+   "id": "recipe:print_prep:min_line_type_sizes",
+   "app": "multi",
+   "status": "current",
+   "summary": "Strokes, rules and small type are checked against press minimums: no hairlines (lines 0.25 pt / 0.1 mm or more), body type 6 pt or larger, reversed or four-colour small type larger and bolder.",
+   "use_for": [
+    "preflight before any print hand-off",
+    "fine print, legal lines and labels",
+    "packaging and small-format items"
+   ],
+   "avoid": [
+    "CorelDRAW's Hairline Outline in print art: it can vanish on press; set a real width",
+    "thin serif type reversed out of a dark four-colour background: the ink fills in; use a heavier weight or a single ink",
+    "Photoshop raster art: line and type sizes are set in the vector layout"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "Find Stroke Weight menu item",
+       "note": "Select a hairline sample, Select > Same > Stroke Weight; scripted: loop doc.pathItems and flag strokeWidth under 0.25 pt."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:PathItem",
+       "note": "Raise flagged strokes: pathItem.strokeWidth = 0.25 (or the printer's minimum)."
+      },
+      {
+       "kind": "ai_api",
+       "id": "class:CharacterAttributes",
+       "note": "Flag textRange.characterAttributes.size under 6 pt, and reversed or four-colour type under about 8 pt."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_api",
+       "id": "class:Outline",
+       "note": "Replace Shape.Outline.Width values under 0.25 pt (document units: set ActiveDocument.Unit first)."
+      },
+      {
+       "kind": "cdr_preset",
+       "id": "Custom Data/Preflight Styles/Default Settings.pfs#Default Settings",
+       "note": "Then read the Issues tab of Publish to PDF; its colour-mode checks are off in this default style, switch them on or load the printer's style."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "Find Stroke Weight menu item",
+    "class:PathItem",
+    "class:CharacterAttributes",
+    "class:Outline",
+    "Custom Data/Preflight Styles/Default Settings.pfs#Default Settings",
+    "1a7d5259-ae16-44e1-9a0c-13a7d4ef26a5"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Image resolution for print",
+   "id": "recipe:print_prep:image_resolution_check",
+   "app": "multi",
+   "status": "current",
+   "summary": "Every photo and raster effect is checked for at least 300 ppi at its final printed size (150-200 ppi is usually enough for large posters seen from a distance) before the PDF is made.",
+   "use_for": [
+    "placed photos in print layouts",
+    "raster effects (shadows, glows) in vector files",
+    "large-format posters and banners"
+   ],
+   "avoid": [
+    "upsampling a 72 ppi web image and calling it print-ready: detail is not added; source a larger image or use an AI upscale and check it",
+    "judging CorelDRAW bitmap effects on a half-size preview: they lose pixel-scale detail; check at 1:1",
+    "resampling when only the print size changes: turn Resample off"
+   ],
+   "plans": {
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size with Resample off: set Resolution 300 and read the print size (or set the size and read the ppi); resample (Preserve Details 2.0) only when the ppi is short."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1191",
+       "note": "View > Print Size to judge the image at roughly its physical size."
+      }
+     ]
+    },
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "Adobe LinkPalette Menu Item",
+       "note": "Links panel > Link Info: each placed image's PPI after scaling (aim for 300)."
+      },
+      {
+       "kind": "ai_effect",
+       "id": "Live Rasterize Effect Setting",
+       "settings": {
+        "resolution": 300
+       },
+       "note": "Document Raster Effects Settings at 300 ppi, so raster effects are not rendered at screen resolution (verified setting)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "3324df3f-e302-4946-8ba9-6b1511700818",
+       "note": "File > Document Properties lists every bitmap with its colour mode: a quick inventory."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+       "note": "Bitmaps > Resample on bitmaps under the target (Bitmap.Resample, unverified)."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "1030",
+    "1191",
+    "Adobe LinkPalette Menu Item",
+    "Live Rasterize Effect Setting",
+    "3324df3f-e302-4946-8ba9-6b1511700818",
+    "f85cb8c1-b2a5-4f20-becd-be4918557275"
+   ],
+   "confidence": "medium"
+  },
+  {
+   "kind": "recipe",
+   "family": "print_prep",
+   "name": "Package fonts and links",
+   "id": "recipe:print_prep:package_for_print",
+   "app": "multi",
+   "status": "current",
+   "summary": "The job is collected with its fonts and linked images, or links are embedded, so the print shop can open and output it without missing files.",
+   "use_for": [
+    "sending native files to a printer or another designer",
+    "archiving a finished job",
+    "jobs with many linked photos"
+   ],
+   "avoid": [
+    "cloud-only fonts that are not copied by packaging: outline them or have the recipient activate them",
+    "packaging when the printer only wants a PDF: send the PDF/X",
+    "embedding huge linked files you still update elsewhere: the link to the source is cut"
+   ],
+   "plans": {
+    "AI": {
+     "app": "AI",
+     "steps": [
+      {
+       "kind": "ai_menu",
+       "id": "Adobe LinkPalette Menu Item",
+       "note": "Links panel: fix missing or modified links first."
+      },
+      {
+       "kind": "ai_menu",
+       "id": "Package Menu Item",
+       "note": "File > Package: Copy Links, Copy Fonts, Create Report (dialog; the document must be saved)."
+      }
+     ]
+    },
+    "PS": {
+     "app": "PS",
+     "steps": [
+      {
+       "kind": "ps_menu",
+       "id": "6346",
+       "note": "Layer > Smart Objects > Embed All Linked (verified live), so the PSD carries its linked files."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "3092",
+       "note": "Or File > Package to copy the PSD plus a Links folder (no confirmed script route; it was disabled in every harvest state)."
+      }
+     ]
+    },
+    "CDR": {
+     "app": "CDR",
+     "steps": [
+      {
+       "kind": "cdr_menu",
+       "id": "3324df3f-e302-4946-8ba9-6b1511700818",
+       "note": "File > Document Properties: check the font and bitmap inventory."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IPDFVBASettings",
+       "note": "Deliver a PDF with EmbedFonts = True (or TextAsCurves) via PublishToPDF; PGD has no card for a collect-for-output command."
+      }
+     ]
+    }
+   },
+   "manual_steps": [],
+   "built_from": [
+    "Adobe LinkPalette Menu Item",
+    "Package Menu Item",
+    "6346",
+    "3092",
+    "3324df3f-e302-4946-8ba9-6b1511700818",
+    "class:IPDFVBASettings"
+   ],
+   "confidence": "medium"
+  }
+ ]
+}

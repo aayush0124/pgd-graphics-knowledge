@@ -1,0 +1,2320 @@
+{
+ "cards": [
+  {
+   "name": "GraphicStyle",
+   "id": "class:GraphicStyle",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Illustrator/GraphicStyle",
+   "status": "current",
+   "summary": "COM (type library) object for one graphic style from the Graphic Styles panel: a saved appearance (fills, strokes, effects, opacity) that can replace or be merged into the appearance of page items.",
+   "use_for": [
+    "apply a house look (neon outline, sticker shadow) to many objects in one pass",
+    "brand-consistent button / badge styling across a batch of artboards",
+    "stacking a texture style on top of existing fills with MergeTo"
+   ],
+   "avoid": [
+    "creating a new style: the harvested collection has no Add, so build the style by hand once and reuse it",
+    "per-object tweaks: set fills/strokes on the item instead of forking styles"
+   ],
+   "confidence": "high",
+   "how": "Reached from a document's GraphicStyles collection over COM (Python win32com / VBScript), e.g. app.ActiveDocument.GraphicStyles.Item(2). The ExtendScript counterpart is ArtStyle, reached via app.activeDocument.graphicStyles. ApplyTo replaces an item's appearance with the style; MergeTo adds the style's attributes to what the item already has.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "read / rename the style as it appears in the Graphic Styles panel"
+    },
+    {
+     "name": "ApplyTo",
+     "use": "replace the target item's appearance with this style"
+    },
+    {
+     "name": "MergeTo",
+     "use": "add this style's attributes on top of the item's current appearance"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the style from the document's Graphic Styles panel"
+    },
+    {
+     "name": "Parent",
+     "use": "the containing document"
+    },
+    {
+     "name": "Application",
+     "use": "the Illustrator application object"
+    }
+   ],
+   "gotchas": [
+    "COM uses Delete; the ExtendScript ArtStyle uses remove instead",
+    "the first style in the panel is normally the [Default] style, so real styles start at Item(2) (unverified)",
+    "applied to a group, the style lands on the group's own appearance, not on each child (unverified)",
+    "deleting a style does not strip the appearance from items already using it, they just lose the link (unverified)"
+   ],
+   "example": "import win32com.client\napp = win32com.client.Dispatch('Illustrator.Application')\ndoc = app.ActiveDocument\nstyle = doc.GraphicStyles.Item(2)\nprint(style.Name)\nstyle.ApplyTo(doc.PageItems.Item(1))   # replace appearance\nstyle.MergeTo(doc.PageItems.Item(2))   # add on top",
+   "equivalents": {
+    "CDR": "Style"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "GraphicStyles",
+   "id": "class:GraphicStyles",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Illustrator/GraphicStyles",
+   "status": "current",
+   "summary": "COM collection of the document's graphic styles (the Graphic Styles panel contents): count, fetch, find the index of, or delete styles. It has no Add, so styles cannot be created through it.",
+   "use_for": [
+    "list the styles a template ships with before a batch styling run",
+    "pick a named brand style and apply it to generated artwork",
+    "clean unused styles out of a delivered file"
+   ],
+   "avoid": [
+    "creating styles: no Add member exists; author the style in the UI or load a template document",
+    "ExtendScript: use the ArtStyles collection (app.activeDocument.graphicStyles) instead"
+   ],
+   "confidence": "high",
+   "how": "COM: app.ActiveDocument.GraphicStyles. Elements are GraphicStyle objects. COM collections are indexed through Item and counted with Count; COM indexing is 1-based while ExtendScript [i] is 0-based (unverified for this class).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of styles in the document"
+    },
+    {
+     "name": "Item",
+     "use": "get one GraphicStyle by position (or by name, unverified)"
+    },
+    {
+     "name": "Index",
+     "use": "position of a given GraphicStyle in the collection"
+    },
+    {
+     "name": "Remove",
+     "use": "delete one style from the document"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "delete every removable style"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "Application",
+     "use": "the Illustrator application object"
+    }
+   ],
+   "gotchas": [
+    "no Add member: scripts can only use or delete existing styles",
+    "RemoveAll probably keeps the [Default] style, which cannot be deleted (unverified)",
+    "Remove takes the GraphicStyle object, not its index"
+   ],
+   "example": "import win32com.client\ndoc = win32com.client.Dispatch('Illustrator.Application').ActiveDocument\nstyles = doc.GraphicStyles\nfor i in range(1, styles.Count + 1):\n    print(i, styles.Item(i).Name)\nprint(styles.Index(styles.Item(styles.Count)))",
+   "equivalents": {
+    "CDR": "Styles"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "TextFrames",
+   "id": "class:TextFrames",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Illustrator/TextFrames",
+   "status": "current",
+   "summary": "COM collection of text frames in a document, layer or group, and the factory for new text: point text at an anchor, area text inside a path, or text on a path.",
+   "use_for": [
+    "poster headline as point text at an exact position",
+    "body copy flowed into a shape (area text in a circle or panel)",
+    "badge or seal lettering running along a circular path",
+    "threading overflow text into a second frame"
+   ],
+   "avoid": [
+    "ExtendScript: the same job is document.textFrames (TextFrameItems) with pointText / areaText / pathText",
+    "outlining text for print: create the frame here, then convert it on the TextFrame, not via this collection"
+   ],
+   "confidence": "high",
+   "how": "COM: app.ActiveDocument.TextFrames (also on a Layer or GroupItem). Add makes a plain point text frame; PointText(Anchor) places point text at [x, y]; AreaText(TextPath) and PathText(TextPath) turn an existing PathItem into the frame shape or baseline. Optional BaseFrame + PostFix presumably thread the new frame to an existing one (unverified: the harvest gives only the parameter names). COM collections are indexed through Item and counted with Count; COM indexing is 1-based while ExtendScript [i] is 0-based (unverified for this class).",
+   "key_members": [
+    {
+     "name": "PointText",
+     "use": "new point text frame at Anchor [x, y], optional Orientation"
+    },
+    {
+     "name": "AreaText",
+     "use": "new area text frame filling the given PathItem; BaseFrame/PostFix presumably thread it (unverified)"
+    },
+    {
+     "name": "PathText",
+     "use": "new text-on-path frame along the given PathItem, StartTValue/EndTValue limit the run"
+    },
+    {
+     "name": "Add",
+     "use": "new point text frame with default placement"
+    },
+    {
+     "name": "Count",
+     "use": "number of text frames in the container"
+    },
+    {
+     "name": "Item",
+     "use": "get one TextFrame"
+    },
+    {
+     "name": "Index",
+     "use": "position of a given TextFrame"
+    },
+    {
+     "name": "Remove",
+     "use": "delete one text frame"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "delete every text frame in the container"
+    }
+   ],
+   "gotchas": [
+    "AreaText and PathText consume the path: it becomes the frame's shape and loses its own fill and stroke (unverified)",
+    "Orientation is an optional variant taking the text orientation enum (horizontal / vertical); left out it presumably gives horizontal text (unverified)",
+    "coordinates are in points with y increasing upward, so positions below the artboard top are negative (unverified for non-default coordinate systems)",
+    "the new frame is empty: set its contents on the returned TextFrame"
+   ],
+   "example": "import win32com.client\ndoc = win32com.client.Dispatch('Illustrator.Application').ActiveDocument\nframes = doc.TextFrames\nhead = frames.PointText([72, -120])\npanel = doc.PathItems.Rectangle(-160, 72, 400, 300)\nbody = frames.AreaText(panel)\nprint(frames.Count)",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "BaseFrame/PostFix threading and the Orientation default were stated as fact; marked unverified"
+   }
+  },
+  {
+   "name": "Asset",
+   "id": "class:Asset",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with (exportable) assets in Adobe Illustrator/Asset",
+   "status": "current",
+   "summary": "One exportable asset in the Asset Export panel: a piece of artwork registered for export, with a document-unique ID and an editable name; getNormalizedName gives a file-name-safe form of that name.",
+   "use_for": [
+    "register icons or logo lockups for multi-size PNG/SVG export",
+    "rename assets so exported files follow a naming scheme",
+    "get a file-system-safe name for an asset before writing files"
+   ],
+   "avoid": [
+    "exporting whole artboards: use artboards with Export for Screens instead of assets",
+    "COM scripts: the COM object deletes with Delete, not remove"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: elements of app.activeDocument.assets (Assets collection), created with assets.add(art) or assets.addFromSelection(). Its assetID is what the document's Export for Screens call takes to export specific assets.",
+   "key_members": [
+    {
+     "name": "assetID",
+     "use": "read-only ID, unique within the document; key used for export and lookup"
+    },
+    {
+     "name": "assetName",
+     "use": "asset name shown in the Asset Export panel (presumably the exported file name, unverified)"
+    },
+    {
+     "name": "getNormalizedName",
+     "use": "name stripped of special characters, safe as a file name"
+    },
+    {
+     "name": "remove",
+     "use": "delete this asset from the Asset Export panel"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string, 'Asset'"
+    }
+   ],
+   "gotchas": [
+    "over COM the delete call is Delete (harvested COM type has no remove / removeAll)",
+    "removeAll is listed on the single Asset object by the dictionary; what it removes is unclear, use remove (unverified)",
+    "removing the asset does not delete the artwork it points to (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar a = doc.assets.addFromSelection();\na.assetName = 'icon-cart';\n$.writeln(a.assetID + ' -> ' + a.getNormalizedName());",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "'name used as the output file name' was unharvested; reworded to getNormalizedName and marked unverified"
+   }
+  },
+  {
+   "name": "GridRepeatConfig",
+   "id": "class:GridRepeatConfig",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/GridRepeatConfig",
+   "status": "current",
+   "summary": "Settings object for Object > Repeat > Grid artwork: horizontal and vertical spacing between tiles plus the shift/flip types that set the brick offset and mirrored rows or columns.",
+   "use_for": [
+    "seamless backgrounds and wallpaper tiles from one motif",
+    "brick-offset pattern grids for packaging or textile mockups",
+    "mirrored tile grids (flipped rows or columns) for decorative borders"
+   ],
+   "avoid": [
+    "true pattern swatches for fills: a grid repeat is live artwork, not a Swatches pattern",
+    "editing gridConfig of an existing item in place: build a config and call setGridConfiguration"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: build one (the COM type library has a creatable GridRepeatConfig coclass; the ExtendScript constructor new GridRepeatConfig() is unverified), set its fields, pass it to doc.gridRepeatItems.add(art, config) or GridRepeatItem.setGridConfiguration. Read an existing item's values through its gridConfig.",
+   "key_members": [
+    {
+     "name": "horizontalSpacing",
+     "use": "gap between tiles horizontally (the dictionary text says 'between each rows')"
+    },
+    {
+     "name": "verticalSpacing",
+     "use": "gap between tiles vertically (the dictionary text says 'between each columns')"
+    },
+    {
+     "name": "patternType",
+     "use": "grid shift type (RepeatGridShiftFlipType): plain grid or brick offset"
+    },
+    {
+     "name": "rowFlipType",
+     "use": "flip applied to alternate rows (RepeatGridShiftFlipType)"
+    },
+    {
+     "name": "columnFlipType",
+     "use": "flip applied to alternate columns (RepeatGridShiftFlipType)"
+    }
+   ],
+   "gotchas": [
+    "the harvested descriptions swap the axes (horizontal = 'between rows'); test the result before trusting either reading",
+    "spacing is presumably in points (unverified)",
+    "how each RepeatGridShiftFlipType value maps to the Grid / Brick by Row / Brick by Column choices in the UI is not confirmed (unverified)",
+    "COM adds ObjectValue and Application members that ExtendScript does not have",
+    "the COM type library states the defaults: horizontal and vertical spacing 10.0, patternType / rowFlipType / columnFlipType NoSF (no shift or flip)"
+   ],
+   "example": "var cfg = new GridRepeatConfig();   // ExtendScript constructor unverified; the COM coclass is creatable\ncfg.horizontalSpacing = 12;\ncfg.verticalSpacing = 12;\nvar doc = app.activeDocument;\nvar grid = doc.gridRepeatItems.add(doc.selection[0], cfg);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested COM defaults (10.0 / NoSF); example comment flags the unverified constructor"
+   }
+  },
+  {
+   "name": "GridRepeatItem",
+   "id": "class:GridRepeatItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/GridRepeatItem",
+   "status": "current",
+   "summary": "A live Grid repeat object (Object > Repeat > Grid) on the page: the source art tiled in rows and columns, still editable; a PageItem subclass that carries its grid settings.",
+   "use_for": [
+    "tiled backgrounds that update when the motif is edited",
+    "changing the spacing of an existing repeat across many files in batch",
+    "duplicating or moving a repeat block between layers"
+   ],
+   "avoid": [
+    "final hand-off to apps that do not know Repeat art: expand it first in the UI",
+    "fill patterns: use a pattern swatch when the tile must fill arbitrary shapes"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: element of doc.gridRepeatItems (also on layers and groups), created by gridRepeatItems.add(sourceArt, config). It inherits PageItem, so position, size and transform members come from PageItem. Read settings from gridConfig; change them with setGridConfiguration(config, state).",
+   "key_members": [
+    {
+     "name": "gridConfig",
+     "use": "read-only GridRepeatConfig with the current spacing and flip settings"
+    },
+    {
+     "name": "setGridConfiguration",
+     "use": "apply a GridRepeatConfig; state is a GridRepeatUpdate flag saying which properties changed"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the repeat item relative to another object"
+    },
+    {
+     "name": "move",
+     "use": "move it relative to another object (ElementPlacement)"
+    },
+    {
+     "name": "remove",
+     "use": "delete the repeat item"
+    },
+    {
+     "name": "parent",
+     "use": "containing layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "gridConfig is read-only; assigning to its fields may not rebuild the art, so call setGridConfiguration (unverified)",
+    "state is a bit-flag of the GridRepeatUpdate enum; passing a flag that does not cover the field you changed may leave it unchanged (unverified)",
+    "over COM the item deletes with Delete (no remove / removeAll) and also has Cut, Copy and hidden MoveToBeginning / MoveToEnd / MoveBefore / MoveAfter; those are extra moves, not delete calls",
+    "state values come from the harvested enum GridRepeatUpdate (enum:GridRepeatUpdate); it also has an *ALL value that updates every property"
+   ],
+   "example": "var doc = app.activeDocument;\nvar item = doc.gridRepeatItems[0];\nvar cfg = item.gridConfig;\n$.writeln(cfg.horizontalSpacing + ' x ' + cfg.verticalSpacing);\ncfg.horizontalSpacing = 24;\nitem.setGridConfiguration(cfg, GridRepeatUpdate.GRIDALL);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example passed an undefined `flags` and would throw; now passes GridRepeatUpdate.GRIDALL (harvested enum:GridRepeatUpdate); COM gotcha implied Cut/Copy/MoveTo* replace remove; reworded"
+   }
+  },
+  {
+   "name": "RadialRepeatConfig",
+   "id": "class:RadialRepeatConfig",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/RadialRepeatConfig",
+   "status": "current",
+   "summary": "Settings object for Object > Repeat > Radial artwork: how many copies go around the circle, the circle radius, and whether the overlap order is reversed.",
+   "use_for": [
+    "mandala, flower and sunburst motifs from one petal",
+    "clock faces, dial ticks and badge rims",
+    "radial logo marks with an exact copy count"
+   ],
+   "avoid": [
+    "copies along an arbitrary path: use a pattern brush or blend instead",
+    "a static result for other apps: expand the repeat after setting it"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: build one (COM has a creatable RadialRepeatConfig coclass; the ExtendScript constructor new RadialRepeatConfig() is unverified), set the fields, then pass it to doc.radialRepeatItems.add(art, config) or RadialRepeatItem.setRadialConfiguration.",
+   "key_members": [
+    {
+     "name": "numberOfInstances",
+     "use": "copy count around the circle (Int32)"
+    },
+    {
+     "name": "radius",
+     "use": "radius of the ring the copies sit on"
+    },
+    {
+     "name": "reverseOverlap",
+     "use": "true reverses the overlap (stacking) order of the copies"
+    }
+   ],
+   "gotchas": [
+    "radius is presumably in points (unverified)",
+    "no start-angle field is exposed here; rotate the resulting item instead (unverified that the UI angle is absent from scripting)",
+    "COM adds ObjectValue and Application members that ExtendScript does not have",
+    "the COM type library states the defaults: numberOfInstances 8, reverseOverlap false, radius -1.0 (what -1 means is not stated; presumably 'derive from the art', unverified)"
+   ],
+   "example": "var cfg = new RadialRepeatConfig();   // ExtendScript constructor unverified; the COM coclass is creatable\ncfg.numberOfInstances = 12;\ncfg.radius = 150;\ncfg.reverseOverlap = false;\nvar doc = app.activeDocument;\nvar ring = doc.radialRepeatItems.add(doc.selection[0], cfg);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "reverseOverlap 'last copy tucks under the first' was invented detail, reworded; added harvested COM defaults (8 / false / -1.0); example comment flags the constructor"
+   }
+  },
+  {
+   "name": "RadialRepeatItem",
+   "id": "class:RadialRepeatItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/RadialRepeatItem",
+   "status": "current",
+   "summary": "A live Radial repeat object (Object > Repeat > Radial): the source art copied around a circle and kept editable; a PageItem subclass that carries its radial settings.",
+   "use_for": [
+    "sunburst and mandala ornaments that stay editable",
+    "changing copy count or radius of existing radial art in batch",
+    "duplicating a dial or rim ornament across artboards"
+   ],
+   "avoid": [
+    "export to apps without Repeat support: expand it first",
+    "precise per-copy edits: expand and edit the copies"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: element of doc.radialRepeatItems (also on layers and groups), created with radialRepeatItems.add(sourceArt, config). It inherits PageItem. Read settings via radialConfig; change them with setRadialConfiguration(config, state).",
+   "key_members": [
+    {
+     "name": "radialConfig",
+     "use": "read-only RadialRepeatConfig with count, radius and overlap order"
+    },
+    {
+     "name": "setRadialConfiguration",
+     "use": "apply a RadialRepeatConfig; state is a RadialRepeatUpdate flag naming what changed"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the radial item relative to another object"
+    },
+    {
+     "name": "move",
+     "use": "move it relative to another object"
+    },
+    {
+     "name": "remove",
+     "use": "delete the radial item"
+    },
+    {
+     "name": "parent",
+     "use": "containing layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "radialConfig is read-only; change settings through setRadialConfiguration (unverified that field edits alone do nothing)",
+    "state is a RadialRepeatUpdate bit-flag; a flag that does not cover the changed field may leave it unchanged (unverified)",
+    "over COM the item deletes with Delete (no remove / removeAll) and also has Cut, Copy and hidden MoveToBeginning / MoveToEnd / MoveBefore / MoveAfter; those are extra moves, not delete calls",
+    "state values come from the harvested enum RadialRepeatUpdate (enum:RadialRepeatUpdate); it also has an *ALL value that updates every property"
+   ],
+   "example": "var doc = app.activeDocument;\nvar item = doc.radialRepeatItems[0];\nvar cfg = item.radialConfig;\ncfg.numberOfInstances = 16;\nitem.setRadialConfiguration(cfg, RadialRepeatUpdate.NUMBEROFINSTANCES);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example passed an undefined `flags` and would throw; now passes RadialRepeatUpdate.NUMBEROFINSTANCES (harvested enum:RadialRepeatUpdate); COM gotcha implied Cut/Copy/MoveTo* replace remove; reworded"
+   }
+  },
+  {
+   "name": "SymmetryRepeatConfig",
+   "id": "class:SymmetryRepeatConfig",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/SymmetryRepeatConfig",
+   "status": "current",
+   "summary": "Settings object for Object > Repeat > Mirror artwork: one value, the angle of the mirror axis, given in radians counter-clockwise from the x-axis.",
+   "use_for": [
+    "symmetric logos, crests and emblems drawn from one half",
+    "mirrored ornaments on a tilted axis",
+    "face or butterfly style symmetric illustration setups"
+   ],
+   "avoid": [
+    "a one-off flip: Reflect is simpler when nothing needs to stay live",
+    "degree values: convert to radians first"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: build one (COM has a creatable SymmetryRepeatConfig coclass; ExtendScript new SymmetryRepeatConfig() is unverified), set axisRotationAngleInRadians, then pass it to doc.symmetryRepeatItems.add(art, config) or SymmetryRepeatItem.setSymmetryConfiguration.",
+   "key_members": [
+    {
+     "name": "axisRotationAngleInRadians",
+     "use": "mirror axis angle in radians, counter-clockwise from the x-axis"
+    }
+   ],
+   "gotchas": [
+    "the angle is in radians: 90 degrees is Math.PI / 2",
+    "COM adds ObjectValue and Application members that ExtendScript does not have",
+    "the COM type library states a default axis of 1.57 rad (about Math.PI / 2, a vertical mirror axis)"
+   ],
+   "example": "var cfg = new SymmetryRepeatConfig();   // ExtendScript constructor unverified; the COM coclass is creatable\ncfg.axisRotationAngleInRadians = Math.PI / 2;\nvar doc = app.activeDocument;\nvar mirror = doc.symmetryRepeatItems.add(doc.selection[0], cfg);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested COM default 1.57 rad; example comment flags the constructor"
+   }
+  },
+  {
+   "name": "SymmetryRepeatItem",
+   "id": "class:SymmetryRepeatItem",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Classes used for working with Repeat art in Adobe Illustrator/SymmetryRepeatItem",
+   "status": "current",
+   "summary": "A live Mirror repeat object (Object > Repeat > Mirror): the source art plus its live reflection across an axis; a PageItem subclass that carries its axis setting.",
+   "use_for": [
+    "symmetric emblems that stay editable on one side",
+    "re-angling the mirror axis of existing symmetric art in batch",
+    "duplicating a mirrored ornament across a layout"
+   ],
+   "avoid": [
+    "a static mirrored copy for export: expand it or use Reflect",
+    "multi-axis kaleidoscope looks: combine with a radial repeat instead"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: element of doc.symmetryRepeatItems (also on layers and groups), created with symmetryRepeatItems.add(sourceArt, config). It inherits PageItem. Read the axis via symmetryConfig; change it with setSymmetryConfiguration(config, state).",
+   "key_members": [
+    {
+     "name": "symmetryConfig",
+     "use": "read-only SymmetryRepeatConfig holding the axis angle"
+    },
+    {
+     "name": "setSymmetryConfiguration",
+     "use": "apply a SymmetryRepeatConfig; state is a SymmetryRepeatUpdate flag"
+    },
+    {
+     "name": "duplicate",
+     "use": "copy the mirror item relative to another object"
+    },
+    {
+     "name": "move",
+     "use": "move it relative to another object"
+    },
+    {
+     "name": "remove",
+     "use": "delete the mirror item"
+    },
+    {
+     "name": "parent",
+     "use": "containing layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "symmetryConfig is read-only; push changes through setSymmetryConfiguration (unverified that field edits alone do nothing)",
+    "the axis angle is in radians",
+    "over COM the item deletes with Delete (no remove / removeAll) and also has Cut, Copy and hidden MoveToBeginning / MoveToEnd / MoveBefore / MoveAfter; those are extra moves, not delete calls",
+    "state values come from the harvested enum SymmetryRepeatUpdate (enum:SymmetryRepeatUpdate); it also has an *ALL value that updates every property"
+   ],
+   "example": "var doc = app.activeDocument;\nvar item = doc.symmetryRepeatItems[0];\nvar cfg = item.symmetryConfig;\ncfg.axisRotationAngleInRadians = Math.PI / 4;\nitem.setSymmetryConfiguration(cfg, SymmetryRepeatUpdate.AXISROTATION);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example passed an undefined `flags` and would throw; now passes SymmetryRepeatUpdate.AXISROTATION (harvested enum:SymmetryRepeatUpdate); COM gotcha implied Cut/Copy/MoveTo* replace remove; reworded"
+   }
+  },
+  {
+   "name": "Artboards",
+   "id": "class:Artboards",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Artboards",
+   "status": "current",
+   "summary": "ExtendScript collection of a document's artboards: add, insert and delete artboards, find one by name, and read or set which artboard is active.",
+   "use_for": [
+    "build a multi-size social set (square post, portrait post, story) in one document",
+    "pick the active artboard before an export or fit command",
+    "count how many artboards the user selected in the Artboards panel"
+   ],
+   "avoid": [
+    "resizing an existing artboard: change the Artboard's own rectangle rather than delete and re-add",
+    "page-style layouts with master pages: Illustrator artboards have no masters"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.artboards; elements are Artboard objects, indexed from 0. add(rect) and insert(rect, index) take an artboard rectangle [left, top, right, bottom] in points.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "append a new artboard with the given rectangle, returns the Artboard"
+    },
+    {
+     "name": "insert",
+     "use": "add an artboard at a given index"
+    },
+    {
+     "name": "remove",
+     "use": "delete the artboard at an index (takes an index, not the object)"
+    },
+    {
+     "name": "getByName",
+     "use": "first artboard with this name"
+    },
+    {
+     "name": "getActiveArtboardIndex",
+     "use": "index of the current artboard"
+    },
+    {
+     "name": "setActiveArtboardIndex",
+     "use": "make an artboard current (affects later artboard-relative commands)"
+    },
+    {
+     "name": "getNumSelectedArtboard",
+     "use": "how many artboards are selected in the Artboards panel"
+    },
+    {
+     "name": "length",
+     "use": "number of artboards"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all artboards (a document needs at least one, unverified)"
+    }
+   ],
+   "gotchas": [
+    "the rectangle is [left, top, right, bottom] with y increasing upward, so bottom is lower than top (unverified for non-default coordinate systems)",
+    "remove takes an index (harvested signature remove(index:Int32)), not the Artboard object",
+    "the dictionary lists getByName twice (name and artboardName); both find the first match",
+    "COM has Count / Item / Index instead of length and [i] (harvested COM diff)",
+    "the last artboard cannot be removed (unverified)"
+   ],
+   "example": "var abs = app.activeDocument.artboards;\nabs.add([0, 0, 1080, -1350]);\nabs.setActiveArtboardIndex(abs.length - 1);\n$.writeln(abs.getActiveArtboardIndex() + ' of ' + abs.length);",
+   "equivalents": {
+    "CDR": "class:Pages"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.CDR 'Pages' also matches a CDR menu item; pinned to API id class:Pages; use_for listed pixel sizes not in the batch; reworded without numbers"
+   }
+  },
+  {
+   "name": "ArtStyles",
+   "id": "class:ArtStyles",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/ArtStyles",
+   "status": "current",
+   "summary": "ExtendScript collection behind document.graphicStyles: the graphic styles saved in the document. Read, count, find by name or clear; it has no add.",
+   "use_for": [
+    "find a named brand style before applying it to generated art",
+    "audit the styles a template carries",
+    "strip all styles from a hand-off file"
+   ],
+   "avoid": [
+    "creating styles: there is no add member, author them in the UI",
+    "COM scripts: use the GraphicStyles collection instead"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.graphicStyles returns this ArtStyles collection; elements are ArtStyle objects (apply or merge them onto page items, see the ArtStyle card).",
+   "key_members": [
+    {
+     "name": "getByName",
+     "use": "first style with this exact name"
+    },
+    {
+     "name": "length",
+     "use": "number of styles"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable styles"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "the property is called graphicStyles but its type is ArtStyles; searching the docs for 'GraphicStyles' finds the COM class",
+    "getByName throws when no style has the name, so wrap it in try / catch (unverified)",
+    "no single-item remove on the collection; remove styles through the ArtStyle element"
+   ],
+   "example": "var styles = app.activeDocument.graphicStyles;\n$.writeln(styles.length + ' styles');\nvar neon = null;\ntry { neon = styles.getByName('Neon Glow'); } catch (e) {}",
+   "equivalents": {
+    "CDR": "Styles"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Assets",
+   "id": "class:Assets",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Assets",
+   "status": "current",
+   "summary": "ExtendScript collection of the document's exportable assets (Asset Export panel): add artwork as assets, look them up by name or ID, and delete them.",
+   "use_for": [
+    "register every icon on an icon sheet for one-click multi-format export",
+    "build an export manifest from asset names and IDs",
+    "clear stale assets before a re-export"
+   ],
+   "avoid": [
+    "exporting full artboards: use artboards with Export for Screens",
+    "deleting by index: remove takes an assetID"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: app.activeDocument.assets. add(art) registers given art (a page item or array) and addFromSelection() registers the current selection; both return an Asset.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create an asset from the given art"
+    },
+    {
+     "name": "addFromSelection",
+     "use": "create an asset from the selected art"
+    },
+    {
+     "name": "getByID",
+     "use": "asset with this assetID"
+    },
+    {
+     "name": "getByName",
+     "use": "first asset with this name"
+    },
+    {
+     "name": "remove",
+     "use": "delete the asset with this assetID"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete every asset"
+    },
+    {
+     "name": "length",
+     "use": "number of assets"
+    }
+   ],
+   "gotchas": [
+    "remove takes an assetID number, not an index or an Asset (harvested signature remove(assetID:Int32))",
+    "addFromSelection needs a non-empty selection (unverified error text)",
+    "getByName is listed twice (name and assetName); both return the first match",
+    "COM has Count / Item / Index instead of length and [i]"
+   ],
+   "example": "var doc = app.activeDocument;\nvar a = doc.assets.add(doc.pageItems[0]);\nvar again = doc.assets.getByID(a.assetID);\n$.writeln(doc.assets.length);\ndoc.assets.remove(a.assetID);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Brushes",
+   "id": "class:Brushes",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Brushes",
+   "status": "current",
+   "summary": "ExtendScript collection of the brushes in the document's Brushes panel; it reads brushes by index or name and has add / addAndLoad methods that take a brush-definition File. What file format those accept is not stated in the harvest.",
+   "use_for": [
+    "find a named calligraphic, art or pattern brush to apply to generated paths",
+    "check a template carries the brushes a script expects",
+    "load a brush from a definition file (format unconfirmed) and arm the Paintbrush tool with it"
+   ],
+   "avoid": [
+    "deleting brushes: the collection has no remove / removeAll",
+    "COM scripts: COM has no GetByName for brushes, loop over Item instead"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: app.activeDocument.brushes; elements are Brush objects (apply one to a path, see the Brush card). add(brushDefinition, brushName) creates a brush from a File; addAndLoad(brushDefinition) also selects the brush tool and loads the new brush into it.",
+   "key_members": [
+    {
+     "name": "getByName",
+     "use": "first brush with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of brushes"
+    },
+    {
+     "name": "add",
+     "use": "create a brush from a brush-definition File, optional name"
+    },
+    {
+     "name": "addAndLoad",
+     "use": "create a brush from a File, switch to the brush tool and load it"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "what file add / addAndLoad expect is not in the harvest; test with a real file before relying on it (unverified)",
+    "addAndLoad changes the active tool, a UI side effect in an unattended run",
+    "the [Basic] entry may be counted in length (unverified)",
+    "no remove members: brushes can only be added or read here",
+    "over COM, Add and AddAndLoad take BrushDefinition as a string, not a File object (harvested COM signature)"
+   ],
+   "example": "var brushes = app.activeDocument.brushes;\n$.writeln(brushes.length + ' brushes');\nvar ink = null;\ntry { ink = brushes.getByName('Charcoal - Feather'); } catch (e) {}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "added the COM signature difference (BrushDefinition is a string over COM, File in ExtendScript)"
+   }
+  },
+  {
+   "name": "Characters",
+   "id": "class:Characters",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Characters",
+   "status": "current",
+   "summary": "ExtendScript collection of single characters in a text frame, story or text range; each element is a one-character TextRange. It also appends text with add / addBefore.",
+   "use_for": [
+    "per-letter colour or size for playful display type",
+    "drop-cap style first-letter styling",
+    "counting characters to fit a headline into a layout"
+   ],
+   "avoid": [
+    "styling long runs letter by letter: style a whole TextRange or paragraph instead (much faster)",
+    "word or line operations: use the words, lines or paragraphs collections"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: textFrame.characters, story.characters or textRange.characters. characters[i] is a TextRange covering one character; add(contents) creates characters from a string.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of characters"
+    },
+    {
+     "name": "add",
+     "use": "add characters from a string, returns the new TextRange"
+    },
+    {
+     "name": "addBefore",
+     "use": "add characters before the range (unverified exact position)"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all characters in the range"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful for characters (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "owning text frame, story or range"
+    }
+   ],
+   "gotchas": [
+    "looping over thousands of characters is slow; batch attribute changes on larger ranges (unverified timing)",
+    "no single-character remove in ExtendScript; COM has a hidden Remove(item), and COM Add also takes optional RelativeObject / InsertionLocation arguments",
+    "a paragraph break counts as a character (unverified)"
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar chars = tf.characters;\n$.writeln(chars.length + ' characters');\nvar first = chars[0];\nchars.add(' / 2026');",
+   "equivalents": {
+    "CDR": "TextCharacters"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM Remove is hidden in the type library and COM Add has two extra optional args; gotcha corrected"
+   }
+  },
+  {
+   "name": "CharacterStyles",
+   "id": "class:CharacterStyles",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/CharacterStyles",
+   "status": "current",
+   "summary": "ExtendScript collection of the document's character styles (Character Styles panel): create a named style, find one by name, count or clear them.",
+   "use_for": [
+    "set up a house type system (price, highlight, footnote styles) in a template by script",
+    "find a character style to apply to text runs in data-merged layouts",
+    "audit styles before hand-off"
+   ],
+   "avoid": [
+    "paragraph-level settings like alignment or indents: use ParagraphStyles",
+    "one-off formatting: set attributes on the TextRange directly"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.characterStyles (textRange.characterStyles gives the styles applied to a range). add(name) returns a new CharacterStyle; set its character attributes and apply it to text ranges through that object.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a named character style"
+    },
+    {
+     "name": "getByName",
+     "use": "first style with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of styles"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable styles"
+    },
+    {
+     "name": "parent",
+     "use": "document or text range"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "add with a name that already exists throws (unverified)",
+    "[Normal Character Style] sits at index 0 and survives removeAll (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var cs = app.activeDocument.characterStyles;\nvar price = null;\ntry { price = cs.getByName('Price'); }\ncatch (e) { price = cs.add('Price'); }\n$.writeln(cs.length + ' character styles');",
+   "equivalents": {
+    "CDR": "Styles"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "CompoundPathItems",
+   "id": "class:CompoundPathItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/CompoundPathItems",
+   "status": "current",
+   "summary": "ExtendScript collection of compound paths (several paths that act as one shape, overlaps punching holes) in a document, layer or group; add() creates an empty compound path to fill with paths.",
+   "use_for": [
+    "donut, ring and frame shapes with real holes",
+    "letterform-like icons with counters",
+    "knock-out stencil shapes for cutting or vinyl"
+   ],
+   "avoid": [
+    "simply grouping shapes: a group keeps each path's own fill",
+    "boolean merges that should become one outline: use Pathfinder instead"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.compoundPathItems (also layer / group). add() returns an empty CompoundPathItem; create paths inside it through its own pathItems collection, or move existing paths into it.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create an empty compound path"
+    },
+    {
+     "name": "getByName",
+     "use": "first compound path with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of compound paths"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all compound paths in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "an empty compound path left in the file is an invisible stray object; always put paths in it",
+    "whether an inner shape becomes a hole depends on path direction; pass reversed = true on the inner shape if it fills in (unverified)",
+    "doc.compoundPathItems may include compound paths nested in groups (unverified)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar ring = doc.compoundPathItems.add();\nring.pathItems.ellipse(-100, 100, 300, 300);\nring.pathItems.ellipse(-175, 175, 150, 150, true);\n$.writeln(doc.compoundPathItems.length);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "DataSets",
+   "id": "class:DataSets",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/DataSets",
+   "status": "current",
+   "summary": "ExtendScript collection of the data sets in the Variables panel: snapshots of variable values used for data-driven graphics (one set per record).",
+   "use_for": [
+    "batch name badges, price tags or certificates from a data table",
+    "flip a template through records to export one file per record",
+    "capture the current variable values as a new record"
+   ],
+   "avoid": [
+    "documents without variables: bind variables first, data sets only store their values",
+    "large mail-merge jobs: driving text directly from a CSV in script is often simpler"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: app.activeDocument.dataSets; elements are DataSet objects (display or update one, see that card). add() creates a new data set, presumably from the current variable values.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a data set (captures current variable values, unverified)"
+    },
+    {
+     "name": "getByName",
+     "use": "first data set with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of data sets"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all data sets"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "data sets need variables bound in the Variables panel first; otherwise there is nothing to store (unverified)",
+    "add() captures values at call time; edit the art first, then add (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar sets = doc.dataSets;\nvar rec = sets.add();\n$.writeln(sets.length + ' data sets');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "Documents",
+   "id": "class:Documents",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Documents",
+   "status": "current",
+   "summary": "ExtendScript collection of open Illustrator documents: create new ones (plain, from a preset, or with the New Document dialog), find one by name, and arrange the document windows.",
+   "use_for": [
+    "open a fresh RGB canvas at an exact size for a social post build",
+    "start a print job from a preset with set artboard count and layout",
+    "find an already-open template by file name"
+   ],
+   "avoid": [
+    "opening files from disk: use app.open with a File, not this collection",
+    "unattended runs with showOptionsDialog = true: the dialog blocks the script"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.documents. add(colorSpace, width, height, numArtboards, artboardLayout, artboardSpacing, artboardRowsOrCols) makes a document directly (all optional, sizes in points); addDocument(preset, presetSettings, showOptionsDialog) uses a startup preset name plus a DocumentPreset object.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "new document from color space, size and artboard grid arguments"
+    },
+    {
+     "name": "addDocument",
+     "use": "new document from a startup preset name and optional DocumentPreset settings"
+    },
+    {
+     "name": "addDocumentWithDialogOption",
+     "use": "new document from a preset, optionally showing the New Document dialog"
+    },
+    {
+     "name": "getByName",
+     "use": "first open document with this name"
+    },
+    {
+     "name": "arrange",
+     "use": "tile, cascade, float or consolidate document windows (DocumentLayoutStyle)"
+    },
+    {
+     "name": "length",
+     "use": "number of open documents"
+    },
+    {
+     "name": "parent",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "width / height are in points, not pixels or mm (72 pt = 1 inch)",
+    "showOptionsDialog true opens a modal dialog and the script waits on it",
+    "startup preset names are the New Document profile names and differ by install language (unverified)",
+    "documents[0] is the frontmost document (unverified)",
+    "a document you did not open belongs to someone else: do not close or modify it"
+   ],
+   "example": "var docs = app.documents;\nvar before = docs.length;\nvar doc = docs.add();\n$.writeln(before + ' -> ' + docs.length);",
+   "equivalents": {
+    "PS": "Documents",
+    "CDR": "Documents"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "use_for listed a pixel size not in the batch; reworded without numbers"
+   }
+  },
+  {
+   "name": "EmbeddedItems",
+   "id": "class:EmbeddedItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/EmbeddedItems",
+   "status": "current",
+   "summary": "ExtendScript collection named 'EmbeddedItems Collection' whose elements are EmbedItem objects (embedded artwork items with a file property). Which UI objects land here is not confirmed; it appears to hold files embedded into the document rather than linked.",
+   "use_for": [
+    "auditing embedded artwork in a hand-off file (unconfirmed which items are counted)",
+    "creating an embedded item and pointing it at a file (behaviour unconfirmed)"
+   ],
+   "avoid": [
+    "placing linked images: use PlacedItems",
+    "embedded raster images: they are listed as raster items (unverified)"
+   ],
+   "confidence": "low",
+   "how": "ExtendScript: app.activeDocument.embeddedItems (a Document property only; layers and groups do not list it). add() returns an EmbedItem.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create an EmbedItem"
+    },
+    {
+     "name": "getByName",
+     "use": "first embedded item with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of embedded items"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all embedded items"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "what this collection contains in practice is not confirmed; inspect length on a known file first (unverified)",
+    "only the Document exposes embeddedItems in the harvest, so it is not scoped per layer",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var emb = app.activeDocument.embeddedItems;\n$.writeln(emb.length + ' embedded items');\nfor (var i = 0; i < emb.length; i++) $.writeln(emb[i].typename);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "Gradients",
+   "id": "class:Gradients",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Gradients",
+   "status": "current",
+   "summary": "ExtendScript collection of the gradient definitions stored in the document (gradient swatches): create a new gradient, find one by name, count or clear them.",
+   "use_for": [
+    "build brand gradients by script for buttons, backgrounds and logo marks",
+    "find a named gradient to colour generated shapes",
+    "clean unused gradients from a hand-off file"
+   ],
+   "avoid": [
+    "mesh-like multi-direction blends: use gradient mesh or freeform gradients",
+    "a one-off fill: a gradient still has to exist here before a fill can use it"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.gradients. add() returns a new Gradient; set its type and stops (gradientStops) and use it through a GradientColor as a fill or stroke.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new gradient"
+    },
+    {
+     "name": "getByName",
+     "use": "first gradient with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of gradients"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable gradients"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "a new gradient starts with default stops (how many is not in the harvest, unverified); edit them rather than adding from zero",
+    "getByName throws when nothing matches (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var grads = app.activeDocument.gradients;\nvar g = grads.add();\nvar stops = g.gradientStops;\n$.writeln(grads.length + ' gradients; new one has ' + stops.length + ' stops');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); removed an unharvested stop count ('two')"
+   }
+  },
+  {
+   "name": "GradientStops",
+   "id": "class:GradientStops",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/GradientStops",
+   "status": "current",
+   "summary": "ExtendScript collection of the colour stops of one gradient: add a stop, count or clear them; each GradientStop carries a position, midpoint, colour and opacity.",
+   "use_for": [
+    "multi-stop brand gradients (sunset, chrome, neon)",
+    "fading a colour to transparent with stop opacity",
+    "rebuilding a gradient from a palette list"
+   ],
+   "avoid": [
+    "removeAll on a gradient you still use: it strips every stop, and what a gradient does with too few stops is not in the harvest (unverified)",
+    "per-object gradient angle or position: that is set on the fill, not the stops"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: gradient.gradientStops (gradient from app.activeDocument.gradients). add() returns a GradientStop; set its rampPoint (position, in percent), midPoint, color and opacity on that GradientStop.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "add a stop and return it"
+    },
+    {
+     "name": "length",
+     "use": "number of stops"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all stops"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful for stops (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "the owning gradient"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "stops are ordered by position, not by creation; set the position before reading stops back by index (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var g = app.activeDocument.gradients.add();\nvar stops = g.gradientStops;\nvar mid = stops.add();\n$.writeln(stops.length + ' stops');",
+   "equivalents": {
+    "CDR": "FountainColors"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); '0-100' range and 'two stops' minimum were not in the batch; how now names the real GradientStop members (rampPoint / midPoint / color / opacity), stop-minimum claims removed"
+   }
+  },
+  {
+   "name": "GraphItems",
+   "id": "class:GraphItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/GraphItems",
+   "status": "current",
+   "summary": "ExtendScript collection of graph (chart) objects made with Illustrator's Graph tools in a document, layer or group. It has no add, so graphs can be found, counted and deleted but not created.",
+   "use_for": [
+    "find and count charts in an infographic file",
+    "move or remove existing graph objects in batch",
+    "check a template's chart placeholders exist before hand-off"
+   ],
+   "avoid": [
+    "creating or feeding charts by script: no add and no data members exist; draw bars from data with PathItems instead",
+    "styled chart output: build chart art with paths and text for full control"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.graphItems (also layer / group). Elements are GraphItem objects: beyond the PageItem basics they add only move, duplicate, remove and contentVariable.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of graphs"
+    },
+    {
+     "name": "getByName",
+     "use": "first graph with this name"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all graphs in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "no add member: graphs can only be found, moved or deleted",
+    "the GraphItem element exposes no chart data, so values cannot be read or changed by script",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var graphs = app.activeDocument.graphItems;\n$.writeln(graphs.length + ' graphs');\nvar g = null;\ntry { g = graphs.getByName('Q3 sales'); } catch (e) {}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); summary called the collection read-only although it has removeAll; element 'only' ignored PageItem"
+   }
+  },
+  {
+   "name": "GridRepeatItems",
+   "id": "class:GridRepeatItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/GridRepeatItems",
+   "status": "current",
+   "summary": "ExtendScript collection of Grid repeat objects in a document, layer or group, and the factory that turns art into a live grid repeat with a GridRepeatConfig.",
+   "use_for": [
+    "auto-build tiled backgrounds from a motif",
+    "repeat a logo in a brick grid for packaging or merch mockups",
+    "find all grid repeats to re-space them in batch"
+   ],
+   "avoid": [
+    "pattern swatches for filling other shapes: use Patterns",
+    "radial or mirrored repeats: use RadialRepeatItems or SymmetryRepeatItems"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: doc.gridRepeatItems (also layer / group). add(sourceArt, config) takes the art (page item or selection) and a GridRepeatConfig and returns a GridRepeatItem.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "make a grid repeat from sourceArt using a GridRepeatConfig"
+    },
+    {
+     "name": "length",
+     "use": "number of grid repeats"
+    },
+    {
+     "name": "getByName",
+     "use": "first grid repeat with this name"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all grid repeats in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "sourceArt is typed 'any'; whether an array of items is accepted as well as one item is not confirmed (unverified)",
+    "the source art becomes part of the repeat object rather than staying a separate item (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar cfg = new GridRepeatConfig();   // ExtendScript constructor unverified; the COM coclass is creatable\ncfg.horizontalSpacing = 20;\ncfg.verticalSpacing = 20;\nvar grid = doc.gridRepeatItems.add(doc.selection[0], cfg);\n$.writeln(doc.gridRepeatItems.length);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); example comment flags the unverified GridRepeatConfig constructor"
+   }
+  },
+  {
+   "name": "GroupItems",
+   "id": "class:GroupItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/GroupItems",
+   "status": "current",
+   "summary": "ExtendScript collection of groups in a document, layer or group: create an empty group, or import a vector graphics file as an editable group with createFromFile.",
+   "use_for": [
+    "import an SVG icon or logo as editable vectors",
+    "bundle generated parts of a badge or lockup into one movable unit",
+    "find a named group (e.g. 'Logo') in a template"
+   ],
+   "avoid": [
+    "linking a file that must stay updatable: use PlacedItems",
+    "compound shapes with holes: use CompoundPathItems"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.groupItems (also layer / group). add() returns an empty GroupItem to move items into; createFromFile(File) reads a vector file and returns its artwork as a GroupItem.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create an empty group"
+    },
+    {
+     "name": "createFromFile",
+     "use": "import a vector file as an editable group"
+    },
+    {
+     "name": "getByName",
+     "use": "first group with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of groups"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all groups in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "an empty group added and never filled stays in the file as an invisible stray object",
+    "createFromFile needs a File object, not a path string (harvested type File)",
+    "doc.groupItems includes nested groups, layer.groupItems only direct children (unverified)",
+    "adding to a locked or hidden layer fails (unverified)",
+    "over COM, CreateFromFile takes the path as a string (harvested COM signature)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar logo = doc.groupItems.createFromFile(new File('C:/brand/logo.svg'));\nvar holder = doc.groupItems.add();\n$.writeln(doc.groupItems.length + ' groups');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "file-format list (AI/EPS/SVG/PDF) was not in the batch; removed. Added COM string-path signature"
+   }
+  },
+  {
+   "name": "InsertionPoints",
+   "id": "class:InsertionPoints",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/InsertionPoints",
+   "status": "current",
+   "summary": "ExtendScript collection of text insertion points (the caret positions between characters) in a text frame, story or range; read-only.",
+   "use_for": [
+    "insert a word or symbol at an exact caret position in existing copy",
+    "append text at the end of a story without retyping it",
+    "count caret positions when splitting copy"
+   ],
+   "avoid": [
+    "replacing a run of text: use characters or a TextRange",
+    "creating text frames: use TextFrames"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: textFrame.insertionPoints, story.insertionPoints or textRange.insertionPoints; each element is an InsertionPoint whose own characters collection can add text at that position.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of insertion points (one more than the characters, unverified)"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful here (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "owning text frame, story or range"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "no add / remove: positions follow the text; insert text through the element's characters",
+    "indexes shift after every insertion, so insert from the end backwards (unverified)",
+    "COM has Count / Item / Index instead of length and [i]"
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar ips = tf.insertionPoints;\nvar end = ips[ips.length - 1];\nend.characters.add(' *');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layers",
+   "id": "class:Layers",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Layers",
+   "status": "current",
+   "summary": "ExtendScript collection of top-level layers in a document, or sublayers inside a layer: create a layer, find one by name, count or clear them.",
+   "use_for": [
+    "set up a template layer stack (Background, Art, Type, Guides) by script",
+    "route generated artwork onto a named layer",
+    "check a delivered file has the required layers"
+   ],
+   "avoid": [
+    "grouping objects inside one layer: use GroupItems",
+    "removeAll on a document: a document must keep at least one layer (unverified)"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.layers (top level) or layer.layers (sublayers). add() returns a new Layer object; name and stack it through that object.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new layer in this container"
+    },
+    {
+     "name": "getByName",
+     "use": "first layer with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of layers"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all layers in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document or parent layer"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "getByName throws when nothing matches; use try / catch rather than a null check (unverified)",
+    "adding art to a locked or hidden layer fails, so unlock and show it first (unverified)",
+    "add() puts the new layer at the top of the stack (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var layers = app.activeDocument.layers;\nvar art = null;\ntry { art = layers.getByName('Art'); }\ncatch (e) { art = layers.add(); art.name = 'Art'; }\n$.writeln(layers.length + ' layers');",
+   "equivalents": {
+    "PS": "class:Layers",
+    "CDR": "Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); equivalents.PS 'Layers' also matches a PS menu item; pinned to API id class:Layers"
+   }
+  },
+  {
+   "name": "LegacyTextItems",
+   "id": "class:LegacyTextItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/LegacyTextItems",
+   "status": "current",
+   "summary": "ExtendScript collection of legacy text objects (text from older Illustrator versions that has not been updated); convertToNative turns all of them into normal text frames and deletes the originals.",
+   "use_for": [
+    "updating old archive files so their text can be edited and restyled",
+    "pre-flighting old templates for legacy text before reuse",
+    "batch-converting a folder of legacy AI/EPS files"
+   ],
+   "avoid": [
+    "files where exact line breaks matter: conversion can reflow text, check the result",
+    "current documents: they hold no legacy text"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.legacyTextItems (also layer / group). convertToNative() converts every legacy text item in the collection to a text frame and returns true on success.",
+   "key_members": [
+    {
+     "name": "convertToNative",
+     "use": "convert all legacy text items to text frames; originals are deleted"
+    },
+    {
+     "name": "length",
+     "use": "number of legacy text items"
+    },
+    {
+     "name": "getByName",
+     "use": "first legacy text item with this name"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "the originals are deleted by convertToNative (stated in the harvest), so keep a copy of the file",
+    "converted text may reflow and shift line breaks (unverified)",
+    "no removeAll in ExtendScript; COM has RemoveAll"
+   ],
+   "example": "var legacy = app.activeDocument.legacyTextItems;\nif (legacy.length > 0) {\n  var ok = legacy.convertToNative();\n  $.writeln('converted: ' + ok);\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "'Illustrator 10' version number was not in the batch; removed"
+   }
+  },
+  {
+   "name": "Lines",
+   "id": "class:Lines",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Lines",
+   "status": "current",
+   "summary": "ExtendScript collection of the composed lines of text in a frame, story or range; each element is a TextRange for one line as currently laid out. Read-only.",
+   "use_for": [
+    "check a headline breaks onto the intended number of lines",
+    "style the first line of a paragraph differently (lead-in line)",
+    "detect overset or orphaned last lines in area text"
+   ],
+   "avoid": [
+    "storing line positions across edits: lines are recomposed whenever text or frame size changes",
+    "splitting copy into paragraphs: use Paragraphs"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: textFrame.lines, story.lines or textRange.lines; lines[i] is a TextRange covering that visual line.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of composed lines"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful for lines (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "owning text frame, story or range"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "line ranges change after any edit that reflows text, so re-read lines after every change",
+    "text hidden in overflow may not appear as lines (unverified)",
+    "COM has RemoveAll / Count / Item / Index; ExtendScript has none of the removes"
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar lines = tf.lines;\n$.writeln(lines.length + ' lines');\nvar firstLine = lines[0];",
+   "equivalents": {
+    "CDR": "TextLines"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ListStyles",
+   "id": "class:ListStyles",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/ListStyles",
+   "status": "current",
+   "summary": "ExtendScript collection of list styles in the document, the bullet and numbering definitions used by Illustrator's bullets & numbering (elements expose prefix, postfix, bullet and indents).",
+   "use_for": [
+    "consistent bulleted feature lists on flyers and spec sheets",
+    "numbered step lists in infographics",
+    "find a template's list style before formatting generated copy"
+   ],
+   "avoid": [
+    "simple one-off bullets: typing a bullet glyph may be enough",
+    "COM scripts that need removeAll: COM lists only a hidden Remove(item), no RemoveAll"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: app.activeDocument.listStyles; add(name) creates a ListStyle (alignment and indents are read and set per level with getAlignment / putAlignment, getLeftIndent / putLeftIndent, getFirstLineIndent / putFirstLineIndent; sequence prefix / postfix / bullet are get-only).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a named list style"
+    },
+    {
+     "name": "getByName",
+     "use": "first list style with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of list styles"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all list styles (ExtendScript only)"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "ExtendScript has removeAll but no remove; COM has Remove but no RemoveAll (harvested COM diff)",
+    "how a list style is attached to paragraphs by script is not covered by this class (unverified)",
+    "add with an existing name may throw (unverified)",
+    "ExtendScript cannot delete a single list style: the harvested ListStyle element has no remove, so removeAll is the only delete"
+   ],
+   "example": "var ls = app.activeDocument.listStyles;\nvar steps = null;\ntry { steps = ls.getByName('Steps'); }\ncatch (e) { steps = ls.add('Steps'); }\n$.writeln(ls.length + ' list styles');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how said prefix / postfix / bullet are settable; the harvested ListStyle has get-only methods for them; added: no single-style remove in ExtendScript; COM Remove is hidden"
+   }
+  },
+  {
+   "name": "MeshItems",
+   "id": "class:MeshItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/MeshItems",
+   "status": "current",
+   "summary": "ExtendScript collection of gradient mesh objects in a document, layer or group. It has no add, so meshes can be found, counted and deleted but not created here.",
+   "use_for": [
+    "find and count mesh objects before a print or export pre-flight",
+    "delete mesh artwork from a file that must stay simple vectors",
+    "locate a named mesh to move or duplicate it"
+   ],
+   "avoid": [
+    "creating or editing a mesh by script: no add or mesh-point members exist",
+    "smooth colour blends that must be scriptable: use gradients or freeform gradients"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.meshItems (also layer / group). Elements are MeshItem objects: beyond the PageItem basics they add only move, duplicate and remove.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of mesh items"
+    },
+    {
+     "name": "getByName",
+     "use": "first mesh with this name"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all mesh items in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "no add member and no mesh point access in the element class",
+    "meshes are heavy in PDF / EPS export; count them before export (unverified size impact)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var meshes = app.activeDocument.meshItems;\n$.writeln(meshes.length + ' gradient meshes');\nfor (var i = meshes.length - 1; i >= 0; i--) $.writeln(meshes[i].typename);",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); element 'only' ignored the PageItem superclass members"
+   }
+  },
+  {
+   "name": "NonNativeItems",
+   "id": "class:NonNativeItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/NonNativeItems",
+   "status": "current",
+   "summary": "ExtendScript collection of 'non-native' artwork items in a document, layer or group. The harvest has no description; the elements (NonNativeItem) only move, duplicate and remove. Which objects count as non-native is not confirmed.",
+   "use_for": [
+    "pre-flight: count objects Illustrator's scripting cannot edit natively (meaning unconfirmed)",
+    "delete or move such objects in batch"
+   ],
+   "avoid": [
+    "editing their content: the element class exposes no content members",
+    "relying on it as a complete list of foreign content without testing on a known file"
+   ],
+   "confidence": "low",
+   "how": "ExtendScript: doc.nonNativeItems (also layer / group); elements are NonNativeItem objects.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of non-native items"
+    },
+    {
+     "name": "getByName",
+     "use": "first item with this name"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "which artwork types land here is not documented in the harvest (unverified)",
+    "no add and no removeAll in ExtendScript; remove items one at a time through the element",
+    "COM has RemoveAll / Count / Item / Index"
+   ],
+   "example": "var nn = app.activeDocument.nonNativeItems;\n$.writeln(nn.length + ' non-native items');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "PageItems",
+   "id": "class:PageItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/PageItems",
+   "status": "current",
+   "summary": "ExtendScript collection of every art object of any type (paths, groups, text, images, symbols ...) in a document, layer or group; read-only, no add.",
+   "use_for": [
+    "walk all artwork for a pre-flight (locked, hidden, off-artboard items)",
+    "apply one change (opacity, move, style) to everything on a layer",
+    "find a named object regardless of its type"
+   ],
+   "avoid": [
+    "creating art: use the typed collections (PathItems, TextFrames, GroupItems ...)",
+    "deleting while iterating forwards: indexes shift, iterate backwards"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.pageItems, layer.pageItems or group.pageItems; elements are typed objects, check typename to branch.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of items in the container"
+    },
+    {
+     "name": "getByName",
+     "use": "first item with this name, any type"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "doc.pageItems includes items nested in groups while layer.pageItems lists only direct children (unverified)",
+    "no removeAll in ExtendScript; COM lists RemoveAll",
+    "remove items from the end backwards so indexes stay valid"
+   ],
+   "example": "var items = app.activeDocument.layers[0].pageItems;\nfor (var i = items.length - 1; i >= 0; i--) {\n  $.writeln(i + ': ' + items[i].typename);\n}",
+   "equivalents": {
+    "PS": "class:Layers",
+    "CDR": "Shapes"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents.PS 'Layers' also matches a PS menu item; pinned to API id class:Layers"
+   }
+  },
+  {
+   "name": "Paragraphs",
+   "id": "class:Paragraphs",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Paragraphs",
+   "status": "current",
+   "summary": "ExtendScript collection of the paragraphs in a text frame, story or range; each element is a TextRange for one paragraph. add / addBefore insert new paragraphs from strings.",
+   "use_for": [
+    "apply paragraph styles to body copy paragraph by paragraph",
+    "build a bulleted spec list by appending paragraphs",
+    "set space-before / after on headline vs body paragraphs"
+   ],
+   "avoid": [
+    "character-level styling: use characters or a TextRange",
+    "visual line control: use Lines"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: textFrame.paragraphs, story.paragraphs or textRange.paragraphs; paragraphs[i] is a TextRange. add(contents) appends a paragraph, addBefore(contents) inserts before.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "add a paragraph from a string, returns its TextRange"
+    },
+    {
+     "name": "addBefore",
+     "use": "add a paragraph before the range (unverified exact position)"
+    },
+    {
+     "name": "length",
+     "use": "number of paragraphs"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all paragraphs in the range"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful for paragraphs (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "owning text frame, story or range"
+    }
+   ],
+   "gotchas": [
+    "paragraph breaks in Illustrator text are carriage returns (\\r), not \\n (unverified)",
+    "empty paragraphs can throw when their attributes are read (unverified)",
+    "no single-paragraph remove in ExtendScript; COM has a hidden Remove(item), and COM Add also takes optional RelativeObject / InsertionLocation arguments"
+   ],
+   "example": "var tf = app.activeDocument.textFrames[0];\nvar paras = tf.paragraphs;\nparas.add('New feature line');\n$.writeln(paras.length + ' paragraphs');",
+   "equivalents": {
+    "CDR": "TextParagraphs"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM Remove is hidden in the type library and COM Add has two extra optional args; gotcha corrected"
+   }
+  },
+  {
+   "name": "ParagraphStyles",
+   "id": "class:ParagraphStyles",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/ParagraphStyles",
+   "status": "current",
+   "summary": "ExtendScript collection of the document's paragraph styles (Paragraph Styles panel): create a named style, find one by name, count or clear them.",
+   "use_for": [
+    "template type systems (H1, body, caption) created by script",
+    "apply consistent body styling to data-merged copy",
+    "audit paragraph styles before hand-off"
+   ],
+   "avoid": [
+    "styling a word inside a paragraph: use CharacterStyles",
+    "one-off formatting: set paragraph attributes on the TextRange"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.paragraphStyles (textRange.paragraphStyles gives the styles applied to a range). add(name) returns a ParagraphStyle; set its attributes and apply it through that object.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a named paragraph style"
+    },
+    {
+     "name": "getByName",
+     "use": "first style with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of styles"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all removable styles"
+    },
+    {
+     "name": "parent",
+     "use": "document or text range"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "[Normal Paragraph Style] sits at index 0 and survives removeAll (unverified)",
+    "add with an existing name throws (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var ps = app.activeDocument.paragraphStyles;\nvar body = null;\ntry { body = ps.getByName('Body'); }\ncatch (e) { body = ps.add('Body'); }\n$.writeln(ps.length + ' paragraph styles');",
+   "equivalents": {
+    "CDR": "Styles"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "PathItems",
+   "id": "class:PathItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/PathItems",
+   "status": "current",
+   "summary": "ExtendScript collection of paths in a document, layer, group or compound path, and the shape factory: rectangle, rounded rectangle, ellipse, polygon, star, or an empty path to fill with points.",
+   "use_for": [
+    "background panels, cards and buttons (rectangle / roundedRectangle)",
+    "badges, starbursts and seals (star, polygon)",
+    "dots, rings and avatar masks (ellipse)",
+    "custom outlines from point data (add then pathPoints)"
+   ],
+   "avoid": [
+    "text: use TextFrames",
+    "shapes with holes: create the paths inside a compound path's pathItems"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.pathItems (also layer, group, compoundPath.pathItems). Shape methods take points: rectangle(top, left, width, height), roundedRectangle(top, left, width, height, hRadius, vRadius), ellipse(top, left, width, height), polygon(centerX, centerY, radius, sides), star(centerX, centerY, radius, innerRadius, points); the optional reversed flag flips path direction.",
+   "key_members": [
+    {
+     "name": "rectangle",
+     "use": "rectangle from top, left, width, height"
+    },
+    {
+     "name": "roundedRectangle",
+     "use": "rounded rectangle with horizontal and vertical corner radius"
+    },
+    {
+     "name": "ellipse",
+     "use": "ellipse inside top, left, width, height; inscribed flag"
+    },
+    {
+     "name": "polygon",
+     "use": "regular polygon from centre, radius and side count"
+    },
+    {
+     "name": "star",
+     "use": "star from centre, outer and inner radius and point count"
+    },
+    {
+     "name": "add",
+     "use": "empty path, to be built point by point"
+    },
+    {
+     "name": "getByName",
+     "use": "first path with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of paths"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all paths in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer, group or compound path"
+    }
+   ],
+   "gotchas": [
+    "argument order is top, left (not left, top) for rectangle, roundedRectangle and ellipse",
+    "y increases upward, so shapes below the artboard top need negative top values (unverified for non-default coordinate systems)",
+    "new paths take the document's current default fill and stroke (unverified)",
+    "the harvest notes rectangle / roundedRectangle / polygon / star are for creation, not for accessing paths",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var p = app.activeDocument.pathItems;\nvar bg = p.rectangle(0, 0, 1080, 1080);\nvar btn = p.roundedRectangle(-880, 240, 600, 120, 60, 60);\nvar badge = p.star(860, -220, 140, 110, 24);\nvar dot = p.ellipse(-100, 100, 80, 80);",
+   "equivalents": {
+    "PS": "PathItems",
+    "CDR": "Shapes"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "PathPoints",
+   "id": "class:PathPoints",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/PathPoints",
+   "status": "current",
+   "summary": "ExtendScript collection of the anchor points of one path; add() appends a point whose anchor and direction handles are then set, building or editing the path's shape.",
+   "use_for": [
+    "draw custom outlines from data (charts, waveforms, map shapes)",
+    "edit handles to soften or sharpen corners",
+    "count points to simplify or audit paths"
+   ],
+   "avoid": [
+    "simple shapes: PathItems.rectangle / ellipse / star are one call",
+    "large polylines: setting the whole point list on the PathItem at once is faster than point-by-point add (unverified timing)"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: pathItem.pathPoints. add() returns a PathPoint; set its anchor, leftDirection and rightDirection ([x, y] in points) and point type on that object.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "append a new point to the path"
+    },
+    {
+     "name": "length",
+     "use": "number of anchor points"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all points"
+    },
+    {
+     "name": "getByName",
+     "use": "inherited lookup by name, not meaningful for points (unverified)"
+    },
+    {
+     "name": "parent",
+     "use": "the owning path"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "a newly added point sits at a default position until its anchor is set (unverified)",
+    "set both direction handles to the anchor value for a sharp corner, otherwise curves appear",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var path = app.activeDocument.pathItems.add();\nvar pts = path.pathPoints;\nvar a = pts.add();\na.anchor = [100, -100]; a.leftDirection = a.anchor; a.rightDirection = a.anchor;\nvar b = pts.add();\nb.anchor = [300, -100]; b.leftDirection = b.anchor; b.rightDirection = b.anchor;",
+   "equivalents": {
+    "PS": "PathPoints",
+    "CDR": "class:Nodes"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName); equivalents.CDR 'Nodes' also matches a CDR menu item; pinned to API id class:Nodes"
+   }
+  },
+  {
+   "name": "Patterns",
+   "id": "class:Patterns",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/Patterns",
+   "status": "current",
+   "summary": "ExtendScript collection of pattern definitions (pattern swatches) in the document: create, find by name, count or clear them. The Pattern element exposes only a name.",
+   "use_for": [
+    "find a template's pattern swatch to fill generated shapes",
+    "audit and clean pattern swatches before hand-off",
+    "rename or list textile / packaging patterns"
+   ],
+   "avoid": [
+    "building a pattern's tile art by script: the Pattern class has no art members; make the pattern in Pattern Options",
+    "live editable tiling of art: use GridRepeatItems"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: app.activeDocument.patterns; elements are Pattern objects. Use a pattern as a fill through a PatternColor.",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a new pattern definition"
+    },
+    {
+     "name": "getByName",
+     "use": "first pattern with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of patterns"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all patterns"
+    },
+    {
+     "name": "parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "a pattern created by add() has no tile art and cannot get any through the Pattern class (its harvested members are name / remove only)",
+    "removing a pattern in use may recolour or break fills that reference it (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var pats = app.activeDocument.patterns;\n$.writeln(pats.length + ' patterns');\nvar p = null;\ntry { p = pats.getByName('Pinstripe'); } catch (e) {}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "PlacedItems",
+   "id": "class:PlacedItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/PlacedItems",
+   "status": "current",
+   "summary": "ExtendScript collection of placed (linked) files in a document, layer or group; add() creates a placed item that is then pointed at a file on disk.",
+   "use_for": [
+    "place product photos into a layout template",
+    "relink a batch of images to new versions",
+    "find linked files to embed or trace them"
+   ],
+   "avoid": [
+    "importing editable vectors: use GroupItems.createFromFile",
+    "files that must travel with the .ai: embed the placed item afterwards"
+   ],
+   "confidence": "high",
+   "how": "ExtendScript: doc.placedItems (also layer / group). add() returns a PlacedItem; set its file to a File and position or scale it through that object (it can also be embedded, traced or relinked there).",
+   "key_members": [
+    {
+     "name": "add",
+     "use": "create a placed item (point it at a file next)"
+    },
+    {
+     "name": "getByName",
+     "use": "first placed item with this name"
+    },
+    {
+     "name": "length",
+     "use": "number of placed items"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all placed items in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "set the file right after add(); an unlinked placed item is an empty object (unverified)",
+    "links store absolute paths, so moving the files breaks them (unverified)",
+    "embedded images stop being placed items and leave this collection (unverified)",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var doc = app.activeDocument;\nvar img = doc.placedItems.add();\nimg.file = new File('C:/assets/product.png');\n$.writeln(doc.placedItems.length + ' placed');",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  },
+  {
+   "name": "PluginItems",
+   "id": "class:PluginItems",
+   "app": "AI",
+   "kind": "ai_api",
+   "path": "Collections/PluginItems",
+   "status": "current",
+   "summary": "ExtendScript collection of plug-in art objects in a document, layer or group: art created and owned by a plug-in. Image Trace results are among them (the element has isTracing / tracing members).",
+   "use_for": [
+    "find Image Trace objects to change their tracing options or expand them",
+    "count plug-in art before a hand-off pre-flight",
+    "delete leftover traces from a file"
+   ],
+   "avoid": [
+    "creating plug-in art: there is no add",
+    "editing the art inside: expand it in the UI first"
+   ],
+   "confidence": "medium",
+   "how": "ExtendScript: doc.pluginItems (also layer / group); elements are PluginItem objects. Check the element's tracing flag to tell traced images from other plug-in art.",
+   "key_members": [
+    {
+     "name": "length",
+     "use": "number of plug-in items"
+    },
+    {
+     "name": "getByName",
+     "use": "first plug-in item with this name"
+    },
+    {
+     "name": "removeAll",
+     "use": "delete all plug-in items in the container"
+    },
+    {
+     "name": "parent",
+     "use": "document, layer or group"
+    },
+    {
+     "name": "typename",
+     "use": "class name string"
+    }
+   ],
+   "gotchas": [
+    "which other object types count as plug-in art (blends, envelopes ...) is not in the harvest (unverified)",
+    "no add: plug-in art comes from UI commands or from tracing a PlacedItem / RasterItem",
+    "over COM, Count / Item / Index stand in for length / [i], there is no GetByName, and Remove(item) exists but is hidden in the type library (harvested COM diff)"
+   ],
+   "example": "var plugs = app.activeDocument.pluginItems;\nfor (var i = 0; i < plugs.length; i++) {\n  $.writeln(i + ': ' + plugs[i].typename);\n}",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "COM gotcha said Remove replaces ExtendScript names; corrected to the real diff (hidden Remove, no GetByName)"
+   }
+  }
+ ]
+}

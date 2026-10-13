@@ -1,0 +1,898 @@
+{
+ "cards": [
+  {
+   "name": "Offset Path",
+   "id": "Live Offset Path",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Path/Offset Path",
+   "status": "current",
+   "summary": "Live version of Object > Path > Offset Path: every path in the target is redrawn offset outward (positive ofst) or inward (negative) by a set distance, so fills and strokes fatten or shrink and corners follow the join type; the original paths stay editable. Harvest probe: ofst 10 grew the rectangle and its stroke 10 pt on every side with square corners (jntp 2). On the test plate ofst 24 swelled the box, star and circle, fused the PGD letters into one dark blob with the counters filled, and turned the open zigzag into a closed outline drawn around itself.",
+   "use_for": [
+    "sticker / die-cut border behind a logo or headline (Offset Path on an extra fill below the art in the Appearance panel)",
+    "editable keyline or bleed around shapes and badges",
+    "thicken thin type or icons without changing the font weight",
+    "inset fill for inline / neon-tube type (negative offset on a second fill)"
+   ],
+   "avoid": [
+    "large offsets on detailed type: letters fuse into blobs and counters fill in; keep it small or apply it only to an extra fill below the type",
+    "negative offsets larger than half a shape's width make thin parts vanish",
+    "a cutter or plotter file needs the real path: use Object > Path > Offset Path or Expand Appearance"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "CDR": "Effects/Contour"
+   },
+   "look": [
+    "offset outline",
+    "fattened shapes",
+    "sticker border",
+    "bloated type",
+    "outset / inset path",
+    "keyline"
+   ],
+   "params": [
+    {
+     "name": "ofst",
+     "does": "offset distance in points; positive grows the shape, negative shrinks it",
+     "typical": "10 (the harvested dialog value: the probe rectangle and its stroke grew 10 pt on every side); larger for a sticker border, negative to inset (negative values were not round-tripped)"
+    },
+    {
+     "name": "jntp",
+     "does": "corner join code; 2 (harvested default) rendered square miter corners in the harvest probe; 0 and 1 are the dialog's other joins (Round, Bevel), which code is which was not harvested",
+     "typical": 2
+    },
+    {
+     "name": "mlim",
+     "does": "miter limit: how far a sharp miter corner may extend before it is cut off (miter joins only)",
+     "typical": 4
+    }
+   ],
+   "demo_settings": {
+    "ofst": 24,
+    "jntp": 2,
+    "mlim": 4
+   },
+   "pairs_with": [
+    "Outline Stroke",
+    "Round Corners",
+    "Roughen",
+    "Drop Shadow",
+    "Expand Appearance"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Offset Path\"><Dict data=\"R mlim 4.0 I jntp 2 R ofst 24.0\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Offset Path') on the selection",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "low: one vector offset per path, redraws fast",
+   "review": {
+    "by": "adversarial",
+    "changes": "ofst typical and use_for: removed invented 2-8 / 15-30 / -1 to -4 pt ranges, now the harvested 10 (probe grew 10 pt per side, measured on the render PNG); summary states the probe result and marks the plate prediction (zigzag outline) as not verified"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/fd944de2a7e5.png",
+    "note": "Box, star and circle visibly grew, the PGD letters bloated into a fused blob with filled counters, and the zigzag became a closed stroked outline around its old path, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "pass",
+     "frame": "gallery/ai_effect/fd944de2a7e5.png",
+     "note": "Box, star and circle visibly grew, the PGD letters bloated into a fused blob with filled counters, and the zigzag became a closed stroked outline around its old path, as the card says.",
+     "rerender": false
+    }
+   }
+  },
+  {
+   "name": "Outline Object",
+   "id": "Live Outline Object",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Path/Outline Object",
+   "status": "current",
+   "summary": "Live 'type to outlines' (LiveEffect Adobe Outline Type): the object, mainly a text object, is treated as outlined paths by alignment and by the effects stacked after it, while the text stays editable. It draws nothing new by itself: the harvest probe rendered identically to the plain rectangle (diff 0.0), so the plate should look unchanged.",
+   "use_for": [
+    "align or centre live type by its real glyph edges (with Use Preview Bounds) instead of the font's em box",
+    "let later effects in the Appearance panel treat live type as shapes",
+    "keep a logo's wordmark editable while its effects behave as on outlines"
+   ],
+   "avoid": [
+    "expecting a visible change: it is a no-op on its own and on plain paths",
+    "a file that must ship without fonts: use Type > Create Outlines",
+    "stacking it after the effect that needs it: it must sit above that effect in the Appearance panel"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Type/Convert to Shape",
+    "CDR": "Object/Convert to Curves"
+   },
+   "look": [
+    "no visible change",
+    "live outlines",
+    "type treated as shapes"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Offset Path",
+    "Add",
+    "Expand Appearance"
+   ],
+   "scripting": "textFrame.applyEffect('<LiveEffect name=\"Adobe Outline Type\"><Dict data=\"\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Outline Object') on the selection",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "negligible",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid and equivalents checked against the batch and the 0.0 render PNGs)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/920de8831233.png",
+    "note": "The frame matches the plate (mean diff 0.044, type edges only), the no-visible-change result the card predicts for this effect on its own.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 920de8831233.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Outline Stroke",
+   "id": "Live Outline Stroke",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Path/Outline Stroke",
+   "status": "current",
+   "summary": "Live version of Object > Path > Outline Stroke: each stroke is converted inside the effect into a filled shape of the same width, so the effects stacked after it (Offset Path, Roughen, Pathfinder) work on the stroke's outline instead of its centre line, and the stroke weight stays editable. Alone it changes nothing visible: the harvest probe rendered identically to the plain rectangle (diff 0.0).",
+   "use_for": [
+    "make Offset Path or Roughen follow a stroke's outer edge (rough hand-drawn lines, outlined icon borders)",
+    "let a Pathfinder effect on a group count strokes as shapes",
+    "logo marks that need outlined strokes for effects but an editable stroke weight"
+   ],
+   "avoid": [
+    "expecting a visible change: it renders the same unless another effect follows it",
+    "objects without a stroke: there is nothing to outline",
+    "cutting, embroidery or export that needs real outline paths: use Object > Path > Outline Stroke"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Convert Outline to Object"
+   },
+   "look": [
+    "no visible change",
+    "stroke as shape",
+    "outlined stroke"
+   ],
+   "params": [],
+   "demo_settings": {},
+   "pairs_with": [
+    "Offset Path",
+    "Roughen",
+    "Add"
+   ],
+   "scripting": "item.applyEffect('<LiveEffect name=\"Adobe Outline Stroke\"><Dict data=\"\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Outline Stroke') on the selection",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "negligible: one stroke-to-outline conversion per path",
+   "review": {
+    "by": "adversarial",
+    "changes": "none (summary, use_for, avoid and equivalents checked against the batch and the 0.0 render PNGs)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/4bf2a116e2aa.png",
+    "note": "The frame matches the plate (mean diff 0.122, edge pixels only): alone it changes nothing visible, as the card says.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 4bf2a116e2aa.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Add",
+   "id": "Live Pathfinder Add",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Add",
+   "status": "current",
+   "summary": "Live Pathfinder Add (unite): fuses the objects in a group, layer or type object into one silhouette with no interior edges while the parts stay editable, painted with the topmost object's paint. On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) it drew one outline-free blue silhouette of both shapes, pixel-identical to the Effect-menu control. The harvest probe on a lone filled + stroked rectangle kept only the stroke outline: Pathfinder effects need a group.",
+   "use_for": [
+    "fuse overlapping letters or icon parts into one silhouette for a logo mark or badge",
+    "one outline around clustered shapes, then Offset Path for a sticker border",
+    "keep construction shapes editable while showing the united result"
+   ],
+   "avoid": [
+    "multicolour artwork you want to keep: everything takes the topmost object's paint (the orange box turned blue on the overlap plate); use Merge to keep colours",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first",
+    "a plain scripted applyEffect on a group: the effect lands after the group's fill/stroke stack and gives a blank or unchanged result; move it to the head of the chain (see scripting) or apply it from the Effect menu",
+    "a real united path for cutting or export: Pathfinder panel Unite, Shape Builder or Expand Appearance"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Combine Shapes/Unite Shapes",
+    "CDR": "Object/Shaping/Weld"
+   },
+   "look": [
+    "merged silhouette",
+    "united shapes",
+    "no interior edges",
+    "one colour (topmost object's paint)"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 0 = Add. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 0
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Add"
+    }
+   ],
+   "demo_settings": {
+    "Command": 0,
+    "DisplayString": "Add"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Offset Path",
+    "Round Corners",
+    "Drop Shadow",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 0 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Add\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Add') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: boolean geometry recomputed on every redraw; slow on large groups or long type",
+   "review": {
+    "by": "adversarial",
+    "changes": "Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "wrong",
+    "frame": "gallery/ai_effect/4ce988b6fb55.png",
+    "note": "On the overlap plate the orange box and the blue circle became one outline-free silhouette in the topmost circle's blue, a clean union (pixel-identical to the Effect-menu control); the card said renders showed no union and an empty plate, both from the old faulty script route, so summary, look and avoid are rewritten.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "wrong",
+     "cause": "effect text",
+     "note": "Plate + harness check: sampled the old box area (255,122,26 in ref_overlap) and the circle: both are now 30,91,255 with no edge between them, and RERENDER_REPORT's menu control equals this frame (diff 0.0), so the union is Illustrator's own result; the old 'blank artboard' came from the effect sitting after the group's paint stack, not from Add."
+    },
+    "previous": {
+     "verdict": "wrong",
+     "frame": "gallery/ai_effect/4ce988b6fb55.png",
+     "note": "The frame is a pure white artboard: every shape vanished, not the black-outline-only union the card predicted; Command 0 is the Add operation itself, so no demo change can alter it on this plate.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict wrong agreed (frame is pure white), but summary, avoid and look blamed it on the unfilled topmost zigzag and offered 'put a filled shape on top' as the fix; no render isolated that cause (the group has no paint of its own, and Convert to Shape on the same group, frame e2a0a98dd5f8, is blank too), so the text now states the facts without a cause; demo unchanged, Command 0 is the operation itself"
+    }
+   }
+  },
+  {
+   "name": "Crop",
+   "id": "Live Pathfinder Crop",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Crop",
+   "status": "current",
+   "summary": "Live Pathfinder Crop: the topmost object in the group acts as a cookie-cutter; only the parts of the objects below that fall inside it remain, in their own colours, the cutter itself disappears and strokes are removed (the harvest probe's lone rectangle lost its stroke, diff 1.85). On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) only the orange lens of the box lying under the circle survived, in orange; the circle and the rest of the box vanished.",
+   "use_for": [
+    "trim a pattern or illustration to a frame shape while keeping its colours",
+    "fit a busy background into a badge, circle or letterform",
+    "flat cut-to-shape artwork for vinyl or screen print"
+   ],
+   "avoid": [
+    "artwork whose strokes matter: Crop removes them; use Object > Clipping Mask > Make instead",
+    "the frame shape is not the topmost object: Crop always cuts with the top one, which then disappears (on the overlap plate the circle on top cut the box and vanished itself)",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Create Clipping Mask",
+    "CDR": "Object/PowerClip/Place Inside Frame"
+   },
+   "look": [
+    "cookie cutter",
+    "cropped to shape",
+    "trimmed to frame",
+    "strokes removed"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 9 = Crop. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 9
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Crop"
+    }
+   ],
+   "demo_settings": {
+    "Command": 9,
+    "DisplayString": "Crop"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Drop Shadow",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 9 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Crop\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Crop') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/8c9ba81abc6f.png",
+    "note": "On the overlap plate the topmost circle cut the box like a cookie-cutter: only the orange lens of the box lying under the circle survived, in the box's own orange, and the circle itself vanished, the Crop the card describes; the stale vector-plate sentence was replaced.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 8c9ba81abc6f.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Divide",
+   "id": "Live Pathfinder Divide",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Divide",
+   "status": "current",
+   "summary": "Live Pathfinder Divide: the artwork is cut into separate faces wherever paths cross, each face painted with the colour that shows there, so while live it looks like the original stack without strokes; the pieces only become separate, recolourable shapes after Expand Appearance. With ExtractUnpainted on (the harvested default) unfilled faces are dropped. The lone rectangle lost its stroke in the probe (diff 1.85). On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) the frame is pixel-identical to the plate (diff 0.001), as is the Effect-menu control: the split faces live in the paths and only show after Expand Appearance.",
+   "use_for": [
+    "split overlapping shapes into pieces for geometric, low-poly or stained-glass colouring after Expand Appearance",
+    "cut a shape with crossing lines into segments (pie or panel layouts)",
+    "prepare overlap regions to be recoloured one by one"
+   ],
+   "avoid": [
+    "expecting a visible split while live: pieces only become selectable after Expand Appearance (on opaque, unstroked overlapping fills the render is identical to the original)",
+    "artwork whose strokes matter: they are lost",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "strokes removed",
+    "unfilled paths dropped",
+    "faces split (visible after Expand Appearance)"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 5 = Divide. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 5
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "ExtractUnpainted",
+     "does": "drop faces that have no fill (Pathfinder Options: Divide and Outline will remove unpainted artwork)",
+     "typical": true
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Divide"
+    }
+   ],
+   "demo_settings": {
+    "Command": 5,
+    "DisplayString": "Divide"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Expand Appearance",
+    "Merge"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 5 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Divide\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Divide') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw; heavy on many crossing paths",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary and look said overlaps visibly turn into a mosaic, which contradicted the card's own avoid line (split only shows after Expand Appearance): now 'looks like the original without strokes while live'; Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "gallery/ai_effect/7c045f7bca6c.png",
+    "note": "Untested: the frame is pixel-identical to the overlap plate (mean diff 0.001, antialiasing on the circle edge only), as is the Effect-menu control; Divide splits the faces in the paths, which a render of opaque, unstroked fills cannot show; stale plate sentence replaced.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "harness",
+     "note": "Harness check: the RERENDER_REPORT menu control is also 0.001 from the plate, so the route is not at fault; the cut lives in the path structure, so judging it needs a path-level capture (Expand Appearance, then count or recolour the faces), not a PNG."
+    },
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 7c045f7bca6c.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Exclude",
+   "id": "Live Pathfinder Exclude",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Exclude",
+   "status": "current",
+   "summary": "Live Pathfinder Exclude: where the objects overlap an even number of times the area is knocked out to a hole and the rest stays filled, all in the topmost object's paint (the XOR / checkerboard look). On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) both shapes came out in the circle's blue with their shared lens punched out to white. The harvest probe's lone rectangle rendered unchanged (diff 0.0).",
+   "use_for": [
+    "checkerboard and op-art patterns from overlapping repeats",
+    "knockout type: letters punched through a shape where they overlap it",
+    "interlocking ring or Venn logo marks with hollow overlaps"
+   ],
+   "avoid": [
+    "non-overlapping artwork: nothing is knocked out",
+    "keeping several colours: everything takes the topmost object's paint",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Combine Shapes/Subtract Shapes at Overlap",
+    "CDR": "Object/Combine"
+   },
+   "look": [
+    "knockout",
+    "xor",
+    "checkerboard holes",
+    "even-odd cutout"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 2 = Exclude. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 2
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Exclude"
+    }
+   ],
+   "demo_settings": {
+    "Command": 2,
+    "DisplayString": "Exclude"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Transform",
+    "Drop Shadow",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 2 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Exclude\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Exclude') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/c5af3df6314b.png",
+    "note": "On the overlap plate the box and circle both came out in the topmost circle's blue with their shared lens punched out to white, the XOR knockout in the topmost paint the card describes; the stale vector-plate sentence was replaced.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no c5af3df6314b.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "corrected: verdict not_rendered agreed (absent from index.json, no c5af3df6314b.png); the summary predicted the plate shapes repainted with the zigzag's paint, which the blank Add frame 4ce988b6fb55 on the same group contradicts; now says the paint was not seen and the frame may come out blank"
+    }
+   }
+  },
+  {
+   "name": "Hard Mix",
+   "id": "Live Pathfinder Hard Mix",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Hard Mix",
+   "status": "current",
+   "summary": "Live Pathfinder Hard Mix: overlap areas are filled with a colour made of the highest value of each colour component of the overlapping fills (Adobe describes it in CMYK, where it reads like overprinted inks); in an RGB document that is the lowest value of each RGB channel: on the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) the lens where the orange box (255,122,26) meets the blue circle (30,91,255) came out dark green (30,91,26), while the non-overlapping parts kept their colours. The harvest probe's lone rectangle lost its stroke (diff 1.85).",
+   "use_for": [
+    "overprinted-ink and screen-print looks in flat illustrations",
+    "coloured overlap regions in Venn diagrams or logo marks without transparency",
+    "print-safe opaque overlaps that need no transparency flattening"
+   ],
+   "avoid": [
+    "expecting Photoshop's Hard Mix blend mode (posterised high contrast): a different operation",
+    "a controllable mix strength: use Soft Mix (Mix rate) or a transparency blend mode",
+    "non-overlapping art changes almost nothing and strokes are lost",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "look": [
+    "overprint",
+    "ink mix",
+    "dark overlap colour",
+    "highest-ink / lowest-RGB overlap colour",
+    "strokes removed"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 10 = Hard Mix. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 10
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    }
+   ],
+   "demo_settings": {
+    "Command": 10
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Soft Mix",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 10 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Hard Mix') on the selection  // DisplayString 'Hard Mix' left out: a value with a space was never round-tripped (verify_live.py sends one-token values only; the harvest round trip sent the other 13 params) Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "look 'darkened overlaps' dropped (the card itself says the RGB mapping is unchecked); scripting note no longer claims a Dict value cannot hold a space, only that one was never round-tripped; Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/7fabdcbd0df4.png",
+    "note": "On the overlap plate the lens where the orange box (255,122,26) meets the blue circle (30,91,255) is dark green 30,91,26, the lowest of each RGB channel (the CMYK 'highest component' rule in RGB), while the rest kept its colours; the card's open RGB question is answered in the text.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 7fabdcbd0df4.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Intersect",
+   "id": "Live Pathfinder Intersect",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Intersect",
+   "status": "current",
+   "summary": "Live Pathfinder Intersect: only the area overlapped by all the objects in the group survives, painted with the topmost object's paint; everything else disappears. On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) only the lens shared by both shapes remained, in the circle's blue. The harvest probe's lone rectangle lost its fill (diff 17.6).",
+   "use_for": [
+    "lens / Venn overlap shape from two circles",
+    "window or porthole shape: show only the region two shapes share",
+    "letterforms clipped to the shape behind them, in one colour"
+   ],
+   "avoid": [
+    "groups where some object does not overlap all the others: the result is empty",
+    "multicolour artwork: only the topmost paint survives; use Crop to keep the colours underneath",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Layer/Combine Shapes/Unite Shapes at Overlap",
+    "CDR": "Object/Shaping/Intersect"
+   },
+   "look": [
+    "overlap only",
+    "intersection",
+    "venn lens",
+    "shared area"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 1 = Intersect. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 1
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Intersect"
+    }
+   ],
+   "demo_settings": {
+    "Command": 1,
+    "DisplayString": "Intersect"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Drop Shadow",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 1 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Intersect\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Intersect') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "pass",
+    "frame": "gallery/ai_effect/97dae0d5f27a.png",
+    "note": "On the overlap plate only the lens shared by the box and the circle survived, in the topmost circle's blue, and everything else vanished, as the card describes; the stale vector-plate sentence ('expect the artwork to vanish') was replaced.",
+    "rerender": false,
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 97dae0d5f27a.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  },
+  {
+   "name": "Merge",
+   "id": "Live Pathfinder Merge",
+   "app": "AI",
+   "kind": "ai_effect",
+   "path": "Effect/Pathfinder/Merge",
+   "status": "current",
+   "summary": "Live Pathfinder Merge: hidden parts of overlapped objects are removed, all strokes are dropped, and touching or overlapping objects with the same fill colour fuse into one shape, so stacked flat art becomes non-overlapping colour areas; while live it looks like the stack without strokes, the fused pieces show after Expand Appearance (the probe's lone rectangle lost its stroke, diff 1.85). On the overlap plate (orange rounded box behind a blue circle, overlapping, no strokes) the frame is pixel-identical to the plate (diff 0.001), as is the Effect-menu control: the hidden part of the box is removed in the paths only, and with no matching fills and no strokes nothing shows in pixels.",
+   "use_for": [
+    "flatten layered flat-colour illustrations for screen printing or vinyl cutting (one shape per colour)",
+    "fuse same-colour overlapping pieces of an icon into single shapes",
+    "remove hidden overlaps before export to tools that dislike stacked shapes"
+   ],
+   "avoid": [
+    "artwork whose strokes matter: they are removed; put Outline Stroke before it",
+    "gradient or pattern fills: only identical flat colours merge",
+    "a single path or ungrouped selection: Illustrator warns that Pathfinder effects belong on groups, layers or type objects; group first"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "CDR": "Object/Shaping/Simplify"
+   },
+   "look": [
+    "strokes removed",
+    "flattened colour areas",
+    "same-colour shapes fused (visible after Expand Appearance)"
+   ],
+   "params": [
+    {
+     "name": "Command",
+     "does": "Pathfinder operation code; 8 = Merge. All Effect > Pathfinder items store the same 'Adobe Pathfinder' effect with the same other values and differ only in this code and in the DisplayString label; changing Command alone should switch the operation (inferred, not round-tripped) while DisplayString keeps the old label",
+     "typical": 8
+    },
+    {
+     "name": "RemovePoints",
+     "does": "remove redundant anchor points from the computed result (Pathfinder Options)",
+     "typical": false
+    },
+    {
+     "name": "Precision",
+     "does": "boolean calculation precision (Pathfinder Options); stored 10.0 at harvest, how that maps to the dialog's value was not harvested, so leave it",
+     "typical": 10.0
+    },
+    {
+     "name": "DisplayString",
+     "does": "label the Appearance panel shows for this effect (inferred from the key name)",
+     "typical": "Merge"
+    }
+   ],
+   "demo_settings": {
+    "Command": 8,
+    "DisplayString": "Merge"
+   },
+   "enum_labels": {
+    "Command": {
+     "0": "Add",
+     "1": "Intersect",
+     "2": "Exclude",
+     "3": "Subtract",
+     "4": "Minus Back",
+     "5": "Divide",
+     "6": "Outline",
+     "7": "Trim",
+     "8": "Merge",
+     "9": "Crop",
+     "10": "Hard Mix",
+     "11": "Soft Mix",
+     "12": "Trap"
+    }
+   },
+   "pairs_with": [
+    "Outline Stroke",
+    "Expand Appearance"
+   ],
+   "scripting": "group.applyEffect('<LiveEffect name=\"Adobe Pathfinder\"><Dict data=\"R Mix 0.5 I Command 8 R TrapTintTolerance 0.05 R TrapMaxTint 1.0 R Precision 10.0 R TrapAspect 1.0 R TrapTint 0.4 B ExtractUnpainted 1 B RemovePoints 0 B TrapReverse 0 B ConvertCustom 1 B TrapConvertCustom 0 R TrapThickness 0.25 U DisplayString Merge\"/></LiveEffect>');  // menu route: app.executeMenuCommand('Live Pathfinder Merge') on the selection Chain-order gotcha (gallery, 2026-10-13): a plain applyEffect appends the Pathfinder effect to the group's art style after its fill/stroke stack, where it acts on the group's own empty paint (blank or unchanged result); the Effect menu puts it at the head of the chain, on the group's contents. The gallery saves the file, moves the effect to the head of the group's chain, reopens and re-renders: that route matched the Effect-menu control pixel for pixel.",
+   "scriptable": "yes",
+   "non_destructive": "yes: live effect in the Appearance panel, editable or removable any time; Object > Expand Appearance bakes it",
+   "cost": "medium: recomputed on every redraw",
+   "review": {
+    "by": "adversarial",
+    "changes": "summary and look: the fusing of same-colour shapes is structural, not visible while live; now says it looks like the stack without strokes until expanded; Command 'does': the items also differ in DisplayString, and the switch-operation claim is marked inferred; Precision 'does' no longer asserts the stored scale vs the dialog's points value (not in the batch)"
+   },
+   "verified": {
+    "verdict": "not_rendered",
+    "frame": "gallery/ai_effect/013c6f5894c8.png",
+    "note": "Untested: the frame is pixel-identical to the overlap plate (mean diff 0.001), as is the Effect-menu control; removing the box's hidden part and fusing same-colour fills happen in the paths, and the plate has no matching fills and no strokes, so nothing can show; stale plate sentence replaced.",
+    "rerender": false,
+    "second_opinion": {
+     "agree": true,
+     "verdict": "not_rendered",
+     "cause": "plate + harness",
+     "note": "Plate + harness check: two different flat colours with no strokes give Merge nothing visible to do (the menu control is identical too); judging it needs same-colour touching shapes plus a stroked shape on the plate and a path-level capture after Expand Appearance."
+    },
+    "previous": {
+     "verdict": "not_rendered",
+     "frame": "",
+     "note": "Absent from gallery/ai_effect/index.json and no 013c6f5894c8.png exists, so there is no frame to judge.",
+     "rerender": false,
+     "second_opinion": "agree"
+    }
+   }
+  }
+ ]
+}

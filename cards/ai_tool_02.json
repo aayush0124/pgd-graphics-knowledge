@@ -1,0 +1,226 @@
+{"cards": [
+{
+ "name": "Adobe Constraints Tool",
+ "id": "Adobe Constraints Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Constraints Tool",
+ "status": "current",
+ "summary": "Internal id of the Objects on Path tool: the harvest found no display name, but the install names this id 'Objects on Path' (rich tooltip TOOLTIPS.Adobe Constraints Tool: 'Align, arrange and move objects on a path'; tool name string in ConstraintsUI.aip), and the ai_menu harvest has the matching Object/Objects on Path/Attach..., Options... and Expand. It attaches the selected objects to a path as a live arrangement: they sit along the path, and on-canvas widgets change their spacing, rotate them, slide them all along the path or shuffle one to a new place.",
+ "use_for": [
+  "icons, dots or badges spaced evenly around a circle for a seal, clock face or badge ring",
+  "a row of different objects (leaves, stars, beads) following a wavy line for a border or garland",
+  "tickets, cards or photos arranged along an arc in a layout",
+  "re-spacing a set of attached objects later by editing the path instead of moving each one"
+ ],
+ "avoid": [
+  "repeating one object in an exact ring or grid: Object > Repeat (radial / grid) is built for identical copies",
+  "a continuous stroke pattern along a path: use a Pattern or Art brush on the path instead",
+  "text along a path: use the Type on a Path Tool",
+  "files going to older Illustrator versions or other apps: run Object/Objects on Path/Expand first so the objects become ordinary artwork",
+  "unattended scripts: the live arrangement cannot be created from the DOM (see script_api)"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "how": "Select the objects first, then pick the tool and click the path that should carry them (the plugin's own hint: select objects > invoke Objects on Path tool > click on a path; the path cannot be one of the selected objects). Object/Objects on Path/Attach... is the menu route. Once attached, the on-canvas widgets are Space (spacing), Rotate All, Move All (slide every object along the path) and Select/Move (pick one object and shuffle it to another place); width / height / rotation handles change a single object. The Properties panel adds Make Spacing Equal, Rotate, Pivot (the attachment point on the path) and Detach; Object/Objects on Path/Options... opens the Objects on Path Tool Options (Pivot, Rotate); Expand turns the result into ordinary objects. Copy and paste objects along the path in Isolation mode (the plugin's tip). Taken from the plugin's UI strings, not a live test.",
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "Activation only: app.selectTool(\"Adobe Constraints Tool\") (harvest invoke; live readback returned the id). The Object/Objects on Path menu entries carry no executeMenuCommand id in the harvest, and no DOM class creates or edits an objects-on-path arrangement. Static substitute: compute positions along the path yourself from PathItem.pathPoints (anchor / leftDirection / rightDirection Bezier math) and place copies with PageItem.duplicate, translate and rotate; the result is not live and does not re-space when the path changes.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: the click order was backwards (tool, then path, then objects); ConstraintsUI.aip's own hint is select objects > Objects on Path tool > click the path, so rewritten to that order; widgets renamed to the plugin's strings (Space, Rotate All, Move All, Select/Move = shuffle one object, per-object width/height/rotation) and Detach moved to the Properties panel where the strings put it (the card said the Select/Move widget detaches); added Make Spacing Equal, Pivot, the Options dialog and the Isolation-mode copy tip. summary: widget list matched to the same strings, dropped the unsupported 'rotate them to follow the path', added the ConstraintsUI.aip tool-name evidence. Checked: Objects on Path menu items have invoke null in ai_menu, Object/Repeat/Radial and Grid and Type on a Path Tool exist, PathItem.pathPoints / PageItem.duplicate / translate / rotate are in ai_api."
+ }
+},
+{
+ "name": "Artboard",
+ "id": "Adobe Crop Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Crop Tool",
+ "status": "current",
+ "summary": "The Artboard tool (internal id 'Adobe Crop Tool'; the rich tooltip keyed by this id reads 'Create and adjust artboards on the canvas'): creates, resizes, moves, duplicates and deletes artboards, the printable / exportable page areas of an Illustrator document. The art itself is never resized; moving or duplicating an artboard carries its art along while Move/Copy Artwork with Artboard is on, and deleting an artboard leaves its art on the canvas.",
+ "use_for": [
+  "setting up several deliverable sizes in one file (post, story, banner) for a campaign",
+  "a multi-page brochure, menu or business card front/back in one document",
+  "fitting a page tightly around a logo before exporting it",
+  "laying out app or web screens side by side"
+ ],
+ "avoid": [
+  "cropping a placed image: use the Crop Image button on the Properties panel, or a clipping mask",
+  "resizing the artwork itself: the tool moves the page frame, so scale the art with the Scale or Selection tools",
+  "precise sizes by dragging: type W / H and X / Y in the Properties panel or Artboard Options instead",
+  "moving an artboard when the art must stay put: switch off 'Move/Copy Artwork with Artboard' first"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "artboardTool"
+ },
+ "how": "Pick the tool (Shift+O): every artboard shows a frame and name. Drag on empty canvas to draw a new artboard; click an artboard to make it active, drag its handles to resize it, drag inside it to move it. With an artboard active, the Properties panel sets a size preset, orientation, exact W / H / X / Y and the name; the Control panel also has Duplicate Artboard, Delete Artboard and the Move/Copy Artwork with Artboard toggle. Keys (standard Illustrator behaviour, not in the harvest): Alt-drag duplicates an artboard, Delete removes the active one (the art stays), Esc leaves artboard editing (or pick another tool).",
+ "shortcut": "Shift+O",
+ "scriptable": "yes",
+ "script_api": "Selecting the tool: app.selectTool(\"Adobe Crop Tool\") (harvest invoke; live readback returned the id). The tool's work is all in the DOM: Document.artboards.add([left, top, right, bottom]) creates one, Artboard.artboardRect resizes or moves it, Artboard.name renames it, Artboards.remove(index) deletes it, Artboards.setActiveArtboardIndex picks the active one, Document.fitArtboardToSelectedArt(index) fits it to the selection, Document.rearrangeArtboards lays them out and Document.selectObjectsOnActiveArtboard selects their art. Moving art with an artboard means translating the items yourself (PageItem.translate).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: 'Nothing in the artwork changes; only the page frames do' contradicted the card's own avoid entry: with Move/Copy Artwork with Artboard on (CropAreaTool.aip toggle) moving or duplicating an artboard moves or copies its art; reworded. how: added the Control panel's Duplicate / Delete Artboard and the Move/Copy toggle (CropAreaTool.aip strings) and flagged Alt-drag / Delete / Esc as not harvested. Checked: Shift+O and the selectTool id match the batch; every DOM member in script_api is in ai_api (Artboards.add/remove/setActiveArtboardIndex, Artboard.artboardRect/name, Document.fitArtboardToSelectedArt/rearrangeArtboards/selectObjectsOnActiveArtboard, PageItem.translate); Object/Crop Image exists; PS artboardTool exists."
+ }
+},
+{
+ "name": "Curvature Tool",
+ "id": "Adobe Curvature Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Curvature Tool",
+ "status": "current",
+ "summary": "Draws and edits paths by clicking points only: Illustrator bends the path smoothly through each point and previews the next curve as you move, so smooth flowing shapes come out without dragging Bezier handles. Points can be switched to corners for straight lines and sharp turns.",
+ "use_for": [
+  "smooth organic outlines: leaves, waves, hair, blobs and mascot shapes",
+  "tracing curvy logo letterforms or a product silhouette over a placed sketch",
+  "quick reshaping of an existing path by dragging its points",
+  "beginners drawing clean curves without handle work"
+ ],
+ "avoid": [
+  "exact handle control or tangent-precise curves (technical drawing, type design): use the Pen Tool and Anchor Point Tool",
+  "mostly straight-edged geometry: use the shape tools or the Pen Tool with clicks",
+  "loose sketchy strokes: use the Pencil Tool or Paintbrush Tool"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "curvaturePenTool",
+  "CDR": "Toolbox/Curve Tools/B-Spline"
+ },
+ "how": "Pick the tool (Shift+~). Click to place the first two points, then keep clicking: the rubber-band preview shows how the curve will flow through the next point. Double-click a point to toggle it between corner and smooth; drag any point to reshape, click on the path to add a point. Keys (standard Illustrator behaviour, not in the harvest): Alt-click while placing makes a corner, Delete removes the selected point, Esc ends an open path; click the first point to close the path.",
+ "shortcut": "Shift+~",
+ "scriptable": "partial",
+ "script_api": "Selecting the tool: app.selectTool(\"Adobe Curvature Tool\") (harvest invoke; live readback returned the id); a script cannot click. The same path is built with Document.pathItems.add() and PathItem.setEntirePath([[x, y], ...]), then each PathPoint gets leftDirection / rightDirection and pointType = PointType.SMOOTH or CORNER. The automatic curve fitting is not exposed: compute the handles yourself (e.g. Catmull-Rom to Bezier), or try PathItem.convertAnchorToSmooth(index), whose handle lengths were not tested.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: flagged the Alt-click / Delete / Esc keys as not in the harvest. Checked: Shift+~ and the selectTool id match the batch; pathItems.add, setEntirePath, PathPoint leftDirection / rightDirection / pointType, PointType SMOOTH / CORNER and PathItem.convertAnchorToSmooth(anchorPointIndex) are in ai_api; PS curvaturePenTool and CDR Toolbox/Curve Tools/B-Spline exist (B-Spline's curve runs near, not through, its control points, but it is CorelDRAW's click-only smooth-curve tool)."
+ }
+},
+{
+ "name": "Adobe Dimension Tool",
+ "id": "Adobe Dimension Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Dimension Tool",
+ "status": "current",
+ "summary": "The Dimension tool (the harvest found no display name; the install's rich tooltip keyed by this id is titled 'Dimension: Measure and plot linear, angular, and radial dimensions', and DimensionUI.aip names it 'Dimension Tool'). It measures objects and places the result on the artboard as dimension art: extension lines, a dimension line with arrows and the value text, for a length, an angle, or a radius / diameter.",
+ "use_for": [
+  "packaging dielines and labels annotated with measurements for the printer",
+  "product, furniture or signage drawings with sizes marked",
+  "annotating imported CAD / technical drawings",
+  "spec sheets and style-guide pages showing spacing and sizes"
+ ],
+ "avoid": [
+  "just reading a distance without adding artwork: use the Measure Tool (readout in the Info panel)",
+  "stroked objects measured to the wrong edge: turn on Preferences > General > Use Preview Bounds first",
+  "final art for print with dimensions left on: put them on their own layer and hide or delete it",
+  "unattended scripts: dimension art cannot be created from the DOM (see script_api)"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "CDR": "Toolbox/Dimension Flyout/Parallel Dimension"
+ },
+ "how": "Pick the tool and hover over an object: it snaps to the object's bounds. Place a dimension on it, or pick any two points to measure the distance and angle between them. The on-canvas HUD switches between Linear, Angular and Radial Dimension; for radial, drag outwards for a radius and inwards for a diameter. The HUD's Tool Options button opens Dimension Tool Options (Units & Scale, Precision, Dimension Lines with arrow style, Extension Lines, Dimension Text with font and position); a selected dimension shows these settings in the Properties panel, with Expand to turn it into plain art. Taken from the install's onboarding and UI strings, not a live test.",
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "Activation only: app.selectTool(\"Adobe Dimension Tool\") (harvest invoke; live readback returned the id). The harvested DOM has no call that creates dimension art; GroupItem.isDimensionArt() only tells whether an existing group is dimension art. Scripted substitute: draw the extension and dimension lines with Document.pathItems.add / setEntirePath and the value with Document.textFrames.add, computing the length from PageItem.geometricBounds or PathItem.length; the result is plain art, not a live dimension.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: 'Tool options (Properties panel)' was wrong about where the tool options live: DimensionUI.aip has a Dimension Tool Options dialog opened from the HUD's Tool Options button, the Properties panel carries a selected dimension's settings plus Expand; HUD types named as the plugin names them (Linear / Angular / Radial Dimension); dropped the unsupported 'click or drag to place' gesture. summary: added the DimensionUI.aip tool name. Checked: no shortcut in the batch (null kept); GroupItem.isDimensionArt, pathItems.add, setEntirePath, textFrames.add, geometricBounds and PathItem.length are in ai_api and nothing there creates dimension art, so scriptable stays no; Measure Tool and CDR Toolbox/Dimension Flyout/Parallel Dimension exist."
+ }
+},
+{
+ "name": "Lasso Tool",
+ "id": "Adobe Direct Lasso Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Direct Lasso Tool",
+ "status": "current",
+ "summary": "Selects anchor points and path segments (and through them their objects) by dragging a freehand loop around them. It works like a free-form marquee for the Direct Selection Tool: only the points inside the loop are selected, so you can move part of a path or a cluster of points across several paths.",
+ "use_for": [
+  "grabbing an irregular cluster of anchor points in a dense illustration to move or scale them together",
+  "selecting the points of one part of a character (a hand, a hair strand) without the rest of the path",
+  "picking points across several overlapping paths where a rectangular marquee would catch too much"
+ ],
+ "avoid": [
+  "selecting whole objects: use the Selection Tool or Magic Wand",
+  "selecting objects inside groups: use the Group Selection Tool",
+  "a pixel selection on an image: Illustrator has none; mask or crop the image, or edit it in Photoshop"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Toolbox/Edit Shape Tools/Shape"
+ },
+ "how": "Pick the tool (Q) and drag a loop around the anchor points you want; the loop closes when you release. Then move the selected points with the Direct Selection Tool or the Transform panel, or scale / rotate them with the Scale and Rotate tools. Keys (standard Illustrator behaviour, not in the harvest): Shift-drag adds points to the selection, Alt-drag removes them, arrow keys nudge.",
+ "shortcut": "Q",
+ "scriptable": "partial",
+ "script_api": "Selecting the tool: app.selectTool(\"Adobe Direct Lasso Tool\") (harvest invoke; live readback returned the id); drawing the loop is a hand gesture. A script selects points directly instead: set PathPoint.selected = PathPointSelection.ANCHORPOINT on the points inside your own region test (point-in-polygon over PathPoint.anchor), read them back with PathItem.selectedPathPoints, and move them by rewriting PathPoint.anchor / leftDirection / rightDirection.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: flagged the Shift / Alt / arrow keys as not in the harvest. Checked: Q and the selectTool id match the batch; the rich tooltip keyed by this id ('Select points, path segments, and objects by drawing freehand shapes') matches the summary; PathPoint.selected, PathPointSelection.ANCHORPOINT, PathItem.selectedPathPoints and PathPoint.anchor are in ai_api; CDR Toolbox/Edit Shape Tools/Shape exists; PS has no point lasso, so none is listed."
+ }
+},
+{
+ "name": "Direct Selection Tool",
+ "id": "Adobe Direct Select Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Direct Select Tool",
+ "status": "current",
+ "summary": "Selects individual anchor points, path segments and direction handles instead of whole objects, so a path can be reshaped point by point. It also selects single objects inside groups and clipping masks, and shows the live-corner widgets for rounding selected corners.",
+ "use_for": [
+  "reshaping a logo or icon by moving single anchors or pulling curve handles",
+  "rounding selected corners of a shape with the live-corner widget",
+  "moving an image inside its clipping mask without moving the mask",
+  "aligning individual points (e.g. making two anchors level) with the Align panel"
+ ],
+ "avoid": [
+  "moving or scaling whole objects: use the Selection Tool, so paths are not accidentally distorted",
+  "selecting a whole group level by level: use the Group Selection Tool",
+  "adding, deleting or converting points: use the Pen Tool, Add / Delete Anchor Point Tool or Anchor Point Tool"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "PS": "directSelectTool",
+  "CDR": "Toolbox/Edit Shape Tools/Shape"
+ },
+ "how": "Pick the tool (A). Click an anchor to select it (solid square = selected, hollow = not), drag it to move; drag a curve segment to bend it; drag a handle to change the curve. Dragging a marquee selects every point inside it. With corner points selected, drag the round live-corner widget to round them. Keys (standard Illustrator behaviour, not in the harvest): Shift-click adds or removes points, arrow keys nudge, holding Alt switches to the Group Selection Tool while clicking.",
+ "shortcut": "A",
+ "scriptable": "partial",
+ "script_api": "The harvest has no invoke for this tool: its live check raised Illustrator error 1346458189 ('PARM') around app.selectTool / app.getSelectedToolName, so selecting it by script is unverified. A script edits points without the tool: PathPoint.anchor, leftDirection, rightDirection and pointType are writable, PathPoint.selected takes PathPointSelection values, and PathItem.convertAnchorToCorner / convertAnchorToSmooth change point types. Live-corner rounding and segment dragging have no DOM call; compute the new handles yourself.",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: flagged the Shift / arrow / Alt keys as not in the harvest. Checked: A matches the batch; no invoke in the batch and script_api says selection by script is unverified (PARM from the selectTool + getSelectedToolName check), as the batch states; PathPoint anchor / leftDirection / rightDirection / pointType / selected and PathItem.convertAnchorToCorner / convertAnchorToSmooth are in ai_api, and ai_api has no live-corner member; PS directSelectTool and CDR Toolbox/Edit Shape Tools/Shape exist."
+ }
+},
+{
+ "name": "Group Selection Tool",
+ "id": "Adobe Direct Object Select Tool",
+ "app": "AI",
+ "kind": "ai_tool",
+ "path": "Toolbar (Default)/flyout of Adobe Direct Select Tool",
+ "status": "current",
+ "summary": "Selects one object inside a group, then each further click adds the next group up the hierarchy. It lets you recolor or move one part of nested grouped artwork without ungrouping it.",
+ "use_for": [
+  "recoloring one element of a grouped logo or icon set without ungrouping",
+  "moving one part of a nested illustration (an eye inside a face group inside a character group)",
+  "selecting a sub-group of a chart or infographic step by step"
+ ],
+ "avoid": [
+  "editing single anchor points: use the Direct Selection Tool",
+  "deep or repeated edits inside one group: double-click it with the Selection Tool to enter Isolation Mode",
+  "selecting the whole top-level group: the Selection Tool does it in one click"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "how": "Pick the tool from the Direct Selection Tool flyout (no shortcut in the harvest). Click an object inside a group to select only it; click it again to add the group that contains it, and again for the next level up. Move or recolor the selection as usual; the group structure stays intact. Keys (standard Illustrator behaviour, not in the harvest): Shift-click adds or removes objects, and holding Alt with the Direct Selection Tool gives this tool temporarily.",
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "The harvest has no invoke for this tool: its live check raised Illustrator error 1346458189 ('PARM') around app.selectTool / app.getSelectedToolName. The batch paired the display name by dialog order only, but the install's rich tooltip keyed by this id (TOOLTIPS.Adobe Direct Object Select Tool) is titled 'Group Selection', which confirms it. A script reaches grouped parts directly: walk GroupItem.pageItems (or groupItems / pathItems) and set PageItem.selected = true on the member, or set its parent GroupItem.selected to step up a level.",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: the name pairing the batch calls unconfirmed is now confirmed by the id-keyed rich tooltip in com.adobe.ccx.rtt (TOOLTIPS.Adobe Direct Object Select Tool.TITLE = 'Group Selection'), which also backs confidence high; dropped the ToolTip/3 aside. how: flagged the Shift / Alt keys as not in the harvest. Checked: no shortcut in the batch (null kept); GroupItem.pageItems / groupItems / pathItems and PageItem.selected are in ai_api; no PS or CDR tool does this job (CDR uses a modifier on Pick), so equivalents stay empty."
+ }
+}
+]}

@@ -1,0 +1,881 @@
+{"cards": [
+{
+ "name": "Adobe PDF Presets",
+ "id": "1215",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Adobe PDF Presets",
+ "status": "current",
+ "summary": "Opens the Adobe PDF Presets dialog, where the named PDF export settings (.joboptions files shared by the Creative Cloud apps, e.g. [High Quality Print], [Press Quality], [PDF/X-4:2008], [Smallest File Size]) are created, edited, deleted, imported and exported. It manages presets only; it does not save a PDF. Enabled with no document open.",
+ "how": "Pick a preset to read its description, then New or Edit to set compatibility, PDF/X standard, image compression, marks and bleeds, output colour conversion and security; Load / Save As move .joboptions files between machines or from a print shop. Built-in presets (in square brackets) cannot be edited, only used as the starting point of a New one.",
+ "use_for": [
+  "setting up a print shop's PDF/X preset once so posters, flyers and packaging comps export to the same spec",
+  "making a small-file preset for emailing client proofs",
+  "loading the .joboptions a printer sent so Photoshop, Illustrator and InDesign all export alike"
+ ],
+ "avoid": [
+  "actually exporting the file: use File > Save As (Photoshop PDF) and pick the preset there",
+  "editing a built-in preset expecting it to change: start a New preset from it instead"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Adobe PDF Presets..."
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested for managing presets (no menuItemType or event label matches; menu command id 1215 is not runnable through runMenuItem). To export WITH a preset instead: PDFSaveOptions.presetFile (a writable member in the PS API harvest, not run) takes the preset name, then app.activeDocument.saveAs(file, opts).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api presented PDFSaveOptions.presetFile + saveAs as this command without its dialog, but it exports with a preset rather than managing presets; reworded, and presetFile cited from the PS API harvest. Preset names checked against the shared .joboptions in harvest/ai/ai_preset.json"
+ }
+},
+{
+ "name": "Assign Profile",
+ "id": "1212",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Assign Profile",
+ "status": "current",
+ "summary": "Tags the active document with a different ICC profile (or none) without changing its pixel numbers, so the same values are interpreted, displayed and printed as a different colour space; the image visibly shifts colour. Needs an open document.",
+ "how": "Three choices: Don't Color Manage This Document, Working RGB/CMYK (the space from Color Settings), or Profile (pick any installed profile from the list). Preview shows the shift live. The profile is embedded on save when Embed Color Profile is on.",
+ "use_for": [
+  "tagging an untagged camera or client file with the space it was actually made in (e.g. sRGB or Adobe RGB) so it previews correctly",
+  "fixing a file that was opened with the wrong profile assumption",
+  "checking how the same CMYK numbers would look under a different press profile"
+ ],
+ "avoid": [
+  "converting an image to a new output space (web sRGB, press CMYK) while keeping its look: use Edit/Convert to Profile",
+  "changing the colour mode only: use Image > Mode"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Assign Profile...",
+  "CDR": "Tools/Color Management"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('assignProfile'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), profile (string) = 'Adobe RGB (1998)'; verified live (profile sRGB IEC61966-2.1 -> Adobe RGB (1998)). DOM alternative: app.activeDocument.colorProfileName = 'Adobe RGB (1998)' (a writable member in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: colorProfileName is a writable Document member in the PS API harvest, so the DOM route now cites it (still not run)"
+ }
+},
+{
+ "name": "Auto-Align Layers",
+ "id": "1237",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Auto-Align Layers",
+ "status": "needs_input",
+ "summary": "Analyses the content of two or more selected layers and moves, scales, rotates or warps them so matching features line up, for example the overlapping frames of a panorama or a bracketed or handheld burst. Needs two or more layers selected.",
+ "how": "Projection: Auto, Perspective, Collage, Cylindrical, Spherical or Reposition (Reposition only shifts; Collage allows rotate and scale only). Lens Correction: Vignette Removal and Geometric Distortion for wide-angle sources. Follow with Auto-Blend Layers to hide the seams.",
+ "use_for": [
+  "lining up overlapping photos before stitching a panorama for a wide hero banner",
+  "aligning a handheld bracketed or focus-stack series before blending",
+  "aligning several group-photo frames so the best faces can be masked in"
+ ],
+ "avoid": [
+  "aligning layer edges or centres for layout: use the Move tool's align buttons or Layer > Align",
+  "layers with little overlapping detail (flat colour, text): the match fails or warps badly"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('align'), desc, DialogModes.ALL) with desc: null = reference to layers (Lyr), using (Usng) = enum alignDistributeSelector 'ADSContent'; run live on a multi-layer scratch document (history state 'Align content'). DialogModes.ALL shows the dialog; DialogModes.NO with the same descriptor should run without it (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Auto-Blend Layers",
+ "id": "1238",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Auto-Blend Layers",
+ "status": "needs_input",
+ "summary": "Blends two or more selected, already aligned layers into one seamless result by giving each layer a layer mask that hides its seams or its out-of-focus areas: Panorama mode stitches overlapping frames, Stack Images mode keeps the sharpest parts of each layer for a focus stack. Needs two or more layers selected.",
+ "how": "Blend Method: Panorama or Stack Images. Seamless Tones and Colors evens out exposure and colour across the seams; Content Aware Fill Transparent Areas fills the empty corners a panorama leaves. Run Auto-Align Layers first.",
+ "use_for": [
+  "finishing a stitched panorama for a wide web banner or print backdrop",
+  "focus-stacking product macro shots so the whole product is sharp",
+  "merging aligned frames of the same scene into one clean plate"
+ ],
+ "avoid": [
+  "layers that are not aligned yet: run Edit/Auto-Align Layers first",
+  "blending unrelated images for a creative composite: paint layer masks by hand instead"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('mergeAlignedLayers'), new ActionDescriptor(), DialogModes.NO); verified live on a multi-layer scratch document (a layer mask appeared on the layer; history 'Auto-Blend Layers').",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Check Spelling",
+ "id": "3392",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Check Spelling",
+ "status": "current",
+ "summary": "Opens the Check Spelling dialog and steps through the words in the document's text layers that are not in the dictionary of each text's language, offering suggestions. Pixel text (rasterised type) is not checked. Needs an open document.",
+ "how": "For each flagged word: Ignore, Ignore All, Change (to the selected suggestion or a typed word), Change All, or Add to the user dictionary. Check All Layers checks every text layer instead of only the selected one. The dictionary follows the Language set in the Character panel.",
+ "use_for": [
+  "proofing headline and body copy on a poster or social post before export",
+  "catching typos in a menu, flyer or banner set built in Photoshop"
+ ],
+ "avoid": [
+  "text that has been rasterised or is in a placed image: retype it as live type first",
+  "replacing one word everywhere: use Edit/Find and Replace Text"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Spelling/Check Spelling...",
+  "CDR": "Text/Writing Tools/Spell Check"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('spellCheck'), undefined, DialogModes.ALL) opens the Check Spelling dialog (verified live); there is no known no-dialog route.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Clear",
+ "id": "106",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Clear",
+ "status": "needs_input",
+ "summary": "Deletes the pixels inside the active selection on the active layer without putting them on the clipboard, leaving a transparent hole; on the Background layer the area is filled with the background colour instead. Needs an active selection.",
+ "use_for": [
+  "knocking a shape out of a texture layer",
+  "removing a background area after a Select Subject or Magic Wand selection",
+  "clearing a block of a layer to make room for a headline"
+ ],
+ "avoid": [
+  "cutting pixels you want to paste elsewhere: use Edit/Cut",
+  "edits you may want to undo later: hide the area with a layer mask instead (non-destructive)"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Clear",
+  "CDR": "Edit/Delete"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "app.activeDocument.selection.clear() (verified live: history 'Clear' after a lasso selection).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Color Settings",
+ "id": "2344",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Color Settings",
+ "status": "current",
+ "summary": "Opens the Color Settings dialog that sets Photoshop's application-wide colour management: the working RGB, CMYK, Gray and Spot spaces, what happens when a file's embedded profile does not match, and how colours are converted. Enabled with no document open.",
+ "how": "Settings presets (regional General Purpose, Prepress and Web sets) set everything at once. Working Spaces pick the default profiles; Color Management Policies choose Preserve Embedded Profiles, Convert to Working, or Off, with Ask When Opening / Pasting for mismatches and missing profiles. Conversion Options set the engine, rendering intent, black point compensation and dither. Save / Load share a .csf file.",
+ "use_for": [
+  "setting the studio's CMYK working space to the printer's press profile before building print artwork",
+  "making Photoshop ask before converting client files that carry a different profile",
+  "matching colour settings across the Creative Cloud apps for a print job"
+ ],
+ "avoid": [
+  "changing one document's profile: use Edit/Assign Profile or Edit/Convert to Profile",
+  "screen soft-proofing: use View > Proof Setup"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Color Settings...",
+  "CDR": "Tools/Color Management"
+ },
+ "shortcut": "Ctrl+Shift+K",
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('colorSettings')) opens the dialog (verified live). Without the dialog: app.colorSettings = '<settings name>' (a writable Application member in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: dropped the numbered preset names (North America General Purpose 2, Europe Prepress 3), not in the batch or any PS harvest; script_api: app.colorSettings cited from the PS API harvest"
+ }
+},
+{
+ "name": "Content-Aware Fill",
+ "id": "1510",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Content-Aware Fill",
+ "status": "needs_input",
+ "summary": "Opens the Content-Aware Fill workspace, which fills the selected area with texture synthesised from a sampling area of the surrounding image, so an unwanted object or blemish disappears into its background. Needs an active selection around the object.",
+ "how": "Paint or adjust the sampling area (green overlay; Auto, Rectangular or Custom). Fill Settings: Color Adaptation, Rotation Adaptation, Scale and Mirror help with gradients, curves and symmetric scenes. Output To: Current Layer, New Layer or Duplicate Layer. The preview updates live; OK applies.",
+ "use_for": [
+  "removing a sign, wire or passer-by from a background photo before placing a headline",
+  "extending a sky or wall to clean up a product shot",
+  "cleaning dust, logos or watermarks off a stock plate you have rights to edit"
+ ],
+ "avoid": [
+  "large or structured areas (faces, text, repeated architecture): the synthesis repeats patterns; use Edit/Generative Fill or clone by hand",
+  "selections tight to the object: expand the selection a few pixels first or edges ghost"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('cafWorkspace'), new ActionDescriptor(), DialogModes.NO); verified live: with no settings it applied the fill with the workspace defaults and the result landed on a new layer.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Content-Aware Scale",
+ "id": "2220",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Content-Aware Scale",
+ "status": "current",
+ "summary": "Puts the active layer (or the selected area) into a scaling mode that resizes the image while protecting its important content: flat or low-detail regions such as sky, water or plain wall are stretched or squeezed first, so people and objects keep their proportions. Needs an open document; it is unavailable for text layers, smart objects, groups and multiple selected layers.",
+ "how": "Drag the transform handles or type W/H in the options bar. Amount (a percentage) blends between content-aware and normal scaling; Protect picks an alpha channel whose white areas must not distort; the person icon protects skin tones. Commit with the options-bar tick.",
+ "use_for": [
+  "turning a landscape photo into a wider banner or narrower story format without cropping the subject",
+  "making room beside a subject for headline copy",
+  "adapting one key visual to several aspect ratios"
+ ],
+ "avoid": [
+  "big changes in proportion with busy backgrounds: distortion and warping appear; add canvas with the Crop Tool instead (its Generative Expand fills the new area)",
+  "text, smart objects and groups: rasterise or work on a flattened copy first"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+Alt+Shift+C",
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('contentAware')) is the label-matched candidate (not run: it enters an interactive transform mode that waits for the user to commit).",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: removed the unharvested 0-100% Amount range and the Enter key; avoid: Generative Expand named as the Crop Tool option it is (no such menu command in the harvest)"
+ }
+},
+{
+ "name": "Convert to OpenColorIO",
+ "id": "3820",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Convert to OpenColorIO",
+ "status": "hidden",
+ "summary": "Most likely converts the active document from ICC-profile colour management to OpenColorIO (OCIO) management using the configuration chosen in Edit/OpenColorIO Settings, for film and VFX colour pipelines such as ACES. In the harvested Photoshop 2026 this item is hidden from the menu and was disabled in every document state tried, so its exact behaviour was not observed. The other OpenColorIO document commands (File/New OpenColorIO, File/Open as OpenColorIO, Window/OpenColorIO) are hidden in the same build; only Edit/OpenColorIO Settings is visible.",
+ "how": "Not observed: the item stayed hidden and disabled. It presumably asks for the OCIO colour space to convert into, from the active OCIO configuration.",
+ "use_for": [
+  "moving a matte painting or VFX plate into an ACES/OCIO pipeline shared with compositing apps (if the feature is enabled in your build)"
+ ],
+ "avoid": [
+  "ordinary print or web colour work: use Edit/Convert to Profile",
+  "relying on it in automation: the harvest could not run it"
+ ],
+ "confidence": "low",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "executeAction(stringIDToTypeID('convertToOCIO'), new ActionDescriptor(), DialogModes.NO) is the label-matched candidate; tried live, it failed with 'General Photoshop error occurred. This functionality may not be available in this version of Photoshop.' (the harvest truncates the rest of the message).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: the quoted error is now the harvested text, not a reconstructed ending; summary: notes from the ps_menu harvest that the sibling OCIO document commands are hidden too"
+ }
+},
+{
+ "name": "Convert to Profile",
+ "id": "1213",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Convert to Profile",
+ "status": "current",
+ "summary": "Converts the active document's pixel values from its current profile into another ICC profile so the image looks as close as possible to before in the new space (for example Adobe RGB to sRGB for web, or RGB to a press CMYK profile, which also changes the mode). Needs an open document.",
+ "how": "Pick the Destination Space profile. Conversion Options: Engine (Adobe ACE), Intent (Perceptual, Relative Colorimetric, Saturation, Absolute Colorimetric), Use Black Point Compensation, Use Dither. Flatten Image to Preserve Appearance merges layers so blend modes look the same after conversion. Advanced shows multichannel profiles.",
+ "use_for": [
+  "converting a finished social graphic to sRGB before export so colours do not shift online",
+  "converting a poster to the printer's CMYK profile for press",
+  "standardising a set of mixed-profile stock photos to one working space"
+ ],
+ "avoid": [
+  "fixing a file that merely previews wrongly: use Edit/Assign Profile (tags without converting)",
+  "converting back and forth repeatedly: each conversion loses colour data, keep an RGB master"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Tools/Color Management"
+ },
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('convertToProfile'), desc, DialogModes.NO) with desc: null = reference to the document (Dcmn), T (charID 'T   ') = 'Adobe RGB (1998)'; verified live. Note: with only that key the harvest saw the layered scratch document flattened to a single Background layer, so set the flatten option off (key unverified) or run it on a copy. DOM alternative: app.activeDocument.convertProfile('sRGB IEC61966-2.1', Intent.RELATIVECOLORIMETRIC, true, true) (destinationProfile, intent, blackPointCompensation, dither in the PS API harvest; not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: convertProfile signature and the Intent value checked against the PS API harvest and cited (still not run)"
+ }
+},
+{
+ "name": "Copy",
+ "id": "104",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Copy",
+ "status": "current",
+ "summary": "Copies the pixels inside the active selection on the active layer to the clipboard and leaves the original untouched; it is also enabled without a selection, when it copies the whole active layer. With text being edited it copies the selected characters. Needs an open document.",
+ "use_for": [
+  "copying a cut-out product onto another layout document",
+  "duplicating a texture patch to paste over a blemish",
+  "moving artwork from Photoshop into Illustrator or another app via the clipboard"
+ ],
+ "avoid": [
+  "copying what you see across all visible layers: use Edit/Copy Merged",
+  "duplicating a whole layer inside the same document: Layer/Duplicate Layer keeps its layer styles, mask and smart object; Layer/New/Layer Via Copy puts the selected pixels on a new layer in place"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Copy",
+  "CDR": "Edit/Copy"
+ },
+ "shortcut": "Ctrl+C | F3",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('copyEvent'), new ActionDescriptor(), DialogModes.NO) (verified live: clipboard written, a later paste added a layer). DOM: app.activeDocument.selection.copy().",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: Ctrl+J was given as Duplicate Layer's shortcut, but the harvest binds it to Layer/New/Layer Via Copy and it is not in this batch; both commands now named by their harvested paths"
+ }
+},
+{
+ "name": "Copy Merged",
+ "id": "1107",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Copy Merged",
+ "status": "needs_input",
+ "summary": "Copies the selected area as it looks with all visible layers combined (a flattened snapshot of the selection) to the clipboard, without merging or changing any layer. Needs an active selection.",
+ "use_for": [
+  "grabbing a finished composite area to paste as one layer for a final sharpen or grade",
+  "pasting a flattened crop of a layered layout into another document or app",
+  "making a quick flattened sample for a thumbnail"
+ ],
+ "avoid": [
+  "copying only the active layer's pixels: use Edit/Copy",
+  "a flattened layer of the whole document inside the same file: Select All, Copy Merged, then Edit/Paste Special/Paste in Place keeps it aligned"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+Shift+C",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('copyMerged'), new ActionDescriptor(), DialogModes.NO) (verified live: clipboard written). DOM alternative: app.activeDocument.selection.copy(true) (merge = true copies all visible layers, per the PS API harvest; not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: removed the Ctrl+Alt+Shift+E stamp-visible shortcut (not in the batch or the harvest); script_api: copy(merge) cited from the PS API harvest"
+ }
+},
+{
+ "name": "Cut",
+ "id": "103",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Cut",
+ "status": "needs_input",
+ "summary": "Removes the pixels inside the active selection from the active layer and puts them on the clipboard, leaving a transparent hole (filled with the background colour on the Background layer). Needs an active selection.",
+ "use_for": [
+  "moving part of an image to its own document or layer via paste",
+  "lifting an object out of a photo to reposition it",
+  "moving a block of pixels between documents"
+ ],
+ "avoid": [
+  "deleting pixels you will not paste: use Edit/Clear",
+  "separating an area onto its own layer in place: Layer/New/Layer Via Cut keeps its position"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Cut",
+  "CDR": "Edit/Cut"
+ },
+ "shortcut": "Ctrl+X | F2",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('cut'), new ActionDescriptor(), DialogModes.NO) (verified live: history 'Cut Pixels', clipboard written). DOM: app.activeDocument.selection.cut() (in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: dropped Ctrl+Shift+J (not in this batch) and used the harvested name Layer/New/Layer Via Cut; script_api: the DOM call is marked as harvested but not run"
+ }
+},
+{
+ "name": "Define Brush Preset",
+ "id": "1029",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Define Brush Preset",
+ "status": "current",
+ "summary": "Turns the selected area (or the whole image when nothing is selected) into a new brush tip and adds it to the Brushes panel; the tip is greyscale, so dark pixels paint opaque and light pixels paint faint. Asks for a name in the Brush Name dialog. Needs an open document.",
+ "how": "Make the source art black on white (or on transparency), select it, run the command and type the name in the Brush Name dialog. Afterwards set spacing, scattering and dynamics in Brush Settings and save the variant.",
+ "use_for": [
+  "making a brush from a logo mark or ink splatter for stamping textures",
+  "creating grunge, dust or paper-grain brushes for poster backgrounds",
+  "turning a hand-drawn stroke into a reusable custom brush"
+ ],
+ "avoid": [
+  "keeping the art's colours: brush tips are greyscale; use a pattern or a placed image instead",
+  "tiled repeating fills: use Edit/Define Pattern"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('defineBrush'), undefined, DialogModes.ALL) opens the Brush Name dialog (verified live). Without the dialog (unverified): executeAction(charIDToTypeID('Mk  '), desc, DialogModes.NO) with null = class Brsh, Usng = the document's selection (fsel) property, Nm = brush name.",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Define Custom Shape",
+ "id": "5624",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Define Custom Shape",
+ "status": "needs_input",
+ "summary": "Saves the selected path, shape layer outline or vector mask as a new custom shape in the Shapes panel, so it can be drawn again at any size with the Custom Shape tool or dragged from the panel. Asks for a name. It was disabled in every harvest fixture (none had a path selected), so it needs a selected vector path.",
+ "how": "Select a work path, a shape layer or a vector mask (Path Selection tool or the Paths panel), run the command and type the name in the Shape Name dialog.",
+ "use_for": [
+  "saving a brand icon or badge outline for reuse across a social post set",
+  "storing a custom frame or ribbon shape for repeat layouts",
+  "building a reusable library of arrows and callouts"
+ ],
+ "avoid": [
+  "pixel artwork: it only takes vector paths; trace or draw the outline with the Pen tool first",
+  "multi-colour artwork: a custom shape keeps only the outline, not the colours; use a smart object or library graphic instead"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "New Symbol",
+  "CDR": "Object/Symbol/Create New Symbol"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('defineCustomShape'), undefined, DialogModes.ALL) is the label-matched candidate (not confirmed): tried live it opened a 'Shape Name' dialog; with DialogModes.NO and no path selected it failed ('not currently available').",
+ "review": {
+  "by": "adversarial",
+  "changes": "avoid: 'a custom shape is a single path' was wrong (a shape can hold several subpaths); the real limit is that it keeps no colour"
+ }
+},
+{
+ "name": "Define Pattern",
+ "id": "1038",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Define Pattern",
+ "status": "current",
+ "summary": "Saves the rectangular selection (or the whole canvas when nothing is selected) as a new pattern tile in the Patterns panel; the tile repeats edge to edge when used (seamless only if its edges match). Asks for a name in the Pattern Name dialog. Needs an open document.",
+ "how": "Make a rectangular, unfeathered selection around the tile (or select nothing to use the whole canvas), run the command and name it. The pattern is then available in Edit > Fill (Pattern), Pattern Overlay, Pattern fill layers and the Pattern Stamp tool.",
+ "use_for": [
+  "building a brand pattern backdrop for social posts or packaging",
+  "making a halftone, grid or texture tile for a poster background",
+  "saving a fabric or surface swatch for mock-ups"
+ ],
+ "avoid": [
+  "tiles whose edges do not match: seams show; use Filter > Other > Offset to fix the tile first or Pattern Preview mode",
+  "feathered or non-rectangular selections: the command needs a rectangle"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Pattern/Make",
+  "CDR": "Object/Create/Pattern Fill"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('definePattern'), undefined, DialogModes.ALL) opens the Pattern Name dialog (verified live). Without the dialog (unverified): executeAction(charIDToTypeID('Mk  '), desc, DialogModes.NO) with null = class Ptrn, Usng = the document's selection (fsel) property, Nm = pattern name.",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: claimed every defined tile is seamless; it repeats edge to edge but is only seamless when the art's edges match"
+ }
+},
+{
+ "name": "Fade",
+ "id": "1154",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Fade",
+ "status": "needs_input",
+ "summary": "Right after a filter, adjustment, fill or paint stroke, reduces the strength of that last operation and/or changes the blend mode it was applied with, as if it had been applied on a layer above at lower opacity. It is only enabled immediately after such an operation (disabled in every plain harvest fixture).",
+ "how": "Opacity (a percentage; the harvest ran 50) sets how much of the last operation remains; Mode picks the blend mode (e.g. Luminosity after Unsharp Mask to sharpen without colour fringes). Preview shows the result live.",
+ "use_for": [
+  "toning down a sharpening or blur pass on a portrait",
+  "applying a filter in Luminosity or Overlay mode for a subtle texture",
+  "softening a heavy adjustment on a photo backdrop"
+ ],
+ "avoid": [
+  "anything you may change later: apply the filter as a smart filter or the adjustment as an adjustment layer and lower its opacity instead",
+  "fading an operation that was not the very last step: the command is greyed out"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Ctrl+Shift+F",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('fade'), desc, DialogModes.NO) with desc: Opct = 50 (#Prc), Md = BlnM Nrml; verified live right after a Gaussian Blur (history 'Fade Gaussian Blur').",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: removed the unharvested 0-100% range; cites the harvested 50% run instead"
+ }
+},
+{
+ "name": "Fill",
+ "id": "1042",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Fill",
+ "status": "current",
+ "summary": "Fills the active selection (or the whole layer when nothing is selected) with a colour, a pattern, history, or content-aware synthesised texture, with a chosen blend mode and opacity. Needs an open document (disabled on text, smart object and group layers and with several layers selected, in the harvest).",
+ "how": "Contents: Foreground Color, Background Color, Color..., Content-Aware, Pattern, History, Black, 50% Gray or White. Content-Aware adds Color Adaptation; Pattern adds Script fills (Brick Fill, Cross Weave, Random Fill, Spiral, Symmetry Fill, Place Along Path). Blending: Mode, Opacity and Preserve Transparency (fill only existing pixels).",
+ "use_for": [
+  "filling a selection with the brand colour for a background block or band",
+  "filling a layer with a pattern for a textured backdrop",
+  "quick object removal with Content-Aware on a small area"
+ ],
+ "avoid": [
+  "fills you will recolour later: use a Solid Color or Pattern fill layer (Layer > New Fill Layer) instead",
+  "careful object removal: use Edit/Content-Aware Fill, which has a sampling-area preview"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": "Shift+F5",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('fill'), desc, DialogModes.NO) with desc: Usng = FlCn FrgC (foreground colour), Opct = 100 (#Prc), Md = BlnM Nrml; verified live. Content-aware variant (unverified): Usng = FlCn contentAware. DOM alternative: app.activeDocument.selection.fill(color, ColorBlendMode.NORMAL, 100, false) (in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary: added the harvested 'multi' state, where Fill is also disabled; script_api: DOM call marked harvested but not run. Script fill names checked against the Presets/Deco harvest"
+ }
+},
+{
+ "name": "Find and Replace Text",
+ "id": "3393",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Find and Replace Text",
+ "status": "current",
+ "summary": "Opens the Find and Replace Text dialog, which searches the live text layers for a word or phrase and replaces one or all occurrences. Needs an open document.",
+ "how": "Find What and Change To fields; Search All Layers (otherwise only the selected text layer), Forward, Case Sensitive, Whole Word Only and Ignore Accents options; Find Next, Change, Change All, Change/Find.",
+ "use_for": [
+  "updating a date, price or venue across a multi-layer poster or event flyer",
+  "swapping a product name across a set of banner layers",
+  "fixing a recurring typo in a menu or price list"
+ ],
+ "avoid": [
+  "rasterised text or text inside smart objects: open the smart object or retype",
+  "templated batch variants: use Variables / data sets or a script instead"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Find and Replace...",
+  "CDR": "Edit/Find and Replace"
+ },
+ "shortcut": null,
+ "scriptable": "partial",
+ "script_api": "executeAction(stringIDToTypeID('findReplace'), undefined, DialogModes.ALL) opens the dialog (verified live). Without the dialog: loop the text layers and edit layer.textItem.contents (a writable member in the PS API harvest; not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "script_api: textItem.contents cited from the PS API harvest (still not run)"
+ }
+},
+{
+ "name": "Free Transform",
+ "id": "2207",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Free Transform",
+ "status": "current",
+ "summary": "Puts a bounding box with handles around the active layer, selected layers or selection so it can be scaled, rotated, skewed, distorted, put in perspective or warped in one interactive step, then committed. Needs an open document (the harvest found it disabled with a layer group selected).",
+ "how": "Drag the handles to scale and drag outside the box to rotate; the right-click menu or Edit/Transform switches to Skew, Distort, Perspective or Warp. The options bar holds the reference point, X/Y, W/H, angle, skew, interpolation and the Warp switch; commit with its tick or cancel with its cancel button.",
+ "use_for": [
+  "resizing and rotating a product cut-out to fit a layout",
+  "putting a screenshot or poster in perspective on a mock-up surface",
+  "warping a label or texture onto a curved object"
+ ],
+ "avoid": [
+  "repeated scaling of pixel layers: quality degrades each time; convert to a smart object first",
+  "changing aspect ratio without distorting the subject: use Edit/Content-Aware Scale"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Free Transform Tool",
+  "CDR": "Toolbox/Pick Tools/Free Transform"
+ },
+ "shortcut": "Ctrl+T",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('transform'), desc, DialogModes.NO) with desc: null = reference to the layer (Lyr), FTcs = QCSt Qcsa (centre reference point), Wdth = 50 (#Prc), Hght = 50 (#Prc); verified live (layer bounds 40,40,200,200 -> 80,80,160,160). DOM alternatives: layer.resize(50, 50, AnchorPosition.MIDDLECENTER), layer.rotate(angle) (in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "how: replaced the unharvested modifier-key gestures (Shift, Ctrl-drag, Ctrl+Alt+Shift-drag, Enter / Esc) with the harvested Edit/Transform commands and options-bar buttons; summary: added the harvested 'group' state where it is disabled; script_api: DOM calls marked harvested but not run"
+ }
+},
+{
+ "name": "Generate Image",
+ "id": "1771",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Generate Image",
+ "status": "current",
+ "summary": "Opens the Generate Image dialog, which creates a new image from a text prompt with Adobe's generative AI and places it on a new generative layer in the document, with several variations to choose from in the Properties panel. Uses generative credits and needs an internet connection and an open document.",
+ "how": "Type a prompt, choose the content type (photo or art) and optionally a style reference image and style effects, then Generate; pick among the variations in the Properties panel and Generate again for more. Generated content is subject to Adobe's generative AI terms.",
+ "use_for": [
+  "generating a background plate or scene for a poster concept",
+  "making placeholder hero imagery for a layout comp",
+  "creating mood-board variations before a shoot"
+ ],
+ "avoid": [
+  "filling or replacing a part of an existing image: use Edit/Generative Fill with a selection",
+  "jobs that must not spend credits or must run offline: use stock or local generation instead"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "AI": "Object/Generative/Generate Vectors..."
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (not run: generative, spends credits).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Generative Fill",
+ "id": "1750",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Generative Fill",
+ "status": "needs_input",
+ "summary": "Fills the active selection with AI-generated content that matches the surrounding image, guided by an optional text prompt (an empty prompt removes or extends to match the surroundings). The result lands on a new generative layer masked to the selection, with variations to pick from. Uses generative credits; needs an active selection. Not run in the harvest (it spends credits), so the dialog and result are described from the app's documented behaviour.",
+ "how": "Select the area, run the command, type a prompt (or leave it empty) and Generate; choose among the variations in the Properties panel, or Generate again. The generative layer keeps the prompt and can be regenerated later.",
+ "use_for": [
+  "removing a large object from a photo backdrop cleanly",
+  "adding a prop or element to a scene for a social post",
+  "extending a background after enlarging the canvas for a new format"
+ ],
+ "avoid": [
+  "jobs that must not spend credits or must run offline: use Edit/Content-Aware Fill",
+  "text, logos or exact product details: the generator does not reproduce them reliably"
+ ],
+ "confidence": "medium",
+ "equivalents": {
+  "AI": "Object/Generative/Generative Shape Fill..."
+ },
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (not run: generative, spends credits). Recorded actions use the Action Manager event 'syntheticFill' with a prompt string (unverified).",
+ "review": {
+  "by": "adversarial",
+  "changes": "confidence high -> medium and summary says so: the harvest never ran it (credits), same footing as Generate Image, which the writer rated medium"
+ }
+},
+{
+ "name": "Keyboard Shortcuts",
+ "id": "5980",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Keyboard Shortcuts",
+ "status": "current",
+ "summary": "Opens the Keyboard Shortcuts and Menus dialog on its Keyboard Shortcuts tab, where shortcuts for application menus, panel menus, tools and taskspaces are viewed, added, changed or removed and saved as a shortcut set. Enabled with no document open.",
+ "how": "Pick the Set and the Shortcuts For list (Application Menus, Panel Menus, Tools, Taskspaces), click a command and press the new key combination; conflicts are flagged. Save the set as a .kys file; Summarize exports an HTML list of all shortcuts.",
+ "use_for": [
+  "giving a frequently used filter or export command its own shortcut",
+  "sharing a studio-wide shortcut set across workstations",
+  "printing a shortcut cheat sheet for a team"
+ ],
+ "avoid": [
+  "hiding or colour-coding menu items: use Edit/Menus (same dialog, Menus tab)",
+  "multi-step jobs: record an Action and give it a function-key shortcut instead"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Keyboard Shortcuts...",
+  "CDR": "Tools/Options/Customization"
+ },
+ "shortcut": "Ctrl+Alt+Shift+K",
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('keyboardCustomization')) opens the 'Keyboard Shortcuts and Menus' dialog (verified live).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Menus",
+ "id": "5982",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Menus",
+ "status": "current",
+ "summary": "Opens the Keyboard Shortcuts and Menus dialog on its Menus tab, where application and panel menu items can be hidden or given a highlight colour, and the result saved as a menu set. Enabled with no document open.",
+ "how": "Pick Application Menus or Panel Menus, expand a menu, click the eye icon to hide an item or pick a Color to highlight it. Save the set as a .mnu file; a hidden item can be reached again with Show All Menu Items at the bottom of its menu.",
+ "use_for": [
+  "slimming the menus down to the commands a production team uses",
+  "colour-highlighting the commands a trainee should use"
+ ],
+ "avoid": [
+  "changing shortcuts: use Edit/Keyboard Shortcuts",
+  "hiding commands an automation needs to find in the menu: hidden items do not appear until Show All Menu Items"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "CDR": "Tools/Options/Customization"
+ },
+ "shortcut": "Ctrl+Alt+Shift+M",
+ "scriptable": "partial",
+ "script_api": "app.runMenuItem(stringIDToTypeID('menuCustomization')) opens the 'Keyboard Shortcuts and Menus' dialog (verified live).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "OpenColorIO Settings",
+ "id": "2345",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/OpenColorIO Settings",
+ "status": "current",
+ "summary": "Opens the settings for Photoshop's OpenColorIO (OCIO) colour management, the configuration-based alternative to ICC profiles used in film and VFX pipelines (e.g. ACES): which OCIO configuration file is used and its default colour spaces. Enabled with no document open. The dialog's exact options were not harvested. In this build it is the only visible OpenColorIO command: File/New OpenColorIO, File/Open as OpenColorIO, Edit/Convert to OpenColorIO and Window/OpenColorIO are all hidden.",
+ "how": "Not harvested. Expect to choose an OCIO config (built-in or a .ocio file) and the working and display colour spaces that documents managed by OCIO use.",
+ "use_for": [
+  "matching Photoshop to a studio's ACES/OCIO pipeline for matte paintings and VFX plates",
+  "keeping colour consistent with compositing apps that read the same OCIO config"
+ ],
+ "avoid": [
+  "print and web design colour setup: use Edit/Color Settings (ICC)",
+  "expecting to start an OCIO-managed document afterwards: the commands that create or convert one are hidden in the harvested build"
+ ],
+ "confidence": "medium",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "no",
+ "script_api": "No script route harvested (no menuItemType or event label matches; menu command id 2345 is not runnable through runMenuItem).",
+ "review": {
+  "by": "adversarial",
+  "changes": "summary / avoid: the ps_menu harvest shows every other OCIO command hidden in this build, so a configured setting has no visible document command to use it; said so"
+ }
+},
+{
+ "name": "Paste",
+ "id": "105",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Paste",
+ "status": "current",
+ "summary": "Pastes the clipboard into the active document as a new layer; pixels land centred (in the harvest, a 160 px tile copied at 40,40 landed centred on the 400x300 canvas), not at the copied position. Vector art from Illustrator brings up a Paste dialog (Smart Object, Pixels, Path or Shape Layer). Needs clipboard content.",
+ "use_for": [
+  "bringing a copied cut-out or texture into a layout",
+  "pasting Illustrator logo art as a vector smart object",
+  "pasting copied text into a text layer while editing type"
+ ],
+ "avoid": [
+  "keeping the original position: use Paste Special/Paste in Place",
+  "pasting into a selection-shaped mask: use Paste Special/Paste Into"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Paste",
+  "CDR": "Edit/Paste in View"
+ },
+ "shortcut": "Ctrl+V | F4",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('paste'), new ActionDescriptor(), DialogModes.NO) (verified live: new layer 'Layer 1' centred). DOM alternative: app.activeDocument.paste() (in the PS API harvest, not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "equivalents.CDR: CorelDRAW's Edit/Paste keeps the copied coordinates (that is Paste in Place); Edit/Paste in View is the centre-in-view counterpart; script_api: DOM call marked harvested but not run"
+ }
+},
+{
+ "name": "Paste in Place",
+ "id": "1297",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Paste Special/Paste in Place",
+ "status": "current",
+ "summary": "Pastes the clipboard as a new layer at exactly the position it was copied from (in the harvest, copied at 40,40 and pasted at 40,40), instead of centring it. Needs clipboard content.",
+ "use_for": [
+  "moving a retouch patch between two same-size versions of a layout without shifting it",
+  "copying elements between documents that share a grid or template",
+  "re-pasting a cut area back where it came from on a new layer"
+ ],
+ "avoid": [
+  "documents of different sizes when position does not matter: plain Edit/Paste is fine",
+  "pasting inside a selection mask: use Paste Special/Paste Into"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Edit/Paste in Place",
+  "CDR": "Edit/Paste"
+ },
+ "shortcut": "Ctrl+Shift+V",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('paste'), desc, DialogModes.NO) with desc: inPlace (boolean) = true; verified live (pasted bounds equal the copied bounds).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+},
+{
+ "name": "Paste Into",
+ "id": "1040",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Paste Special/Paste Into",
+ "status": "needs_input",
+ "summary": "Pastes the clipboard into a new layer whose layer mask is made from the active selection, so the pasted image shows only inside the selected shape; the mask is unlinked, so the image can be moved inside the frame. Needs clipboard content and an active selection.",
+ "use_for": [
+  "dropping a photo into a window, screen or frame shape of a mock-up",
+  "filling headline letters (selected from type) with an image",
+  "placing a sky into the selected sky area of a photo"
+ ],
+ "avoid": [
+  "shapes you will edit or reuse: a clipping mask over a shape or type layer stays editable",
+  "showing the image outside the selection: use Paste Special/Paste Outside"
+ ],
+ "confidence": "high",
+ "equivalents": {
+  "AI": "Object/Clipping Mask/Make",
+  "CDR": "Object/PowerClip/Place Inside Frame"
+ },
+ "shortcut": "Ctrl+Alt+Shift+V",
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('pasteInto'), new ActionDescriptor(), DialogModes.NO) (verified live: new layer with an unlinked user mask, selection consumed). DOM alternative: app.activeDocument.paste(true) (intoSelection = true in the PS API harvest; not run).",
+ "review": {
+  "by": "adversarial",
+  "changes": "equivalents: added CDR Object/PowerClip/Place Inside Frame (places content inside a frame shape, the same job); script_api: paste(intoSelection) cited from the PS API harvest"
+ }
+},
+{
+ "name": "Paste Outside",
+ "id": "5068",
+ "app": "PS",
+ "kind": "ps_menu",
+ "path": "Edit/Paste Special/Paste Outside",
+ "status": "needs_input",
+ "summary": "Pastes the clipboard into a new layer whose layer mask is the inverse of the active selection, so the pasted image shows everywhere except inside the selected area; the mask is unlinked so the image can be repositioned. Needs clipboard content and an active selection.",
+ "use_for": [
+  "replacing everything around a selected subject with a new background",
+  "framing a selected area with a pasted texture border",
+  "putting a pattern around a protected product area"
+ ],
+ "avoid": [
+  "showing the image only inside the selection: use Paste Special/Paste Into",
+  "complex cut-outs: build the mask with Select and Mask first, then paste"
+ ],
+ "confidence": "high",
+ "equivalents": {},
+ "shortcut": null,
+ "scriptable": "yes",
+ "script_api": "executeAction(stringIDToTypeID('pasteOutside'), new ActionDescriptor(), DialogModes.NO) (verified live: new layer with an unlinked user mask, selection consumed).",
+ "review": {
+  "by": "adversarial",
+  "changes": "none"
+ }
+}
+]}

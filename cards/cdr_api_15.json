@@ -1,0 +1,2038 @@
+{
+ "cards": [
+  {
+   "name": "IVGOutline",
+   "id": "class:IVGOutline",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOutline",
+   "status": "current",
+   "summary": "The outline (stroke) of one shape: width, colour, dash style, caps, joins, inside / centre / outside position, arrowheads, calligraphic nib and the behind-fill and scale-with-object switches. It is the scripting side of the Outline Pen dialog, and ConvertToObject turns the stroke into its own filled curve.",
+   "use_for": [
+    "keylines on logos and icons set to an exact point width",
+    "inside-aligned strokes on badges and stickers so the outer size stays fixed",
+    "dashed cut / fold lines on packaging dielines",
+    "arrowed leader lines on diagrams and infographics",
+    "turning strokes into filled shapes before sending art to a cutter, engraver or print-ready logo file"
+   ],
+   "avoid": [
+    "thick outlines on small text: they fatten letters and close counters; keep text outlines thin or convert text to curves first",
+    "expecting SetProperties / SetPropertiesEx to make a variable-width stroke: they have no width-profile argument; add nodes with VariableWidthNodes.Add(t, Width), t from 0 to 1, or use the Variable Outline tool"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Window/Stroke"
+   },
+   "how": "Shape.Outline returns the live outline of a shape (ActiveShape.Outline, or the outline of each shape in a range). Read and write its properties directly, or set several at once with SetPropertiesEx using named arguments. Lengths (Width, DashDotLength, PenWidth) are in ActiveDocument.Unit. Style takes an IVGOutlineStyle from Application.OutlineStyles; StartArrow / EndArrow take an IVGArrowHead from Application.ArrowHeads. GetCopy gives an unattached copy you can edit and CopyAssign onto any outline.",
+   "key_members": [
+    {
+     "name": "Width",
+     "use": "stroke width in ActiveDocument.Unit"
+    },
+    {
+     "name": "Color",
+     "use": "IVGColor of the stroke; edit in place with RGBAssign / CMYKAssign"
+    },
+    {
+     "name": "Type",
+     "use": "cdrNoOutline / cdrOutline / cdrEnhancedOutline"
+    },
+    {
+     "name": "Style",
+     "use": "dash pattern (IVGOutlineStyle)"
+    },
+    {
+     "name": "SetNoOutline",
+     "use": "remove the outline"
+    },
+    {
+     "name": "SetPropertiesEx",
+     "use": "set width, style, colour, arrows, caps, joins, nib, miter and justification in one call"
+    },
+    {
+     "name": "LineCaps",
+     "use": "butt / round / square ends (cdrOutlineLineCaps)"
+    },
+    {
+     "name": "LineJoin",
+     "use": "miter / round / bevel corners (cdrOutlineLineJoin)"
+    },
+    {
+     "name": "MiterLimit",
+     "use": "miter limit for corners (the angle below which mitres are bevelled, unverified)"
+    },
+    {
+     "name": "Justification",
+     "use": "stroke centred on, inside or outside the path (cdrOutlineJustification)"
+    },
+    {
+     "name": "ScaleWithShape",
+     "use": "scale the stroke width when the object is resized"
+    },
+    {
+     "name": "BehindFill",
+     "use": "draw the stroke behind the fill (only the outer half shows)"
+    },
+    {
+     "name": "StartArrow",
+     "use": "arrowhead at the path start (IVGArrowHead)"
+    },
+    {
+     "name": "EndArrow",
+     "use": "arrowhead at the path end"
+    },
+    {
+     "name": "StartArrowOptions",
+     "use": "size / offset / flip options of the start arrowhead"
+    },
+    {
+     "name": "NibAngle",
+     "use": "calligraphic nib angle"
+    },
+    {
+     "name": "NibStretch",
+     "use": "calligraphic nib stretch (100 = round nib, unverified)"
+    },
+    {
+     "name": "AdjustDashes",
+     "use": "how dashes are fitted to corners and line ends (cdrOutlineDashAdjust)"
+    },
+    {
+     "name": "ConvertToObject",
+     "use": "turn the stroke into a separate filled curve and return it"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "copy all outline settings from another outline"
+    },
+    {
+     "name": "VariableWidthNodes",
+     "use": "variable-width nodes; the returned collection takes Add(t, Width), Clear and Copy"
+    }
+   ],
+   "gotchas": [
+    "Width is in ActiveDocument.Unit, which a script should not assume (inches is the usual default, unverified): set ActiveDocument.Unit = cdrPoint before writing 0.5, or you may get a half-inch stroke.",
+    "SetProperties takes 14 and SetPropertiesEx 15 optional arguments whose defaults (-1, -2 = cdrUndefined, 0, -9999 for NibAngle) act as 'leave unchanged' (unverified); call them with named arguments (Width:=2, LineJoin:=...) so a value does not land in the wrong slot.",
+    "ScaleWithShape is usually off, so enlarging a logo keeps the old stroke width and the logo looks thinner; switch it on before resizing artwork that must keep its proportions (unverified default).",
+    "BehindFill = True hides the inner half of a centred stroke under the fill, so the visible width halves.",
+    "VariableWidthNodes is Nothing when the object cannot have a variable outline and empty (Count = 0) when it simply has none: check both. The property is read-only but the collection is editable (Add, Clear, Copy).",
+    "Size is a hidden duplicate of DashDotLength; use DashDotLength.",
+    "ConvertToObject leaves the original shape without its outline (Object > Convert Outline to Object behaviour) (unverified).",
+    "The typelib descriptions of cdrOutlineJustification values are shifted by one (Inside is described as 'outside', Middle as 'inside'); go by the value names and check the result on screen (unverified)."
+   ],
+   "example": "ActiveDocument.Unit = cdrPoint\nWith ActiveShape.Outline\n  .SetPropertiesEx Width:=2, LineJoin:=cdrOutlineRoundLineJoin, Justification:=cdrOutlineJustificationInside\n  .Color.RGBAssign 30, 30, 30\n  .ScaleWithShape = True\nEnd With",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid wrongly said variable-width strokes cannot be scripted: VariableWidthNodes returns an editable collection (Add(t, Width), Clear, Copy); added it as a key member. Marked the inch default, NibStretch 100 = round and the miter-limit angle as unverified; corrected the SetProperties argument counts and sentinel defaults (-9999 for NibAngle); added a gotcha that the cdrOutlineJustification descriptions are shifted by one."
+   }
+  },
+  {
+   "name": "IVGOutlineStyle",
+   "id": "class:IVGOutlineStyle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOutlineStyle",
+   "status": "current",
+   "summary": "One dash pattern from the Outline Pen style list: DashCount dash / gap pairs whose lengths are read and written by index, plus a flag for the newer enhanced-outline styles.",
+   "use_for": [
+    "dashed cut or fold lines on packaging dielines",
+    "dotted 'cut here' coupon borders",
+    "dash-dot rhythms for map routes, sewing-pattern stitch lines or technical drawings",
+    "applying one brand dash spec to many shapes by script"
+   ],
+   "avoid": [
+    "round dots: the style only sets dash and gap lengths; round dots also need round LineCaps on the outline",
+    "editing a built-in style in place: it may change every shape and document that uses it (unverified); add a new style instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Read it from a shape (ActiveShape.Outline.Style), take one from Application.OutlineStyles(i), or make one with Application.OutlineStyles.Add / Application.CreateOutlineStyle(DashDotCount, DashDotLengths). Set DashCount, then DashLength(i) and GapLength(i) for each pair, and apply it through the shape's Outline (Style property or SetPropertiesEx Style:=).",
+   "key_members": [
+    {
+     "name": "DashCount",
+     "use": "number of dash / gap pairs in the pattern"
+    },
+    {
+     "name": "DashLength",
+     "use": "length of dash i (indexed property)"
+    },
+    {
+     "name": "GapLength",
+     "use": "length of the gap after dash i (indexed property)"
+    },
+    {
+     "name": "Enhanced",
+     "use": "True for an enhanced-outline style"
+    },
+    {
+     "name": "Index",
+     "use": "position of the style in Application.OutlineStyles"
+    }
+   ],
+   "gotchas": [
+    "DashLength and GapLength are whole numbers relative to the outline width, not document units, so the pattern grows with a thicker stroke (unverified).",
+    "Whether DashLength(i) / GapLength(i) start at index 0 or 1 is not in the typelib (unverified): set DashCount first, write, then read back.",
+    "The style a shape returns may be the shared list entry: changing it can restyle other shapes (unverified); copy it with OutlineStyles.AddStyle and edit the copy.",
+    "Index is read-only and shifts when styles are added to or removed from the list."
+   ],
+   "example": "Set st = Application.OutlineStyles.Add\nst.DashCount = 2\nst.DashLength(1) = 6: st.GapLength(1) = 3\nst.DashLength(2) = 1: st.GapLength(2) = 3\nActiveShape.Outline.SetPropertiesEx Style:=st",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGOutlineStyles",
+   "id": "class:IVGOutlineStyles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGOutlineStyles",
+   "status": "current",
+   "summary": "The application-wide list of outline dash styles shown in the Outline Pen and property-bar style pickers: read styles by index, add new or copied ones, remove them and save the list.",
+   "use_for": [
+    "installing a studio's standard cut-line and fold-line dashes on every workstation",
+    "picking a ready dash pattern for dieline or map scripts",
+    "removing stale custom dash styles"
+   ],
+   "avoid": [
+    "styling one shape: assign the style through that shape's Outline (IVGOutline)",
+    "hard-coded indexes shared across machines: user-added styles shift positions; find a style by its DashCount and lengths"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.OutlineStyles (or bare OutlineStyles inside a CorelDRAW VBA macro). Item(i) is base 1 and is the default member. Add returns a new style to configure, AddStyle(Style) adds one based on an existing style, Remove(i) deletes one, and Save writes the list so it survives a restart.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "style at index i (base 1)"
+    },
+    {
+     "name": "Count",
+     "use": "number of styles in the list"
+    },
+    {
+     "name": "Add",
+     "use": "append a new style and return it"
+    },
+    {
+     "name": "AddStyle",
+     "use": "append a style based on an existing one"
+    },
+    {
+     "name": "Remove",
+     "use": "delete the style at index i"
+    },
+    {
+     "name": "Save",
+     "use": "persist the list after changes"
+    },
+    {
+     "name": "Parent",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "Changes stay in memory until Save is called (typelib: 'Saves changes made to outline styles').",
+    "What happens to shapes that use a style you Remove is not documented (unverified); test on a copy.",
+    "Indexes shift after Add / Remove: re-read Count and Item after each change."
+   ],
+   "example": "For i = 1 To OutlineStyles.Count\n  Debug.Print i, OutlineStyles(i).DashCount, OutlineStyles(i).Enhanced\nNext i\nSet st = OutlineStyles.AddStyle(OutlineStyles(3))\nOutlineStyles.Save",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGPage",
+   "id": "class:IVGPage",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPage",
+   "status": "current",
+   "summary": "One page of a CorelDRAW document: its size, orientation, bleed, background, layers and shapes, plus page-level find, select-by-area, text replace and Autofit-to-content. Most layout scripts start from it (ActivePage).",
+   "use_for": [
+    "print page set-up: A4 / Letter, poster or business-card size with bleed",
+    "multi-page brochures and catalogues built by script",
+    "replacing placeholder text in templates (names, prices, dates)",
+    "finding named template slots (FindShape) to drop images or copy into",
+    "fitting the page to the artwork before exporting a logo or sticker (Autofit)"
+   ],
+   "avoid": [
+    "document-wide defaults (page size of every page, units): set them on the master page / document",
+    "the outer rectangle of a facing-pages spread: use Spread"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Artboard"
+   },
+   "how": "ActivePage, ActiveDocument.Pages(i) (base 1; Pages(0) is the master page) or Shape.Page. Sizes and positions are in ActiveDocument.Unit, with the origin at the page's lower-left corner by default (Document.DrawingOriginX / DrawingOriginY move it) and y growing upward. Shapes reaches every shape on the page's layers; new shapes are created on a layer (ActiveLayer, Layers(i) or CreateLayer).",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "page name shown on the page tab"
+    },
+    {
+     "name": "Index",
+     "use": "page number"
+    },
+    {
+     "name": "SetSize",
+     "use": "set width and height in document units"
+    },
+    {
+     "name": "SelectSize",
+     "use": "apply a named preset size, optionally landscape"
+    },
+    {
+     "name": "SizeWidth",
+     "use": "page width"
+    },
+    {
+     "name": "SizeHeight",
+     "use": "page height"
+    },
+    {
+     "name": "Orientation",
+     "use": "portrait / landscape (cdrPageOrientation)"
+    },
+    {
+     "name": "Bleed",
+     "use": "bleed distance"
+    },
+    {
+     "name": "Background",
+     "use": "none / solid / bitmap page background (cdrPageBackground)"
+    },
+    {
+     "name": "Color",
+     "use": "page colour used by a solid background"
+    },
+    {
+     "name": "Layers",
+     "use": "the page's layers"
+    },
+    {
+     "name": "ActiveLayer",
+     "use": "layer new shapes go on"
+    },
+    {
+     "name": "CreateLayer",
+     "use": "add a named layer"
+    },
+    {
+     "name": "Shapes",
+     "use": "all shapes on the page across its layers"
+    },
+    {
+     "name": "FindShape",
+     "use": "one shape by name, type or static ID"
+    },
+    {
+     "name": "FindShapes",
+     "use": "shape range matching a name or type"
+    },
+    {
+     "name": "TextReplace",
+     "use": "find and replace text on the page"
+    },
+    {
+     "name": "Activate",
+     "use": "make this the active page"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "page rectangle (IVGRect)"
+    },
+    {
+     "name": "Autofit",
+     "use": "resize the page to its content plus a margin"
+    }
+   ],
+   "gotchas": [
+    "All sizes are in ActiveDocument.Unit (inches is the usual default, unverified): set the unit before SetSize or Bleed.",
+    "TextReplace's last argument ReplaceSelectedOnly defaults to True: pass False or only selected shapes are changed.",
+    "TextFind selects every match, so it changes the user's selection.",
+    "Paper is read-only: change the size with SetSize / SizeWidth / SizeHeight or SelectSize(preset name).",
+    "Pages(0) is the master page: sizes set there are the document default; sizing a single page may affect only that page (unverified).",
+    "Shapes is described as 'across all layers', but Layers and AllLayers differ on master layers (only AllLayers includes them); whether Shapes picks up master-layer shapes is not stated (unverified): walk AllLayers when master items matter.",
+    "GetSize, GetBoundingBox and GetCenterPosition return values through ByRef arguments; from Python / late-bound COM expect a tuple instead (unverified)."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet pg = ActivePage\npg.SetSize 210, 297\npg.Bleed = 3\npg.TextReplace \"{CLIENT}\", \"Client Name\", False, False\nSet slot = pg.FindShape(Name:=\"photo_slot\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "Gotcha stated as fact that Shapes excludes master-layer shapes, which the batch does not say (Shapes is described as 'across all layers'): rewrote it as unverified. Marked the inch default as unverified and named Document.DrawingOriginX / DrawingOriginY as the source of the lower-left origin."
+   }
+  },
+  {
+   "name": "IVGPageMarkup",
+   "id": "class:IVGPageMarkup",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPageMarkup",
+   "status": "current",
+   "summary": "The review comments attached to one page (Comments docker): its comment threads, and calls that add hotspot, rectangle, ellipse, arrow, freehand, highlight and collaborative-text annotations at given positions.",
+   "use_for": [
+    "dropping preflight warnings (low-res image, text too close to trim) as comments where the problem sits",
+    "pre-marking a client proof with review points",
+    "collecting every review comment of a document into a change list"
+   ],
+   "avoid": [
+    "marks that must print or export (crop marks, callouts): comments are review markup, not artwork; draw real shapes (unverified)"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Window/Comments",
+    "PS": "Window/Comments"
+   },
+   "how": "Page.Markup (ActivePage.Markup), or CommentThread.PageMarkup from a thread. Threads lists the page's comment threads. Each Create* call takes the comment text and the geometry (in document units, unverified), optional colours and an optional IVGCommentAuthor built with Application.CreateMarkupAuthor(Name, Avatar, Email, Authentication); Application.MarkupLogin(author) sets the session identity.",
+   "key_members": [
+    {
+     "name": "Threads",
+     "use": "comment threads on this page"
+    },
+    {
+     "name": "Page",
+     "use": "the page being commented on"
+    },
+    {
+     "name": "PageGuid",
+     "use": "GUID of the page the markup belongs to"
+    },
+    {
+     "name": "CreateHotspot",
+     "use": "pin comment at x, y"
+    },
+    {
+     "name": "CreateRectangle",
+     "use": "comment drawn as a rectangle around an area"
+    },
+    {
+     "name": "CreateEllipse",
+     "use": "comment drawn as an ellipse"
+    },
+    {
+     "name": "CreateArrow",
+     "use": "comment drawn as an arrow from x, y along a vector"
+    },
+    {
+     "name": "CreateFreehand",
+     "use": "comment drawn along a curve"
+    },
+    {
+     "name": "CreateHighlight",
+     "use": "highlighter-style comment along a curve"
+    },
+    {
+     "name": "CreateCollaborativeText",
+     "use": "comment tied to a text object for collaborative text editing"
+    }
+   ],
+   "gotchas": [
+    "The typelib text says Create* 'returns the guid', but the declared return type is IVGComment: treat the result as a comment object.",
+    "Author is optional (default Nothing); which author a comment gets without one is not documented (unverified), so pass one built with Application.CreateMarkupAuthor or log in once with Application.MarkupLogin.",
+    "OutlineWidth is a Long (default -1), not a document-unit double; its unit is not documented (unverified).",
+    "CreateFreehand and CreateHighlight need an IVGCurve, so build or copy a curve first.",
+    "OnlineID and OnlineData are hidden members used for cloud sync; do not rely on them."
+   ],
+   "example": "Set au = Application.CreateMarkupAuthor(\"Preflight\", \"\", \"\", cdrAuthorAuthenticationGuest)\nSet mk = ActivePage.Markup\nmk.CreateHotspot \"Image below 300 dpi\", 50, 120, au\nDebug.Print mk.Threads.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "Marked the document-unit geometry as unverified; added Application.MarkupLogin as the way to set the comment author for a session."
+   }
+  },
+  {
+   "name": "IVGPages",
+   "id": "class:IVGPages",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPages",
+   "status": "current",
+   "summary": "The ordered collection of a document's pages: count them, get one by number, or jump to the first or last page. Item(0) returns the master page.",
+   "use_for": [
+    "applying the same edit to every page of a brochure, catalogue or calendar",
+    "exporting each page of a multi-page design as its own file",
+    "page-count checks before print (saddle-stitch needs a multiple of 4)"
+   ],
+   "avoid": [
+    "adding, inserting or deleting pages: this collection has no add call; use ActiveDocument.AddPages / InsertPages / DeletePages or Page.Delete",
+    "reordering pages: use Page.MoveTo"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:Artboards"
+   },
+   "how": "ActiveDocument.Pages. Item(i) is base 1 and is the default member (Pages(2)); Item(0) is the master page. Count, First and Last are read-only; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "page i (base 1); 0 = master page"
+    },
+    {
+     "name": "Count",
+     "use": "number of pages"
+    },
+    {
+     "name": "First",
+     "use": "first document page"
+    },
+    {
+     "name": "Last",
+     "use": "last document page"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the pages"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning document"
+    }
+   ],
+   "gotchas": [
+    "Pages(0) is the master page, not page 1: start loops at 1.",
+    "Whether Count includes the master page is not stated; it is expected not to (unverified).",
+    "Deleting pages inside For Each skips pages: loop backwards by index when deleting."
+   ],
+   "example": "For i = 1 To ActiveDocument.Pages.Count\n  Set pg = ActiveDocument.Pages(i)\n  Debug.Print pg.Index, pg.Name, pg.SizeWidth, pg.SizeHeight\nNext i",
+   "review": {
+    "by": "adversarial",
+    "changes": "avoid now names the real page calls (Document.AddPages / InsertPages / DeletePages) instead of 'the document's page methods'."
+   }
+  },
+  {
+   "name": "IVGPageSize",
+   "id": "class:IVGPageSize",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPageSize",
+   "status": "current",
+   "summary": "One named paper size in CorelDRAW's page-size list (A4, Letter, Business Card ... or a user-defined size): its name, width, height, whether it is built in, its default unit and whether its orientation is fixed.",
+   "use_for": [
+    "listing paper presets for a template picker",
+    "checking a document against a client's required format",
+    "removing stale custom sizes from a shared workstation"
+   ],
+   "avoid": [
+    "resizing a page: call Page.SelectSize(Name) or Page.SetSize",
+    "deleting built-in sizes: Delete is for custom paper types only"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "An item of Application.PageSizes(index or name); ActiveDocument.PageSizes also exists but is a hidden member. Read Name, Width, Height and DefaultUnit; pass Name to Page.SelectSize to apply it.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "paper type name, as Page.SelectSize expects it"
+    },
+    {
+     "name": "Width",
+     "use": "paper width"
+    },
+    {
+     "name": "Height",
+     "use": "paper height"
+    },
+    {
+     "name": "BuiltIn",
+     "use": "True for predefined sizes"
+    },
+    {
+     "name": "DefaultUnit",
+     "use": "unit the size is defined in (cdrUnit)"
+    },
+    {
+     "name": "FixedOrientation",
+     "use": "True if the orientation cannot be switched"
+    },
+    {
+     "name": "Index",
+     "use": "position in the list"
+    },
+    {
+     "name": "Delete",
+     "use": "delete a custom size"
+    }
+   ],
+   "gotchas": [
+    "Width and Height are declared writable but described as 'Gets'; writing them on a built-in size probably fails (unverified).",
+    "The unit of Width / Height as returned is not stated: compare with DefaultUnit and ActiveDocument.Unit before trusting the numbers (unverified).",
+    "Check BuiltIn before Delete: only custom paper types can be deleted."
+   ],
+   "example": "For Each ps In Application.PageSizes\n  If Not ps.BuiltIn Then Debug.Print ps.Name, ps.Width, ps.Height\nNext ps\nActivePage.SelectSize \"A4\", False",
+   "review": {
+    "by": "adversarial",
+    "changes": "how offered ActiveDocument.PageSizes as an equal route; the harvest flags Document.PageSizes as hidden, so the card now says so."
+   }
+  },
+  {
+   "name": "IVGPageSizes",
+   "id": "class:IVGPageSizes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPageSizes",
+   "status": "current",
+   "summary": "The list of named paper sizes (built-in and custom) that the page-size picker offers: look sizes up by index or name and add custom ones.",
+   "use_for": [
+    "registering a studio's standard formats (85x55 mm card, 1080x1350 px post, roll-up banner) once so templates can call them by name",
+    "checking that a named size exists before Page.SelectSize"
+   ],
+   "avoid": [
+    "sizing one page once: Page.SetSize is simpler"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.PageSizes (ActiveDocument.PageSizes is a hidden member). Item takes an index or a name and is the default member; Add(Name, Width, Height) creates a custom size and returns it.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "size by index or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of sizes"
+    },
+    {
+     "name": "Add",
+     "use": "create a custom size from a name, width and height"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the sizes"
+    },
+    {
+     "name": "Parent",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "The unit of Add's Width / Height is not documented; ActiveDocument.Unit is likely (unverified): set the unit first and read the result back with Item(Name).Width.",
+    "Item(Name) with an unknown name probably raises an error rather than returning Nothing (unverified): wrap it in error handling.",
+    "ActiveDocument.PageSizes is a hidden member and whether a size added through it also appears in the application list is not known (unverified): use Application.PageSizes."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet sz = Application.PageSizes.Add(\"Card 85x55\", 85, 55)\nActivePage.SelectSize \"Card 85x55\", False\nDebug.Print sz.Width, sz.Height",
+   "review": {
+    "by": "adversarial",
+    "changes": "how and a gotcha treated ActiveDocument.PageSizes as a normal route; it is a hidden member in the harvest, now stated."
+   }
+  },
+  {
+   "name": "IVGPalette",
+   "id": "class:IVGPalette",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPalette",
+   "status": "current",
+   "summary": "One colour palette (a document palette, a custom palette file or a fixed library such as PANTONE): read its colours, find or match a colour, show or hide it on screen, and on custom palettes add, insert and remove colours and save the file.",
+   "use_for": [
+    "building a brand palette from a client's colour spec and saving it as a palette file",
+    "snapping colours to the nearest brand or PANTONE swatch (MatchColor)",
+    "checking a design uses only approved brand colours",
+    "showing the brand palette on screen for the designer"
+   ],
+   "avoid": [
+    "editing fixed libraries (PANTONE, HKS ...): they are Locked; copy colours into a custom palette",
+    "Delete as a way to hide a palette: it deletes the palette file from disk; use Close"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:SwatchGroup"
+   },
+   "how": "ActiveDocument.Palette (the document palette), Application.ActivePalette, Application.Palettes(index or name) for palettes open on screen, or Application.PaletteManager.GetPalette(index, ID, name or file). Colors() returns the colour collection and Color(i) one colour; custom palettes accept AddColor / InsertColor / RemoveColor and must then be saved with Save or SaveAs.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "palette name (settable on custom palettes only)"
+    },
+    {
+     "name": "Type",
+     "use": "fixed / custom / document palette (cdrPaletteType)"
+    },
+    {
+     "name": "Colors",
+     "use": "method returning the palette's colours"
+    },
+    {
+     "name": "Color",
+     "use": "colour at an index"
+    },
+    {
+     "name": "ColorCount",
+     "use": "number of colours"
+    },
+    {
+     "name": "AddColor",
+     "use": "append a colour (custom palettes)"
+    },
+    {
+     "name": "InsertColor",
+     "use": "insert a colour at an index"
+    },
+    {
+     "name": "RemoveColor",
+     "use": "remove the colour at an index"
+    },
+    {
+     "name": "FindColor",
+     "use": "index of a colour by name"
+    },
+    {
+     "name": "MatchColor",
+     "use": "index of the closest colour in this palette"
+    },
+    {
+     "name": "GetIndexOfColor",
+     "use": "index of a given colour object"
+    },
+    {
+     "name": "Save",
+     "use": "write changes to the palette file"
+    },
+    {
+     "name": "SaveAs",
+     "use": "save to a new file and name"
+    },
+    {
+     "name": "Open",
+     "use": "show the palette on screen"
+    },
+    {
+     "name": "Close",
+     "use": "hide the palette"
+    },
+    {
+     "name": "IsOpen",
+     "use": "True while the palette is on screen"
+    },
+    {
+     "name": "Locked",
+     "use": "True if the palette cannot be edited"
+    },
+    {
+     "name": "MakeDefault",
+     "use": "make it the application default palette"
+    },
+    {
+     "name": "FileName",
+     "use": "palette file path"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the palette and its file"
+    }
+   ],
+   "gotchas": [
+    "Colors is a method, not a property: call Colors() explicitly from non-VBA COM clients.",
+    "Delete removes the palette file itself (typelib: 'Deletes the palette along with the associated palette file').",
+    "Changes to a custom palette are lost unless Save or SaveAs is called.",
+    "AddColor / InsertColor / RemoveColor work on custom palettes only: check Type and Locked first.",
+    "Whether Color(i), FindColor and MatchColor indexes start at 0 or 1 is not documented (unverified): calibrate with GetIndexOfColor on a known colour.",
+    "PaletteID is a hidden member; use Identifier to tell palettes apart."
+   ],
+   "example": "Set pal = Application.Palettes.Create(\"Brand\", \"C:\\Temp\\Brand.xml\", True)\npal.AddColor CreateRGBColor(0, 82, 155)\npal.AddColor CreateCMYKColor(0, 85, 100, 0)\npal.Save\npal.Open",
+   "review": {
+    "by": "adversarial",
+    "changes": "Summary implied showing a palette on screen is custom-only; Open / Close / MakeDefault work on any palette."
+   }
+  },
+  {
+   "name": "IVGPaletteManager",
+   "id": "class:IVGPaletteManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPaletteManager",
+   "status": "current",
+   "summary": "Application-level registry of every colour palette CorelDRAW knows about: get any palette by index, unique ID, name or file, load palette files, and read the default and on-screen palettes.",
+   "use_for": [
+    "finding a PANTONE or brand palette by name for colour matching in a script",
+    "loading a client's palette file supplied with a brief",
+    "checking which palette is the application default"
+   ],
+   "avoid": [
+    "only the palettes visible on screen: use OpenPalettes or Application.Palettes",
+    "creating palettes: use Application.Palettes.Create / CreateFromSelection"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.PaletteManager. GetPalette(IndexOrName) accepts an index, unique ID, name or file name; LoadPalette(FileName) loads a palette file and returns it; LoadAllPalettes makes every registered palette available; DefaultPalette and OpenPalettes give the default and on-screen palettes; For Each walks the loaded palettes.",
+   "key_members": [
+    {
+     "name": "GetPalette",
+     "use": "palette by index, unique ID, name or file name"
+    },
+    {
+     "name": "LoadPalette",
+     "use": "load a palette file and return it"
+    },
+    {
+     "name": "LoadAllPalettes",
+     "use": "load every palette registered with the application"
+    },
+    {
+     "name": "PaletteCount",
+     "use": "number of palettes currently loaded"
+    },
+    {
+     "name": "DefaultPalette",
+     "use": "the application default palette"
+    },
+    {
+     "name": "OpenPalettes",
+     "use": "palettes visible on screen"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the loaded palettes"
+    }
+   ],
+   "gotchas": [
+    "PaletteCount counts loaded palettes only; a library never opened may not be found until LoadAllPalettes has run (unverified).",
+    "LoadAllPalettes loads every registered palette and can be slow on a full install (unverified): call it once per script.",
+    "Palette names are not unique (many PANTONE variants): prefer the unique ID or file name with GetPalette."
+   ],
+   "example": "Set pm = Application.PaletteManager\npm.LoadAllPalettes\nFor Each pal In pm\n  Debug.Print pal.Name, pal.Identifier, pal.FileName\nNext pal\nSet brand = pm.LoadPalette(\"C:\\Brand\\Brand.xml\")",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGPalettes",
+   "id": "class:IVGPalettes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPalettes",
+   "status": "current",
+   "summary": "The colour palettes currently open on screen, plus calls that open palette files or fixed libraries and create new palettes, including one from every colour used in the document or in the selection.",
+   "use_for": [
+    "pulling a client logo's colours into a reusable palette (CreateFromSelection)",
+    "making a document-colours palette for handoff to another designer",
+    "opening a palette file that came with a brand guide"
+   ],
+   "avoid": [
+    "palettes that are loaded but not shown: use Application.PaletteManager",
+    "editing colours: work on the returned IVGPalette"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.Palettes. Item(index or name) is base 1 over the open palettes. Open(FileName) opens a palette file, OpenFixed(cdrPaletteID) a built-in library, and Create / CreateFromDocument / CreateFromSelection(Name, FileName, Overwrite) make a new palette and return it.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "open palette by index (base 1) or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of palettes open"
+    },
+    {
+     "name": "Open",
+     "use": "open a palette file"
+    },
+    {
+     "name": "OpenFixed",
+     "use": "open a fixed library by cdrPaletteID (hidden member)"
+    },
+    {
+     "name": "Create",
+     "use": "new empty palette"
+    },
+    {
+     "name": "CreateFromDocument",
+     "use": "new palette from every colour in the document"
+    },
+    {
+     "name": "CreateFromSelection",
+     "use": "new palette from the colours of the selected shapes"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the open palettes"
+    }
+   ],
+   "gotchas": [
+    "CreateFromSelection needs a selection; with nothing selected the palette comes out empty or the call fails (unverified).",
+    "FileName and Overwrite are optional (Overwrite defaults to False); with an existing file and Overwrite False the call probably fails (unverified).",
+    "OpenFixed is a hidden member and may be legacy; PaletteManager.GetPalette is the documented route to libraries.",
+    "Item only covers palettes open on screen: a palette the user closes drops out of the collection."
+   ],
+   "example": "Set pal = Application.Palettes.CreateFromSelection(\"Logo colours\", \"C:\\Temp\\LogoColours.xml\", True)\nDebug.Print pal.ColorCount\nFor Each p In Application.Palettes\n  Debug.Print p.Name\nNext p",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGPatternCanvas",
+   "id": "class:IVGPatternCanvas",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPatternCanvas",
+   "status": "current",
+   "summary": "The black-and-white bitmap behind a two-colour pattern fill: a 16x16, 32x32, 64x64 or custom grid of on / off pixels that can be drawn pixel by pixel, with lines, filled areas, copies, flips and rotations, or loaded from the preset list.",
+   "use_for": [
+    "custom two-colour textures (stripes, checks, dots, hatching) for packaging or textile mock-ups",
+    "one-colour pattern fills for screen printing",
+    "generated pixel tiles (dither patterns, retro bitmaps) recoloured later through FrontColor / BackColor"
+   ],
+   "avoid": [
+    "full-colour or vector repeats: use a vector (full-colour) or bitmap pattern fill",
+    "fine detail: the grid is coarse; use a vector pattern instead"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Make an empty one with Application.CreatePatternCanvas, take a preset from Application.PatternCanvases(i) or Select(i), or read the canvas of a two-colour fill (Shape.Fill.Pattern.Canvas). Set Size, draw with PSet, Line, FillArea or Pixel(x, y), then add it to Application.PatternCanvases and pass the returned index to Fill.ApplyPatternFill.",
+   "key_members": [
+    {
+     "name": "Size",
+     "use": "16x16 / 32x32 / 64x64 / custom grid (cdrPatternCanvasSize)"
+    },
+    {
+     "name": "Width",
+     "use": "grid width in pixels"
+    },
+    {
+     "name": "Height",
+     "use": "grid height in pixels"
+    },
+    {
+     "name": "Pixel",
+     "use": "read or set one pixel at x, y"
+    },
+    {
+     "name": "PSet",
+     "use": "set a pixel (VB-style, with a Step flag)"
+    },
+    {
+     "name": "Line",
+     "use": "draw a line of pixels"
+    },
+    {
+     "name": "FillArea",
+     "use": "set or clear a rectangular area"
+    },
+    {
+     "name": "CopyArea",
+     "use": "copy an area to a new origin"
+    },
+    {
+     "name": "FlipArea",
+     "use": "mirror an area (cdrFlipAxes)"
+    },
+    {
+     "name": "RotateArea",
+     "use": "rotate an area"
+    },
+    {
+     "name": "Clear",
+     "use": "clear the canvas"
+    },
+    {
+     "name": "Select",
+     "use": "load a preset image by index"
+    },
+    {
+     "name": "PutCopy",
+     "use": "copy another canvas into this one"
+    },
+    {
+     "name": "Data",
+     "use": "the canvas as a string, for saving and restoring"
+    }
+   ],
+   "gotchas": [
+    "Whether pixel x / y start at 0 or 1 and whether y runs down is not documented (unverified): draw one pixel and inspect.",
+    "PSet's Step and Line's Flags are short integers in the old VB graphics style; their values are not harvested (unverified).",
+    "Width / Height probably only matter with Size = cdrPatternCanvasCustom (unverified).",
+    "Data's encoding is undocumented: treat it as an opaque blob for copy / restore only.",
+    "A canvas read from a fill may be a copy, so edits may not show until it is put back (unverified); the PatternCanvases.Add + ApplyPatternFill route avoids the question.",
+    "Data is the default member (dispid 0): in VBA always use Set when assigning the canvas object, or the Data string is read or written instead."
+   ],
+   "example": "Set cv = Application.CreatePatternCanvas\ncv.Size = cdrPatternCanvas16x16\ncv.Clear\ncv.FillArea 0, 0, 15, 7, True\nidx = Application.PatternCanvases.Add(cv)\nActiveShape.Fill.ApplyPatternFill cdrTwoColorPattern, , idx",
+   "review": {
+    "by": "adversarial",
+    "changes": "Added a gotcha that Data is the default member (dispid 0)."
+   }
+  },
+  {
+   "name": "IVGPatternCanvases",
+   "id": "class:IVGPatternCanvases",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPatternCanvases",
+   "status": "current",
+   "summary": "The list of two-colour pattern bitmaps offered in the two-colour pattern picker: read presets by index, add your own canvas or remove one.",
+   "use_for": [
+    "installing a set of custom two-colour textures (stripes, dots, hatches) for a team",
+    "picking a preset two-colour texture by index for a scripted fill"
+   ],
+   "avoid": [
+    "full-colour or bitmap patterns: those come from pattern files (IVGPatternFill.Load)"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Application.PatternCanvases. Item(i) is base 1; Add(canvas) returns the new index, which Fill.ApplyPatternFill takes as PatternCanvasIndex (default 1); Remove(i) deletes an entry.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "canvas at index i (base 1)"
+    },
+    {
+     "name": "Count",
+     "use": "number of canvases"
+    },
+    {
+     "name": "Add",
+     "use": "add a canvas and return its index"
+    },
+    {
+     "name": "Remove",
+     "use": "delete the canvas at index i"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the canvases"
+    }
+   ],
+   "gotchas": [
+    "Item is declared read / write, so assigning to Item(i) may overwrite a preset (unverified).",
+    "Whether added canvases persist after a restart is not documented (unverified).",
+    "Indexes shift after Remove: keep the index Add returns and re-read Count."
+   ],
+   "example": "Set cv = Application.CreatePatternCanvas\ncv.Select 3\ncv.FlipArea 0, 0, 15, 15, cdrFlipHorizontal\nidx = Application.PatternCanvases.Add(cv)\nDebug.Print idx, Application.PatternCanvases.Count",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGPatternFill",
+   "id": "class:IVGPatternFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPatternFill",
+   "status": "current",
+   "summary": "The settings of a pattern fill (or pattern transparency): two-colour, full-colour vector or bitmap pattern, its colours or canvas, tile size, origin, row / column offset, skew, rotation, mirroring and whether the pattern transforms with the object.",
+   "use_for": [
+    "textile, wallpaper and packaging mock-ups with repeating motifs",
+    "background textures on posters and social graphics",
+    "two-colour hatch or stripe fills for screen printing",
+    "pattern transparencies that knock a repeating texture out of an object"
+   ],
+   "avoid": [
+    "smooth colour transitions: use a fountain fill",
+    "natural, non-repeating textures: a texture fill or a bitmap looks less tiled"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "class:PatternColor",
+    "PS": "Layer/New Fill Layer/Pattern"
+   },
+   "how": "Shape.Fill.Pattern when Fill.Type = cdrPatternFill (Transparency.Pattern for a pattern transparency). Apply a new one with Shape.Fill.ApplyPatternFill(Type, FileName, PatternCanvasIndex, FrontColor, EndColor, TransformWithShape), which returns this object, then adjust the tiling. Two-colour patterns use FrontColor, BackColor and Canvas; full-colour and bitmap patterns come from a file via Load.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "two-colour / full-colour / bitmap pattern (cdrPatternFillType)"
+    },
+    {
+     "name": "FrontColor",
+     "use": "foreground colour of a two-colour pattern"
+    },
+    {
+     "name": "BackColor",
+     "use": "background colour of a two-colour pattern"
+    },
+    {
+     "name": "Canvas",
+     "use": "the two-colour bitmap (IVGPatternCanvas)"
+    },
+    {
+     "name": "Load",
+     "use": "load a pattern file"
+    },
+    {
+     "name": "FilePath",
+     "use": "file the pattern came from"
+    },
+    {
+     "name": "TileWidth",
+     "use": "tile width"
+    },
+    {
+     "name": "TileHeight",
+     "use": "tile height"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal tile origin"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical tile origin"
+    },
+    {
+     "name": "TileOffsetType",
+     "use": "offset alternate rows or columns (cdrTileOffsetType)"
+    },
+    {
+     "name": "TileOffset",
+     "use": "amount of the row / column offset"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "rotate the pattern"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "skew the pattern"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "pattern moves, scales and rotates with the object"
+    },
+    {
+     "name": "MirrorFill",
+     "use": "mirror alternate tiles"
+    },
+    {
+     "name": "MirrorFillX",
+     "use": "mirror tiles horizontally"
+    },
+    {
+     "name": "MirrorFillY",
+     "use": "mirror tiles vertically"
+    }
+   ],
+   "gotchas": [
+    "Tile size and origin are probably in ActiveDocument.Unit (unverified): set the unit before writing numbers.",
+    "Fill.Pattern only means something when Fill.Type = cdrPatternFill: check the type first.",
+    "TransformWithShape off (the ApplyPatternFill default is False) leaves the pattern fixed when the shape is scaled or rotated.",
+    "TileOffset is a Long, probably a percentage of the tile (unverified).",
+    "Load returns a Boolean: check it, a bad path may fail without an error (unverified)."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet pf = ActiveShape.Fill.ApplyPatternFill(cdrTwoColorPattern)\npf.FrontColor.RGBAssign 0, 82, 155\npf.BackColor.RGBAssign 255, 255, 255\npf.TileWidth = 10: pf.TileHeight = 10\npf.RotationAngle = 45\npf.TransformWithShape = True",
+   "review": {
+    "by": "adversarial",
+    "changes": "The unit of tile size and origin is not in the harvest: marked unverified."
+   }
+  },
+  {
+   "name": "IVGPoint",
+   "id": "class:IVGPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPoint",
+   "status": "current",
+   "summary": "A single x, y position in CorelDRAW's math helpers: create it, shift it by a vector, measure the distance to another point, copy it, or bind it to a document's coordinate system.",
+   "use_for": [
+    "placing objects at computed positions (radial layouts, grids, positions along a path)",
+    "measuring distances between anchor points for spacing checks",
+    "building point lists for curve-fitting or perspective helpers"
+   ],
+   "avoid": [
+    "whole paths: use IVGCurve / sub-paths",
+    "areas and bounding boxes: use IVGRect"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "class:Point",
+    "AI": "class:Point"
+   },
+   "how": "Created with ActiveDocument.Math.CreatePoint(x, y) (Application.Math also works but is a hidden member), and returned by helpers such as SubPath.GetPointAt, Math.MidPoint and Math.Interpolate. Add / Subtract shift it by an IVGVector (Math.CreateVector); BindToDocument(doc) makes x and y use that document's coordinate system.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "horizontal position"
+    },
+    {
+     "name": "y",
+     "use": "vertical position (grows upward)"
+    },
+    {
+     "name": "Add",
+     "use": "move the point by a vector"
+    },
+    {
+     "name": "Subtract",
+     "use": "move the point back by a vector"
+    },
+    {
+     "name": "DistanceTo",
+     "use": "distance to another point"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use a document's coordinate system"
+    }
+   ],
+   "gotchas": [
+    "Until BindToDocument is called a point may be in internal units rather than ActiveDocument.Unit (unverified); bind it, or create it from ActiveDocument.Math.",
+    "Add and Subtract change the point in place and return nothing: GetCopy first if you need the original.",
+    "y grows upward (Document.DrawingOriginX: the default origin is the page's lower-left corner), unlike Photoshop scripting where y grows downward."
+   ],
+   "example": "Set m = ActiveDocument.Math\nSet p = m.CreatePoint(ActivePage.CenterX, ActivePage.CenterY)\nSet q = p.GetCopy\nq.Add m.CreateVector(40, 0)\nDebug.Print p.DistanceTo(q)",
+   "review": {
+    "by": "adversarial",
+    "changes": "how led with Application.Math, which the harvest flags as hidden; ActiveDocument.Math is the visible route. The y gotcha wrongly lumped Illustrator with Photoshop (Illustrator scripting y also grows upward)."
+   }
+  },
+  {
+   "name": "IVGPointRange",
+   "id": "class:IVGPointRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPointRange",
+   "status": "current",
+   "summary": "An ordered list of points with add, insert, remove, reverse, de-duplicate and smoothing calls; the point-list type that curve-fitting and perspective helpers take and return.",
+   "use_for": [
+    "drawing a smooth curve through data points (charts, waveforms, terrain profiles)",
+    "evenly spaced points along a path for placing beads, stitches or icons",
+    "cleaning traced or imported point data before fitting a curve"
+   ],
+   "avoid": [
+    "editing the nodes of an existing curve: use the curve's nodes and segments"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "ActiveDocument.Math.CreatePointRange makes an empty one (Application.Math also works but is a hidden member); SubPath.GetEvenlySpacedPoints and the perspective group's Get*PointsCopy return filled ones. Fill it with AddPointXY / AddPoint, then pass it to ActiveDocument.CreateCurveFitToPoints and draw the curve with a layer's CreateCurve.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "point i (base 1)"
+    },
+    {
+     "name": "Count",
+     "use": "number of points"
+    },
+    {
+     "name": "First",
+     "use": "first point"
+    },
+    {
+     "name": "Last",
+     "use": "last point"
+    },
+    {
+     "name": "AddPointXY",
+     "use": "append a point from x, y"
+    },
+    {
+     "name": "AddPoint",
+     "use": "append an IVGPoint"
+    },
+    {
+     "name": "InsertPoint",
+     "use": "insert a point at an index"
+    },
+    {
+     "name": "AddPoints",
+     "use": "append another range"
+    },
+    {
+     "name": "Remove",
+     "use": "remove one point"
+    },
+    {
+     "name": "RemoveRange",
+     "use": "remove points between two indexes"
+    },
+    {
+     "name": "RemoveAll",
+     "use": "empty the range"
+    },
+    {
+     "name": "RemoveAdjacentDuplicates",
+     "use": "drop repeated consecutive points"
+    },
+    {
+     "name": "Reverse",
+     "use": "reverse the order"
+    },
+    {
+     "name": "Smoothen",
+     "use": "smooth the points across a window"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use a document's coordinate system"
+    }
+   ],
+   "gotchas": [
+    "Smoothen moves the points themselves: keep a GetCopy if you need the raw data.",
+    "Smoothen's window (NumberOfPointsToSmoothAcross) is a double and Closed wraps around the ends; the exact filter is not documented (unverified).",
+    "Points from an unbound range may not be in ActiveDocument.Unit (unverified): create the range from ActiveDocument.Math or call BindToDocument."
+   ],
+   "example": "Set pr = ActiveDocument.Math.CreatePointRange\nFor i = 0 To 20\n  pr.AddPointXY i * 5, 50 + 20 * Sin(i / 3)\nNext i\npr.Smoothen 3, False\nSet s = ActiveLayer.CreateCurve(ActiveDocument.CreateCurveFitToPoints(pr))",
+   "review": {
+    "by": "adversarial",
+    "changes": "how led with Application.Math.CreatePointRange; Application.Math is hidden in the harvest, so ActiveDocument.Math leads."
+   }
+  },
+  {
+   "name": "IVGPolygon",
+   "id": "class:IVGPolygon",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPolygon",
+   "status": "current",
+   "summary": "Live properties of a polygon or star shape: whether it is a polygon, a star or a polygon-as-star, its number of sides (points) and its sharpness.",
+   "use_for": [
+    "starbursts and price flashes on retail posters",
+    "hexagon grids and polygon frames for social graphics",
+    "seals and rosettes on certificates and labels"
+   ],
+   "avoid": [
+    "shapes already converted to curves: the polygon properties are gone; edit nodes instead",
+    "irregular stars: convert to curves and edit the nodes"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "Adobe Shape Construction Regular Polygon Tool",
+    "PS": "polygonTool"
+   },
+   "how": "Shape.Polygon on a shape whose Type is cdrPolygonShape (drawn with the Polygon or Star tool, or created with Layer.CreatePolygon / CreatePolygon2). Set Type (cdrPolygon, cdrStar, cdrPolygonAsStar), Sides and Sharpness.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "polygon / star / polygon-as-star (cdrPolygonType)"
+    },
+    {
+     "name": "Sides",
+     "use": "number of sides or star points"
+    },
+    {
+     "name": "Sharpness",
+     "use": "how deep the star points are"
+    }
+   ],
+   "gotchas": [
+    "Shape.Polygon is only valid when Shape.Type = cdrPolygonShape: check the type first.",
+    "Sharpness probably has no visible effect on a plain cdrPolygon (unverified).",
+    "Valid ranges of Sides and Sharpness are not harvested (unverified): read back after setting."
+   ],
+   "example": "Set s = ActiveShape\nIf s.Type = cdrPolygonShape Then\n  s.Polygon.Type = cdrStar\n  s.Polygon.Sides = 16\n  s.Polygon.Sharpness = 40\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "how names the real creation calls (Layer.CreatePolygon / CreatePolygon2)."
+   }
+  },
+  {
+   "name": "IVGPostScriptFill",
+   "id": "class:IVGPostScriptFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPostScriptFill",
+   "status": "current",
+   "summary": "A PostScript texture fill on a shape: one of CorelDRAW's built-in PostScript patterns, chosen by name or index, with up to five numeric parameters whose meaning depends on the pattern.",
+   "use_for": [
+    "resolution-independent hatching or line textures for print and engraving output",
+    "quick decorative textures for jobs printed on PostScript devices"
+   ],
+   "avoid": [
+    "screen, web or PDF-only work: PostScript fills are heavy to render and may simplify or rasterise on export (unverified); use a vector pattern fill",
+    "textures that need full colour control: the pattern's own parameters are all you get"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Shape.Fill.PostScript when Fill.Type = cdrPostscriptFill. Apply one with Shape.Fill.ApplyPostscriptFill(IndexOrName), which returns this object; Select changes the pattern, and Properties(i) or SetProperties(Param1 ... Param5) set its numbers.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "name of the PostScript pattern"
+    },
+    {
+     "name": "Index",
+     "use": "index of the pattern in the list"
+    },
+    {
+     "name": "Select",
+     "use": "switch to another pattern by name or index"
+    },
+    {
+     "name": "Properties",
+     "use": "read or set parameter i"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set up to five parameters at once"
+    }
+   ],
+   "gotchas": [
+    "Param1 ... Param5 have no names in the typelib: each pattern uses them differently; open the pattern in the PostScript fill dialog to learn their order (unverified).",
+    "Whether Properties(i) starts at 0 or 1 is not documented (unverified).",
+    "A misspelled pattern name in Select / ApplyPostscriptFill probably raises an error (unverified): read Name back."
+   ],
+   "example": "Set pf = ActiveShape.Fill.ApplyPostscriptFill(1)  ' or a name from the PostScript list\nDebug.Print pf.Name, pf.Index\npf.SetProperties 5, 10",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGPowerClip",
+   "id": "class:IVGPowerClip",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPowerClip",
+   "status": "current",
+   "summary": "The PowerClip content of a container shape: the shapes clipped inside it, whether that content is locked to the frame, entering and leaving edit-contents mode, and extracting the contents back out.",
+   "use_for": [
+    "photos clipped into circles, letters or custom frames on posters and social posts",
+    "packaging art clipped to a dieline panel",
+    "template image slots that keep their crop when the frame moves",
+    "batch-extracting clipped artwork for reuse"
+   ],
+   "avoid": [
+    "plain rectangular crops of one bitmap: crop the bitmap",
+    "putting shapes inside: that is done from the content side with Shape.AddToPowerClip(container), not from this object"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Object/Clipping Mask/Make",
+    "PS": "Layer/Create Clipping Mask"
+   },
+   "how": "Shape.PowerClip on the container shape, or ActiveDocument.ActivePowerClip while its contents are being edited. Put shapes in with Shape.AddToPowerClip(container, CenterInContainer); read the contents through Shapes, take them out with ExtractShapes, and use ContentsLocked to choose whether the content moves with the frame.",
+   "key_members": [
+    {
+     "name": "Shapes",
+     "use": "the shapes inside the PowerClip"
+    },
+    {
+     "name": "ContentsLocked",
+     "use": "content moves and scales with the frame when True"
+    },
+    {
+     "name": "EnterEditMode",
+     "use": "enter edit-contents mode"
+    },
+    {
+     "name": "LeaveEditMode",
+     "use": "leave edit-contents mode"
+    },
+    {
+     "name": "ExtractShapes",
+     "use": "take the contents out and return them as a shape range"
+    },
+    {
+     "name": "Parent",
+     "use": "the container shape"
+    }
+   ],
+   "gotchas": [
+    "A shape without PowerClip content probably returns Nothing for Shape.PowerClip (unverified): test If Not s.PowerClip Is Nothing first.",
+    "Pair every EnterEditMode with LeaveEditMode; a script that errors in between leaves the document in edit-contents mode.",
+    "ContentsLocked = False lets the frame move without its content (the crop changes).",
+    "Shapes only lists the first level: nested PowerClips need a recursive walk (unverified).",
+    "Content positions are page coordinates, not relative to the frame (unverified)."
+   ],
+   "example": "Set frame = ActivePage.FindShape(Name:=\"photo_slot\")\nIf Not frame.PowerClip Is Nothing Then\n  frame.PowerClip.ContentsLocked = True\n  Debug.Print frame.PowerClip.Shapes.Count\n  Set sr = frame.PowerClip.ExtractShapes\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "Marked the first-level-only Shapes claim as unverified."
+   }
+  },
+  {
+   "name": "IVGProofColorSettings",
+   "id": "class:IVGProofColorSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGProofColorSettings",
+   "status": "current",
+   "summary": "Soft-proofing settings: the colour context (output profile and rendering intent) to simulate, whether out-of-gamut colours are flagged, the warning colour and its transparency, and whether colour numbers are preserved.",
+   "use_for": [
+    "previewing how a design will print on a given press or paper profile",
+    "flagging RGB brand colours that fall outside the CMYK gamut before print",
+    "exporting proofs with the simulated output applied"
+   ],
+   "avoid": [
+    "converting colours for real: proofing only changes the view or export; convert colours separately"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "View/Proof Setup/Customize...",
+    "PS": "View/Proof Setup/Custom"
+   },
+   "how": "ActiveWindow.ActiveView.ProofColorSettings for the current view, ExportOptions.ProofColorSettings for an export, or a new object from Application.CreateProofColorSettings(ProfileName, RenderingIntent, PreserveColorValues). Edit a GetCopy and write it back with CopyAssign; ActiveWindow.ActiveView.ShowProofColors switches the simulation on.",
+   "key_members": [
+    {
+     "name": "ColorContext",
+     "use": "output profile and rendering intent to simulate (IVGColorContext)"
+    },
+    {
+     "name": "ShowOutOfGamutWarning",
+     "use": "overlay colours that cannot be printed"
+    },
+    {
+     "name": "OutOfGamutColor",
+     "use": "colour of the gamut warning overlay"
+    },
+    {
+     "name": "OutOfGamutTransparency",
+     "use": "transparency of the warning overlay"
+    },
+    {
+     "name": "PreserveColorValues",
+     "use": "keep colour numbers when no model conversion happens"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy to edit"
+    },
+    {
+     "name": "CopyAssign",
+     "use": "apply settings from another object"
+    }
+   ],
+   "gotchas": [
+    "These settings do not switch proofing on: set ActiveWindow.ActiveView.ShowProofColors = True to show the simulation.",
+    "The scale of OutOfGamutTransparency (0-1 or 0-100) is not harvested (unverified): read the current value first.",
+    "ActiveView.ProofColorSettings is read / write; if the object it returns is a copy, CopyAssign onto it may not reach the view (unverified): read the setting back after writing."
+   ],
+   "example": "Set pc = ActiveWindow.ActiveView.ProofColorSettings.GetCopy\npc.ShowOutOfGamutWarning = True\npc.OutOfGamutColor.RGBAssign 0, 255, 0\nActiveWindow.ActiveView.ProofColorSettings.CopyAssign pc\nActiveWindow.ActiveView.ShowProofColors = True",
+   "review": {
+    "by": "adversarial",
+    "changes": "Gotcha guessed the proofing toggle was elsewhere (unverified); it is the harvested ActiveView.ShowProofColors, now named in how, the gotcha and the example. The copy / write-back gotcha contradicted itself (CopyAssign onto a copy would not help): reworded."
+   }
+  },
+  {
+   "name": "IVGProperties",
+   "id": "class:IVGProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGProperties",
+   "status": "current",
+   "summary": "Hidden script data attached to a shape, layer, page, document or the application: values keyed by a section name and a numeric ID that are kept with the object and read back by later scripts, plus point and vector payloads.",
+   "use_for": [
+    "tagging template slots and text frames with field names for automated catalogue or certificate builds",
+    "storing a job number or SKU on artwork so an export script can name files",
+    "remembering a script's last settings per document",
+    "marking shapes a batch script has already processed"
+   ],
+   "avoid": [
+    "data the designer must see or edit in the UI: use the object data fields (Shape.ObjectData) instead",
+    "large payloads: store a path rather than the data"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "AI": "class:Tags"
+   },
+   "how": "Shape.Properties, Layer.Properties, Page.Properties, Document.Properties, Application.GlobalUserData or SessionUserData, or a free-standing bag from Application.CreateProperties. Item(Name, ID) is the default member, so s.Properties(\"MyTool\", 1) = \"sku-42\" writes and s.Properties(\"MyTool\", 1) reads; Exists checks, Delete / DeleteAll(Name) remove.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "value stored under (Name, ID)"
+    },
+    {
+     "name": "Exists",
+     "use": "True if (Name, ID) is set"
+    },
+    {
+     "name": "Delete",
+     "use": "remove one value"
+    },
+    {
+     "name": "DeleteAll",
+     "use": "remove every value of a section name"
+    },
+    {
+     "name": "Count",
+     "use": "number of stored values"
+    },
+    {
+     "name": "ItemByIndex",
+     "use": "value by position"
+    },
+    {
+     "name": "Index",
+     "use": "position of (Name, ID)"
+    },
+    {
+     "name": "DeleteByIndex",
+     "use": "remove a value by position"
+    },
+    {
+     "name": "GetPoint",
+     "use": "read a stored IVGPoint"
+    },
+    {
+     "name": "SetPoint",
+     "use": "store an IVGPoint"
+    },
+    {
+     "name": "GetVector",
+     "use": "read a stored IVGVector"
+    },
+    {
+     "name": "SetVector",
+     "use": "store an IVGVector"
+    }
+   ],
+   "gotchas": [
+    "The key is the pair (Name, ID): (\"MyTool\", 1) and (\"MyTool\", 2) are different values. Use your own section name so you never collide with other macros.",
+    "Reading an Item that was never set probably raises an error (unverified): test Exists first.",
+    "GetPoint / SetPoint / GetVector / SetVector use a single uuidName string key, not the (Name, ID) pair.",
+    "PutFile, GetFile, GetCurve and SetCurve are hidden members; avoid building on them.",
+    "Whether the data travels with a shape when it is duplicated or pasted into another document is not documented (unverified).",
+    "GlobalUserData is kept between application sessions and SessionUserData only for the current session (typelib)."
+   ],
+   "example": "Set s = ActiveShape\ns.Properties(\"PGD\", 1) = \"headline\"\ns.Properties(\"PGD\", 2) = \"SKU-1042\"\nIf s.Properties.Exists(\"PGD\", 1) Then Debug.Print s.Properties(\"PGD\", 1)",
+   "review": {
+    "by": "adversarial",
+    "changes": "Gotcha marked the GlobalUserData / SessionUserData lifetimes as unverified, but the harvest states them; avoid now names Shape.ObjectData."
+   }
+  },
+  {
+   "name": "IVGPSScreenOptions",
+   "id": "class:IVGPSScreenOptions",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGPSScreenOptions",
+   "status": "current",
+   "summary": "The PostScript halftone screen of an object's fill or outline: the screen type (dot, line and other spot shapes), its angle and its lines-per-inch frequency, used when separating to a PostScript device.",
+   "use_for": [
+    "deliberate coarse dot or line screens on spot-colour screen prints",
+    "setting spot-colour screen angles to avoid moire on press",
+    "retro comic or newspaper halftone looks on separated output"
+   ],
+   "avoid": [
+    "on-screen, PDF or raster deliverables: the screen only applies to PostScript separations (unverified); use a halftone bitmap effect for a visible look",
+    "process jobs where the RIP controls screening: leave the default"
+   ],
+   "confidence": "medium",
+   "equivalents": {},
+   "how": "Shape.Fill.PSScreen or Shape.Outline.PSScreen (read-only properties returning this object). SetProperties(IndexOrName, Angle, Frequency) sets everything; Select(Name) changes only the type; Reset restores the default; NameByIndex(i) lists the available screen types.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "current screen type"
+    },
+    {
+     "name": "Index",
+     "use": "index of the current screen type"
+    },
+    {
+     "name": "Angle",
+     "use": "screen angle in degrees"
+    },
+    {
+     "name": "Frequency",
+     "use": "screen frequency in lines per inch"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set type, angle and frequency in one call"
+    },
+    {
+     "name": "Select",
+     "use": "change the screen type by name"
+    },
+    {
+     "name": "NameByIndex",
+     "use": "name of screen type i, empty past the last"
+    },
+    {
+     "name": "Reset",
+     "use": "back to the default screen"
+    },
+    {
+     "name": "UserAssign",
+     "use": "open the halftone screen dialog"
+    }
+   ],
+   "gotchas": [
+    "Only PostScript separation output uses these settings; nothing changes on screen (unverified).",
+    "NameByIndex returns an empty string when the index is not available (typelib), so it can be used to list the types; the first valid index (0 or 1) is not stated.",
+    "Frequency is a whole number of lines per inch whatever ActiveDocument.Unit is.",
+    "UserAssign opens a modal dialog (ParentWindowHandle is optional, default 0): never call it in unattended runs.",
+    "Select's description says 'by index or name' but its parameter is a string Name; use SetProperties to choose by index."
+   ],
+   "example": "For i = 0 To 30\n  n = ActiveShape.Fill.PSScreen.NameByIndex(i)\n  If n <> \"\" Then Debug.Print i, n\nNext i\nActiveShape.Fill.PSScreen.SetProperties 2, 45, 20",
+   "review": {
+    "by": "adversarial",
+    "changes": "Gotcha said UserAssign needs a parent window handle; ParentWindowHandle is optional with default 0."
+   }
+  },
+  {
+   "name": "IVGRecentFile",
+   "id": "class:IVGRecentFile",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGRecentFile",
+   "status": "current",
+   "summary": "One entry in CorelDRAW's File > Open Recent list: its file name, folder and full path, its position, and calls to open the file or remove the entry.",
+   "use_for": [
+    "reopening the last working file at the start of an automated session",
+    "clearing client file names from the recent list before screen-sharing or handing over a workstation"
+   ],
+   "avoid": [
+    "finding files on disk: the list only holds recently opened files; search the folder instead"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.RecentFiles(i) (base 1). Open opens the file and returns the document; Delete removes the entry from the list only.",
+   "key_members": [
+    {
+     "name": "FullName",
+     "use": "folder and file name"
+    },
+    {
+     "name": "Name",
+     "use": "file name"
+    },
+    {
+     "name": "Path",
+     "use": "folder"
+    },
+    {
+     "name": "Index",
+     "use": "position in the list"
+    },
+    {
+     "name": "Open",
+     "use": "open the file and return the document"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the entry from the list"
+    },
+    {
+     "name": "Parent",
+     "use": "the recent-files list"
+    }
+   ],
+   "gotchas": [
+    "Open fails if the file was moved or deleted: check FullName exists first (Dir in VBA).",
+    "Name, Path and FullName are writable; that rewrites the list entry, not the file on disk (unverified).",
+    "Delete only removes the list entry (typelib: 'Removes the file from the Recent File list')."
+   ],
+   "example": "Set rf = Application.RecentFiles(1)\nIf Dir(rf.FullName) <> \"\" Then\n  Set doc = rf.Open\nElse\n  rf.Delete\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGRecentFiles",
+   "id": "class:IVGRecentFiles",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGRecentFiles",
+   "status": "current",
+   "summary": "CorelDRAW's recent-files list (File > Open Recent): number of entries, maximum length, each entry, and adding a file to the list.",
+   "use_for": [
+    "listing recently opened jobs for a project launcher or time log",
+    "putting a project's master file back on the recent list after a scripted save"
+   ],
+   "avoid": [
+    "changing how many files the list keeps: Maximum is read-only here, set it in the application options"
+   ],
+   "confidence": "high",
+   "equivalents": {},
+   "how": "Application.RecentFiles. Item(i) is base 1 (the typelib calls it 'a specified window', a copy-paste slip); Count and Maximum are read-only; Add(Name, Path) adds an entry and returns it.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "entry i (base 1)"
+    },
+    {
+     "name": "Count",
+     "use": "number of entries"
+    },
+    {
+     "name": "Maximum",
+     "use": "how many entries the list keeps"
+    },
+    {
+     "name": "Add",
+     "use": "add a file from its name and folder"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the entries"
+    },
+    {
+     "name": "Parent",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "Add takes the file name and the folder separately; whether Path needs a trailing backslash is not documented (unverified).",
+    "Index 1 is expected to be the most recent file (unverified).",
+    "The list is the user's own: a script that adds many entries pushes the user's files off it."
+   ],
+   "example": "For Each rf In Application.RecentFiles\n  Debug.Print rf.Index, rf.FullName\nNext rf\nDebug.Print Application.RecentFiles.Count, Application.RecentFiles.Maximum",
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGRect",
+   "id": "class:IVGRect",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGRect",
+   "status": "current",
+   "summary": "A rectangle value (x and y of the lower-left corner, width, height) used for bounding boxes and areas, with helpers to intersect, union, offset, inflate, hit-test and translate it between documents.",
+   "use_for": [
+    "aligning and spacing objects from their bounding boxes in layout scripts",
+    "checking artwork stays inside the safe area or trim of a print page",
+    "defining an export area that crops part of the page",
+    "collision tests when auto-placing labels or stickers"
+   ],
+   "avoid": [
+    "drawing a rectangle: create a rectangle shape on a layer (corner settings are IVGRectangle)"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "PS": "class:Rectangle",
+    "AI": "class:Rectangle"
+   },
+   "how": "Returned by Shape.BoundingBox, ShapeRange.BoundingBox, Page.BoundingBox, Page.GetObjectsBoundingBox, Curve.BoundingBox and ExportOptions.ExportArea; created with Application.CreateRect(x, y, Width, Height). Values are in ActiveDocument.Unit.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "left edge"
+    },
+    {
+     "name": "y",
+     "use": "bottom edge"
+    },
+    {
+     "name": "Width",
+     "use": "width"
+    },
+    {
+     "name": "Height",
+     "use": "height"
+    },
+    {
+     "name": "Left",
+     "use": "left edge (read-only)"
+    },
+    {
+     "name": "Right",
+     "use": "right edge (read-only)"
+    },
+    {
+     "name": "Top",
+     "use": "top edge (read-only)"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottom edge (read-only)"
+    },
+    {
+     "name": "CenterX",
+     "use": "horizontal centre"
+    },
+    {
+     "name": "CenterY",
+     "use": "vertical centre"
+    },
+    {
+     "name": "SetRect",
+     "use": "set x, y, width and height"
+    },
+    {
+     "name": "GetRect",
+     "use": "read x, y, width and height"
+    },
+    {
+     "name": "Intersect",
+     "use": "overlap with another rect, as a new rect"
+    },
+    {
+     "name": "Union",
+     "use": "rect enclosing both, as a new rect"
+    },
+    {
+     "name": "Offset",
+     "use": "move in place"
+    },
+    {
+     "name": "Inflate",
+     "use": "grow each side by an amount"
+    },
+    {
+     "name": "IsPointInside",
+     "use": "hit-test a point"
+    },
+    {
+     "name": "IsEmpty",
+     "use": "True for an empty rect (e.g. no overlap)"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "ChangeContext",
+     "use": "translate coordinates from one document to another"
+    }
+   ],
+   "gotchas": [
+    "y is the bottom edge and grows upward (Top = y + Height): Photoshop bounds grow downward from the top and Illustrator rectangles are given top-first, so convert when porting.",
+    "Inflate's arguments are Left, Top, Right, Bottom, not x, y, width, height; negative values to shrink are expected to work (unverified).",
+    "A shape's BoundingBox is a value: changing it does not move the shape (unverified); move the shape itself.",
+    "Offset changes the rect in place; Intersect and Union return new rects.",
+    "GetRect returns through ByRef arguments; from Python / late-bound COM expect a tuple (unverified)."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet safe = ActivePage.BoundingBox.GetCopy\nsafe.Inflate -5, -5, -5, -5\nSet bb = ActiveShape.BoundingBox\nSet ov = safe.Intersect(bb)\nIf ov.Width < bb.Width Or ov.Height < bb.Height Then MsgBox \"Outside safe area\"",
+   "review": {
+    "by": "adversarial",
+    "changes": "Gotcha said y-up is unlike Illustrator; Illustrator scripting y also grows upward, the difference is top-first rects."
+   }
+  },
+  {
+   "name": "IVGRectangle",
+   "id": "class:IVGRectangle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGRectangle",
+   "status": "current",
+   "summary": "Live properties of a rectangle shape: the rounding of each corner as a relative roundness or an absolute radius, the corner type (round, scallop or chamfer), whether all corners are equal, the largest allowed radius, and whether corners scale when the rectangle is resized.",
+   "use_for": [
+    "rounded buttons, cards and UI mock-ups with exact corner radii",
+    "scalloped or chamfered labels, tickets and badges",
+    "keeping corner radii fixed while template rectangles are resized"
+   ],
+   "avoid": [
+    "rectangles already converted to curves: the rectangle properties are gone; use the Fillet / Scallop / Chamfer docker on nodes",
+    "corner styles on other shapes: use the Fillet / Scallop / Chamfer docker"
+   ],
+   "confidence": "high",
+   "equivalents": {
+    "AI": "Adobe Rectangle Shape Tool",
+    "PS": "rectangleTool"
+   },
+   "how": "Shape.Rectangle on a shape whose Type is cdrRectangleShape (drawn with the Rectangle tool or created with Layer.CreateRectangle / CreateRectangle2 / CreateRectangleRect). SetRadius sets all corners in document units and Radius* set one each; SetRoundness / Corner* use relative roundness; CornerType picks round, scallop or chamfer.",
+   "key_members": [
+    {
+     "name": "CornerType",
+     "use": "round / scallop / chamfer (cdrCornerType)"
+    },
+    {
+     "name": "SetRadius",
+     "use": "same absolute radius on all corners"
+    },
+    {
+     "name": "RadiusUpperLeft",
+     "use": "upper-left radius"
+    },
+    {
+     "name": "RadiusUpperRight",
+     "use": "upper-right radius"
+    },
+    {
+     "name": "RadiusLowerLeft",
+     "use": "lower-left radius"
+    },
+    {
+     "name": "RadiusLowerRight",
+     "use": "lower-right radius"
+    },
+    {
+     "name": "MaxRadius",
+     "use": "largest radius the rectangle allows"
+    },
+    {
+     "name": "SetRoundness",
+     "use": "same relative roundness on all corners"
+    },
+    {
+     "name": "CornerUpperLeft",
+     "use": "upper-left relative roundness"
+    },
+    {
+     "name": "CornerUpperRight",
+     "use": "upper-right relative roundness"
+    },
+    {
+     "name": "CornerLowerLeft",
+     "use": "lower-left relative roundness"
+    },
+    {
+     "name": "CornerLowerRight",
+     "use": "lower-right relative roundness"
+    },
+    {
+     "name": "EqualCorners",
+     "use": "True when all corners match"
+    },
+    {
+     "name": "RelativeCornerScaling",
+     "use": "scale corners with the rectangle"
+    }
+   ],
+   "gotchas": [
+    "Radius* and SetRadius are in ActiveDocument.Unit and limited by MaxRadius; what happens above it (clamp or error) is not documented (unverified).",
+    "Corner* and SetRoundness are Long relative values (0-100 in the UI's old roundness model, unverified), while Radius* are absolute: pick one model per script.",
+    "With RelativeCornerScaling False the radius stays absolute when the rectangle is resized (unverified).",
+    "Shape.Rectangle is only valid when Shape.Type = cdrRectangleShape."
+   ],
+   "example": "ActiveDocument.Unit = cdrMillimeter\nSet s = ActiveShape\nIf s.Type = cdrRectangleShape Then\n  s.Rectangle.CornerType = cdrCornerTypeRound\n  s.Rectangle.SetRadius 4\n  s.Rectangle.RelativeCornerScaling = False\nEnd If",
+   "review": {
+    "by": "adversarial",
+    "changes": "how names the real creation calls (Layer.CreateRectangle / CreateRectangle2 / CreateRectangleRect)."
+   }
+  },
+  {
+   "name": "IVGRulers",
+   "id": "class:IVGRulers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGRulers",
+   "status": "current",
+   "summary": "The horizontal and vertical ruler units of a document, i.e. the units the rulers, property bar and dialogs display.",
+   "use_for": [
+    "setting print templates to millimetres and screen templates to pixels",
+    "matching ruler units to a client spec before handing over a file"
+   ],
+   "avoid": [
+    "changing the unit a script's numbers are read in: that is ActiveDocument.Unit, separate from the rulers"
+   ],
+   "confidence": "medium",
+   "equivalents": {
+    "PS": "Edit/Preferences/Units & Rulers",
+    "AI": "Edit/Preferences/Units..."
+   },
+   "how": "ActiveDocument.Rulers. Set HUnits and VUnits to a cdrUnit value (cdrMillimeter, cdrPixel, cdrPoint ...).",
+   "key_members": [
+    {
+     "name": "HUnits",
+     "use": "horizontal ruler unit (cdrUnit)"
+    },
+    {
+     "name": "VUnits",
+     "use": "vertical ruler unit (cdrUnit)"
+    },
+    {
+     "name": "Parent",
+     "use": "the owning document"
+    },
+    {
+     "name": "Application",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "Ruler units are display only: ActiveDocument.Unit (inches is the usual default, unverified) still decides how script numbers are read.",
+    "HUnits and VUnits are independent: set both.",
+    "The ruler / drawing origin is not on this object: it is ActiveDocument.DrawingOriginX / DrawingOriginY."
+   ],
+   "example": "With ActiveDocument.Rulers\n  .HUnits = cdrMillimeter\n  .VUnits = cdrMillimeter\nEnd With\nActiveDocument.Unit = cdrMillimeter",
+   "review": {
+    "by": "adversarial",
+    "changes": "Marked the inch default as unverified; the origin gotcha now names Document.DrawingOriginX / DrawingOriginY."
+   }
+  }
+ ]
+}

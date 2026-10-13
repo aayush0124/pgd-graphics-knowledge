@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.14"]
+    runs-on: ${{ matrix.os }}
+    env:
+      # card hits fail the scrub test here (locally they are reported and skipped until the cards are cleaned)
+      PGD_SCRUB_STRICT: "1"
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # offline: stdlib only, no Adobe / Corel app, no GPU, no secret, no LLM. node (preinstalled on the runners)
+      # parses the workflow scripts; Pillow is not installed, so the contact-sheet test skips.
+      - name: tests (incl. tests/test_public_scrub.py)
+        run: python -m unittest discover -s tests -v
+      - name: pipeline status
+        shell: bash
+        run: python pipeline.py status || [ $? -eq 10 ]

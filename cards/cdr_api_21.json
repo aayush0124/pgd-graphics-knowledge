@@ -1,0 +1,3030 @@
+{
+ "cards": [
+  {
+   "name": "IVGTextureFill",
+   "id": "class:IVGTextureFill",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextureFill",
+   "status": "current",
+   "summary": "The settings of a texture fill (or of a texture transparency) on a CorelDRAW object: which procedural bitmap texture from which texture library, its tile size, origin, row/column offset, rotation, skew and mirroring, and the resolution the texture is rendered at. The result is a seamless generated bitmap pattern (stone, clouds, paper-like grain) filling the shape.",
+   "use_for": [
+    "stone, paper or cloud backgrounds behind a poster headline",
+    "copy one texture fill from a sample shape to many shapes",
+    "raise the texture Resolution before a print export so the fill is not soft",
+    "texture transparency for a grungy fade on a badge or label"
+   ],
+   "avoid": [
+    "heavy print jobs at high Resolution: texture fills render as bitmaps and bloat file size and RIP time; use a bitmap pattern or a placed image instead",
+    "artwork that must match a supplied image exactly: use a bitmap pattern fill or PowerClip the image"
+   ],
+   "confidence": "high",
+   "how": "Reached through Shape.Fill.Texture once a texture fill is applied, or as the return value of Fill.ApplyTextureFill(TextureName, LibraryName); the same object sits behind Transparency.Texture and Transparency.ApplyTextureTransparency. Select swaps the texture, the tile and transform properties place it, and Properties exposes the texture's own generator parameters.",
+   "key_members": [
+    {
+     "name": "Select",
+     "use": "switch to another texture (Texture, optional Library)"
+    },
+    {
+     "name": "TextureName",
+     "use": "name of the current texture (read-only)"
+    },
+    {
+     "name": "LibraryName",
+     "use": "texture library it comes from (read-only)"
+    },
+    {
+     "name": "StyleName",
+     "use": "style name of the texture (read-only)"
+    },
+    {
+     "name": "TileWidth",
+     "use": "width of one tile"
+    },
+    {
+     "name": "TileHeight",
+     "use": "height of one tile"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal tile origin"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical tile origin"
+    },
+    {
+     "name": "TileOffsetType",
+     "use": "offset rows or columns (cdrTileOffsetRow / cdrTileOffsetColumn)"
+    },
+    {
+     "name": "TileOffset",
+     "use": "amount of the row / column offset"
+    },
+    {
+     "name": "RotationAngle",
+     "use": "rotate the texture inside the shape"
+    },
+    {
+     "name": "SkewAngle",
+     "use": "skew the texture"
+    },
+    {
+     "name": "TransformWithShape",
+     "use": "texture follows when the shape is scaled / rotated"
+    },
+    {
+     "name": "MirrorFill",
+     "use": "mirror alternate tiles"
+    },
+    {
+     "name": "MirrorFillX",
+     "use": "mirror tiles horizontally"
+    },
+    {
+     "name": "MirrorFillY",
+     "use": "mirror tiles in the other direction"
+    },
+    {
+     "name": "Resolution",
+     "use": "render resolution of the generated bitmap"
+    },
+    {
+     "name": "MaximumTileWidth",
+     "use": "cap on the generated tile width"
+    },
+    {
+     "name": "Properties",
+     "use": "the texture's generator parameters"
+    },
+    {
+     "name": "SetProperties",
+     "use": "set the generator parameters from one array"
+    }
+   ],
+   "gotchas": [
+    "texture and library names are the strings shown in CorelDRAW's texture library list; read them from an existing fill (TextureName / LibraryName) rather than typing them, since they may be localised (unverified)",
+    "Resolution (dpi) and MaximumTileWidth (pixels) decide how sharp the generated bitmap is: low values look soft in print, high ones make files heavy (unverified)",
+    "the harvested description of MirrorFillY says 'horizontal', the same as MirrorFillX; it is most likely the vertical mirror (unverified)",
+    "LibraryName, TextureName and StyleName are read-only: change the texture with Select, not by assigning a name",
+    "SetProperties takes a SAFEARRAY of variants whose layout the harvest does not describe; set single parameters through Properties.Item(...).Value instead (unverified)"
+   ],
+   "example": "Dim src As TextureFill, s As Shape\nSet src = ActiveSelectionRange(1).Fill.Texture\nFor Each s In ActiveSelectionRange\n  With s.Fill.ApplyTextureFill(src.TextureName, src.LibraryName)\n    .Resolution = src.Resolution: .TileWidth = src.TileWidth: .TileHeight = src.TileHeight\n  End With\nNext s",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextureFillProperties",
+   "id": "class:IVGTextureFillProperties",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextureFillProperties",
+   "status": "current",
+   "summary": "The list of a texture fill's own generator parameters, i.e. the values offered when that texture is edited in the fill dialog. Each texture has its own set (numeric values and RGB, HSB or CMYK colours, as cdrTexturePropertyType tells), so this collection is how a script discovers what a given texture exposes.",
+   "use_for": [
+    "find the seed parameter of a stone texture and make several variations of it",
+    "recolour a texture fill to brand colours",
+    "log a client file's texture parameters so the fill can be recreated"
+   ],
+   "avoid": [
+    "assuming parameter names or positions are the same for every texture: iterate first and match by name"
+   ],
+   "confidence": "medium",
+   "how": "TextureFill.Properties (read-only), e.g. ActiveShape.Fill.Texture.Properties. A base-1 collection whose Item takes an index or the parameter's name; For Each works through _NewEnum.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of parameters this texture has"
+    },
+    {
+     "name": "Item",
+     "use": "one parameter by index (base 1) or by name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the parameters"
+    }
+   ],
+   "gotchas": [
+    "each texture has its own parameter list, so an index that is the seed on one texture is a colour or softness value on another",
+    "parameter names are display strings and may be localised (unverified)",
+    "Item with a name the texture does not have raises an error (unverified)"
+   ],
+   "example": "Dim p As TextureFillProperty\nFor Each p In ActiveShape.Fill.Texture.Properties\n  If p.Type = cdrTexturePropertyNumeric Then Debug.Print p.Name, p.Value Else Debug.Print p.Name, \"(colour)\"\nNext p",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: replaced the invented list of typical parameters (seed, softness, density) with the parameter kinds cdrTexturePropertyType actually defines"
+   }
+  },
+  {
+   "name": "IVGTextureFillProperty",
+   "id": "class:IVGTextureFillProperty",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextureFillProperty",
+   "status": "current",
+   "summary": "One generator parameter of a texture fill: its display name, its kind (a number, or an RGB, HSB or CMYK colour) and its current value, which can be changed to alter the texture's pattern or colouring.",
+   "use_for": [
+    "bump a texture's seed number to get a new random-looking variation",
+    "set a texture's colour parameters to brand colours"
+   ],
+   "avoid": [
+    "guessing which parameter is which by position: check Name and Type first"
+   ],
+   "confidence": "medium",
+   "how": "An item of TextureFill.Properties: Properties.Item(index or name), or the loop variable of a For Each over Properties.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "the parameter's display name (read-only)"
+    },
+    {
+     "name": "Type",
+     "use": "numeric or an RGB / HSB / CMYK colour (cdrTexturePropertyType, read-only)"
+    },
+    {
+     "name": "Value",
+     "use": "read or set the parameter's value"
+    }
+   ],
+   "gotchas": [
+    "Value is a Variant whose content depends on Type: a number for cdrTexturePropertyNumeric; what a colour-type parameter expects (a Color object or a packed number) is not stated in the harvest (unverified)",
+    "numeric parameters have ranges the harvest does not list; out-of-range values may be clamped or rejected (unverified)",
+    "the fill may need a refresh (or the texture re-selected) before the new value shows on screen (unverified)"
+   ],
+   "example": "Dim p As TextureFillProperty\nSet p = ActiveShape.Fill.Texture.Properties.Item(1)\nDebug.Print p.Name, p.Type\nIf p.Type = cdrTexturePropertyNumeric Then p.Value = p.Value + 1",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextVariableAxes",
+   "id": "class:IVGTextVariableAxes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextVariableAxes",
+   "status": "current",
+   "summary": "The design axes a text range's font offers when it is an OpenType variable font (weight, width, slant, optical size or a custom axis). Count is the number of axes; it is 0 for an ordinary static font.",
+   "use_for": [
+    "check whether a client's font is variable before relying on in-between weights",
+    "list a variable font's axes and ranges for a type spec",
+    "reach an axis to set a headline to a weight no static style has"
+   ],
+   "avoid": [
+    "static fonts: there are no axes; pick a different font style instead"
+   ],
+   "confidence": "high",
+   "how": "TextRange.VariableAxes, e.g. ActiveShape.Text.Story.VariableAxes or a sub-range such as Story.Words.First.VariableAxes. Item takes a numeric index only, so find an axis by looping and checking Name or Tag.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of axes of the range's font (0 = not a variable font)"
+    },
+    {
+     "name": "Item",
+     "use": "one axis by numeric index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the axes"
+    }
+   ],
+   "gotchas": [
+    "Item accepts only a long index, not an axis name or tag",
+    "the harvest describes Count as 'supported by the selection's font'; a range that mixes fonts may report only one font's axes or none (unverified)",
+    "the index is assumed to be base 1 like the rest of the object model (unverified)"
+   ],
+   "example": "Dim ax As TextVariableAxis\nFor Each ax In ActiveShape.Text.Story.VariableAxes\n  Debug.Print ax.Name, ax.MinValue, ax.DefaultValue, ax.MaxValue\nNext ax",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextVariableAxis",
+   "id": "class:IVGTextVariableAxis",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextVariableAxis",
+   "status": "current",
+   "summary": "One axis of a variable font on a text range: its OpenType tag, its display name, the allowed minimum and maximum, the font's default, and the current Value, which can be set to dial the typeface continuously (for example a weight between Regular and Bold, or a narrower width).",
+   "use_for": [
+    "fine-tune headline weight so a line fits without changing the point size",
+    "make one word heavier than the rest while keeping the same font",
+    "reset text to the font's intended default design (DefaultValue)"
+   ],
+   "avoid": [
+    "static fonts: they have no axes; switch font style instead"
+   ],
+   "confidence": "high",
+   "how": "An item of TextRange.VariableAxes (Item(i) or a For Each loop variable). Apply it to a sub-range (Words, Characters) to vary the design per word.",
+   "key_members": [
+    {
+     "name": "Tag",
+     "use": "the OpenType axis tag as a number (read-only)"
+    },
+    {
+     "name": "Name",
+     "use": "axis display name, e.g. a weight or width axis (read-only)"
+    },
+    {
+     "name": "Value",
+     "use": "read or set the axis position"
+    },
+    {
+     "name": "MinValue",
+     "use": "lowest allowed value (read-only)"
+    },
+    {
+     "name": "MaxValue",
+     "use": "highest allowed value (read-only)"
+    },
+    {
+     "name": "DefaultValue",
+     "use": "the font's default for this axis (read-only)"
+    }
+   ],
+   "gotchas": [
+    "Tag is a long, not the four-letter text such as wght or wdth; compare Name, or decode the four bytes (byte order unverified)",
+    "keep Value within MinValue..MaxValue; out-of-range values may be clamped or raise an error (unverified)",
+    "setting Value through Story.VariableAxes changes every character; take a sub-range to vary it per word",
+    "axis names come from the font file, so match them case-insensitively and expect fonts to differ (unverified)"
+   ],
+   "example": "Dim ax As TextVariableAxis\nFor Each ax In ActiveShape.Text.Story.Words.First.VariableAxes\n  If LCase(ax.Name) = \"weight\" Then ax.Value = ax.MaxValue\nNext ax",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTextWords",
+   "id": "class:IVGTextWords",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTextWords",
+   "status": "current",
+   "summary": "The words of a text range as a collection: each Item returns a TextRange covering one word (or several consecutive words), and All / First / Last give ready-made ranges, so a script can read or format text word by word.",
+   "use_for": [
+    "colour or bold the first word of a headline",
+    "enlarge the last word of a tagline",
+    "count words in a paragraph frame for copy-fitting",
+    "apply a style to selected words of a body text"
+   ],
+   "avoid": [
+    "letter-level effects (drop caps, per-letter colour): use TextRange.Characters instead"
+   ],
+   "confidence": "high",
+   "how": "TextRange.Words, usually ActiveShape.Text.Story.Words. Item(Index, Count) returns a TextRange starting at word Index (base 1) and spanning Count words (default 1).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of words in the range"
+    },
+    {
+     "name": "Item",
+     "use": "TextRange of word Index, optionally Count words long"
+    },
+    {
+     "name": "First",
+     "use": "TextRange of the first word"
+    },
+    {
+     "name": "Last",
+     "use": "TextRange of the last word"
+    },
+    {
+     "name": "All",
+     "use": "TextRange of all the words"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the words"
+    }
+   ],
+   "gotchas": [
+    "Item, First, Last and All return TextRange objects, not strings; read .Text for the characters",
+    "editing the text inside a loop changes the word count and indices; loop backwards or collect ranges first (unverified)",
+    "what counts as a word (punctuation, hyphens, a trailing space) follows CorelDRAW's own rules (unverified)"
+   ],
+   "example": "Dim w As TextWords\nSet w = ActiveShape.Text.Story.Words\nw.First.Bold = True\nw.First.Fill.ApplyUniformFill CreateRGBColor(230, 57, 70)\nw.Last.Size = w.Last.Size * 1.5\nDebug.Print w.Count & \" words\"",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGToolShape",
+   "id": "class:IVGToolShape",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGToolShape",
+   "status": "current",
+   "summary": "The call-back interface an add-on implements to define a custom 'tool shape': a parametric object whose geometry CorelDRAW asks the add-on to rebuild when it is created, transformed or restyled. Its only member, OnGenerateShape, receives the target layer, the shape's stored properties, its style and its transformation, and must draw the result.",
+   "use_for": [
+    "a parametric object for a house design system, e.g. a price badge that redraws from stored settings",
+    "smart shapes that keep their construction rules when the user resizes them"
+   ],
+   "avoid": [
+    "one-off artwork: draw it directly with the Layer.Create* methods",
+    "files that must open correctly on machines without the add-on: the shape depends on its registered generator (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Not reached from the object model: you write a class that implements IVGToolShape, register it once per session with Application.RegisterToolShape(ToolShapeGuid, ToolShapeAttributes, ToolShape), then create instances with Layer.CreateToolShape(ToolShapeGuid, ShapeProperties). CorelDRAW then calls OnGenerateShape(Parent, ObjectProperties, pStyleAttributes, pTransformation, IsPreviewOnly) whenever it needs the geometry.",
+   "key_members": [
+    {
+     "name": "OnGenerateShape",
+     "use": "called by CorelDRAW to build the shape on Parent from ObjectProperties, the style and the transformation"
+    }
+   ],
+   "gotchas": [
+    "OnGenerateShape is called by CorelDRAW, never by your own code; build the geometry on Parent (an IVGLayer) from the values stored in ObjectProperties",
+    "IsPreviewOnly is True during interactive previews, so keep that path cheap (unverified)",
+    "registration lasts only for the running session, so it has to happen at start-up (a GMS module or add-on) (unverified)",
+    "whether a VBA class module can implement this interface or a compiled add-on (VSTA / C++) is needed is not stated in the harvest (unverified)"
+   ],
+   "example": "Dim attr As ToolShapeAttributes, props As Properties\nSet attr = CreateToolShapeAttributes\nattr.SetCanRotate True: attr.SetRegenerateOnTransform True\nRegisterToolShape \"{0D2F6A31-7C1B-4E7A-9B3E-1F2A3B4C5D6E}\", attr, New MyBadgeShape  ' class that Implements IVGToolShape\nSet props = CreateProperties\nActiveLayer.CreateToolShape \"{0D2F6A31-7C1B-4E7A-9B3E-1F2A3B4C5D6E}\", props",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGToolShapeAttributes",
+   "id": "class:IVGToolShapeAttributes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGToolShapeAttributes",
+   "status": "current",
+   "summary": "The behaviour switches for a custom tool shape type, set once when it is registered: whether instances may be resized, rotated, skewed, stretched disproportionately or envelope-distorted, whether CorelDRAW regenerates the geometry after a transform or a style change, and which property bar, context menu, Objects-docker icon, edit state and default object name it uses.",
+   "use_for": [
+    "let a parametric badge scale and rotate but never skew",
+    "make a smart shape redraw itself when resized instead of stretching",
+    "give a custom shape its own property bar and default object name"
+   ],
+   "avoid": [
+    "ordinary scripted artwork: these settings only matter for registered tool shapes"
+   ],
+   "confidence": "medium",
+   "how": "Created with Application.CreateToolShapeAttributes, filled with the Set* methods, then passed to Application.RegisterToolShape together with the IVGToolShape implementation.",
+   "key_members": [
+    {
+     "name": "SetCanResize",
+     "use": "allow resizing"
+    },
+    {
+     "name": "SetCanRotate",
+     "use": "allow rotation"
+    },
+    {
+     "name": "SetCanSkew",
+     "use": "allow skewing"
+    },
+    {
+     "name": "SetCanSizeDisproportionally",
+     "use": "allow non-uniform scaling"
+    },
+    {
+     "name": "SetCanApplyNonlinearTransforms",
+     "use": "allow envelope and similar distortions"
+    },
+    {
+     "name": "SetRegenerateOnTransform",
+     "use": "call the generator again after a resize"
+    },
+    {
+     "name": "SetRegenerateOnStyleChange",
+     "use": "call the generator again after a style change"
+    },
+    {
+     "name": "SetPropertyBarGuid",
+     "use": "property bar shown for the shape"
+    },
+    {
+     "name": "SetContextMenuGuid",
+     "use": "right-click menu for the shape"
+    },
+    {
+     "name": "SetObjectManagerBitmapGuid",
+     "use": "icon in the Objects docker"
+    },
+    {
+     "name": "SetEditStateGuid",
+     "use": "tool state used to edit the shape"
+    },
+    {
+     "name": "SetDefaultShapename",
+     "use": "default object name of new instances"
+    }
+   ],
+   "gotchas": [
+    "every member is a write-only Set* method; nothing reads the settings back",
+    "the attributes are taken when RegisterToolShape runs; changing them later probably does not affect the registered type (unverified)",
+    "the GUID setters expect GUIDs of UI items (property bar, context menu, edit state) defined by the add-on's own UI configuration (unverified)"
+   ],
+   "example": "Dim attr As ToolShapeAttributes\nSet attr = CreateToolShapeAttributes\nattr.SetCanResize True: attr.SetCanRotate True\nattr.SetCanSkew False: attr.SetCanApplyNonlinearTransforms False\nattr.SetRegenerateOnTransform True\nattr.SetDefaultShapename \"Price Badge\"\nRegisterToolShape \"{0D2F6A31-7C1B-4E7A-9B3E-1F2A3B4C5D6E}\", attr, New MyBadgeShape",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGToolState",
+   "id": "class:IVGToolState",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGToolState",
+   "status": "current",
+   "summary": "The call-back interface of a custom interactive tool: CorelDRAW calls its On* methods as the user moves the mouse, clicks, drags, double-clicks, presses keys, commits with Enter, aborts with Esc or when a timer fires, so an add-on can implement its own drawing or editing tool on the canvas.",
+   "use_for": [
+    "a click-to-place tool, e.g. stamp a numbered marker where the user clicks",
+    "a measuring or guide tool that previews with on-screen curves while dragging",
+    "a custom two-click connector or callout tool"
+   ],
+   "avoid": [
+    "unattended batch jobs: a tool state only acts while a person drives the mouse",
+    "jobs a plain macro over the current selection can do"
+   ],
+   "confidence": "medium",
+   "how": "Write a class that implements IVGToolState, register it with Application.RegisterToolState(ToolStateGuid, ToolStateName, ToolState), and activate it by setting Application.ActiveToolStateGuid to that GUID (or Application.StartTemporaryToolState for a temporary state). OnStartState hands over the IVGToolStateAttributes object that sets the cursor, snapping and timers.",
+   "key_members": [
+    {
+     "name": "OnStartState",
+     "use": "tool activated; receives the StateAttributes object"
+    },
+    {
+     "name": "OnExitState",
+     "use": "tool deactivated: clean up previews and timers"
+    },
+    {
+     "name": "OnMouseMove",
+     "use": "pointer moved (pt)"
+    },
+    {
+     "name": "OnLButtonDown",
+     "use": "left button pressed"
+    },
+    {
+     "name": "OnLButtonDownLeaveGrace",
+     "use": "button held and the mouse moved: a drag has started"
+    },
+    {
+     "name": "OnLButtonUp",
+     "use": "left button released"
+    },
+    {
+     "name": "OnLButtonDblClick",
+     "use": "double-click"
+    },
+    {
+     "name": "OnClick",
+     "use": "a click, with a Handled flag"
+    },
+    {
+     "name": "OnRButtonDown",
+     "use": "right button pressed, with a Handled flag"
+    },
+    {
+     "name": "OnKeyDown",
+     "use": "key pressed (KeyCode), with a Handled flag"
+    },
+    {
+     "name": "OnKeyUp",
+     "use": "key released"
+    },
+    {
+     "name": "OnDelete",
+     "use": "Delete key pressed"
+    },
+    {
+     "name": "OnAbort",
+     "use": "Esc pressed: cancel the gesture"
+    },
+    {
+     "name": "OnCommit",
+     "use": "Enter pressed: finish the gesture"
+    },
+    {
+     "name": "OnSnapMouse",
+     "use": "chance to set the snapped position before a move"
+    },
+    {
+     "name": "OnTimer",
+     "use": "a timer started with StartTimer fired"
+    },
+    {
+     "name": "IsDrawing",
+     "use": "tell CorelDRAW the tool is mid-gesture"
+    }
+   ],
+   "gotchas": [
+    "the methods with a Handled argument (OnClick, OnRButtonDown/Up, OnKeyDown/Up, OnDelete, OnSnapMouse) let the tool claim the event; leaving Handled False lets CorelDRAW's default behaviour run (unverified)",
+    "keep the StateAttributes object from OnStartState in a class-level variable; the other call-backs do not receive it",
+    "a VBA class that Implements the interface must define every On* member and IsDrawing, even as empty procedures",
+    "pt arrives as a point in document coordinates, usable directly with Layer.Create* calls (unverified)",
+    "whether a VBA class can implement it or a compiled add-on is needed is not stated in the harvest (unverified)"
+   ],
+   "example": "Implements IVGToolState   ' class module MarkerTool (other members omitted)\nPrivate attrs As IVGToolStateAttributes\nPrivate Sub IVGToolState_OnStartState(ByVal StateAttributes As IVGToolStateAttributes)\n  Set attrs = StateAttributes: attrs.SetCursor cdrCursorSmallcrosshair\nEnd Sub\nPrivate Sub IVGToolState_OnLButtonUp(ByVal pt As IVGPoint)\n  attrs.Document.ActiveLayer.CreateEllipse2 pt.x, pt.y, 2\nEnd Sub",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGToolStateAttributes",
+   "id": "class:IVGToolStateAttributes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGToolStateAttributes",
+   "status": "current",
+   "summary": "The control object CorelDRAW hands a custom tool state when it starts: it sets the tool's cursor, property bar, context menu, status-bar text and hints page, switches behaviours (tablet pressure, temporary pick tool, auto-pan, deselect on click), runs timers, snaps or constrains mouse positions, reports key and pen-pressure state, and captures or releases the mouse.",
+   "use_for": [
+    "show live coordinates or measurements in the status bar while a custom tool drags",
+    "snap a custom tool's clicks to nodes, grid and guides like the built-in tools",
+    "Shift-constrained angles in a custom drawing tool",
+    "pressure-sensitive custom brush tools on a tablet"
+   ],
+   "avoid": [
+    "anything outside a running custom tool: the object only exists inside a tool state"
+   ],
+   "confidence": "medium",
+   "how": "Only received as the StateAttributes argument of IVGToolState.OnStartState; store it in the tool class and use it from the other call-backs.",
+   "key_members": [
+    {
+     "name": "SetCursor",
+     "use": "built-in cursor (cdrCursorShape)"
+    },
+    {
+     "name": "SetCursorGuid",
+     "use": "custom cursor by GUID"
+    },
+    {
+     "name": "StatusInfo",
+     "use": "text in the status bar"
+    },
+    {
+     "name": "PropertyBarGuid",
+     "use": "property bar shown with the tool"
+    },
+    {
+     "name": "ContextMenuGuid",
+     "use": "right-click menu of the tool"
+    },
+    {
+     "name": "SetStateHintsPage",
+     "use": "hints page path for the tool"
+    },
+    {
+     "name": "UseTabletPressure",
+     "use": "read pen pressure"
+    },
+    {
+     "name": "CurrentPressure",
+     "use": "current pen pressure (1.0 when pressure is off)"
+    },
+    {
+     "name": "AllowTempPickState",
+     "use": "allow the temporary pick tool"
+    },
+    {
+     "name": "AllowAutopan",
+     "use": "auto-scroll at the window edge"
+    },
+    {
+     "name": "DeselectOnLButtonDown",
+     "use": "clear the selection on mouse down"
+    },
+    {
+     "name": "SnapMouse",
+     "use": "snap a point like the built-in tools"
+    },
+    {
+     "name": "AnchoredSnapMouse",
+     "use": "snap relative to an anchor point"
+    },
+    {
+     "name": "ConstrainMouse",
+     "use": "constrain a point (angle / axis) from an anchor"
+    },
+    {
+     "name": "IsKeyDown",
+     "use": "is a given key held"
+    },
+    {
+     "name": "StartTimer",
+     "use": "start a timer that fires OnTimer"
+    },
+    {
+     "name": "StopTimer",
+     "use": "stop that timer"
+    },
+    {
+     "name": "Document",
+     "use": "the document the tool works on"
+    },
+    {
+     "name": "CaptureMouse",
+     "use": "route mouse input to the tool"
+    },
+    {
+     "name": "ReleaseMouse",
+     "use": "give the mouse back"
+    }
+   ],
+   "gotchas": [
+    "valid only inside a running tool state; it arrives in IVGToolState.OnStartState and should be stored there",
+    "SnapMouse, AnchoredSnapMouse and ConstrainMouse adjust the point you pass in place rather than returning a new one (unverified)",
+    "CurrentPressure is 1.0 whenever UseTabletPressure is False, so turn that on before reading pressure",
+    "a timer from StartTimer keeps firing OnTimer until StopTimer unless OneTime was True; stop timers in OnExitState (unverified)",
+    "ExitTemporaryToolState only applies to a state started with Application.StartTemporaryToolState"
+   ],
+   "example": "Private Sub IVGToolState_OnMouseMove(ByVal pt As IVGPoint)   ' attrs stored in OnStartState\n  attrs.SnapMouse pt\n  attrs.StatusInfo = \"x=\" & Format(pt.x, \"0.00\") & \"  y=\" & Format(pt.y, \"0.00\")\n  If attrs.IsKeyDown(vbKeyShift) Then attrs.SetCursor cdrCursorWinCross Else attrs.SetCursor cdrCursorSmallcrosshair\nEnd Sub",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example: replaced the bare key code 16 (not in the harvest) with the VBA constant vbKeyShift"
+   }
+  },
+  {
+   "name": "IVGTraceSettings",
+   "id": "class:IVGTraceSettings",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTraceSettings",
+   "status": "current",
+   "summary": "A PowerTRACE session started on a bitmap: it holds the trace mode (line art, logo, detailed logo, clipart, low or high quality image, technical, line drawing), smoothing, detail level, corner smoothness, colour mode, palette and colour count, background removal and the merge / group / overlap options, previews how many curves and nodes the trace will produce, and Finish turns the bitmap into vector shapes.",
+   "use_for": [
+    "vectorise a client's low-resolution logo into clean curves",
+    "batch-trace scanned line art for cutting, engraving or embroidery prep",
+    "turn a photo into a posterised vector illustration with a fixed number of colours",
+    "reject a trace whose node count is too high before committing it"
+   ],
+   "avoid": [
+    "photos that must stay photographic: keep the bitmap",
+    "tiny or noisy bitmaps: resample or clean them first or the trace explodes into thousands of nodes",
+    "unattended runs that call ShowDialog: it is modal and waits for a person"
+   ],
+   "confidence": "high",
+   "how": "Returned by Shape.Bitmap.Trace(TraceType, Smoothing, DetailLevelPercent, ColorMode, PaletteID, ColorCount, DeleteOriginalObject, RemoveBackground, RemoveEntireBackColor) on a bitmap shape. Change settings, call ApplyChanges to recompute, read the counts, then Finish returns the traced shapes as a ShapeRange.",
+   "key_members": [
+    {
+     "name": "TraceType",
+     "use": "trace mode (cdrTraceType)"
+    },
+    {
+     "name": "Smoothing",
+     "use": "smoothing level"
+    },
+    {
+     "name": "DetailLevelPercent",
+     "use": "detail as a percentage of the maximum"
+    },
+    {
+     "name": "DetailLevel",
+     "use": "detail as an absolute value"
+    },
+    {
+     "name": "CornerSmoothness",
+     "use": "how much corners are rounded"
+    },
+    {
+     "name": "SetColorMode",
+     "use": "colour model of the result (resets the palette)"
+    },
+    {
+     "name": "SetColorCount",
+     "use": "number of colours in the result"
+    },
+    {
+     "name": "ColorCount",
+     "use": "colours in the generated palette"
+    },
+    {
+     "name": "RemoveBackground",
+     "use": "drop the background objects"
+    },
+    {
+     "name": "BackgroundRemovalMode",
+     "use": "detect the background automatically or manually"
+    },
+    {
+     "name": "RemoveEntireBackColor",
+     "use": "remove that colour everywhere, not just the background"
+    },
+    {
+     "name": "MergeAdjacentObjects",
+     "use": "merge touching areas of the same colour"
+    },
+    {
+     "name": "RemoveOverlap",
+     "use": "cut stacked shapes so they do not overlap"
+    },
+    {
+     "name": "GroupObjectsByColor",
+     "use": "group the result by colour"
+    },
+    {
+     "name": "DeleteOriginalObject",
+     "use": "delete the bitmap after tracing"
+    },
+    {
+     "name": "ApplyChanges",
+     "use": "recompute the trace after changing settings"
+    },
+    {
+     "name": "CurveCount",
+     "use": "curves the trace will create"
+    },
+    {
+     "name": "NodeCount",
+     "use": "nodes the trace will create"
+    },
+    {
+     "name": "ShowDialog",
+     "use": "open the PowerTRACE dialog (modal)"
+    },
+    {
+     "name": "Finish",
+     "use": "create the vectors and return them as a ShapeRange"
+    }
+   ],
+   "gotchas": [
+    "no vectors exist until Finish; dropping the object leaves the bitmap untouched (unverified)",
+    "call ApplyChanges after changing settings before reading CurveCount, NodeCount or ColorCount, or they describe the old settings (unverified)",
+    "ColorMode and PaletteID are read-only: use SetColorMode (which also resets the generated palette), then SetColorCount",
+    "BackgroundColor is read-only; with BackgroundRemovalMode set to manual the colour has to be picked in ShowDialog (unverified)",
+    "DetailLevel is absolute and only valid between MinDetailLevel and MaxDetailLevel; DetailLevelPercent is the safer control",
+    "Shape.Bitmap only exists on bitmap shapes; on a vector it fails (unverified)"
+   ],
+   "example": "Dim ts As TraceSettings, sr As ShapeRange\nSet ts = ActiveShape.Bitmap.Trace(cdrTraceLogo, , 70, cdrColorRGB, , 6)\nts.RemoveBackground = True\nts.MergeAdjacentObjects = True\nts.ApplyChanges\nDebug.Print ts.CurveCount & \" curves, \" & ts.NodeCount & \" nodes\"\nSet sr = ts.Finish",
+   "equivalents": {
+    "AI": "class:TracingOptions"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTransformMatrix",
+   "id": "class:IVGTransformMatrix",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTransformMatrix",
+   "status": "current",
+   "summary": "A 2D affine transformation (the 2x2 part d11, d12, d21, d22 plus an x/y translation) that can be built up by translating, rotating, scaling and combining, inverted, tested (identity, mirrored, rotated ...), used to transform points and vectors, and applied to shapes.",
+   "use_for": [
+    "rotate and scale many copies around a common centre for rosettes and radial badges",
+    "map artwork from one line segment onto another (Math.CreateLineSegmentTransformMatrix)",
+    "mirror a shape about an arbitrary point",
+    "check whether a placed logo in a client file was mirrored or skewed (IsMirrored, IsSkewedOrRotated)"
+   ],
+   "avoid": [
+    "simple moves and rotations of one shape: Shape.Move / Shape.Rotate are clearer"
+   ],
+   "confidence": "high",
+   "how": "Created by Document.Math or Application.Math (CreateIdentityTransformMatrix, CreateRotationTransformMatrix, CreateScaleTransformMatrix, CreateTranslationTransformMatrix, CreateLineSegmentTransformMatrix), or read from Shape.TransformationMatrix. Apply it with Shape.ApplyTransformMatrix or Curve.ApplyTransformMatrix.",
+   "key_members": [
+    {
+     "name": "d11",
+     "use": "matrix component d11"
+    },
+    {
+     "name": "d12",
+     "use": "matrix component d12"
+    },
+    {
+     "name": "d21",
+     "use": "matrix component d21"
+    },
+    {
+     "name": "d22",
+     "use": "matrix component d22"
+    },
+    {
+     "name": "TranslationX",
+     "use": "x translation"
+    },
+    {
+     "name": "TranslationY",
+     "use": "y translation"
+    },
+    {
+     "name": "SetToIdentity",
+     "use": "reset to no transformation"
+    },
+    {
+     "name": "Invert",
+     "use": "invert in place"
+    },
+    {
+     "name": "TranslateBy",
+     "use": "add a translation"
+    },
+    {
+     "name": "Rotate",
+     "use": "add a rotation"
+    },
+    {
+     "name": "RotateAround",
+     "use": "add a rotation about a point"
+    },
+    {
+     "name": "ScaleAround",
+     "use": "add a scale about a point"
+    },
+    {
+     "name": "Transform",
+     "use": "combine with another matrix"
+    },
+    {
+     "name": "TransformPoint",
+     "use": "transform a point"
+    },
+    {
+     "name": "UntransformPoint",
+     "use": "apply the inverse to a point"
+    },
+    {
+     "name": "IsIdentity",
+     "use": "no transformation at all"
+    },
+    {
+     "name": "IsMirrored",
+     "use": "contains a mirror"
+    },
+    {
+     "name": "IsSkewedOrRotated",
+     "use": "contains skew or rotation"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system"
+    }
+   ],
+   "gotchas": [
+    "an unbound matrix uses CorelDRAW's internal coordinates; BindToDocument makes it use the document's units and origin. Matrices made by Document.Math are probably bound already (unverified)",
+    "Rotate, Scale, TranslateBy, Transform and Invert change the matrix in place; take GetCopy first to keep the original",
+    "angles are in degrees, counter-clockwise like IVGVector.Angle (unverified)",
+    "whether Transform pre- or post-multiplies is not stated in the harvest; test with TransformPoint on a known point (unverified)",
+    "Shape.TransformationMatrix can read as identity on curves because their transforms are baked into the nodes (unverified)"
+   ],
+   "example": "Dim m As TransformMatrix, s As Shape\nSet s = ActiveShape\nSet m = ActiveDocument.Math.CreateIdentityTransformMatrix\nm.ScaleAround 1.2, 1.2, s.CenterX, s.CenterY\nm.RotateAround 15, s.CenterX, s.CenterY\ns.ApplyTransformMatrix m",
+   "equivalents": {
+    "AI": "class:Matrix"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGTransparency",
+   "id": "class:IVGTransparency",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTransparency",
+   "status": "current",
+   "summary": "The transparency applied to a CorelDRAW object: none, uniform, fountain (gradient), pattern or texture, with its start and end amounts, whether it affects the fill, the outline or both, the merge mode (Multiply, Screen, Overlay and the other blend modes), and freezing, which bakes the objects underneath into a static snapshot.",
+   "use_for": [
+    "fade a photo or shape into the background with a gradient on a poster",
+    "Multiply overlays for soft shadows and colour washes",
+    "a 50% tint panel behind headline text",
+    "find and remove transparency before a file goes to a printer that cannot handle it"
+   ],
+   "avoid": [
+    "print RIPs that flatten transparency badly: flatten or convert to bitmap first",
+    "when only a lighter colour is needed: use a tint of the colour instead of transparency"
+   ],
+   "confidence": "high",
+   "how": "Shape.Transparency on any shape. Type tells what is applied; the Apply* methods set the kind and return the Fountain / Pattern / Texture fill object for fine-tuning; AppliedTo and MergeMode then refine it.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "what kind of transparency is applied (read-only)"
+    },
+    {
+     "name": "ApplyUniformTransparency",
+     "use": "flat transparency of a given amount"
+    },
+    {
+     "name": "Uniform",
+     "use": "the uniform amount"
+    },
+    {
+     "name": "ApplyFountainTransparency",
+     "use": "gradient transparency (start, end, type, angle ...)"
+    },
+    {
+     "name": "Fountain",
+     "use": "the gradient's settings"
+    },
+    {
+     "name": "Start",
+     "use": "start amount"
+    },
+    {
+     "name": "End",
+     "use": "end amount"
+    },
+    {
+     "name": "ApplyPatternTransparency",
+     "use": "pattern-based transparency"
+    },
+    {
+     "name": "ApplyTextureTransparency",
+     "use": "texture-based transparency"
+    },
+    {
+     "name": "Texture",
+     "use": "the texture's settings"
+    },
+    {
+     "name": "ApplyNoTransparency",
+     "use": "remove all transparency"
+    },
+    {
+     "name": "AppliedTo",
+     "use": "fill, outline or both"
+    },
+    {
+     "name": "MergeMode",
+     "use": "blend mode of the transparency"
+    },
+    {
+     "name": "Freeze",
+     "use": "bake what is underneath into the object"
+    },
+    {
+     "name": "Unfreeze",
+     "use": "make it live again"
+    },
+    {
+     "name": "Frozen",
+     "use": "is it frozen"
+    },
+    {
+     "name": "UserAssign",
+     "use": "open the transparency dialog (modal)"
+    }
+   ],
+   "gotchas": [
+    "the numbers are transparency amounts, not opacity: 0 is fully opaque and 100 fully transparent (the harvest only gives Start 0 / End 100 as defaults) (unverified)",
+    "Type is read-only; change the kind with the Apply* methods",
+    "Freeze turns it into a snapshot of the objects underneath; moving things later will not update it until Unfreeze (unverified)",
+    "MergeMode uses CorelDRAW's own merge-mode list (cdrMergeMultiply, cdrMergeScreen, cdrMergeOverlay ...), not Photoshop's list or order",
+    "UserAssign opens a modal dialog; keep it out of unattended runs",
+    "some export filters rasterise or flatten transparent objects (unverified)"
+   ],
+   "example": "Dim s As Shape\nSet s = ActiveShape\ns.Transparency.ApplyFountainTransparency 0, 100, cdrLinearFountainFill, 90\ns.Transparency.AppliedTo = cdrApplyToFill\ns.Transparency.MergeMode = cdrMergeMultiply",
+   "equivalents": {
+    "AI": "Window/Transparency"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: marked the 0 = opaque / 100 = transparent reading and the Freeze snapshot behaviour as unverified (the harvest gives only the 0 / 100 defaults and \"Freezes the transparency\")"
+   }
+  },
+  {
+   "name": "IVGTreeManager",
+   "id": "class:IVGTreeManager",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTreeManager",
+   "status": "current",
+   "summary": "Document-level entry to CorelDRAW's object tree (the structure the Objects docker shows): reports how many tree nodes are selected and the first of them, creates unlinked group nodes, tidies empty or single-child groups, and provides a virtual layer for building shapes that are not yet part of the document.",
+   "use_for": [
+    "build a large generated layout off-document and link it in one step",
+    "walk the current selection in tree order (FirstSelectedNode, then TreeNode.NextSelected)",
+    "clean up groups left empty or with one object after a batch edit"
+   ],
+   "avoid": [
+    "simple scripts: ActiveSelectionRange and Layer.Shapes are easier and safer"
+   ],
+   "confidence": "medium",
+   "how": "ActiveDocument.TreeManager or Application.ActiveTreeManager. Shapes made on VirtualLayer and nodes from CreateGroupNode are unlinked; place them with TreeNode.LinkAsChildOf, LinkBefore or LinkAfter.",
+   "key_members": [
+    {
+     "name": "VirtualLayer",
+     "use": "a layer for creating unlinked virtual shapes"
+    },
+    {
+     "name": "CreateGroupNode",
+     "use": "a new unlinked group node"
+    },
+    {
+     "name": "CleanGroupNode",
+     "use": "remove an empty group or unwrap a one-child group"
+    },
+    {
+     "name": "SelectedNodeCount",
+     "use": "number of selected tree nodes"
+    },
+    {
+     "name": "FirstSelectedNode",
+     "use": "start of the selection chain"
+    }
+   ],
+   "gotchas": [
+    "shapes made on VirtualLayer do not appear in the document until their TreeNode is linked under a layer or group node (unverified)",
+    "unlinked nodes that are never linked are lost when the script ends (unverified)",
+    "CleanGroupNode returns a TreeNode, probably the surviving node (the single child when a one-child group is removed); keep the return value (unverified)",
+    "SelectedNodeCount counts tree nodes, which can differ from ActiveSelectionRange.Count when groups or their children are selected (unverified)"
+   ],
+   "example": "Dim tm As TreeManager, g As TreeNode, s As Shape\nSet tm = ActiveDocument.TreeManager\nSet g = tm.CreateGroupNode\nSet s = tm.VirtualLayer.CreateRectangle2(0, 0, 50, 30)\ns.TreeNode.LinkAsChildOf g\ng.LinkAsChildOf ActiveLayer.TreeNode",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: CleanGroupNode return-value claim marked unverified (harvest only says it eliminates empty / one-child groups and returns a TreeNode)"
+   }
+  },
+  {
+   "name": "IVGTreeNode",
+   "id": "class:IVGTreeNode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTreeNode",
+   "status": "current",
+   "summary": "One node of a CorelDRAW document's object tree: the root, a page, a layer, a group or link group, a symbol or a shape. It walks the tree (parent, children, siblings, the selection chain), unlinks, relinks and reorders nodes, copies or swaps their data, renames and deletes them, and gives the Shape, Page, Layer and Document it belongs to.",
+   "use_for": [
+    "fast audit of every object in a multi-page brochure (names, types) without selecting anything",
+    "reorder objects in the stack by name (MoveToFirst / MoveToLast)",
+    "rename objects for an export or data-merge pipeline",
+    "move objects between groups or layers without cut and paste"
+   ],
+   "avoid": [
+    "everyday edits of the selection: Shape and ShapeRange methods are simpler"
+   ],
+   "confidence": "high",
+   "how": "Document.TreeRoot, Page.TreeNode, Layer.TreeNode, Shape.TreeNode, Spread.TreeNode or TreeManager.FirstSelectedNode; then walk with FirstChild / Next or the Children collection.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "root, page, layer, group, link group, symbol or shape node (cdrTreeNodeType)"
+    },
+    {
+     "name": "Name",
+     "use": "read or set the node's name"
+    },
+    {
+     "name": "Shape",
+     "use": "the real shape this node represents"
+    },
+    {
+     "name": "Parent",
+     "use": "the parent node"
+    },
+    {
+     "name": "FirstChild",
+     "use": "first child node"
+    },
+    {
+     "name": "LastChild",
+     "use": "last child node"
+    },
+    {
+     "name": "Next",
+     "use": "next sibling"
+    },
+    {
+     "name": "Previous",
+     "use": "previous sibling"
+    },
+    {
+     "name": "Children",
+     "use": "all child nodes"
+    },
+    {
+     "name": "Selected",
+     "use": "is the node selected"
+    },
+    {
+     "name": "NextSelected",
+     "use": "next node in the selection chain"
+    },
+    {
+     "name": "UnLink",
+     "use": "detach the node from the tree"
+    },
+    {
+     "name": "LinkAsChildOf",
+     "use": "insert as the first child of a node"
+    },
+    {
+     "name": "LinkBefore",
+     "use": "insert before a node"
+    },
+    {
+     "name": "LinkAfter",
+     "use": "insert after a node"
+    },
+    {
+     "name": "MoveToFirst",
+     "use": "move to the start of its siblings"
+    },
+    {
+     "name": "MoveToLast",
+     "use": "move to the end of its siblings"
+    },
+    {
+     "name": "MoveBefore",
+     "use": "move before another node"
+    },
+    {
+     "name": "GetCopy",
+     "use": "temporary unlinked copy"
+    },
+    {
+     "name": "Delete",
+     "use": "destroy the node"
+    }
+   ],
+   "gotchas": [
+    "Shape is only meaningful on shape and group nodes; for root, page and layer nodes use Page or Layer (unverified)",
+    "UnLink detaches without destroying: relink the node or call Delete",
+    "Delete destroys the node physically and may not behave like an undoable Shape.Delete (unverified)",
+    "which end of the sibling list is the top of the stack is not stated in the harvest (unverified)",
+    "GetCopy makes a temporary unlinked copy; link it somewhere to keep it"
+   ],
+   "example": "Sub Dump(n As TreeNode, d As Long)  ' call: Dump ActiveDocument.TreeRoot, 0\n  Dim c As TreeNode\n  Debug.Print String(d * 2, \" \") & n.Type & \" \" & n.Name\n  Set c = n.FirstChild\n  Do While Not c Is Nothing: Dump c, d + 1: Set c = c.Next: Loop\nEnd Sub",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary and Type key member: added the link-group node type (cdrLinkGroupNode) that the enum lists"
+   }
+  },
+  {
+   "name": "IVGTreeNodes",
+   "id": "class:IVGTreeNodes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGTreeNodes",
+   "status": "current",
+   "summary": "The direct children of one object-tree node (the layers of a page, the objects on a layer, the members of a group) as a countable, enumerable collection.",
+   "use_for": [
+    "list what is directly inside a group or on a layer",
+    "count objects per layer for a preflight report"
+   ],
+   "avoid": [
+    "deep walks: recurse with FirstChild / Next, since this only holds one level"
+   ],
+   "confidence": "high",
+   "how": "TreeNode.Children, e.g. ActivePage.TreeNode.Children or Shape.TreeNode.Children.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "one child by numeric index"
+    },
+    {
+     "name": "Count",
+     "use": "number of children"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the children"
+    }
+   ],
+   "gotchas": [
+    "linking, unlinking or moving nodes while looping over the collection can skip or repeat nodes (unverified)",
+    "Item takes a numeric index only, assumed base 1 (unverified)"
+   ],
+   "example": "Dim n As TreeNode\nFor Each n In ActivePage.TreeNode.Children\n  Debug.Print n.Type, n.Name, n.Children.Count\nNext n",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGURL",
+   "id": "class:IVGURL",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGURL",
+   "status": "current",
+   "summary": "The internet link attached to an object: the address, target frame, alternate (ALT) text, bookmark name, and whether the clickable hot-spot is the object's bounding rectangle or its exact shape. It becomes a clickable link when the design is published to PDF or HTML.",
+   "use_for": [
+    "clickable website, WhatsApp or email links on an interactive PDF brochure or e-catalogue",
+    "bookmarks for a PDF's navigation",
+    "set the same link on every button or logo in a document in one pass"
+   ],
+   "avoid": [
+    "print-only output: links have no effect on paper"
+   ],
+   "confidence": "high",
+   "how": "Shape.URL on any shape.",
+   "key_members": [
+    {
+     "name": "Address",
+     "use": "the link target URL"
+    },
+    {
+     "name": "TargetFrame",
+     "use": "frame / window the link opens in"
+    },
+    {
+     "name": "AltComment",
+     "use": "ALT text for the link"
+    },
+    {
+     "name": "BookMark",
+     "use": "bookmark name"
+    },
+    {
+     "name": "Region",
+     "use": "hot-spot: default, bounding rectangle or exact shape (cdrURLRegion)"
+    }
+   ],
+   "gotchas": [
+    "whether links survive depends on the export filter's settings (e.g. PDF hyperlink options) (unverified)",
+    "clearing Address removes the link (unverified)",
+    "Region cdrURLRegionShape makes only the exact outline clickable; cdrURLRegionRectangle uses the bounding box"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActiveSelectionRange\n  s.URL.Address = \"https://example.com/shop\"\n  s.URL.AltComment = \"Shop now\"\n  s.URL.Region = cdrURLRegionShape\nNext s",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGUserSnapPoint",
+   "id": "class:IVGUserSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGUserSnapPoint",
+   "status": "current",
+   "summary": "The extra settings of a user-defined snap point (a custom point added to a shape that snapping and connector lines can latch onto): its unique ID and whether connectors attach to it automatically.",
+   "use_for": [
+    "add connection points to flowchart or diagram symbols so connector lines attach to fixed spots",
+    "mark alignment or registration points on a die-line"
+   ],
+   "avoid": [
+    "ordinary snapping to nodes, centres or edges: those snap points already exist"
+   ],
+   "confidence": "medium",
+   "how": "Add a point with Shape.SnapPoints.AddUserSnapPoint(PositionX, PositionY, Direction, UseDirection) (or AddUserSnapPointEx with your own ID); the returned SnapPoint's .User gives this object. Find it again with Shape.SnapPoints.User(ID).",
+   "key_members": [
+    {
+     "name": "ID",
+     "use": "the point's unique GUID string (read-only)"
+    },
+    {
+     "name": "AutoSnap",
+     "use": "include it when connectors snap automatically"
+    }
+   ],
+   "gotchas": [
+    "SnapPoint.User only applies when the snap point's Type is cdrSnapPointUser; for other types it is empty or fails (unverified)",
+    "ID is read-only: to pick your own ID use SnapPoints.AddUserSnapPointEx",
+    "position, direction and deletion live on the SnapPoint object, not here"
+   ],
+   "example": "Dim sp As SnapPoint, s As Shape\nSet s = ActiveShape\nSet sp = s.SnapPoints.AddUserSnapPoint(s.CenterX, s.CenterY + s.SizeHeight / 2)\nsp.User.AutoSnap = True\nDebug.Print sp.User.ID",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGVariableWidthNode",
+   "id": "class:IVGVariableWidthNode",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGVariableWidthNode",
+   "status": "current",
+   "summary": "One width node of a variable-width outline: its position along the path (0 to 1), the total stroke width there and the separate widths on each side of the path, plus whether it is selected and a Delete.",
+   "use_for": [
+    "make a stroke swell on one side only (Side1Width / Side2Width)",
+    "move or thicken the widest point of a brush-like stroke"
+   ],
+   "avoid": [
+    "uniform outlines: just set Outline.Width"
+   ],
+   "confidence": "medium",
+   "how": "An item of Outline.VariableWidthNodes (Item(i)) or the return value of VariableWidthNodes.Add(t, Width). The harvest's description calls it 'the main interface for Nodes class', but its members are the width-node ones.",
+   "key_members": [
+    {
+     "name": "PositionT",
+     "use": "position along the path, 0..1"
+    },
+    {
+     "name": "Width",
+     "use": "total stroke width at this node"
+    },
+    {
+     "name": "Side1Width",
+     "use": "width on side 1 of the path"
+    },
+    {
+     "name": "Side2Width",
+     "use": "width on side 2 of the path"
+    },
+    {
+     "name": "Selected",
+     "use": "is the node selected"
+    },
+    {
+     "name": "Delete",
+     "use": "remove this node"
+    }
+   ],
+   "gotchas": [
+    "Delete (and Add on the collection) invalidates node objects at or after this position; fetch them again from VariableWidthNodes",
+    "which side is 1 and which is 2 follows the path direction (unverified)",
+    "the harvest does not state the width units; document units are likely (unverified)"
+   ],
+   "example": "Dim i As Long, vw As IVGVariableWidthNodes\nSet vw = ActiveShape.Outline.VariableWidthNodes\nFor i = 1 To vw.Count\n  vw.Item(i).Side2Width = 0\n  Debug.Print vw.Item(i).PositionT, vw.Item(i).Width\nNext i",
+   "equivalents": {
+    "AI": "Width Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGVariableWidthNodes",
+   "id": "class:IVGVariableWidthNodes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGVariableWidthNodes",
+   "status": "current",
+   "summary": "The width nodes of a variable-width outline, as made with the Variable Outline tool: each node sets the stroke thickness at a position along the path, so a line can swell and taper like a brush or calligraphic stroke. The collection can be read, extended at a 0-1 position, cleared or copied from another outline.",
+   "use_for": [
+    "tapered, hand-drawn-looking strokes for illustrations and icons",
+    "the same calligraphic swell on every curve of a sketched logo",
+    "copy one stroke profile to many curves (Copy)"
+   ],
+   "avoid": [
+    "outputs that do not understand variable outlines (some cutters and exports): convert the outline to an object first (unverified)"
+   ],
+   "confidence": "medium",
+   "how": "Outline.VariableWidthNodes, e.g. ActiveShape.Outline.VariableWidthNodes. No VBA class name is harvested for it, so declare variables As IVGVariableWidthNodes.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of width nodes (0 = not a variable outline)"
+    },
+    {
+     "name": "Item",
+     "use": "one width node by index"
+    },
+    {
+     "name": "Add",
+     "use": "add a node at position t (0..1) with a width"
+    },
+    {
+     "name": "Clear",
+     "use": "remove all width nodes"
+    },
+    {
+     "name": "Copy",
+     "use": "take the width profile of another outline"
+    }
+   ],
+   "gotchas": [
+    "t must be within 0..1 along the path",
+    "Add invalidates node objects after the new node; fetch nodes again afterwards",
+    "Count is 0 when the outline is not variable; adding nodes probably turns it into one (unverified)",
+    "the shape needs an outline; the width units are not stated in the harvest (unverified)",
+    "Outline.VariableWidthNodes is Nothing (null) on objects that do not support variable outlines, and empty (Count 0) on ones that only lack one; test Is Nothing before using it"
+   ],
+   "example": "Dim vw As IVGVariableWidthNodes\nSet vw = ActiveShape.Outline.VariableWidthNodes\nIf Not vw Is Nothing Then\n  vw.Clear\n  vw.Add 0, 0.2\n  vw.Add 0.5, 3\n  vw.Add 1, 0.2\nEnd If",
+   "equivalents": {
+    "AI": "Width Tool"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "added the harvested gotcha that Outline.VariableWidthNodes is null on objects without variable-outline support; example now guards with Is Nothing"
+   }
+  },
+  {
+   "name": "IVGVector",
+   "id": "class:IVGVector",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGVector",
+   "status": "current",
+   "summary": "A 2D direction-and-length value for geometry scripts: x and y, length and angle, vector arithmetic (add, subtract, scale, negate, normalise), dot and cross products, angles between vectors, projection, and building one from two points.",
+   "use_for": [
+    "step-and-repeat copies along an angle",
+    "orient ticks or arrows perpendicular to a path (Segment.GetPerpendicularVectorAt)",
+    "measure the angle between two lines in a technical drawing",
+    "offset a point a set distance in a direction"
+   ],
+   "avoid": [
+    "plain moves: Shape.Move with dx, dy is simpler"
+   ],
+   "confidence": "high",
+   "how": "Document.Math.CreateVector(x, y) or Application.Math.CreateVector; also returned by Segment / SubPath GetTangentVectorAt and GetPerpendicularVectorAt, and TransformMatrix.Translation.",
+   "key_members": [
+    {
+     "name": "x",
+     "use": "x component"
+    },
+    {
+     "name": "y",
+     "use": "y component"
+    },
+    {
+     "name": "Length",
+     "use": "read or set the length"
+    },
+    {
+     "name": "Angle",
+     "use": "read or set the direction in degrees, counter-clockwise from the x axis"
+    },
+    {
+     "name": "Add",
+     "use": "add another vector in place"
+    },
+    {
+     "name": "Subtract",
+     "use": "subtract another vector in place"
+    },
+    {
+     "name": "MultiplyBy",
+     "use": "scale the length in place"
+    },
+    {
+     "name": "Negate",
+     "use": "reverse in place"
+    },
+    {
+     "name": "Normalize",
+     "use": "make the length 1 in place"
+    },
+    {
+     "name": "AngleBetween",
+     "use": "counter-clockwise angle to another vector"
+    },
+    {
+     "name": "SmallAngleBetween",
+     "use": "smaller angle to another vector"
+    },
+    {
+     "name": "DotProduct",
+     "use": "dot product"
+    },
+    {
+     "name": "CrossProduct",
+     "use": "cross product"
+    },
+    {
+     "name": "SetFromPoints",
+     "use": "vector from a start to an end point"
+    },
+    {
+     "name": "ProjectOnto",
+     "use": "projection onto another vector (new vector)"
+    },
+    {
+     "name": "GetOffsettedPoint",
+     "use": "a point offset from an origin along the vector"
+    },
+    {
+     "name": "GetCopy",
+     "use": "independent copy"
+    },
+    {
+     "name": "BindToDocument",
+     "use": "use the document's coordinate system"
+    }
+   ],
+   "gotchas": [
+    "Add, Subtract, MultiplyBy, Negate and Normalize change the vector in place and return nothing; GetCopy first to keep the original",
+    "Angle is in degrees counter-clockwise from the x axis; that this means y pointing up on the page is not stated in the harvest (unverified)",
+    "a vector not bound to a document uses internal coordinates; BindToDocument (or creating it from Document.Math) makes x / y follow the document's units (unverified)",
+    "Normalize on a zero-length vector has no direction; check Length first (unverified)"
+   ],
+   "example": "Dim m As MathUtils, v As Vector, s As Shape\nSet m = ActiveDocument.Math\nSet s = ActiveShape\nSet v = m.CreateVector(1, 0)\nv.Angle = 30: v.Length = 40\ns.Duplicate v.x, v.y\nDebug.Print v.AngleBetween(m.CreateVector(0, 1))",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: the y-up coordinate claim is now marked unverified"
+   }
+  },
+  {
+   "name": "IVGView",
+   "id": "class:IVGView",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGView",
+   "status": "current",
+   "summary": "A saved, named view of a document (as listed in the View Manager docker): a zoom level, a view origin and optionally a page, which Activate jumps back to.",
+   "use_for": [
+    "bookmark detail areas of a large poster or packaging die-line for proofing",
+    "QC macros that zoom to fixed regions before taking screenshots",
+    "jump between pages and zooms during a client review"
+   ],
+   "avoid": [
+    "one-off zooming in a script: use ActiveWindow.ActiveView (ToFitPage, SetViewPoint) directly"
+   ],
+   "confidence": "high",
+   "how": "ActiveDocument.Views(index or name), the return of Document.CreateView(Name, OriginX, OriginY, Zoom, Page), or Views.AddActiveView(Name) to save the current view.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "the view's name"
+    },
+    {
+     "name": "OriginX",
+     "use": "horizontal view origin"
+    },
+    {
+     "name": "OriginY",
+     "use": "vertical view origin"
+    },
+    {
+     "name": "Zoom",
+     "use": "zoom level"
+    },
+    {
+     "name": "UseZoom",
+     "use": "restore the stored zoom on Activate"
+    },
+    {
+     "name": "Page",
+     "use": "page the view shows"
+    },
+    {
+     "name": "UsePage",
+     "use": "switch to the stored page on Activate"
+    },
+    {
+     "name": "Activate",
+     "use": "jump to the view"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the saved view"
+    },
+    {
+     "name": "Parent",
+     "use": "the Views collection"
+    }
+   ],
+   "gotchas": [
+    "Document.CreateView takes Zoom as a long zoom percentage (per its harvested description) while View.Zoom is a double; that View.Zoom is the same percentage is (unverified)",
+    "with UseZoom or UsePage False, Activate keeps the current zoom or page (unverified)",
+    "whether OriginX / OriginY mark the centre or a corner of the view is not stated in the harvest (unverified)",
+    "views are saved in the document, so a batch macro that adds views changes the client file"
+   ],
+   "example": "Dim v As View\nSet v = ActiveDocument.CreateView(\"Logo detail\", 50, 250, 400, ActivePage)\nActiveDocument.Views.AddActiveView \"Whole page\"\nv.Activate\nDebug.Print v.Name, v.Zoom, v.UsePage",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: CreateView Zoom is a percentage per the harvest; only View.Zoom units stay unverified"
+   }
+  },
+  {
+   "name": "IVGViews",
+   "id": "class:IVGViews",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGViews",
+   "status": "current",
+   "summary": "The saved views of a document (the View Manager list) as a collection: look up a view by index or name, count them, and save the current window view under a new name.",
+   "use_for": [
+    "list the saved views of a client file before a review",
+    "save the current zoom as a named view before a macro changes it"
+   ],
+   "avoid": [
+    "creating a view at an exact origin and zoom: use Document.CreateView"
+   ],
+   "confidence": "high",
+   "how": "ActiveDocument.Views.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "one view by index (base 1) or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of saved views"
+    },
+    {
+     "name": "AddActiveView",
+     "use": "save the active window's view under a name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the views"
+    },
+    {
+     "name": "Parent",
+     "use": "the document"
+    }
+   ],
+   "gotchas": [
+    "there is no Add with explicit values here: Document.CreateView does that",
+    "Item with a name that does not exist raises an error (unverified)",
+    "AddActiveView captures the active window's view, so the right document window must be active"
+   ],
+   "example": "Dim v As View\nActiveDocument.Views.AddActiveView \"Before edit\"\nFor Each v In ActiveDocument.Views\n  Debug.Print v.Name, v.Zoom, v.UsePage\nNext v",
+   "equivalents": {
+    "AI": "View/New View..."
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "equivalents: added AI View/New View... (saves the current view under a name, the same job as AddActiveView)"
+   }
+  },
+  {
+   "name": "IVGWindow",
+   "id": "class:IVGWindow",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGWindow",
+   "status": "current",
+   "summary": "A document window in CorelDRAW: activate, close, maximise or size it, open a second window on the same document, refresh it, reach its live view (zoom and pan) and its document, and convert between screen pixels and document coordinates.",
+   "use_for": [
+    "put the document in a known window state and zoom before screenshot-based QC",
+    "convert a mouse position to page coordinates in a custom tool",
+    "refresh the window after a batch of edits",
+    "open a second window to compare two parts of a large layout"
+   ],
+   "avoid": [
+    "setting zoom through the window size: use ActiveView instead"
+   ],
+   "confidence": "high",
+   "how": "ActiveWindow (Application.ActiveWindow), Document.ActiveWindow, Application.Windows(i) or Document.Windows(i).",
+   "key_members": [
+    {
+     "name": "Activate",
+     "use": "bring the window to the front"
+    },
+    {
+     "name": "Close",
+     "use": "close the window"
+    },
+    {
+     "name": "Document",
+     "use": "the document shown"
+    },
+    {
+     "name": "ActiveView",
+     "use": "the live view: zoom and pan"
+    },
+    {
+     "name": "Caption",
+     "use": "window title (read-only)"
+    },
+    {
+     "name": "Active",
+     "use": "is it the active window"
+    },
+    {
+     "name": "WindowState",
+     "use": "normal, minimised or maximised"
+    },
+    {
+     "name": "FullScreen",
+     "use": "full-screen preview on / off"
+    },
+    {
+     "name": "Left",
+     "use": "window left position"
+    },
+    {
+     "name": "Top",
+     "use": "window top position"
+    },
+    {
+     "name": "Width",
+     "use": "window width"
+    },
+    {
+     "name": "Height",
+     "use": "window height"
+    },
+    {
+     "name": "NewWindow",
+     "use": "open another window on the same document"
+    },
+    {
+     "name": "Refresh",
+     "use": "redraw the window"
+    },
+    {
+     "name": "ScreenToDocument",
+     "use": "screen pixels to document coordinates"
+    },
+    {
+     "name": "DocumentToScreen",
+     "use": "document coordinates to screen pixels"
+    },
+    {
+     "name": "ScreenDistanceToDocumentDistance",
+     "use": "convert a pixel distance"
+    },
+    {
+     "name": "DocumentDistanceToScreenDistance",
+     "use": "convert a document distance"
+    },
+    {
+     "name": "Handle",
+     "use": "the window handle for Windows API calls"
+    },
+    {
+     "name": "Next",
+     "use": "the next document window"
+    }
+   ],
+   "gotchas": [
+    "ScreenToDocument and DocumentToScreen return their results through the last two arguments: pass variables, not expressions",
+    "Left, Top, Width and Height are pixels of the document window inside CorelDRAW's frame (unverified)",
+    "Close on the last window of a modified document can raise a save prompt that blocks an unattended run (unverified)",
+    "after NewWindow, Document.Windows has more than one entry for the same file",
+    "FullScreen is the full-screen preview; set it back to False before further UI automation (unverified)"
+   ],
+   "example": "Dim w As Window, xd As Double, yd As Double\nSet w = ActiveWindow\nw.WindowState = cdrWindowMaximized\nw.ActiveView.ToFitPage\nw.ScreenToDocument 400, 300, xd, yd\nDebug.Print w.Caption, xd, yd, w.ScreenDistanceToDocumentDistance(10)",
+   "equivalents": {
+    "AI": "class:View"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGWindows",
+   "id": "class:IVGWindows",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGWindows",
+   "status": "current",
+   "summary": "A collection of document windows, either all of CorelDRAW's (Application.Windows) or one document's (Document.Windows), with lookup by index or caption, tile / cascade arrangement, refresh and close-all.",
+   "use_for": [
+    "tile two documents side by side for a before / after check",
+    "close every window at the end of a batch job",
+    "find the window of a given file by its caption"
+   ],
+   "avoid": [
+    "closing documents with unsaved changes in unattended runs: save or close the documents explicitly first"
+   ],
+   "confidence": "high",
+   "how": "Application.Windows (every document window) or ActiveDocument.Windows (that document's windows).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of windows"
+    },
+    {
+     "name": "Item",
+     "use": "one window by numeric index"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the windows"
+    },
+    {
+     "name": "FindWindow",
+     "use": "window by caption"
+    },
+    {
+     "name": "Arrange",
+     "use": "tile horizontally / vertically or cascade (cdrWindowArrangeStyle)"
+    },
+    {
+     "name": "CloseAll",
+     "use": "close all the windows"
+    },
+    {
+     "name": "Refresh",
+     "use": "redraw all the windows"
+    },
+    {
+     "name": "Parent",
+     "use": "application or document that owns the list"
+    }
+   ],
+   "gotchas": [
+    "Application.Windows lists every document window, Document.Windows only that document's",
+    "CloseAll can raise save prompts for modified documents (unverified)",
+    "FindWindow needs the caption exactly as shown, which includes the file name and a suffix for second windows (unverified)",
+    "Item takes a numeric index only"
+   ],
+   "example": "Dim w As Window\nFor Each w In Application.Windows\n  Debug.Print w.Index, w.Caption, w.Document.FullFileName\nNext w\nApplication.Windows.Arrange cdrTileVertically",
+   "equivalents": {
+    "AI": "class:Views"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "IVGWorkspace",
+   "id": "class:IVGWorkspace",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGWorkspace",
+   "status": "current",
+   "summary": "One of CorelDRAW's saved user-interface workspaces (the arrangement of toolbars, dockers, menus and shortcuts, as listed under Window > Workspace): its name, description, whether it is the default and whether it is active, and Activate to switch to it.",
+   "use_for": [
+    "switch to a known workspace before screenshot- or UI-driven automation so controls are where the script expects them",
+    "a studio set-up macro that puts every designer on the house workspace"
+   ],
+   "avoid": [
+    "silently changing a person's workspace mid-session: it rearranges the whole interface"
+   ],
+   "confidence": "high",
+   "how": "Application.Workspaces(index or name) or Application.ActiveWorkspace.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "workspace name (read-only)"
+    },
+    {
+     "name": "Description",
+     "use": "workspace description (read-only)"
+    },
+    {
+     "name": "Default",
+     "use": "is it the default workspace"
+    },
+    {
+     "name": "Active",
+     "use": "is it the current workspace"
+    },
+    {
+     "name": "Activate",
+     "use": "switch to this workspace"
+    },
+    {
+     "name": "Parent",
+     "use": "the Workspaces collection"
+    }
+   ],
+   "gotchas": [
+    "Activate rebuilds the interface, so it is slow; call it once, never inside a loop (unverified)",
+    "workspace names can differ by language and version, so look them up rather than hard-coding them (unverified)",
+    "importing workspace elements is done with Application.ImportWorkspace, not here"
+   ],
+   "example": "Dim ws As Workspace\nDebug.Print \"current: \" & ActiveWorkspace.Name\nFor Each ws In Workspaces\n  If ws.Default Then Exit For\nNext ws\nIf Not ws Is Nothing Then\n  If Not ws.Active Then ws.Activate\nEnd If",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: Activate cost marked unverified; example now finds the default workspace first and calls Activate once outside the loop (it contradicted its own gotcha)"
+   }
+  },
+  {
+   "name": "IVGWorkspaces",
+   "id": "class:IVGWorkspaces",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/IVGWorkspaces",
+   "status": "current",
+   "summary": "The user-interface workspaces available in CorelDRAW, as a collection that can be counted, enumerated and indexed by number or name.",
+   "use_for": [
+    "list the installed workspaces for a support or set-up report",
+    "find a workspace by name before activating it"
+   ],
+   "avoid": [
+    "checking which one is in use: read Application.ActiveWorkspace directly"
+   ],
+   "confidence": "high",
+   "how": "Application.Workspaces.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of workspaces"
+    },
+    {
+     "name": "Item",
+     "use": "one workspace by index (base 1) or name"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the workspaces"
+    },
+    {
+     "name": "Parent",
+     "use": "the application"
+    }
+   ],
+   "gotchas": [
+    "Item with a name that does not exist raises an error (unverified)",
+    "names are display names that can vary by language (unverified)"
+   ],
+   "example": "Dim ws As Workspace\nFor Each ws In Application.Workspaces\n  Debug.Print ws.Name, ws.Default, ws.Active, ws.Description\nNext ws",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "Layer",
+   "id": "class:Layer",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Layer",
+   "status": "current",
+   "summary": "The Layer class: one layer of a page or of the master page, i.e. a named container for objects with visibility, print and edit locks, an override colour, and the Create* methods that draw new shapes, text, guides, symbols and bitmaps onto it.",
+   "use_for": [
+    "put generated artwork on its own named layer (e.g. 'Text', 'Die-line')",
+    "hide or make non-printing a die-line or guide layer before export",
+    "create shapes and text at exact coordinates on a known layer",
+    "import a file onto a chosen layer"
+   ],
+   "avoid": [
+    "adding pages or documents: those live on Document and Application"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGLayer (VBA type Layer). Get one from ActiveLayer, ActivePage.Layers(\"name\"), ActivePage.CreateLayer(\"name\") or Shape.Layer; new layers come from Page.CreateLayer rather than New. A twin with another GUID is registered in the CorelDRAW type library.",
+   "key_members": [
+    {
+     "name": "Name",
+     "use": "layer name"
+    },
+    {
+     "name": "Visible",
+     "use": "show / hide"
+    },
+    {
+     "name": "Printable",
+     "use": "prints / exports or not"
+    },
+    {
+     "name": "Editable",
+     "use": "lock / unlock"
+    },
+    {
+     "name": "Master",
+     "use": "is a master layer"
+    },
+    {
+     "name": "Activate",
+     "use": "make it the active layer"
+    },
+    {
+     "name": "Shapes",
+     "use": "shapes on the layer"
+    },
+    {
+     "name": "CreateRectangle2",
+     "use": "rectangle by x, y, width, height"
+    },
+    {
+     "name": "CreateEllipse2",
+     "use": "ellipse by centre and radius"
+    },
+    {
+     "name": "CreateArtisticText",
+     "use": "artistic text"
+    },
+    {
+     "name": "CreateParagraphText",
+     "use": "paragraph text frame"
+    },
+    {
+     "name": "Import",
+     "use": "import a file onto the layer"
+    },
+    {
+     "name": "FindShape",
+     "use": "one shape by name / type / static ID"
+    },
+    {
+     "name": "FindShapes",
+     "use": "shapes by name / type"
+    },
+    {
+     "name": "MoveAbove",
+     "use": "move above another layer"
+    },
+    {
+     "name": "MoveBelow",
+     "use": "move below another layer"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the layer and its shapes"
+    },
+    {
+     "name": "IsSpecialLayer",
+     "use": "guides, desktop or grid layer"
+    },
+    {
+     "name": "TreeNode",
+     "use": "the layer's object-tree node"
+    },
+    {
+     "name": "PasteEx",
+     "use": "paste and get the pasted shapes"
+    }
+   ],
+   "gotchas": [
+    "the cancreate flag notwithstanding, layers are added with Page.CreateLayer (unverified)",
+    "loops over Page.Layers or Page.AllLayers can meet special layers (guides, desktop, grid; AllLayers adds the master layers): skip them with IsSpecialLayer (unverified)",
+    "creating shapes on a layer whose Editable is False fails or lands elsewhere (unverified)",
+    "Delete removes every shape on the layer with it"
+   ],
+   "example": "Dim lyr As Layer, t As Shape\nSet lyr = ActivePage.CreateLayer(\"Die-line\")\nlyr.CreateRectangle2 0, 0, 100, 150\nlyr.Printable = False\nSet t = ActiveLayer.CreateArtisticText(10, 20, \"SALE\", , , \"Arial\", 36)",
+   "equivalents": {
+    "AI": "class:Layer"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: which layer collection holds the special layers is now stated per the harvest (AllLayers adds master layers) and marked unverified"
+   }
+  },
+  {
+   "name": "Layers",
+   "id": "class:Layers",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Layers",
+   "status": "current",
+   "summary": "The Layers class: the layers of one page (or the page's layers plus master layers) as a collection, with lookup by index or name, Find by name, and the top and bottom layers.",
+   "use_for": [
+    "make every non-special layer printable before a PDF export",
+    "find the 'Text' layer of a template page by name",
+    "report which layers a client file contains"
+   ],
+   "avoid": [
+    "adding a layer: use Page.CreateLayer"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGLayers (VBA type Layers). Reached through ActivePage.Layers or ActivePage.AllLayers (which also lists master layers); a twin with another GUID is registered in the CorelDRAW type library.",
+   "key_members": [
+    {
+     "name": "Item",
+     "use": "one layer by index (base 1) or name"
+    },
+    {
+     "name": "Count",
+     "use": "number of layers"
+    },
+    {
+     "name": "Find",
+     "use": "layer by name, Nothing if absent"
+    },
+    {
+     "name": "Top",
+     "use": "topmost layer"
+    },
+    {
+     "name": "Bottom",
+     "use": "bottom layer"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the layers"
+    },
+    {
+     "name": "Parent",
+     "use": "the page"
+    }
+   ],
+   "gotchas": [
+    "Page.Layers and Page.AllLayers differ: AllLayers also lists the master layers (guides, desktop, grid) (unverified)",
+    "Item with a missing name raises an error while Find returns Nothing (unverified)",
+    "the order of Item relative to the stacking order is not stated; use Top / Bottom (unverified)"
+   ],
+   "example": "Dim lyr As Layer\nFor Each lyr In ActivePage.AllLayers\n  If Not lyr.IsSpecialLayer Then lyr.Printable = True\nNext lyr\nIf ActivePage.Layers.Find(\"Text\") Is Nothing Then ActivePage.CreateLayer \"Text\"",
+   "equivalents": {
+    "AI": "class:Layers"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "LocalizableString",
+   "id": "class:LocalizableString",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/LocalizableString",
+   "status": "current",
+   "summary": "The LocalizableString class: a text value that can hold one string per language plus a default, used for multilingual metadata such as document or fill titles, keywords, notes, subject and copyright.",
+   "use_for": [
+    "write a document title and keywords in several languages for a multilingual asset library",
+    "read the English title of a fill or document whatever the UI language"
+   ],
+   "avoid": [
+    "ordinary single-language metadata: set the plain string properties (Metadata.Title, Keywords ...)"
+   ],
+   "confidence": "medium",
+   "how": "Coclass whose members are on IVGLocalizableString. Not created on its own: it is the type of FillMetadata.Title / Description / Keywords / Subject / Copyright / Category and of Document.Metadata.LocalizableTitle, LocalizableKeywords, LocalizableNotes and similar.",
+   "key_members": [
+    {
+     "name": "DefaultLangString",
+     "use": "the default-language text"
+    },
+    {
+     "name": "GetLangString",
+     "use": "text for one language"
+    },
+    {
+     "name": "SetLangString",
+     "use": "set text for one language"
+    },
+    {
+     "name": "HasLangString",
+     "use": "is that language present"
+    },
+    {
+     "name": "GetLanguages",
+     "use": "languages that have text"
+    },
+    {
+     "name": "Clear",
+     "use": "remove all strings"
+    },
+    {
+     "name": "IsEmpty",
+     "use": "empty-state flag; name and harvested description disagree"
+    },
+    {
+     "name": "HasDefaultLangStringOnly",
+     "use": "only the default is set"
+    },
+    {
+     "name": "HasNonDefaultLangStrings",
+     "use": "any extra languages set"
+    }
+   ],
+   "gotchas": [
+    "the language code format CorelDRAW expects is not in the harvest; read GetLanguages from an existing value first (unverified)",
+    "GetLangString falls back to the default string when a language is missing, so check HasLangString",
+    "IsEmpty's harvested description ('True if there is at least language string set') disagrees with its name; do not rely on it, test HasDefaultLangString or GetLanguages instead (unverified)"
+   ],
+   "example": "With ActiveDocument.Metadata.LocalizableTitle\n  .DefaultLangString = \"Diwali Offer Poster\"\n  Debug.Print .IsEmpty, .HasDefaultLangStringOnly\nEnd With",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "IsEmpty: no longer tells readers to treat True as empty against the harvested description; gotcha and key member now point to HasDefaultLangString / GetLanguages"
+   }
+  },
+  {
+   "name": "MathUtils",
+   "id": "class:MathUtils",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/MathUtils",
+   "status": "current",
+   "summary": "The MathUtils class: CorelDRAW's geometry helper. It creates points, vectors, point ranges and transformation matrices (identity, rotation, scale, translation, segment-to-segment), intersects lines, finds distances and closest points, interpolates, fits a line to points and returns random numbers.",
+   "use_for": [
+    "radial repeats: rotate copies around a centre with CreateRotationTransformMatrix",
+    "snap a label to the closest point on a line",
+    "random scatter of confetti or particles (GetRandomReal)",
+    "find where two guide lines cross"
+   ],
+   "avoid": [
+    "simple moves and rotations of one shape: Shape.Move / Shape.Rotate are clearer"
+   ],
+   "confidence": "medium",
+   "how": "Coclass whose members are on IVGMathUtils. Reached as Application.Math or ActiveDocument.Math; the matrices it returns go to Shape.ApplyTransformMatrix or Curve.ApplyTransformMatrix, and its points feed coordinates to Layer.Create* and similar.",
+   "key_members": [
+    {
+     "name": "CreatePoint",
+     "use": "a point"
+    },
+    {
+     "name": "CreateVector",
+     "use": "a vector"
+    },
+    {
+     "name": "CreatePointRange",
+     "use": "an empty point list"
+    },
+    {
+     "name": "CreateIdentityTransformMatrix",
+     "use": "no-op matrix"
+    },
+    {
+     "name": "CreateRotationTransformMatrix",
+     "use": "rotation about an origin"
+    },
+    {
+     "name": "CreateScaleTransformMatrix",
+     "use": "scale about an origin"
+    },
+    {
+     "name": "CreateTranslationTransformMatrix",
+     "use": "move"
+    },
+    {
+     "name": "CreateLineSegmentTransformMatrix",
+     "use": "map one segment onto another"
+    },
+    {
+     "name": "IntersectLineSegments",
+     "use": "where two segments cross"
+    },
+    {
+     "name": "IntersectInfiniteLines",
+     "use": "where two lines cross"
+    },
+    {
+     "name": "ClosestPointToLineSegment",
+     "use": "nearest point on a segment"
+    },
+    {
+     "name": "DistanceToLineSegment",
+     "use": "distance to a segment"
+    },
+    {
+     "name": "Interpolate",
+     "use": "point at t between two points"
+    },
+    {
+     "name": "MidPoint",
+     "use": "midpoint"
+    },
+    {
+     "name": "FitLineToPoints",
+     "use": "best-fit line"
+    },
+    {
+     "name": "GetRandomReal",
+     "use": "random double"
+    },
+    {
+     "name": "GetRandomInteger",
+     "use": "random whole number"
+    }
+   ],
+   "gotchas": [
+    "the Intersect* methods return True / False and write the result into the ppVal point you pass, which must already exist (CreatePoint first) (unverified)",
+    "DistanceToLineSegment and ClosestPointToLineSegment fall back to the nearest end point when the perpendicular misses the segment",
+    "angles are in degrees and origins in document units when reached from ActiveDocument.Math (unverified)",
+    "FitLineToPoints returns through its Origin and Direction arguments: create them first and read them after the call (unverified)"
+   ],
+   "example": "Dim m As MathUtils, s As Shape, i As Long\nSet m = ActiveDocument.Math\nSet s = ActiveShape\nFor i = 1 To 5\n  s.Duplicate.ApplyTransformMatrix m.CreateRotationTransformMatrix(i * 60, s.CenterX, s.CenterY)\nNext i",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "how: said points are applied with Shape.ApplyTransformMatrix; now matrices go to ApplyTransformMatrix and points feed Layer.Create* coordinates"
+   }
+  },
+  {
+   "name": "Metadata",
+   "id": "class:Metadata",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Metadata",
+   "status": "current",
+   "summary": "The Metadata class: a document's descriptive information (title, subject, author, keywords, notes, copyright, revision, language) plus template fields (type, industry, sides, folds, designer notes) and multilingual versions of the text fields.",
+   "use_for": [
+    "stamp title, author, keywords and copyright on every file of a client delivery",
+    "tag template files with type and industry for a template library",
+    "read keywords of a folder of designs for an asset catalogue"
+   ],
+   "avoid": [
+    "object-level data (per-shape fields): use Shape.ObjectData or Shape.Properties instead"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGMetadata. Reached as ActiveDocument.Metadata; the Localizable* members return LocalizableString objects for per-language values.",
+   "key_members": [
+    {
+     "name": "Title",
+     "use": "document title"
+    },
+    {
+     "name": "Subject",
+     "use": "subject"
+    },
+    {
+     "name": "Author",
+     "use": "creator name"
+    },
+    {
+     "name": "LastAuthor",
+     "use": "last editor (read-only)"
+    },
+    {
+     "name": "Keywords",
+     "use": "keywords"
+    },
+    {
+     "name": "Notes",
+     "use": "notes"
+    },
+    {
+     "name": "Copyright",
+     "use": "copyright text"
+    },
+    {
+     "name": "Revision",
+     "use": "revision number"
+    },
+    {
+     "name": "DocLanguage",
+     "use": "language the document is designed for"
+    },
+    {
+     "name": "DocID",
+     "use": "unique ID of the contents"
+    },
+    {
+     "name": "TemplateType",
+     "use": "template type (banner, poster ...)"
+    },
+    {
+     "name": "TemplateIndustry",
+     "use": "target industry"
+    },
+    {
+     "name": "TemplateSided",
+     "use": "single or double sided"
+    },
+    {
+     "name": "TemplateFolds",
+     "use": "number of folds"
+    },
+    {
+     "name": "TemplateDesignerNotes",
+     "use": "designer notes"
+    },
+    {
+     "name": "LocalizableTitle",
+     "use": "title per language"
+    },
+    {
+     "name": "LocalizableKeywords",
+     "use": "keywords per language"
+    },
+    {
+     "name": "Category",
+     "use": "category per language"
+    }
+   ],
+   "gotchas": [
+    "the plain string fields and their Localizable* twins describe the same information; the plain ones presumably set the default-language value (unverified)",
+    "nothing is stored until the document is saved",
+    "whether each field reaches exported PDF or image metadata depends on the export filter (unverified)",
+    "the Template* fields only matter for files saved as templates (unverified)"
+   ],
+   "example": "With ActiveDocument.Metadata\n  .Title = \"Diwali Offer Poster\"\n  .Author = \"Studio\"\n  .Keywords = \"poster; diwali; offer\"\n  .Copyright = \"(c) 2026 Client Ltd\"\nEnd With\nActiveDocument.Save",
+   "equivalents": {
+    "PS": "class:DocumentInfo"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: Template* fields claim marked unverified"
+   }
+  },
+  {
+   "name": "Node",
+   "id": "class:Node",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Node",
+   "status": "current",
+   "summary": "The Node class: one node (anchor point) on a curve, with its position, node type (cusp, smooth, symmetrical), its place in the subpath, the segments on either side, and edits such as move, delete, break apart, join, fillet, chamfer and scallop.",
+   "use_for": [
+    "round or bevel a single corner of a logo shape (Fillet, Chamfer)",
+    "snap a node to an exact coordinate",
+    "join the open ends of a traced outline",
+    "make all cusp nodes of an icon smooth"
+   ],
+   "avoid": [
+    "editing many nodes at once: use a NodeRange (Curve.Nodes.All or Curve.Selection)"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGNode. Reached through Shape.Curve.Nodes(i), Nodes.First / Last, SubPath.Nodes, Segment.StartNode / EndNode or a NodeRange item; the shape must be a curve (ConvertToCurves first).",
+   "key_members": [
+    {
+     "name": "PositionX",
+     "use": "x position"
+    },
+    {
+     "name": "PositionY",
+     "use": "y position"
+    },
+    {
+     "name": "SetPosition",
+     "use": "move to x, y"
+    },
+    {
+     "name": "Move",
+     "use": "move by a delta"
+    },
+    {
+     "name": "Type",
+     "use": "cusp, smooth or symmetrical"
+    },
+    {
+     "name": "Delete",
+     "use": "remove the node"
+    },
+    {
+     "name": "BreakApart",
+     "use": "split the path at this node"
+    },
+    {
+     "name": "JoinWith",
+     "use": "join with another end node"
+    },
+    {
+     "name": "ConnectWith",
+     "use": "connect with another node"
+    },
+    {
+     "name": "Fillet",
+     "use": "round the corner"
+    },
+    {
+     "name": "Chamfer",
+     "use": "bevel the corner"
+    },
+    {
+     "name": "Scallop",
+     "use": "concave rounded corner"
+    },
+    {
+     "name": "IsEnding",
+     "use": "first or last node of an open subpath"
+    },
+    {
+     "name": "Next",
+     "use": "following node"
+    },
+    {
+     "name": "Previous",
+     "use": "preceding node"
+    },
+    {
+     "name": "SubPath",
+     "use": "subpath holding the node"
+    },
+    {
+     "name": "Selected",
+     "use": "selection state"
+    },
+    {
+     "name": "Index",
+     "use": "index within the subpath"
+    }
+   ],
+   "gotchas": [
+    "only curves have nodes; rectangles, ellipses and text need ConvertToCurves first",
+    "Delete, BreakApart, joins and Fillet / Chamfer / Scallop change the node list; do not edit structure inside a For Each over Nodes, re-read Nodes after each edit or use a NodeRange",
+    "Fillet, Chamfer and Scallop return False when the node is not a corner they can modify (unverified)",
+    "positions follow the document's Unit and origin"
+   ],
+   "example": "Dim n As Node\nSet n = ActiveShape.Curve.Nodes.Last\nn.SetPosition 100, 50\nSet n = ActiveShape.Curve.Nodes(1)\nIf n.Type = cdrCuspNode And Not n.IsEnding Then Debug.Print \"filleted: \" & n.Fillet(2)",
+   "equivalents": {
+    "PS": "class:PathPoint",
+    "AI": "class:PathPoint"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "example: no longer fillets inside a For Each over the node list it is changing (contradicted its own gotcha); now moves one node and fillets one node; gotcha extended to Fillet / Chamfer / Scallop"
+   }
+  },
+  {
+   "name": "NodeRange",
+   "id": "class:NodeRange",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/NodeRange",
+   "status": "current",
+   "summary": "The NodeRange class: a set of nodes on one curve that can be edited together: moved, stretched, rotated or skewed as a unit, smoothed or auto-reduced, given one node type, filleted, chamfered or scalloped, broken apart, deleted, and turned into or added to the node selection.",
+   "use_for": [
+    "clean up a trace by auto-reducing excess nodes",
+    "round every corner of a shape in one call (Fillet)",
+    "make all nodes smooth or cusp at once (SetType)",
+    "scale or rotate part of a path without touching the rest"
+   ],
+   "avoid": [
+    "whole-shape transforms: transform the Shape instead"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGNodeRange. Reached through Shape.Curve.Nodes.All, Nodes.Range(IndexArray), Nodes.AllExcluding, Curve.Selection (the selected nodes) or Application.CreateNodeRange (empty, then Add nodes).",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of nodes in the range"
+    },
+    {
+     "name": "Item",
+     "use": "one node"
+    },
+    {
+     "name": "Add",
+     "use": "add a node"
+    },
+    {
+     "name": "Remove",
+     "use": "remove a node from the range"
+    },
+    {
+     "name": "Move",
+     "use": "move all nodes by a delta"
+    },
+    {
+     "name": "Stretch",
+     "use": "scale the nodes as a unit"
+    },
+    {
+     "name": "Rotate",
+     "use": "rotate the nodes as a unit"
+    },
+    {
+     "name": "Skew",
+     "use": "skew the nodes as a unit"
+    },
+    {
+     "name": "AutoReduce",
+     "use": "remove nodes within a precision margin"
+    },
+    {
+     "name": "Smoothen",
+     "use": "smooth the curve at the nodes"
+    },
+    {
+     "name": "SetType",
+     "use": "set every node's type"
+    },
+    {
+     "name": "Fillet",
+     "use": "round the corners"
+    },
+    {
+     "name": "Chamfer",
+     "use": "bevel the corners"
+    },
+    {
+     "name": "Scallop",
+     "use": "scallop the corners"
+    },
+    {
+     "name": "BreakApart",
+     "use": "break the curve at each node"
+    },
+    {
+     "name": "Delete",
+     "use": "delete the nodes"
+    },
+    {
+     "name": "CreateSelection",
+     "use": "select exactly these nodes"
+    },
+    {
+     "name": "BoundingBox",
+     "use": "bounds of the nodes"
+    },
+    {
+     "name": "FirstNode",
+     "use": "first node"
+    },
+    {
+     "name": "LastNode",
+     "use": "last node"
+    }
+   ],
+   "gotchas": [
+    "a range only holds nodes of one curve; Add with a node from another shape fails (unverified)",
+    "Delete, BreakApart and AutoReduce (which deletes nodes) change the curve, after which the range and earlier Node objects are stale; build a fresh range",
+    "AutoReduce's PrecisionMargin is in document units; too large a value distorts the shape (unverified)",
+    "Remove takes an index within the range, not a Node object"
+   ],
+   "example": "Dim nr As NodeRange\nActiveShape.Curve.Nodes.All.AutoReduce 0.05\nSet nr = ActiveShape.Curve.Nodes.All\nnr.SetType cdrSmoothNode\nDebug.Print nr.Count & \" nodes left\"",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example: re-reads Nodes.All after AutoReduce instead of using the stale range for SetType / Count; gotcha now includes AutoReduce"
+   }
+  },
+  {
+   "name": "Nodes",
+   "id": "class:Nodes",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/Nodes",
+   "status": "current",
+   "summary": "The Nodes class: all nodes of a curve (or subpath) as a collection, with item lookup, count, first and last, and helpers that build NodeRanges from all, some or all-but-some of the nodes.",
+   "use_for": [
+    "count nodes to flag over-complex traced artwork",
+    "loop over every node of a path",
+    "build a NodeRange of all nodes for a bulk edit"
+   ],
+   "avoid": [
+    "bulk edits node by node: build a NodeRange (All / Range) and edit it once"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGNodes. Reached through Shape.Curve.Nodes or SubPath.Nodes.",
+   "key_members": [
+    {
+     "name": "Count",
+     "use": "number of nodes"
+    },
+    {
+     "name": "Item",
+     "use": "one node by index (base 1)"
+    },
+    {
+     "name": "First",
+     "use": "first node"
+    },
+    {
+     "name": "Last",
+     "use": "last node"
+    },
+    {
+     "name": "All",
+     "use": "NodeRange of every node"
+    },
+    {
+     "name": "Range",
+     "use": "NodeRange of the given indices"
+    },
+    {
+     "name": "AllExcluding",
+     "use": "NodeRange of all but the given indices"
+    },
+    {
+     "name": "_NewEnum",
+     "use": "lets For Each walk the nodes"
+    }
+   ],
+   "gotchas": [
+    "indices run across the whole curve, through every subpath (unverified)",
+    "deleting or adding nodes while looping renumbers them; collect a NodeRange first",
+    "Range and AllExcluding take an array of indices, not Node objects"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActiveSelectionRange\n  If s.Type = cdrCurveShape Then\n    If s.Curve.Nodes.Count > 500 Then Debug.Print s.Name & \": \" & s.Curve.Nodes.Count & \" nodes\"\n  End If\nNext s",
+   "equivalents": {
+    "PS": "class:PathPoints",
+    "AI": "class:PathPoints"
+   },
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "ObjectSnapPoint",
+   "id": "class:ObjectSnapPoint",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/ObjectSnapPoint",
+   "status": "current",
+   "summary": "The ObjectSnapPoint class: the extra information of an 'object' type snap point, which only says whether it is the object's top, bottom, left or right point. What CorelDRAW counts as an object snap point (as opposed to node, bounding-box or edge points) is not described in the harvest, so treat this as a low-certainty description.",
+   "use_for": [
+    "read which side an object snap point sits on when aligning or connecting objects by script"
+   ],
+   "avoid": [
+    "general snapping: use the SnapPoint position members, which apply to every snap point type"
+   ],
+   "confidence": "low",
+   "how": "Coclass whose members are on IVGObjectSnapPoint. Reached as SnapPoint.Object when SnapPoint.Type is cdrSnapPointObject, e.g. from Shape.SnapPointsOfType(cdrSnapPointObject).",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "top, bottom, left or right (cdrObjectSnapPointType)"
+    }
+   ],
+   "gotchas": [
+    "SnapPoint.Object only applies to snap points of type cdrSnapPointObject; for others it is empty or fails (unverified)",
+    "the position, deletion and selection of the point are on the SnapPoint, not here"
+   ],
+   "example": "Dim sp As SnapPoint\nFor Each sp In ActiveShape.SnapPointsOfType(cdrSnapPointObject)\n  Debug.Print sp.Object.Type, sp.PositionX, sp.PositionY\nNext sp",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "none"
+   }
+  },
+  {
+   "name": "OLE",
+   "id": "class:OLE",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OLE",
+   "status": "current",
+   "summary": "The OLE class: an embedded or linked OLE object placed in a drawing (for example a spreadsheet table or chart): its class and program IDs, type (linked, embedded, static), names and server, in-place or windowed editing, and for linked objects the link path, whether it is up to date and an update.",
+   "use_for": [
+    "refresh linked spreadsheet tables in a price list before export",
+    "list which OLE objects a client file contains and what program serves them",
+    "find broken or outdated links before sending a file out"
+   ],
+   "avoid": [
+    "final artwork: OLE objects depend on the server program; convert them to curves or place a PDF/image for print (unverified)"
+   ],
+   "confidence": "high",
+   "how": "Coclass whose members are on IVGOLE. Reached as Shape.OLE on shapes of type cdrOLEObjectShape; created with Layer.CreateOLEObject or Layer.CreateOLEObjectFromFile.",
+   "key_members": [
+    {
+     "name": "Type",
+     "use": "linked, embedded or static (cdrOLEType)"
+    },
+    {
+     "name": "ProgID",
+     "use": "program ID of the object"
+    },
+    {
+     "name": "ClassID",
+     "use": "class ID"
+    },
+    {
+     "name": "ServerName",
+     "use": "application serving it"
+    },
+    {
+     "name": "FullName",
+     "use": "full object name"
+    },
+    {
+     "name": "LinkPath",
+     "use": "file a linked object points to"
+    },
+    {
+     "name": "IsLinkUpToDate",
+     "use": "is the link current"
+    },
+    {
+     "name": "UpdateLink",
+     "use": "refresh a linked object"
+    },
+    {
+     "name": "Edit",
+     "use": "edit in place"
+    },
+    {
+     "name": "Open",
+     "use": "edit in a separate window"
+    },
+    {
+     "name": "Deactivate",
+     "use": "finish editing"
+    },
+    {
+     "name": "DoVerb",
+     "use": "run an object-specific action"
+    },
+    {
+     "name": "IsServerRunning",
+     "use": "is the server program running"
+    }
+   ],
+   "gotchas": [
+    "Shape.OLE only applies to OLE shapes; check Shape.Type = cdrOLEObjectShape first",
+    "UpdateLink and the edit methods start the server program (e.g. the spreadsheet app), which must be installed (unverified)",
+    "Edit / Open leave the object in an editing state; call Deactivate before continuing (unverified)"
+   ],
+   "example": "Dim s As Shape\nFor Each s In ActivePage.Shapes\n  If s.Type = cdrOLEObjectShape Then\n    If s.OLE.Type = cdrOLELinked Then\n      If Not s.OLE.IsLinkUpToDate Then s.OLE.UpdateLink\n    End If\n  End If\nNext s",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "example: IsLinkUpToDate is only read for linked objects (VBA And evaluates both sides); server-program gotcha marked unverified"
+   }
+  },
+  {
+   "name": "OnScreenCurve",
+   "id": "class:OnScreenCurve",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OnScreenCurve",
+   "status": "current",
+   "summary": "The OnScreenCurve class: a temporary XOR-drawn preview curve shown on top of the document (not part of it), with a pen and brush, set from a curve, a line, a rectangle, a circle or a list of points; custom tools use it for rubber-band previews.",
+   "use_for": [
+    "rubber-band preview of a shape while a custom tool drags",
+    "highlight an area or path on screen without changing the document"
+   ],
+   "avoid": [
+    "anything that must be saved or printed: create real shapes on a layer"
+   ],
+   "confidence": "medium",
+   "how": "Coclass whose members are on IVGOnScreenCurve. Created with Application.CreateOnScreenCurve, typically inside a custom IVGToolState; set its geometry, then Show / Hide.",
+   "key_members": [
+    {
+     "name": "SetPen",
+     "use": "outline colour (RGB long), width in pixels, dash style"
+    },
+    {
+     "name": "SetNoPen",
+     "use": "no outline"
+    },
+    {
+     "name": "SetBrush",
+     "use": "fill colour (RGB long)"
+    },
+    {
+     "name": "SetNoBrush",
+     "use": "no fill"
+    },
+    {
+     "name": "SetLine",
+     "use": "make it a line"
+    },
+    {
+     "name": "SetRectangle",
+     "use": "make it a rectangle"
+    },
+    {
+     "name": "SetCircle",
+     "use": "make it a circle"
+    },
+    {
+     "name": "SetCurve",
+     "use": "copy a real curve"
+    },
+    {
+     "name": "SetPoints",
+     "use": "polyline from points"
+    },
+    {
+     "name": "Show",
+     "use": "draw it"
+    },
+    {
+     "name": "Hide",
+     "use": "remove it from the screen"
+    }
+   ],
+   "gotchas": [
+    "colours are RGB longs (e.g. VBA RGB(255, 0, 0)), not Color objects",
+    "it is XOR-drawn, so the colour on screen depends on what is underneath",
+    "it disappears when the object is released or hidden; nothing is added to the document (unverified)",
+    "SetPen width is in screen pixels (WidthInPixels); that the geometry coordinates are document coordinates is (unverified)"
+   ],
+   "example": "Dim oc As OnScreenCurve\nSet oc = CreateOnScreenCurve\noc.SetPen RGB(255, 0, 0), 2, cdrOnScreenCurvePenDash\noc.SetNoBrush\noc.SetRectangle 0, 0, 100, 50\noc.Show",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: document-coordinate and release behaviour claims marked unverified (harvest only fixes the pen width in pixels)"
+   }
+  },
+  {
+   "name": "OnScreenHandle",
+   "id": "class:OnScreenHandle",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OnScreenHandle",
+   "status": "current",
+   "summary": "The OnScreenHandle class: a temporary XOR-drawn handle (a grab handle) shown on top of the document at a position, with a colour and hot-tracking, so a custom tool can offer draggable control points.",
+   "use_for": [
+    "draggable control points in a custom editing tool",
+    "show where a script will place something before committing"
+   ],
+   "avoid": [
+    "permanent markers: create real shapes on a layer"
+   ],
+   "confidence": "medium",
+   "how": "Coclass whose members are on IVGOnScreenHandle. Created with Application.CreateOnScreenHandle inside a custom tool; position it, Show it, and in OnMouseMove call UpdateHotTracking / IsOnHandle with the mouse position.",
+   "key_members": [
+    {
+     "name": "SetPosition",
+     "use": "place the handle"
+    },
+    {
+     "name": "SetHandleColor",
+     "use": "colour (RGB long)"
+    },
+    {
+     "name": "Show",
+     "use": "draw it"
+    },
+    {
+     "name": "Hide",
+     "use": "remove it"
+    },
+    {
+     "name": "UpdateHotTracking",
+     "use": "update the hover state from the mouse position"
+    },
+    {
+     "name": "IsHotTracked",
+     "use": "is the mouse over it now"
+    },
+    {
+     "name": "IsOnHandle",
+     "use": "are given coordinates on the handle"
+    }
+   ],
+   "gotchas": [
+    "the colour is an RGB long, not a Color object",
+    "UpdateHotTracking and IsOnHandle take the mouse position in document coordinates (the tool's pt) (unverified)",
+    "only meaningful while a custom tool state is running (unverified)"
+   ],
+   "example": "Dim h As OnScreenHandle\nSet h = CreateOnScreenHandle\nh.SetHandleColor RGB(0, 120, 255)\nh.SetPosition ActiveShape.CenterX, ActiveShape.CenterY\nh.Show",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "summary: dropped the invented \"small grab square\" shape"
+   }
+  },
+  {
+   "name": "OnScreenText",
+   "id": "class:OnScreenText",
+   "app": "CDR",
+   "kind": "cdr_api",
+   "path": "VGCore/OnScreenText",
+   "status": "current",
+   "summary": "The OnScreenText class: a temporary XOR-drawn text label shown on top of the document (not part of it), with colour, position, alignment and a pixel offset, so a custom tool can display live readouts such as distances or angles next to the cursor.",
+   "use_for": [
+    "live distance or angle readout beside the cursor in a custom measuring tool",
+    "label a preview while a custom tool drags"
+   ],
+   "avoid": [
+    "text that must end up in the design: create artistic text on a layer"
+   ],
+   "confidence": "medium",
+   "how": "Coclass whose members are on IVGOnScreenText. Created with Application.CreateOnScreenText, usually inside a custom tool; set text and position, then Show / Hide.",
+   "key_members": [
+    {
+     "name": "SetTextAndPosition",
+     "use": "text, x, y and optional alignment / reference"
+    },
+    {
+     "name": "SetText",
+     "use": "change the text"
+    },
+    {
+     "name": "UpdatePosition",
+     "use": "move the label"
+    },
+    {
+     "name": "SetPixelOffset",
+     "use": "shift by screen pixels"
+    },
+    {
+     "name": "SetTextColor",
+     "use": "colour (RGB long)"
+    },
+    {
+     "name": "Show",
+     "use": "draw it"
+    },
+    {
+     "name": "Hide",
+     "use": "remove it"
+    }
+   ],
+   "gotchas": [
+    "the colour is an RGB long, not a Color object",
+    "SetPixelOffset is in screen pixels, which keeps the label clear of the cursor at any zoom; that the x / y position is in document coordinates is (unverified)",
+    "XOR drawing makes the label hard to read over busy artwork (unverified)"
+   ],
+   "example": "Dim t As OnScreenText\nSet t = CreateOnScreenText\nt.SetTextColor RGB(255, 0, 0)\nt.SetTextAndPosition \"120.5 mm\", ActiveShape.CenterX, ActiveShape.CenterY, cdrCenterOnScreenText\nt.SetPixelOffset 12, -12\nt.Show",
+   "equivalents": {},
+   "review": {
+    "by": "adversarial",
+    "changes": "gotchas: document-coordinate claim for the position marked unverified"
+   }
+  }
+ ]
+}
