@@ -25,7 +25,7 @@
       {
        "kind": "ps_menu",
        "id": "1135",
-       "note": "Duplicate the photo layer so the original stays untouched (or convert it to a smart object for a smart filter)."
+       "note": "Layer > Duplicate Layer: ran, 'Background copy' sits above the original, which stays untouched, and is active."
       },
       {
        "kind": "ps_adjustment",
@@ -35,7 +35,7 @@
         "center": 40,
         "useLegacy": false
        },
-       "note": "Optional punch first: Image > Adjustments > Brightness/Contrast (verified: brighter, ends held near black and white)."
+       "note": "Image > Adjustments > Brightness/Contrast on the copy: Brightness +10, Contrast +40, non-legacy. Ran; a punchier base for the dots."
       },
       {
        "kind": "ps_filter",
@@ -47,9 +47,53 @@
         "Channel 3": 90,
         "Channel 4": 45
        },
-       "note": "Filter > Pixelate > Color Halftone: radius 12 px with the classic screen angles (verified frame: overlapping CMY-style dots with a rosette, pure saturated colours). Radius 20+ for a poster seen from far away."
+       "note": "Filter > Pixelate > Color Halftone on the copy: Radius 12 px, screen angles 108 / 162 / 90 / 45. Ran. The run shows overlapping cyan, magenta, yellow and black dots with a rosette pattern across the whole picture, the pop-art look. At 12 px fine detail dissolves into dots; keep the original under it at partial opacity so the people stay recognisable (untested), and use a radius of 20 or more for large posters."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "2bc1df14b951",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Brightness/Contrast; active layer: Background copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Color Halftone; active layer: Background copy"
+       }
+      ],
+      "layers": [
+       "Background copy [normal]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.color_halftone_pop.png",
+      "strip": "gallery/recipes/PS/poster_print.color_halftone_pop_steps.png",
+      "secs": 18.7
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Whole frame rebuilt from large overlapping cyan, magenta, yellow and black dots on rotated screens with a visible rosette; at Radius 12 the subjects are hard to read, as the recipe warns.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2bc1df14b951"
+     }
     },
     "AI": {
      "app": "AI",
@@ -72,11 +116,6 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_menu",
-       "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
-       "note": "Convert to Bitmap first if the artwork is vector (the effect works on bitmaps)."
-      },
-      {
        "kind": "cdr_effect",
        "id": "4a0eca0b-519f-48da-8599-1053461413b6",
        "settings": {
@@ -85,9 +124,41 @@
         "Yellow": 0,
         "Max dot radius": 10
        },
-       "note": "Effects > Color Transform > Halftone at the largest dot (verified: coarse CMYK screen with rosettes). The Black angle key was dropped in the test, so leave it at its default."
+       "note": "Halftone (Color Transform) with Max dot radius 10: the call sends the angles KAngle 45, CAngle 15, MAngle 75, YAngle 0 and MaxRadius 10. Run: the page changed by 63.17 on average (0-255). The photo is a coarse coloured dot screen. The photo is already a bitmap, so the recipe's Convert to Bitmap step is not needed."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "9705ee43b08a",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('HalftoneEffect KAngle=45,CAngle=15,MAngle=75,YAngle=0,MaxRadius=10')"
+       }
+      ],
+      "layers": [
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.color_halftone_pop.png",
+      "strip": "gallery/recipes/CDR/poster_print.color_halftone_pop_steps.png",
+      "secs": 2.9
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo is rebuilt as a coarse overlapping cyan, magenta, yellow and black dot screen across the whole frame, colour bars included; the pop-art rosette reads clearly.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "9705ee43b08a"
+     }
     }
    },
    "manual_steps": [],
@@ -126,22 +197,19 @@
       {
        "kind": "ps_menu",
        "id": "1007",
-       "note": "Image > Mode > Grayscale on a copy of the document (verified: colour channels become one Gray channel)."
+       "note": "Image > Mode > Grayscale: ran, the colour channels become one Gray channel (the plan works on the open document, not a copy)."
       },
       {
        "kind": "ps_menu",
        "id": "1006",
-       "note": "Image > Mode > Bitmap: changeMode(ChangeMode.BITMAP, options) with a BitmapConversionOptions (next step); flattens the layers."
-      },
-      {
-       "kind": "ps_api",
-       "id": "class:BitmapConversionOptions",
-       "note": "method = HALFTONESCREEN, resolution = output ppi (e.g. 300), frequency = 20-35 lines per inch for a visible dot, angle = 45, shape = ROUND."
+       "note": "Image > Mode > Bitmap (script, replaces the separate BitmapConversionOptions step): changeMode(BITMAP) with a BitmapConversionOptions of method HALFTONESCREEN, resolution 72 ppi, 9 lines per inch, angle 45, round dots. The recipe's 20 to 35 lpi assumes a 300 ppi output; the test plate is 72 ppi, so the frequency is scaled to give 8 px cells. The first attempt failed on a misspelt enum (the DOM name is BitmapHalfToneType). Ran.",
+       "script": "var o = new BitmapConversionOptions(); o.method = BitmapConversionType.HALFTONESCREEN; o.resolution = 72; o.frequency = 9; o.angle = 45; o.shape = BitmapHalfToneType.ROUND;\nd.changeMode(ChangeMode.BITMAP, o);"
       },
       {
        "kind": "ps_menu",
        "id": "1007",
-       "note": "Back to Grayscale (then RGB) so the paper tone can be added on a layer above in Multiply."
+       "note": "Back to Grayscale, then RGB (script: two changeMode calls): ran, so a coloured paper tone can be added above.",
+       "script": "d.changeMode(ChangeMode.GRAYSCALE); d.changeMode(ChangeMode.RGB);"
       },
       {
        "kind": "ps_filter",
@@ -151,9 +219,69 @@
         "distort": "gaussianDistribution",
         "monochromatic": true
        },
-       "note": "Faint monochrome speckle like ink and paper fibre (verified: Add Noise at 25 % is strong; keep it low)."
+       "note": "Filter > Noise > Add Noise: 4 %, Gaussian, monochromatic. Ran; faint speckle."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 243); c.putDouble(C2T('Grn '), 235); c.putDouble(C2T('Bl  '), 216);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nsetMode('multiply');",
+       "note": "Script (new last step): a solid #F3EBD8 fill layer on top set to Multiply, the paper tone. Ran. The run shows one black dot screen whose dots grow in the shadows on a warm off-white tone, an old-newspaper print. The picture is 1920 px wide at 72 ppi: build it at the final size, as the recipe says, since resizing turns the dots to mush."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "77345f3c67dc",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Grayscale; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Bitmap; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: RGB Color; active layer: Background"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Add Noise; active layer: Background"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Color Fill 1"
+       }
+      ],
+      "layers": [
+       "Color Fill 1 [solidfill multiply]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.newsprint_halftone.png",
+      "strip": "gallery/recipes/PS/poster_print.newsprint_halftone_steps.png",
+      "secs": 22.7
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "One black round-dot screen at 45 degrees whose dots grow in the shadows, on a warm off-white paper tone; reads as an old newspaper print.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "77345f3c67dc"
+     }
     },
     "AI": {
      "app": "AI",
@@ -181,12 +309,8 @@
       {
        "kind": "cdr_menu",
        "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
-       "note": "Bitmaps > Mode > Grayscale (8-bit)."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "256c8079-fd98-4d81-8553-ec2c5eaf758f",
-       "note": "Bitmaps > Mode > Black and White (1-bit) with the Halftone conversion method, round dots, 20-35 lpi (dialog; the object-model route ConvertToBW is unverified)."
+       "script": "s.Bitmap.ConvertTo(2)\nresult = s",
+       "note": "Bitmap.ConvertTo(2) turns the photo into an 8-bit grayscale bitmap."
       },
       {
        "kind": "cdr_effect",
@@ -197,9 +321,69 @@
         "Density": 30,
         "ColorMode": "Intensity"
        },
-       "note": "Optional, on a grayscale copy before the 1-bit step: light Gaussian intensity noise for ink grit."
+       "note": "Add Noise on the grayscale bitmap: Gaussian, level 15, density 30, intensity mode. Run: the page changed by 0.63 on average (0-255)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "256c8079-fd98-4d81-8553-ec2c5eaf758f",
+       "script": "s.Bitmap.ConvertToBW(5, 100, 128, 0, 45, 18)\nresult = s",
+       "note": "Bitmap.ConvertToBW(5, 100, 128, 0, 45, 18): 1-bit conversion with the Halftone render type (5), halftone type 0, screen angle 45 and size 18 (size 0 gave a fine dither, 50 a coarse crosshatch in a probe; 30 was too coarse to read the picture). A fill colour set on the 1-bit bitmap darkened the whole picture, so none is set."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "r = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nr.Fill.ApplyUniformFill(rgb(\"#F0E3C8\"))\nr.Outline.SetNoOutline()\nr.Transparency.ApplyUniformTransparency(0)\nr.Transparency.MergeMode = 9\nresult = r",
+       "note": "Paper tone (script): a warm off-white rectangle over the picture with a Multiply merge mode (Transparency.MergeMode 9) so only the white pixels pick up the paper colour."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "5182175695ea",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AddNoiseEffect NoiseMode=0,Level=15,Density=30,ColorMode=0')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.newsprint_halftone.png",
+      "strip": "gallery/recipes/CDR/poster_print.newsprint_halftone_steps.png",
+      "secs": 3.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "One black 45-degree dot screen whose dots merge in the shadows, on a warm off-white paper tone; the ink speckle from the noise step is barely visible at this size.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5182175695ea"
+     }
     }
    },
    "manual_steps": [
@@ -244,13 +428,28 @@
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "1942",
+       "as": "ink1",
+       "note": "Layer > New > Layer from Background (new first step): ran, 'Layer 0' labelled 'ink1', needed for the layer styles below."
+      },
+      {
+       "kind": "ps_menu",
        "id": "1135",
-       "note": "Duplicate the (greyscale-looking) image layer: the bottom copy becomes ink 1, the top copy ink 2. Desaturate both first."
+       "note": "Layer > Duplicate Layer on ink 1 (target 'ink1'): ran, 'Layer 0 copy' (labelled 'ink2') is active. The bottom layer is ink 1, the top ink 2.",
+       "target": "ink1",
+       "as": "ink2"
       },
       {
        "kind": "ps_adjustment",
        "name": "Desaturate",
-       "note": "Image > Adjustments > Desaturate on each copy (verified: flat greyscale)."
+       "note": "Image > Adjustments > Desaturate on ink 2 (target 'ink2'): ran, greyscale.",
+       "target": "ink2"
+      },
+      {
+       "kind": "ps_adjustment",
+       "name": "Desaturate",
+       "note": "Image > Adjustments > Desaturate on ink 1 (new step, target 'ink1'): ran, greyscale.",
+       "target": "ink1"
       },
       {
        "kind": "ps_filter",
@@ -260,7 +459,8 @@
         "center": 12,
         "screenType": "scratchDisks"
        },
-       "note": "Ink 1 (bottom copy): Filter > Sketch > Halftone Pattern, Dot (scratchDisks): a black-and-white dot screen (verified frame). Use the default black / white colours."
+       "note": "Filter > Sketch > Halftone Pattern on ink 1 (target 'ink1'): Size 3, Contrast 12, Dot. Ran; a black-and-white dot screen.",
+       "target": "ink1"
       },
       {
        "kind": "ps_filter",
@@ -269,7 +469,8 @@
         "Light/Dark Balance": 20,
         "Smoothness": 6
        },
-       "note": "Ink 2 (top copy): Stamp gives flat two-tone shapes for the second ink (verified: smoothed black / white like a rubber stamp)."
+       "note": "Filter > Sketch > Stamp on ink 2 (target 'ink2'): Light/Dark Balance 20, Smoothness 6. Ran; flat black-and-white shapes.",
+       "target": "ink2"
       },
       {
        "kind": "ps_layer_style",
@@ -279,17 +480,59 @@
         "color": "#FF48B0",
         "opacity": 100
        },
-       "note": "On ink 1: Screen with fluorescent pink turns black to pink and keeps white white. On ink 2 the same with riso blue #0078BF."
+       "note": "Layer Style > Color Overlay on ink 1 (target 'ink1'): Screen, #FF48B0, 100 %. Ran; black turns fluorescent pink and white stays white.",
+       "target": "ink1"
       },
       {
-       "kind": "ps_blend_mode",
-       "id": "multiply",
-       "note": "Both ink layers in Multiply so white drops out and the overlap prints as a dark purple (the render matched the Multiply formula; 'wrong' refers to an outdated plate sentence)."
+       "kind": "ps_layer_style",
+       "name": "Color Overlay",
+       "settings": {
+        "mode": "screen",
+        "color": "#3C78FF",
+        "opacity": 100
+       },
+       "note": "Layer Style > Color Overlay on ink 2 (new step, target 'ink2'): Screen, #3C78FF (a lighter ink blue than the first run's #0078BF, so the overprint with pink comes out violet rather than near-black navy), 100 %. Ran; black turns blue.",
+       "target": "ink2"
       },
       {
        "kind": "ps_api",
        "id": "class:ArtLayer",
-       "note": "translate(3, 2) on ink 2: the deliberate misregistration."
+       "target": "ink1",
+       "script": "var a = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(C2T('Lyr '), C2T('Ordn'), C2T('Trgt')); a.putReference(C2T('null'), r); a.putEnumerated(C2T('What'), S2T('rasterizeItem'), S2T('layerStyle')); executeAction(S2T('rasterizeLayer'), a, DialogModes.NO);",
+       "note": "Script on ink 1 (new step, target 'ink1'): Layer > Rasterize > Layer Style, baking the pink overlay into the pixels. Without it the Multiply below does not overprint: a Screen colour overlay on a layer set to Multiply blends with what is under it, so in the first run the blue shapes knocked the pink out (blue areas measured pure ink blue). Ran."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "target": "ink2",
+       "script": "var a = new ActionDescriptor(), r = new ActionReference(); r.putEnumerated(C2T('Lyr '), C2T('Ordn'), C2T('Trgt')); a.putReference(C2T('null'), r); a.putEnumerated(C2T('What'), S2T('rasterizeItem'), S2T('layerStyle')); executeAction(S2T('rasterizeLayer'), a, DialogModes.NO);",
+       "note": "Script on ink 2 (new step, target 'ink2'): Layer > Rasterize > Layer Style, baking the blue overlay into the pixels (same reason). Ran."
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Ink 1 set to Multiply (target 'ink1'): ran.",
+       "target": "ink1"
+      },
+      {
+       "kind": "ps_blend_mode",
+       "id": "multiply",
+       "note": "Ink 2 set to Multiply (new step, target 'ink2'): ran. The run now shows the blue shapes multiplying with the pink dot screen under them: where both inks print the colour is a deep blue-violet (about RGB 76 / 50 / 223 over the dark areas, against ink blue 60 / 120 / 255 and ink pink 255 / 72 / 176), where only pink prints it is pink.",
+       "target": "ink2"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "note": "Script on ink 2 (target 'ink2'): translate(6, 4) for the misregistration. The recipe's 3, 2 px was hard to see at 960 px; 6, 4 px shows as a thin offset fringe of pure blue along the right and lower edges of the blue shapes against the pink. Ran.",
+       "target": "ink2",
+       "script": "L.translate(UnitValue(6, 'px'), UnitValue(4, 'px'));"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var g = new ActionDescriptor(); g.putBoolean(C2T('Dplc'), true); executeAction(C2T('MrgV'), g, DialogModes.NO); d.activeLayer.name = 'merged copy';",
+       "note": "Script (new step): Stamp Visible (merge visible with the duplicate option) into a new layer 'merged copy' on top, labelled 'merged'. Ran.",
+       "as": "merged"
       },
       {
        "kind": "ps_filter",
@@ -297,11 +540,128 @@
        "settings": {
         "Intensity": 25,
         "Contrast": 50,
-        "Grain Type": "grainStippled"
+        "Grain Type": "grainEnlarged"
        },
-       "note": "On a merged copy: stippled grain for the drum texture (verified: Grain is strong; keep intensity low). Untested: stippled was not the rendered type (enlarged was)."
+       "note": "Filter > Texture > Grain on the merged copy (target 'merged'): Intensity 25, Contrast 50, Enlarged. The recipe's Stippled type replaced the colours with black-and-white stipple in the first run, so Enlarged is used (the rendered type); the run shows a fine drum-like grain over the two inks. Untested: more than two inks, and exact brand colours.",
+       "target": "merged"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "410900dd076a",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Make Layer; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Layer 0 copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Desaturate; active layer: Layer 0 copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Desaturate; active layer: Layer 0"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Halftone Pattern; active layer: Layer 0"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Stamp; active layer: Layer 0 copy"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 0"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 0 copy"
+       },
+       {
+        "step": 9,
+        "status": "ok",
+        "note": "history: Rasterize Layer Style; active layer: Layer 0"
+       },
+       {
+        "step": 10,
+        "status": "ok",
+        "note": "history: Rasterize Layer Style; active layer: Layer 0 copy"
+       },
+       {
+        "step": 11,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Layer 0"
+       },
+       {
+        "step": 12,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Layer 0 copy"
+       },
+       {
+        "step": 13,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Layer 0 copy"
+       },
+       {
+        "step": 14,
+        "status": "ok",
+        "note": "history: Name Change; active layer: merged copy"
+       },
+       {
+        "step": 15,
+        "status": "ok",
+        "note": "history: Grain; active layer: merged copy"
+       }
+      ],
+      "layers": [
+       "merged copy [normal]",
+       "Layer 0 copy [normal multiply]",
+       "Layer 0 [normal multiply]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.risograph.png",
+      "strip": "gallery/recipes/PS/poster_print.risograph_steps.png",
+      "secs": 59.3,
+      "crop": {
+       "file": "gallery/recipes/PS/poster_print.risograph_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Two inks, a pink dot screen and flat blue shapes, now overprint: about 22 % of the photo area is a deep violet third colour (about RGB 67/41/220, against ink blue 60/120/255), with pink-only areas and light paper around it; the blue offset and a fine grain show. The first judge's knock-out (blue areas pure ink blue) is fixed.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "410900dd076a"
+     }
     },
     "AI": {
      "app": "AI",
@@ -350,27 +710,154 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_menu",
-       "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
-       "note": "Grayscale (8-bit) on the bitmap."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "fa741d10-48f6-4a96-b2bc-9d6cc5f28f40",
-       "note": "Bitmaps > Mode > Duotone (8-bit): two inks, pink and blue, each with its own curve (dialog; misregistration is not possible inside one duotone)."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "a = s.Duplicate(0, 0)\nb = s.Duplicate(0, 0)\nlabels[\"inkA\"] = a\nlabels[\"inkB\"] = b\nresult = a",
+       "note": "Setup (script): two copies of the photo, one for each ink (a riso job prints each ink from its own black-and-white separation).",
+       "as": "inkA",
+       "labels": [
+        "inkA",
+        "inkB"
+       ]
       },
       {
        "kind": "cdr_effect",
-       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+       "id": "25f5d0f5-ccce-40e0-993c-e07ce61d1c96",
+       "settings": {},
+       "note": "Desaturate on the first separation: grey tones.",
+       "target": "inkA"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
        "settings": {
-        "NoiseMode": "Spike",
-        "Level": 30,
-        "Density": 20,
-        "ColorMode": "Intensity"
+        "Contrast": 10,
+        "Brightness": 15
        },
-       "note": "Ink grit: spike noise at low density (verified Add Noise; spike was not the rendered mode). Apply before the duotone step if the dialog refuses noise on a duotone bitmap."
+       "note": "Light effect: contrast +10, brightness +15: the pink separation prints the shadows and the middle tones.",
+       "target": "inkA"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "4a0eca0b-519f-48da-8599-1053461413b6",
+       "settings": {
+        "Cyan": 15,
+        "Magenta": 75,
+        "Yellow": 0,
+        "Black": 45,
+        "Max dot radius": 5
+       },
+       "note": "Halftone on the first separation: max dot radius 5, black screen at 45 degrees: a coarse dot screen, the grain of the pink ink.",
+       "target": "inkA"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "25f5d0f5-ccce-40e0-993c-e07ce61d1c96",
+       "settings": {},
+       "note": "Desaturate on the second separation.",
+       "target": "inkB"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
+       "settings": {
+        "Contrast": 35,
+        "Brightness": 45
+       },
+       "note": "Light effect: contrast +35, brightness +45: the blue separation only prints the deepest shadows, so the two inks take different shares of the tones.",
+       "target": "inkB"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "4a0eca0b-519f-48da-8599-1053461413b6",
+       "settings": {
+        "Cyan": 15,
+        "Magenta": 75,
+        "Yellow": 0,
+        "Black": 75,
+        "Max dot radius": 5
+       },
+       "note": "Halftone on the second separation: the black screen at 75 degrees, the usual second screen angle, so the dots of the two inks cross.",
+       "target": "inkB"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "def ink(src, hexcol, dx, dy):\n    r = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\n    r.Fill.ApplyUniformFill(rgb(hexcol))\n    r.Outline.SetNoOutline()\n    r.Transparency.ApplyUniformTransparency(0)\n    r.Transparency.MergeMode = 11\n    sr = app.CreateShapeRange()\n    sr.Add(src)\n    sr.Add(r)\n    bmp = sr.Group().ConvertToBitmapEx(4, False, False, 96)\n    bmp.Move(dx, dy)\n    return bmp\n\na = ink(labels[\"inkA\"], \"#FF48B0\", 0.0, 0.0)\nb = ink(labels[\"inkB\"], \"#0078BF\", 0.14, -0.1)\nb.Transparency.ApplyUniformTransparency(0)\nb.Transparency.MergeMode = 9\npaper = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\npaper.Fill.ApplyUniformFill(rgb(\"#FBF1DE\"))\npaper.Outline.SetNoOutline()\npaper.Transparency.ApplyUniformTransparency(0)\npaper.Transparency.MergeMode = 9\nlabels[\"inkA\"], labels[\"inkB\"] = a, b\nresult = b",
+       "note": "Inks and register (script): each separation gets a flat ink colour: a rectangle of fluorescent pink (#FF48B0) or blue (#0078BF) in If Lighter mode over the grey dot screen turns the dark dots into the ink colour on white, and the group is flattened to a bitmap. The blue separation is then moved 0.14 in right and 0.1 in down (the misregistration) and set to Multiply over the pink one, so the overlap prints dark violet; a warm paper tone (#FBF1DE, Multiply) goes on top."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "27772a5dd31e",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('DesaturateEffect ')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Contrast=10,Brightness=15')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('HalftoneEffect CAngle=15,MAngle=75,YAngle=0,KAngle=45,MaxRadius=5')"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('DesaturateEffect ')"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Contrast=35,Brightness=45')"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('HalftoneEffect CAngle=15,MAngle=75,YAngle=0,KAngle=75,MaxRadius=5')"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 5, 1 effects]",
+       "(unnamed) [type 5]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.risograph.png",
+      "strip": "gallery/recipes/CDR/poster_print.risograph_steps.png",
+      "secs": 6.3
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Improved: a coarse dot screen in pink and navy with a visible offset at the frame edges and on the strip text. But the blue ink never prints on its own (about 1% of pixels) and bare paper almost never shows (under 1%), so it reads as pink plus a dark overlap rather than two inks; the colour halftone also leaves green and yellow specks (about 13% of pixels) that belong to neither ink.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "27772a5dd31e",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [
@@ -424,7 +911,7 @@
        "settings": {
         "levels": 4
        },
-       "note": "Posterize adjustment layer above the image: 4 levels per channel snaps tones into flat bands (verified screen-print look)."
+       "note": "Posterize adjustment layer above the image: 4 levels. Ran; it sits on top and so flattens the result of the Cutout step below as well."
       },
       {
        "kind": "ps_filter",
@@ -434,7 +921,8 @@
         "Edge Simplicity": 4,
         "Edge Fidelity": 2
        },
-       "note": "On the image layer: Filter > Artistic > Cutout rebuilds it from flat colour levels with roughly cut edges (verified; it breaks type into shards, as warned)."
+       "note": "Filter > Artistic > Cutout on the image layer (target 'photo'): No. of Levels 5, Edge Simplicity 4, Edge Fidelity 2. Ran. The run shows the picture rebuilt from a few flat colours with roughly cut edges; the test bars at the bottom flatten into blocks too.",
+       "target": "photo"
       },
       {
        "kind": "ps_filter",
@@ -444,9 +932,54 @@
         "distort": "uniformDistribution",
         "monochromatic": true
        },
-       "note": "A trace of ink texture."
+       "note": "Filter > Noise > Add Noise on the image layer: 3 %, uniform, monochromatic. Ran; a faint ink texture. Untested: tracing the result to vector for real separations (manual).",
+       "target": "photo"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "5890f2f1f0df",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: New Posterize Layer; active layer: Posterize 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Cutout; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Add Noise; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Posterize 1 [posterize]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.screen_print.png",
+      "strip": "gallery/recipes/PS/poster_print.screen_print_steps.png",
+      "secs": 45.7
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Picture reduced to a handful of flat ink colours (about eight cover most of the frame) with roughly cut shapes; reads as a gig-poster screen print, though the subjects merge into the olive background.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5890f2f1f0df"
+     }
     },
     "AI": {
      "app": "AI",
@@ -478,14 +1011,52 @@
        "settings": {
         "Level": 4
        },
-       "note": "Effects > Color Transform > Posterize: 4 levels (verified)."
+       "note": "Posterize with 4 levels. Run: the page changed by 19.21 on average (0-255). The picture is flat bands of colour."
       },
       {
        "kind": "cdr_menu",
        "id": "AF57ED80-7C7B-4d27-9081-204086A21FCC",
-       "note": "Outline Trace > Clipart (PowerTRACE) to turn the posterised bitmap into flat filled shapes; set the colour count in the dialog."
+       "script": "ts = s.Bitmap.Trace(4, -1, 0, 99, 0, 0, True, False, False)\nts.SetColorCount(5)\nrng = ts.Finish()\nresult = rng.Item(1)",
+       "note": "Bitmap.Trace (Clipart type, 5 colours, original deleted, background kept) then Finish: the posterised bitmap becomes flat filled vector shapes, the PowerTRACE result without its dialog."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "0809af44cac7",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('PosterizeEffect Level=4')"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 7]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.screen_print.png",
+      "strip": "gallery/recipes/CDR/poster_print.screen_print_steps.png",
+      "secs": 6.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo is reduced to five flat ink colours as traced vector shapes with simplified, slightly rough edges, a clear gig-poster screen-print look.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "0809af44cac7"
+     }
     }
    },
    "manual_steps": [
@@ -526,7 +1097,8 @@
       {
        "kind": "ps_menu",
        "id": "1135",
-       "note": "Duplicate the photo layer."
+       "note": "Layer > Duplicate Layer: ran, 'Background copy' (labelled 'top') is active; the original below becomes the ink layer.",
+       "as": "top"
       },
       {
        "kind": "ps_filter",
@@ -536,7 +1108,8 @@
         "Edge Intensity": 4,
         "Posterization": 3
        },
-       "note": "Bottom copy: Filter > Artistic > Poster Edges: flat posterised tones with dark lines along the edges (verified printed-poster look)."
+       "note": "Filter > Artistic > Poster Edges on the bottom copy (target 'photo'): Edge Thickness 3, Edge Intensity 4, Posterization 3. Ran; flat posterised tones with dark outlines along the edges.",
+       "target": "photo"
       },
       {
        "kind": "ps_filter",
@@ -548,14 +1121,66 @@
         "Channel 3": 90,
         "Channel 4": 45
        },
-       "note": "Top copy: Color Halftone at a small radius for the dot screen."
+       "note": "Filter > Pixelate > Color Halftone on the top copy (target 'top'): Radius 6, angles 108 / 162 / 90 / 45. Ran; a fine dot screen.",
+       "target": "top"
       },
       {
        "kind": "ps_blend_mode",
        "id": "multiply",
-       "note": "Top copy in Multiply at 30-50 % opacity so the dots show mainly in the shadows (formula-verified mode)."
+       "note": "Top copy set to Multiply at 40 % opacity (script: blend mode and layer opacity in one call): ran. The run shows flat posterised colour, dark ink lines along the contrast edges and a dot screen showing in the shadows. Untested: a soft or low-contrast photo (the recipe says add contrast first).",
+       "target": "top",
+       "script": "setMode('multiply'); d.activeLayer.opacity = 40;"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "b8988e8a3535",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Poster Edges; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Color Halftone; active layer: Background copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Master Opacity Change; active layer: Background copy"
+       }
+      ],
+      "layers": [
+       "Background copy [normal multiply 40%]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.comic_pop.png",
+      "strip": "gallery/recipes/PS/poster_print.comic_pop_steps.png",
+      "secs": 20.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Posterised colour, dark ink lines along the contrast edges and a dot screen over the picture; reads as comic art (the dots cover the highlights too, not only the shadows).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "b8988e8a3535"
+     }
     },
     "AI": {
      "app": "AI",
@@ -593,12 +1218,78 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "lines = labels[\"photo\"].Duplicate(0, 0)\ndots = labels[\"photo\"].Duplicate(0, 0)\nlabels[\"lines\"] = lines\nlabels[\"dots\"] = dots\nresult = lines",
+       "note": "Setup (script): two copies of the original photo above it, one for the ink lines and one for the dot screen. They are made before the posterize step, so the lines follow the real edges and the dots follow the real tones.",
+       "as": "lines",
+       "labels": [
+        "lines",
+        "dots"
+       ]
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
+       "settings": {
+        "Brightness": 22,
+        "Contrast": 10
+       },
+       "note": "Light effect on the photo underneath: brightness +22 and contrast +10 before the posterize, because four levels per channel of this dark photo go muddy; the lines and dots below were copied before this, from the original.",
+       "target": "photo"
+      },
+      {
        "kind": "cdr_effect",
        "id": "e0065483-23c2-4a45-a57d-20888827a5f3",
        "settings": {
         "Level": 4
        },
-       "note": "Posterize to 4 levels for flat colour."
+       "note": "Posterize with 4 levels on the photo underneath: flat blocks of colour.",
+       "target": "photo"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "481e887a-d9e6-4864-8e28-8f27ab23baff",
+       "settings": {
+        "EdgeType": "Solid",
+        "Level": 80
+       },
+       "note": "Find Edges, solid, level 80, on the line copy: crisp dark lines along every colour edge on white.",
+       "target": "lines"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "2cb04839-02ba-49f0-a959-9a480d510951",
+       "settings": {
+        "Percentage": 100,
+        "Radius": 1
+       },
+       "note": "Minimum, radius 1, on the line copy: the dark lines grow a pixel, so they read as ink strokes.",
+       "target": "lines"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "s.Transparency.ApplyUniformTransparency(0)\ns.Transparency.MergeMode = 9\nresult = s",
+       "note": "Ink lines on the colour (script): the line copy is set to Multiply (Transparency.MergeMode 9), so its white vanishes and only the black lines print over the flat colour.",
+       "target": "lines"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "25f5d0f5-ccce-40e0-993c-e07ce61d1c96",
+       "settings": {},
+       "note": "Desaturate on the dot copy: grey tones.",
+       "target": "dots"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
+       "settings": {
+        "Brightness": 50,
+        "Contrast": 30
+       },
+       "note": "Light effect on the dot copy: brightness +50 and contrast +30, so only the shadows and darker middle tones are dark enough to make dots.",
+       "target": "dots"
       },
       {
        "kind": "cdr_effect",
@@ -607,11 +1298,100 @@
         "Cyan": 15,
         "Magenta": 75,
         "Yellow": 0,
-        "Max dot radius": 4
+        "Black": 45,
+        "Max dot radius": 5
        },
-       "note": "Halftone at a small dot radius over the posterised image."
+       "note": "Halftone on the dot copy: max dot radius 5, black screen at 45 degrees: black dots that grow in the dark areas and vanish in the light ones.",
+       "target": "dots"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "s.Transparency.ApplyUniformTransparency(40)\ns.Transparency.MergeMode = 9\nresult = s",
+       "note": "Dots on the colour (script): the dot copy is set to Multiply at 60 percent opacity (Transparency.MergeMode 9, transparency 40), so the dots show in the shadows only and the white between them leaves the colour untouched.",
+       "target": "dots"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "b6f3be03f4eb",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Brightness=22,Contrast=10')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('PosterizeEffect Level=4')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('FindEdgesEffect EdgeType=1,Level=80')"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('MinimumEffect Percentage=100,Radius=1')"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('DesaturateEffect ')"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Brightness=50,Contrast=30')"
+       },
+       {
+        "step": 9,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('HalftoneEffect CAngle=15,MAngle=75,YAngle=0,KAngle=45,MaxRadius=5')"
+       },
+       {
+        "step": 10,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "plate_photo.png [type 5, 1 effects]",
+       "plate_photo.png [type 5, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.comic_pop.png",
+      "strip": "gallery/recipes/CDR/poster_print.comic_pop_steps.png",
+      "secs": 5.4
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Dark ink lines along the edges are now there over posterised colour, but the dot screen covers the whole frame including the light wall rather than only the shadows, and the palette turns muddy and dark (the cream wall becomes olive, about a third of the pixels near-black or dark grey) instead of flat pop colour.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "b6f3be03f4eb",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [
@@ -657,7 +1437,12 @@
       {
        "kind": "ps_menu",
        "id": "Layer/Rasterize/Type",
-       "note": "Rasterize the type or shape layer (or work on a flattened copy)."
+       "note": "Layer > Rasterize > Type on the type layer (input: 'GRUNGE' in Arial Black 330 px, #1E1E1E on a #E4DCCB paper ground): ran, the type is now pixels."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1141",
+       "note": "Layer > Flatten Image (new step): ran. The recipe allows working on a flattened copy; this is needed because Spatter only roughened the type's own colour, not the transparent edge of a rasterised layer (the first run left the letter edges clean), while on the flattened picture the letter edge meets the paper colour and goes ragged."
       },
       {
        "kind": "ps_filter",
@@ -666,7 +1451,13 @@
         "sprayRadius": 12,
         "smoothness": 5
        },
-       "note": "Filter > Brush Strokes > Spatter: edges turn ragged and speckled (verified), fills keep their colour."
+       "note": "Filter > Brush Strokes > Spatter: Spray Radius 12, Smoothness 5. Ran. The run shows ragged, sprayed letter edges."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "function paperGrad() { var st = [[0,0,0,0],[228,220,203,4096]], i, g = new ActionDescriptor(); g.putString(C2T('Nm  '), 'plan'); g.putEnumerated(C2T('GrdF'), C2T('GrdF'), C2T('CstS')); g.putDouble(C2T('Intr'), 4096);\n  var cs = new ActionList(), ts = new ActionList();\n  for (i = 0; i < 2; i++) { var c = new ActionDescriptor(), k = new ActionDescriptor(); k.putDouble(C2T('Rd  '), st[i][0]); k.putDouble(C2T('Grn '), st[i][1]); k.putDouble(C2T('Bl  '), st[i][2]);\n    c.putObject(C2T('Clr '), C2T('RGBC'), k); c.putEnumerated(C2T('Type'), C2T('Clry'), C2T('UsrS')); c.putInteger(C2T('Lctn'), st[i][3]); c.putInteger(C2T('Mdpn'), 50); cs.putObject(C2T('Clrt'), c); }\n  for (i = 0; i < 2; i++) { var t = new ActionDescriptor(); t.putUnitDouble(C2T('Opct'), C2T('#Prc'), 100); t.putInteger(C2T('Lctn'), i * 4096); t.putInteger(C2T('Mdpn'), 50); ts.putObject(C2T('TrnS'), t); }\n  g.putList(C2T('Clrs'), cs); g.putList(C2T('Trns'), ts);\n  var a = new ActionDescriptor(); a.putBoolean(S2T('dither'), false); a.putBoolean(S2T('reverse'), false); a.putObject(S2T('gradient'), S2T('gradientClassEvent'), g);\n  var u = new ActionDescriptor(); u.putObject(S2T('type'), S2T('gradientMapClass'), a);\n  var m = new ActionDescriptor(), r = new ActionReference(); r.putClass(S2T('adjustmentLayer')); m.putReference(C2T('null'), r); m.putObject(S2T('using'), S2T('adjustmentLayer'), u); executeAction(S2T('make'), m, DialogModes.NO); }\nfunction dropouts(blur, thr, name) {\n  var n = d.artLayers.add(); n.name = name; d.activeLayer = n;\n  d.selection.selectAll(); d.selection.fill(hexc('#808080')); d.selection.deselect();\n  n.applyAddNoise(400, NoiseDistribution.GAUSSIAN, true); n.applyGaussianBlur(blur); n.autoLevels();\n  var t = new ActionDescriptor(); t.putInteger(C2T('Lvl '), thr); executeAction(C2T('Thrs'), t, DialogModes.NO);\n  paperGrad(); d.activeLayer.merge(); d.activeLayer.blendMode = BlendMode.LIGHTEN; }\ndropouts(6, 192, 'blotches'); dropouts(1.2, 205, 'specks');\nd.flatten();",
+       "note": "Script (new step, after Spatter): two ink drop-out layers, each made from grey filled with Add Noise (400 %, Gaussian, monochromatic), blurred (6 px for blotches, 1.2 px for specks), Auto Levels and Threshold (192 / 205), recoloured black to black and white to the paper colour #E4DCCB with a Gradient Map merged into it, and set to Lighten: only the paper-coloured spots show, painting paper colour over the ink. The flattened image is then flattened again. Ran. The first run had no drop-outs (the Grain step alone only roughened the ink). The run shows paper-coloured flecks and blotches in the letters."
       },
       {
        "kind": "ps_filter",
@@ -676,7 +1467,7 @@
         "Contrast": 60,
         "Grain Type": "grainSpeckle"
        },
-       "note": "Speckle grain for ink drop-outs (verified Grain; Speckle was not the rendered type)."
+       "note": "Filter > Texture > Grain: Intensity 40, Contrast 60, Speckle. Ran; a fine speckle over letters and paper (it darkens rather than drops out ink; the drop-outs come from the step above)."
       },
       {
        "kind": "ps_filter",
@@ -688,9 +1479,86 @@
         "Light Direction": "lightDirTopLeft",
         "Invert Texture": false
        },
-       "note": "Low sandstone relief for a rough surface (verified Texturizer, brick at 14; keep relief low)."
+       "note": "Filter > Texture > Texturizer: Sandstone, Scaling 100, Relief 6, light from the top left. Ran; a rough sandstone-like surface grain over letters and paper. Untested: a scanned paper or wall texture in Multiply, which gives the most convincing grunge (your own scan, manual)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "GRUNGE",
+      "background": "#E4DCCB",
+      "color": "#1E1E1E",
+      "size": 330
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "text",
+       "text": "GRUNGE",
+       "background": "#E4DCCB",
+       "color": "#1E1E1E",
+       "size": 330
+      },
+      "plan_hash": "f40263532bc0",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Rasterize Type; active layer: GRUNGE"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "label type now names the result (new layer ID); history: Flatten Image; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Spatter; active layer: Background"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Flatten Image; active layer: Background"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Grain; active layer: Background"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Texturizer; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.grunge_distress.png",
+      "strip": "gallery/recipes/PS/poster_print.grunge_distress_steps.png",
+      "secs": 32.9,
+      "crop": {
+       "file": "gallery/recipes/PS/poster_print.grunge_distress_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Ragged sprayed letter edges, a sandstone surface grain and now real ink drop-outs: about 200 paper-coloured flecks and blotches are enclosed inside the letters, where the first run had solid interiors. The Grain step also lightens the paper ground from the input beige to a paler cream (about RGB 244/239/224).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "f40263532bc0"
+     }
     },
     "AI": {
      "app": "AI",
@@ -733,31 +1601,162 @@
       {
        "kind": "cdr_menu",
        "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
-       "note": "Convert to Bitmap (bitmap effects need pixels)."
+       "script": "sr = app.CreateShapeRange()\nfor k in (\"orange_box\", \"blue_star\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    sr.Add(labels[k])\nart = sr.Group()\nbmp = art.ConvertToBitmapEx(4, False, False, 96)\nresult = bmp",
+       "note": "Setup (script): the five vector plate shapes are grouped and flattened with ConvertToBitmapEx (RGB, 96 dpi, white background) so bitmap effects can act on them."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "d754d079-5c3a-42b2-b200-95e24f8fe436",
+       "settings": {
+        "Horizontal": 16,
+        "Vertical": 16,
+        "Square": true
+       },
+       "note": "Scatter, 16 px both ways, on the flattened art: pixels near every edge are thrown a few pixels in random directions, so the clean edges of the star, box, circle and letters turn ragged and sprayed (the recipe's spatter edge)."
       },
       {
        "kind": "cdr_effect",
        "id": "b08950be-822b-491b-8fa8-74821cef12e8",
        "settings": {
-        "NoiseMode": "Spike",
-        "Level": 50,
-        "Density": 35,
+        "NoiseMode": "Gaussian",
+        "Level": 30,
+        "Density": 60,
         "ColorMode": "Intensity"
        },
-       "note": "Spike noise for speckle (verified Add Noise; spike not the rendered mode)."
+       "note": "Add Noise on the art: Gaussian, level 30, density 60: a rough surface grain over the ink."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "art = s\nr = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nr.Fill.ApplyUniformFill(rgb(\"#808080\"))\nr.Outline.SetNoOutline()\nlabels[\"mask\"] = r.ConvertToBitmapEx(4, False, False, 20)\nlabels[\"art\"] = art\nresult = labels[\"mask\"]",
+       "note": "Drop-out mask, step 1 (script): a page-size mid-grey rectangle is flattened to a coarse bitmap (RGB, 20 dpi, 400 x 225 px, so its specks are about 5 px of the page); the next steps turn it into a blotchy black-and-white speckle pattern.",
+       "as": "mask",
+       "labels": [
+        "mask",
+        "art"
+       ]
       },
       {
        "kind": "cdr_effect",
-       "id": "cf70adb0-b20e-4850-a038-97047635dd0e",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
        "settings": {
-        "Roughness": 50,
-        "Detail": 50,
-        "LightDirection": 135,
-        "Invert": false
+        "NoiseMode": "Gaussian",
+        "Level": 100,
+        "Density": 100,
+        "ColorMode": "Intensity"
        },
-       "note": "Effects > Texture > Stone at medium roughness: a lit pitted surface over the art, colours kept (verified at 100 / 100)."
+       "note": "Add Noise on the grey bitmap: Gaussian, level 100, density 100: random light and dark pixels.",
+       "target": "mask"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+       "settings": {
+        "Radius": 20
+       },
+       "note": "Gaussian Blur, radius 20, on the noise: meant to clump the random pixels into blotches; on this 20 dpi bitmap it barely does (the judged frame: the specks stay small and even, about 4 px of the page), so the drop-outs read as uniform speckle, not worn patches. A larger radius or a lower dpi would give blotches (untested).",
+       "target": "mask"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
+       "settings": {
+        "Contrast": 100,
+        "Brightness": -35
+       },
+       "note": "Light effect: contrast +100 and brightness -35: the soft blotches are pushed apart into dark and light areas.",
+       "target": "mask"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "e0065483-23c2-4a45-a57d-20888827a5f3",
+       "settings": {
+        "Level": 2
+       },
+       "note": "Posterize with 2 levels: every pixel becomes pure black or pure white, a blotchy speckle mask.",
+       "target": "mask"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "s.Transparency.ApplyUniformTransparency(0)\ns.Transparency.MergeMode = 28\nresult = s",
+       "note": "Drop-outs on the art (script): the speckle bitmap is set to Screen (Transparency.MergeMode 28) over the art, so its black leaves the ink alone and each white speck bleaches the ink under it to white: speckled ink drop-outs.",
+       "target": "mask"
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "aa95f430eedf",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('ScatterEffect Horizontal=16,Vertical=16,Square=1')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AddNoiseEffect NoiseMode=0,Level=30,Density=60,ColorMode=0')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AddNoiseEffect NoiseMode=0,Level=100,Density=100,ColorMode=0')"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('GaussianBlurEffect Radius=20')"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Contrast=100,Brightness=-35')"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('PosterizeEffect Level=2')"
+       },
+       {
+        "step": 9,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 5, 1 effects]",
+       "(unnamed) [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.grunge_distress.png",
+      "strip": "gallery/recipes/CDR/poster_print.grunge_distress_steps.png",
+      "secs": 4.6
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Fixed: the edges are now sprayed and ragged, the shapes and type carry white ink drop-out specks and the ground a rough grain, reading as worn print. The blur step barely clumped the noise (specks stay small and even, about 4 px), so the drop-outs are uniform speckle rather than blotches.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "aa95f430eedf"
+     }
     }
    },
    "manual_steps": [
@@ -800,6 +1799,11 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_menu",
+       "id": "1141",
+       "note": "Layer > Flatten Image (new first step, input: 'PAPER' in Arial Black 330 px, #F5E9D0 on a #2F6F8F ground): ran, the flat artwork is one layer so the texture covers type and ground alike."
+      },
+      {
        "kind": "ps_filter",
        "id": "texturizer",
        "settings": {
@@ -809,7 +1813,7 @@
         "Light Direction": "lightDirTopLeft",
         "Invert Texture": false
        },
-       "note": "Filter > Texture > Texturizer, canvas tooth lit from the top left (verified: relief embossed over the frame, colours kept)."
+       "note": "Filter > Texture > Texturizer: Canvas, Scaling 100, Relief 4, light from the top left. Ran. The run shows a fine woven tooth over the whole frame, subtle at 960 px, colours kept."
       },
       {
        "kind": "ps_adjustment",
@@ -819,7 +1823,7 @@
         "Density": 15,
         "Preserve Luminosity": true
        },
-       "note": "Photo Filter adjustment layer: a slight warm paper cast (verified with a cool filter, luminosity kept)."
+       "note": "Photo Filter adjustment layer: #E8C9A0, Density 15, Preserve Luminosity on. Ran; a slight warm paper cast."
       },
       {
        "kind": "ps_filter",
@@ -829,9 +1833,67 @@
         "distort": "gaussianDistribution",
         "monochromatic": true
        },
-       "note": "Fine fibre grain."
+       "note": "Filter > Noise > Add Noise on the flattened layer (target 'background'): 2 %, Gaussian, monochromatic. Ran; fine fibre grain. Untested: other relief values and a real paper scan (manual).",
+       "target": "background"
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "PAPER",
+      "background": "#2F6F8F",
+      "color": "#F5E9D0",
+      "size": 330
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "text",
+       "text": "PAPER",
+       "background": "#2F6F8F",
+       "color": "#F5E9D0",
+       "size": 330
+      },
+      "plan_hash": "7fa88149d12b",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label type now names the result (new layer ID); history: Flatten Image; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Texturizer; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: New Photo Filter Layer; active layer: Photo Filter 1"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Add Noise; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Photo Filter 1 [photofilter]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.paper_texture.png",
+      "strip": "gallery/recipes/PS/poster_print.paper_texture_steps.png",
+      "secs": 21.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Fine canvas tooth over the whole frame, a slight warm shift in the ground and soft grain, with the colours and type kept.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "7fa88149d12b"
+     }
     },
     "AI": {
      "app": "AI",
@@ -854,25 +1916,116 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "vector:Transparency:Bitmap",
-       "settings": {
-        "Front": 0,
-        "Back": 100,
-        "TransformWithShape": false
-       },
-       "note": "Cleanest route: a rectangle filled with the paper colour on top, given a bitmap pattern transparency from your own paper scan (FileName = that file; verified with a photo as the pattern)."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "r = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nr.Fill.ApplyUniformFill(rgb(\"#808080\"))\nr.Outline.SetNoOutline()\nlabels[\"tooth\"] = r.ConvertToBitmapEx(4, False, False, 96)\nresult = labels[\"tooth\"]",
+       "note": "Setup (script): a page-size mid-grey rectangle is flattened to a bitmap (RGB, 96 dpi, 1920 x 1080 px): the blank sheet the paper tooth is made on. No paper scan ships with PGD, so the tooth is made from noise.",
+       "as": "tooth"
       },
       {
        "kind": "cdr_effect",
-       "id": "bdc5d812-24de-4136-8a91-e4689f4918f8",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
        "settings": {
-        "Pressure": 6,
-        "ColorMode": "Color"
+        "NoiseMode": "Gaussian",
+        "Level": 80,
+        "Density": 100,
+        "ColorMode": "Intensity"
        },
-       "note": "Alternative on a bitmap: Effects > Art Strokes > Wave Paper lays a grainy paper texture (verified) but fades colours toward pastel."
+       "note": "Add Noise on the grey sheet: Gaussian, level 80, density 100: random light and dark specks, the raw grain of the paper.",
+       "target": "tooth"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+       "settings": {
+        "Radius": 12
+       },
+       "note": "Gaussian Blur, radius 12: the specks soften into fibres.",
+       "target": "tooth"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "09ea28c1-bf15-49c5-85d6-7a5037ee5cd1",
+       "settings": {
+        "Depth": 6,
+        "Level": 80,
+        "Direction": 135,
+        "ColorMode": "Gray"
+       },
+       "note": "Emboss on the sheet, depth 6, level 80, light from 135 degrees: the soft grain becomes a fine relief with light and dark edges, an embossed tooth.",
+       "target": "tooth"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "s.StretchEx(PW / 2, PH / 2, 1.02, 1.02)\ns.Transparency.ApplyUniformTransparency(45)\ns.Transparency.MergeMode = 29\nwarm = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nwarm.Fill.ApplyUniformFill(rgb(\"#F0DDB8\"))\nwarm.Outline.SetNoOutline()\nwarm.Transparency.ApplyUniformTransparency(72)\nwarm.Transparency.MergeMode = 9\nresult = s",
+       "note": "Paper on the art (script): the tooth sheet is scaled 2 percent so the embossed edge of its own border leaves the page, then set to Overlay at 55 percent opacity (Transparency.MergeMode 29, transparency 45): the relief shows clearly on the mid-tone ground and only faintly on the light type (Overlay barely changes near-white; judged pixel spread about 1 on the type against 5 on the ground), and the colours stay; a warm rectangle (#F0DDB8) in Multiply at 28 percent opacity adds the slight warm paper cast (the recipe's Photo Filter layer).",
+       "target": "tooth"
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "PAPER",
+      "background": "#2F6F8F",
+      "color": "#F5E9D0",
+      "size": 330
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "text",
+       "text": "PAPER",
+       "background": "#2F6F8F",
+       "color": "#F5E9D0",
+       "size": 330
+      },
+      "plan_hash": "266286657c26",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AddNoiseEffect NoiseMode=0,Level=80,Density=100,ColorMode=0')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('GaussianBlurEffect Radius=12')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('EmbossEffect Depth=6,Level=80,Direction=135,ColorMode=1')"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 5, 1 effects]",
+       "type [type 6]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.paper_texture.png",
+      "strip": "gallery/recipes/CDR/poster_print.paper_texture_steps.png",
+      "secs": 4.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Fixed: a fine embossed tooth and soft grain now show clearly over the blue ground and the colours hold (no beige wash); the type warms slightly. The tooth is much weaker on the light type than on the ground (pixel spread about 1 vs 5), contrary to the step note.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "266286657c26"
+     }
     }
    },
    "manual_steps": [
@@ -943,6 +2096,13 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "bg = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nbg.Fill.ApplyUniformFill(rgb(\"#CDBFA5\"))\nbg.Outline.SetNoOutline()\nbg.OrderToBack()\nsc_ = layer.CreateRectangle2(PW / 2 - 4.75, PH / 2 - 2.67, 9.5, 5.34, 0, 0, 0, 0)\nsc_.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nsc_.Outline.SetNoOutline()\nresult = sc_",
+       "note": "Setup (script): a kraft-coloured backdrop and a white rectangle 9.5 x 5.34 in for the paper scrap.",
+       "as": "scrap"
+      },
+      {
        "kind": "cdr_effect",
        "id": "vector:Distort:Zipper",
        "settings": {
@@ -952,7 +2112,23 @@
         "Smooth": false,
         "Local": false
        },
-       "note": "Zipper distortion with Random on and Smooth off gives an irregular torn edge (card: Random for torn paper). Untested: the verified frame had Random and Smooth off."
+       "note": "Zipper distortion on the paper scrap (amplitude 6, frequency 30, Random on, Smooth off): an irregular torn edge.",
+       "target": "scrap"
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "68000526-6be1-4205-b2e9-6c9dff00f4c5",
+       "script": "s.ConvertToCurves()\nresult = s",
+       "note": "Convert to Curves bakes the torn edge into the shape so a PowerClip can use it."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:PowerClip",
+       "script": "ph = labels[\"photo\"]\nph.SetSize(9.5, 5.34)\nph.CenterX, ph.CenterY = PW / 2, PH / 2\nph.AddToPowerClip(s, 0)\nresult = s",
+       "note": "The photo is scaled to the scrap's size and placed inside the torn curve with AddToPowerClip.",
+       "settings": {
+        "CenterInContainer": 0
+       }
       },
       {
        "kind": "cdr_effect",
@@ -968,56 +2144,233 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "Soft shadow down-right."
-      },
-      {
-       "kind": "cdr_effect",
-       "id": "vector:PowerClip",
-       "settings": {
-        "CenterInContainer": 0
-       },
-       "note": "Place the photo inside the torn shape (AddToPowerClip). Untested: PowerClip is a needs_input card with no render test."
+       "note": "Soft drop shadow down-right on the torn photo."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "3c83c885b0e1",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateZipperDistortion(10.0, 5.625, 6, 30, True, False, False)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 45, 6, 0.04, -0.04, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823921424416>, 4, 0, -45.0, 1.0, 1, 9)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 3, 1 effects]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.torn_paper.png",
+      "strip": "gallery/recipes/CDR/poster_print.torn_paper_steps.png",
+      "secs": 3.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo sits in a paper scrap with an irregular torn edge and a soft down-right shadow on a kraft backdrop; the tear is fine and fairly even at this size.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "3c83c885b0e1"
+     }
     },
     "PS": {
      "app": "PS",
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "6300",
+       "as": "paper",
+       "note": "Layer > New Fill Layer > Solid Color (script, new first step; input is a blank #CFC6B6 page): a paper shape with a torn outline, solid #F2ECDD, with that selection as its mask, then Deselect. The outline is a polygon whose four sides wander up to about 26 px in and out (a sum of sine waves of three scales plus per-point jitter, points 5 px apart), starting from the rectangle 380, 190 to 1540, 890 px; the first run's straight rectangle read as a deckled border, not a tear. Ran; labelled 'paper'.",
+       "script": "function rn(s) { var v = Math.sin(s * 12.9898) * 43758.5453; return v - Math.floor(v); }\nfunction edge(x0, y0, x1, y1, seed, amp) { var pts = [], len = Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)), n = Math.round(len / 5), nx = -(y1 - y0) / len, ny = (x1 - x0) / len, i;\n  for (i = 0; i < n; i++) { var t = i / n, off = amp * (0.55 * Math.sin(t * 7 + seed) + 0.3 * Math.sin(t * 19 + seed * 2.3) + 0.15 * Math.sin(t * 47 + seed * 5)) + (rn(i * 3 + seed * 11) - 0.5) * amp * 0.7;\n    pts.push([x0 + (x1 - x0) * t + nx * off, y0 + (y1 - y0) * t + ny * off]); } return pts; }\nvar pts = edge(380, 190, 1540, 190, 1, 26).concat(edge(1540, 190, 1540, 890, 2, 26), edge(1540, 890, 380, 890, 3, 26), edge(380, 890, 380, 190, 4, 26));\nd.selection.select(pts, SelectionType.REPLACE, 0, true);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 242); c.putDouble(C2T('Grn '), 236); c.putDouble(C2T('Bl  '), 221);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();"
+      },
+      {
+       "kind": "ps_menu",
        "id": "3541",
-       "note": "Layer > Rasterize > Shape on the paper rectangle layer."
+       "note": "Layer > Rasterize > Shape (script: rasterize, entire layer, target 'paper'): ran. The fill content becomes pixels; the rectangle's layer mask stays.",
+       "target": "paper",
+       "script": "L.rasterize(RasterizeType.ENTIRELAYER);"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var c = new ActionReference(); c.putEnumerated(C2T('Chnl'), C2T('Chnl'), C2T('Msk ')); var s = new ActionDescriptor(); s.putReference(C2T('null'), c); s.putBoolean(C2T('MkVs'), false); executeAction(C2T('slct'), s, DialogModes.NO);",
+       "note": "Script (new step, target 'paper'): select the layer mask as the edit target, so the next filter roughens the mask edge. Ran.",
+       "target": "paper"
       },
       {
        "kind": "ps_filter",
        "id": "spatter",
        "settings": {
-        "sprayRadius": 20,
-        "smoothness": 4
+        "sprayRadius": 8,
+        "smoothness": 3
        },
-       "note": "Spatter roughens the rectangle's edges into a ragged, fibrous border (verified: edges ragged and speckled)."
+       "note": "Filter > Brush Strokes > Spatter: Spray Radius 8, Smoothness 3 (20 / 4 in the first run), applied to the mask. Ran. On the pixels alone the edge stays clean (Spatter leaves transparent edges untouched); on the mask it gives the wandering outline a fine, fibrous fringe."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var c = new ActionReference(); c.putEnumerated(C2T('Chnl'), C2T('Chnl'), C2T('RGB ')); var s = new ActionDescriptor(); s.putReference(C2T('null'), c); s.putBoolean(C2T('MkVs'), false); executeAction(C2T('slct'), s, DialogModes.NO);",
+       "note": "Script (new step): select the RGB composite again as the edit target, so later steps act on the layer pixels. Ran."
       },
       {
        "kind": "ps_layer_style",
-       "name": "Drop Shadow",
-       "settings": {
-        "mode": "multiply",
-        "color": "#000000",
-        "opacity": 40,
-        "useGlobalAngle": false,
-        "localLightingAngle": 120,
-        "distance": 4,
-        "chokeMatte": 0,
-        "blur": 8
-       },
-       "note": "Soft shadow down-right of the scrap."
+       "target": "paper",
+       "note": "One layer style on the paper (target 'paper'): both effects go into a single layerEffects descriptor. Applied without error.",
+       "effects": [
+        {
+         "name": "Stroke",
+         "settings": {
+          "style": "outsetFrame",
+          "paintType": "solidColor",
+          "size": 3,
+          "color": "#FFFFFF",
+          "mode": "normal",
+          "opacity": 100
+         },
+         "note": "Layer Style > Stroke on the paper (target 'paper'): Outside 3 px white. Ran; the run shows a thin white rim following the torn outline, like exposed paper fibre."
+        },
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 50,
+          "useGlobalAngle": false,
+          "localLightingAngle": 120,
+          "distance": 10,
+          "chokeMatte": 0,
+          "blur": 14
+         },
+         "note": "Layer Style > Drop Shadow on the paper: Multiply black 50 %, 10 px at 120 degrees, Size 14. The distance is larger than the 3 px stroke. Ran; the run shows a soft shadow along the lower and right-hand edges."
+        }
+       ]
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var s = app.open(new File(PLATE)); var ph = s.layers[0].duplicate(d, ElementPlacement.PLACEATBEGINNING); s.close(SaveOptions.DONOTSAVECHANGES); app.activeDocument = d; d.activeLayer = ph; ph.name = 'photo'; ph.resize(50, 50, AnchorPosition.MIDDLECENTER);",
+       "note": "Script (new step): place the test photo as a layer above the paper (duplicated in from its file), scaled to 50 % about the page centre. Ran; labelled 'pic'.",
+       "as": "pic"
       },
       {
        "kind": "ps_menu",
        "id": "2972",
-       "note": "Put the photo layer above the scrap and Create Clipping Mask so it shows only inside the torn shape."
+       "note": "Layer > Create Clipping Mask on the photo layer (target 'pic'): ran. The run shows the photo on a paper scrap with an irregular torn border, a white fibre rim and a soft shadow, the page colour around it. Untested: a different random seed per piece (the outline's seeds are fixed in the script) and pieces under 300 px.",
+       "target": "pic"
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#CFC6B6"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "blank",
+       "background": "#CFC6B6"
+      },
+      "plan_hash": "679ef19e5b63",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Rasterize Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Rasterize Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Spatter; active layer: Color Fill 1"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Spatter; active layer: Color Fill 1"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Color Fill 1"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: photo"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "history: Create Clipping Mask; active layer: photo"
+       }
+      ],
+      "layers": [
+       "photo [normal]",
+       "Color Fill 1 [normal]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.torn_paper.png",
+      "strip": "gallery/recipes/PS/poster_print.torn_paper_steps.png",
+      "secs": 41.4,
+      "crop": {
+       "file": "gallery/recipes/PS/poster_print.torn_paper_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The paper scrap has a wandering torn outline (its top edge moves about 27 px up and down across the frame) with a fine fibrous fringe, a white fibre rim and a soft shadow along the lower right, and the photo sits on it. The first judge's straight-rectangle edge is fixed.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "679ef19e5b63"
+     }
     }
    },
    "manual_steps": [
@@ -1061,7 +2414,7 @@
       {
        "kind": "ps_adjustment",
        "name": "Desaturate",
-       "note": "Greyscale first."
+       "note": "Image > Adjustments > Desaturate on the photo: ran, greyscale first."
       },
       {
        "kind": "ps_filter",
@@ -1070,7 +2423,7 @@
         "Light/Dark Balance": 24,
         "Smoothness": 8
        },
-       "note": "Filter > Sketch > Stamp: flat smoothed black-and-white shapes like a rubber stamp or lino block (verified). Balance sets how much goes black."
+       "note": "Filter > Sketch > Stamp: Light/Dark Balance 24, Smoothness 8. Ran; flat smoothed black-and-white shapes."
       },
       {
        "kind": "ps_filter",
@@ -1080,14 +2433,76 @@
         "Smoothness": 10,
         "Contrast": 17
        },
-       "note": "Optional: Torn Edges adds ragged, fibrous borders to the black shapes (verified two-tone with ragged edges)."
+       "note": "Filter > Sketch > Torn Edges: Image Balance 25, Smoothness 10, Contrast 17. Ran; ragged, fibrous borders on the black shapes."
       },
       {
        "kind": "ps_blend_mode",
        "id": "multiply",
-       "note": "Lay the result in Multiply over a paper colour layer so white becomes paper."
+       "note": "Layer set to Multiply (script: blend mode and layer opacity in one call; Photoshop turns the Background into Layer 0 for it, so 'photo' now names Layer 0): ran, white will print as the paper layer below.",
+       "script": "setMode('multiply'); d.activeLayer.opacity = 100;"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var bg = d.artLayers.add(); bg.name = 'paper'; d.selection.selectAll(); d.selection.fill(hexc('#EFE6D2')); d.selection.deselect(); bg.move(L, ElementPlacement.PLACEAFTER);",
+       "note": "Script (new last step, target 'photo'): a flat paper-colour layer (#EFE6D2) placed below. Ran. The run shows a bold two-tone print, black ink shapes with rough edges on warm paper; fine facial detail fills in, as the recipe warns.",
+       "target": "photo"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "e291fcbadd5f",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Desaturate; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Stamp; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Torn Edges; active layer: Background"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Master Opacity Change; active layer: Layer 0"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Layer Order; active layer: paper"
+       }
+      ],
+      "layers": [
+       "Layer 0 [normal multiply]",
+       "paper [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.woodcut.png",
+      "strip": "gallery/recipes/PS/poster_print.woodcut_steps.png",
+      "secs": 24.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Bold two-tone print: solid black shapes with rough edges on warm paper; reads as a relief print, with fine facial detail filled in as the recipe warns.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e291fcbadd5f"
+     }
     },
     "AI": {
      "app": "AI",
@@ -1112,16 +2527,109 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_menu",
+       "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+       "script": "s.Bitmap.ConvertTo(2)\nresult = s",
+       "note": "Convert the photo to grayscale (Bitmap.ConvertTo(2)), the recipe's first step."
+      },
+      {
        "kind": "cdr_effect",
-       "id": "12be5151-7003-4b89-90d3-c8f016ddfd99",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
        "settings": {
-        "ScraperMode": "White",
-        "Density": 15,
-        "Size": 10
+        "Contrast": 35,
+        "Brightness": 6
        },
-       "note": "Effects > Art Strokes > Scraperboard in White mode: black surface with scratched white strokes, the closest scripted carved-print look (verified in Color mode; White mode not rendered)."
+       "note": "Light effect: contrast +35, brightness +6, so the tones separate before they are cut to two."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b738367c-a322-4ceb-853d-2de62b23a7e0",
+       "settings": {
+        "Percentage": 70
+       },
+       "note": "Smooth, 70 percent: small details merge into bigger shapes, as the recipe wants (fine facial detail fills in)."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IVGBitmap",
+       "script": "s.Bitmap.ConvertToBW(0, 0, 112, 0, 0, 0)\nresult = s",
+       "note": "Two-tone cut (script): Bitmap.ConvertToBW with the Line Art render type (0) and a threshold of 112: every pixel becomes solid black or solid paper, the bold black ink shapes of a relief print. The Scraperboard effect of the first run only gave engraving-like scratches, not solid shapes."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "d754d079-5c3a-42b2-b200-95e24f8fe436",
+       "settings": {
+        "Horizontal": 5,
+        "Vertical": 5,
+        "Square": true
+       },
+       "note": "Scatter, 5 px, on the two-tone bitmap: the clean cut edges turn slightly rough and chipped, like a carved block."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "paper = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\npaper.Fill.ApplyUniformFill(rgb(\"#EFE6D2\"))\npaper.Outline.SetNoOutline()\npaper.Transparency.ApplyUniformTransparency(0)\npaper.Transparency.MergeMode = 9\nresult = s",
+       "note": "Paper (script): a warm paper rectangle (#EFE6D2) in Multiply mode over the print: the white becomes paper and the black stays black, as in the recipe's paper layer."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "58cd4f78adac",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Contrast=35,Brightness=6')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SmoothEffect Percentage=70')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('ScatterEffect Horizontal=5,Vertical=5,Square=1')"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.woodcut.png",
+      "strip": "gallery/recipes/CDR/poster_print.woodcut_steps.png",
+      "secs": 2.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Fixed: a true two-tone relief print, about 58% solid near-black ink and 42% warm paper with almost no middle tones, bold merged shapes and slightly rough, chipped edges. Fine facial detail fills in, as the recipe warns.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "58cd4f78adac"
+     }
     }
    },
    "manual_steps": [],
@@ -1165,19 +2673,54 @@
         "center": 10,
         "screenType": "screenLine"
        },
-       "note": "Filter > Sketch > Halftone Pattern, Line: horizontal lines that thicken in the shadows (verified as a dot screen; the Line type was not rendered)."
-      },
-      {
-       "kind": "ps_filter",
-       "id": "graphicPen",
-       "settings": {
-        "strokeLength": 12,
-        "lightDark": 50,
-        "strokeDirection": "strokeDirHorizontal"
-       },
-       "note": "Alternative: Graphic Pen draws fine parallel ink strokes, dense in the dark areas (verified, left diagonal)."
+       "note": "Filter > Sketch > Halftone Pattern: Size 2, Contrast 10, Line. Ran: black-and-white horizontal lines that thicken in the shadows and thin out in the highlights, with the picture still readable. The recipe's Graphic Pen step is an alternative to this one, not a second pass: run on top of it in the first run it replaced the clean lines with broken, noisy scratches, so the plan now runs the one line screen only. Untested: the line count at small sizes and moire after resizing; the lines are straight, not curved to the form as in a banknote engraving."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "2cd36ddb0cd8",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Halftone Pattern; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/poster_print.line_engraving.png",
+      "strip": "gallery/recipes/PS/poster_print.line_engraving_steps.png",
+      "secs": 14.8,
+      "crop": {
+       "file": "gallery/recipes/PS/poster_print.line_engraving_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Graphic Pen no longer overwrites the line screen and line weight follows tone (the dark share per block tracks the input tone, r = -0.98), but at 1:1 the lines are soft grey waves, not clean engraved strokes: about 42 % of photo pixels are mid-grey and the gaps in the shadows only reach grey 110, so it reads as a scan-line screen over a black-and-white photo.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2cd36ddb0cd8",
+      "second_opinion": "agree"
+     }
     },
     "AI": {
      "app": "AI",
@@ -1198,26 +2741,82 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "e1eab0e5-49cc-45ed-b6c2-d0eb33e97939",
-       "settings": {
-        "Style": "Crosshatch",
-        "Density": 50,
-        "InkPools": 10
-       },
-       "note": "Effects > Art Strokes > Pen & Ink, Crosshatch: a black crosshatch ink drawing on white (verified)."
+       "kind": "cdr_menu",
+       "id": "e27f34c1-5f80-4853-9c66-4fd464eab8f2",
+       "script": "s.Bitmap.ConvertTo(2)\nresult = s",
+       "note": "Convert the photo to grayscale (Bitmap.ConvertTo(2)): the tones the lines will follow."
       },
       {
        "kind": "cdr_effect",
-       "id": "5b7880f2-4266-4ce2-bc2b-eb85f3344795",
+       "id": "b6f2f97d-bf1b-42cd-be9b-4b90eee26481",
        "settings": {
-        "Detail": 85,
-        "Depth": 60,
-        "LightDirection": 315
+        "Contrast": 20,
+        "Brightness": 22
        },
-       "note": "Alternative: Etching turns it into an engraved metal plate in one surface colour (verified: deep grooves lit from the upper left)."
+       "note": "Light effect on the greyscale photo: contrast +20, brightness +22, so the lines run from fine in the lights to heavy in the darks instead of filling the dark picture solid."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:IVGBitmap",
+       "script": "s.Bitmap.ConvertToBW(5, 0, 128, 2, 45, 16)\nresult = s",
+       "note": "Line screen (script): Bitmap.ConvertToBW with the Halftone render type (5) and the Line halftone (2), angle 45 degrees, size 16, the 1-bit conversion CorelDRAW offers under Bitmaps > Mode > Black and White: the photo becomes diagonal black lines whose thickness follows the tone, the engraving look. The Pen & Ink effect of the first run only gave a grainy stipple at this size."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "ink = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nink.Fill.ApplyUniformFill(rgb(\"#1B2A4A\"))\nink.Outline.SetNoOutline()\nink.Transparency.ApplyUniformTransparency(0)\nink.Transparency.MergeMode = 11\npaper = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\npaper.Fill.ApplyUniformFill(rgb(\"#F3EAD3\"))\npaper.Outline.SetNoOutline()\npaper.Transparency.ApplyUniformTransparency(0)\npaper.Transparency.MergeMode = 9\nresult = s",
+       "note": "Ink and paper (script): a deep blue-black rectangle (#1B2A4A) in If Lighter mode is meant to turn the black lines into that ink, and a warm paper rectangle (#F3EAD3) in Multiply turns the white into paper. In the judged frame only the paper tone shows: the lines stay the same warm near-black as before this step (the Multiply paper layer darkens the ink back), so the ink colour is not achieved; colouring the 1-bit bitmap's black (or the ink rectangle above the paper) is the untested fix."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "d3b562ae8ed6",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SMHEffect Intensity=0,Highlights=0,Shadows=0,Midtones=0,Contrast=20,Brightness=22')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/poster_print.line_engraving.png",
+      "strip": "gallery/recipes/CDR/poster_print.line_engraving_steps.png",
+      "secs": 2.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Fixed: real diagonal engraved lines whose weight follows the tone (ink coverage about 0.89 in the darks down to 0.31 in the lights) on warm paper. The blue-black ink step had no visible effect: the lines stay the same warm near-black as before it.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "d3b562ae8ed6"
+     }
     }
    },
    "manual_steps": [],

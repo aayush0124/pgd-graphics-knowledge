@@ -13,7 +13,8 @@ ARGS = {"pgd_cards.js": {"batches": ["ps_filter_01", "ps_tool_01", "ps_menu_01",
         "pgd_preset_cards.js": {"batches": ["ai_preset_18"], "width": 1},
         "pgd_verify.js": {"batches": ["ps_filter_01"]},
         "pgd_effect_gallery.js": {"app": "CDR"}, "pgd_preset_gallery.js": {"app": "AI"},
-        "pgd_app_chain.js": {"app": "PS", "batches": ["ps_filter_01"], "scripts": FAKE + "/workflows"}}
+        "pgd_app_chain.js": {"app": "PS", "batches": ["ps_filter_01"], "scripts": FAKE + "/workflows"},
+        "pgd_plans.js": {"apps": ["PS", "CDR"], "families": ["text_effects", "photo_looks"]}}
 
 
 def harness(path, args):
@@ -64,6 +65,16 @@ class Workflows(unittest.TestCase):
                 else:  # pgd_app_chain.js: children come from args.scripts and get the same root
                     self.assertTrue(c["ref"]["scriptPath"].startswith(FAKE + "/workflows/"), c["ref"])
                     self.assertEqual(c["args"]["root"], FAKE)
+
+    @unittest.skipUnless(NODE, "node not installed")
+    def test_plans_one_owner_per_app_then_judges(self):
+        r = harness(ROOT / "workflows" / "pgd_plans.js", dict(ARGS["pgd_plans.js"], root=FAKE))
+        labels = [c["label"] for c in r["calls"] if c["hook"] == "agent"]
+        for app in ("PS", "CDR"):
+            mine = [x for x in labels if f":{app}:" in x]
+            self.assertLess(mine.index(f"run:{app}:text_effects"), mine.index(f"run:{app}:photo_looks"), mine)
+            self.assertIn(f"judge:{app}:text_effects", mine)
+        self.assertNotIn("run:AI:text_effects", labels)
 
     @unittest.skipUnless(NODE, "node not installed")
     def test_hostlock_default_is_the_vendored_copy(self):

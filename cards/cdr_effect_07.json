@@ -577,8 +577,8 @@
     "matching several photos from different sources"
    ],
    "avoid": [
-    "the filter colour (ColorItem) is not in the command string and its default was not read, so the colour a script applies is unknown",
-    "the dialog's Density range and defaults were not read by the harvest",
+    "the filter colour (ColorItem) is ignored by the script command: a blue (#006DFF) and an orange (#FF6D00) filter gave the same warm brown-orange cast, so a cool grade cannot be made with it; use a Multiply and an Add colour rectangle (Transparency.MergeMode 9 and 7) instead (plan runs 2026-10-15 (photo_looks.night_cool))",
+    "the dialog's Density range and defaults were not read by the harvest; through the script command Density 55-70 turned the photo near black, while the harvest frame at Density 80 was a strong red-orange cast, so compare pixels after every apply (plan runs 2026-10-15 (photo_looks.night_cool))",
     "replacing colours outright: use Effects > Camera > Colorize"
    ],
    "confidence": "medium",
@@ -595,8 +595,8 @@
    "params": [
     {
      "name": "ColorItem",
-     "does": "the filter colour (dialog: Color)",
-     "typical": "warm orange or cool blue"
+     "does": "the filter colour (dialog: Color); the script command ignores it and always gives the same warm cast (plan runs 2026-10-15 (photo_looks.night_cool))",
+     "typical": "set in the dialog (warm orange or cool blue); not settable from the script command"
     },
     {
      "name": "Density",
@@ -618,7 +618,7 @@
     "Effects > Camera > Colorize",
     "Effects > Adjust > Vibrance"
    ],
-   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Photo Filter\", \"PhotoFilterEffect Density=80,PreserveLuminosity=true\") (bool spelling not confirmed; colour not settable this way). The command format is proven on 6 other effects but this effect's string was never applied in a test (the harvest's Pixelate and Invert strings returned OK and changed no pixels), so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"885f4d34-8686-4cf9-8966-277539412b32\").",
+   "scripting": "ActiveLayer.Import(\"<PGD folder>\\media\\plate_photo.png\") (returns nothing; the imported bitmap is then ActiveShape), s = ActiveShape, then s.Bitmap.ApplyBitmapEffect(\"Photo Filter\", \"PhotoFilterEffect Density=80,PreserveLuminosity=true\") (bool spelling not confirmed; colour not settable this way). The command format is proven on 6 other effects, and plan runs 2026-10-15 (photo_looks.night_cool) applied this effect's string and changed the picture (the colour came out the same warm cast whatever was sent). The harvest's Pixelate and Invert strings returned OK and changed no pixels, so compare pixels before and after. Menu route (opens the dialog, values chosen by hand): Application.FrameWork.Automation.InvokeItem(\"885f4d34-8686-4cf9-8966-277539412b32\").",
    "scriptable": "partial",
    "cost": "light",
    "non_destructive": "yes from the menu: CorelDRAW 2024 keeps the effect in the object's effect stack where it can be edited, hidden or deleted; the scripted Bitmap.ApplyBitmapEffect path appears to write into the bitmap itself (the harvest's apply tests saw pixels change and Undo restore them)",

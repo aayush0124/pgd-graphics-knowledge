@@ -328,7 +328,7 @@ class PipelineCli(unittest.TestCase):
         s = json.loads(r.stdout)
         self.assertEqual([x["stage"] for x in s["stages"]],
                          ["harvest", "check_harvest", "batches", "skeleton", "cards", "validate", "galleries", "sheets",
-                          "preset_cards", "verify", "recipes", "docs"])
+                          "preset_cards", "verify", "recipes", "plans", "docs"])
         self.assertEqual(len(s["kinds"]), 19)
         self.assertEqual(s["harvest_errors"], 0)
         for k in s["kinds"]:

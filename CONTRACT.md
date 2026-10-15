@@ -92,6 +92,42 @@ Extra fields by tier (`tier` is in the batch file):
 Verification (written by the verify wave): `"verified": {"verdict": "pass|weak|wrong|broken|not_rendered", "frame",
 "note", "rerender", "second_opinion"}`.
 
+## Plan format (recipes and run_plan.py)
+
+A recipe card (`cards/recipe_*.json`, kind `recipe`) holds one plan per app in `plans.<APP>`:
+
+```json
+{"app": "PS",
+ "input": {"plate": "photo", "text": "HEADLINE", "at": [960, 900], "size": 150, "color": "#FFFFFF"},
+ "steps": [
+  {"kind": "ps_menu", "id": "1135", "as": "copy", "note": "Duplicate Layer: the copy is the active layer"},
+  {"kind": "ps_filter", "id": "gaussianBlur", "settings": {"radius": 30}, "target": "photo", "note": "..."},
+  {"kind": "ps_layer_style", "effects": [{"name": "Stroke", "settings": {"size": 4}}, {"name": "Drop Shadow"}],
+   "target": "copy", "note": "one layerEffects set: a set replaces the layer's whole style"},
+  {"kind": "ps_api", "id": "class:Selection", "script": "d.selection.select([[0,0],[960,0],[960,1080],[0,1080]]);",
+   "note": "..."}],
+ "run": {"...": "written by run_plan.py run"}, "verified": {"...": "written by run_plan.py judge"}}
+```
+
+- `input.plate`: `photo` (media/plate_photo.png; label `photo`), `text` (grey ground + one type layer / text object;
+  labels `type`, `background`), `vector` (media/plate_vector.svg; labels `orange_box`, `blue_star`, `grad_circle`,
+  `pgd_type`, `zigzag`, and `art` for the whole group in Illustrator; not for Photoshop), `blank` (label
+  `background`). `text` on any plate adds a type layer / text object labelled `type` (`at` its centre in px, `size`
+  px, `color`, `font`); `background` fills the ground. `damage` on the photo plate (`noise`, `dust`, `scratches`,
+  `jpeg`, `blur`, `haze`, `tilt`; run_plan.DAMAGE) gives clean-up recipes a synthetic, reproducible fault to remove.
+- A step acts on its `target` (a label), else on what the previous step left active. `as` labels what a step leaves
+  active. When a step replaces the layer / shape it acted on (Layer from Background, Convert to Smart Object, Merge,
+  Convert to Bitmap / Curves) its labels follow the result.
+- `script` replaces the item's route with app-native code: ExtendScript for Photoshop (`d` = document, `L` = layer)
+  and Illustrator (`d`, `T` = target item, `g`, `r`); Python for CorelDRAW (`app`, `doc`, `layer`, `s`, `labels`,
+  `rgb`, `PW`, `PH`, `PX`; set `result`). Scripts never print, change app preferences or write outside
+  `work/plans/out/<key>/`.
+- Steps with no route (API / tool / preset steps without a script, menu commands that need values, open a dialog or
+  act outside the document) run as `manual`: skipped and reported.
+- `pgd.py check` validates all of it (plus: CorelDRAW object-model calls must set every parameter that has no
+  default); `run_plan.py put` refuses a plan it rejects. `run` and `verified` carry the `plan_hash` of the version
+  they describe (its runnable content: notes are left out, so a corrected note keeps both).
+
 ## Rules for anyone driving an app
 
 - **One owner per app.** Exactly one agent / process drives Photoshop, one Illustrator, one CorelDRAW. Never send

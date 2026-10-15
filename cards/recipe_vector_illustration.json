@@ -61,21 +61,64 @@
       {
        "kind": "cdr_effect",
        "id": "vector:Distort:Zipper",
+       "script": "for k in (\"orange_box\", \"blue_star\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    sh = labels[k]\n    sh.CreateZipperDistortion(sh.CenterX, sh.CenterY, 4, 6, True, True, False)\nresult = labels[\"blue_star\"]",
+       "note": "Zipper distortion on every plate shape (CreateZipperDistortion at each shape's centre, amplitude 4, frequency 6, Random and Smooth on): the edges turn into irregular soft waves.",
        "settings": {
         "Amplitude": 4,
         "Frequency": 6,
         "Random": true,
         "Smooth": true,
         "Local": false
-       },
-       "note": "s.CreateZipperDistortion(s.CenterX, s.CenterY, 4, 6, True, True, False) on each shape (OriginX / OriginY = the shape's centre). Random + Smooth turn the even teeth into irregular soft waves; that combination was not in the render test (verified frame: Amplitude 20, Frequency 10, both off), so check on screen."
+       }
       },
       {
        "kind": "cdr_menu",
        "id": "68000526-6be1-4205-b2e9-6c9dff00f4c5",
-       "note": "Optional: Object > Convert to Curves bakes the distortion into editable nodes."
+       "script": "for k in (\"orange_box\", \"blue_star\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    labels[k].ConvertToCurves()\nresult = labels[\"blue_star\"]",
+       "note": "Convert to Curves on every shape bakes the distortion into plain nodes so it no longer re-rolls."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "58bb08e54766",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "(unnamed) [type 3]",
+       "grad_circle [type 3]",
+       "blue_star [type 3]",
+       "orange_box [type 3]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.hand_drawn_roughen.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.hand_drawn_roughen_steps.png",
+      "secs": 1.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Every plate shape gets soft irregular wobbly edges: the box, star and circle look hand cut, the type looks hand inked and the zigzag gains a jittery line; baked to curves in step 2.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "58bb08e54766"
+     }
     }
    },
    "manual_steps": [
@@ -194,9 +237,55 @@
       {
        "kind": "cdr_menu",
        "id": "4f467f4a-9350-4d98-8a9a-e077c18f7fd6",
-       "note": "Transform docker (Alt+F7), in order: Size / Scale page vertical 86.602 %, Skew page horizontal angle, Rotate page angle, same angles as the Illustrator plan. Object model: s.Stretch(1, 0.86602), s.Skew(angle, 0), s.Rotate(angle) (unverified)."
+       "script": "a = 3.2\nfor k in (\"orange_box\", \"zigzag\"):\n    labels[k].Delete()\ndef face(name, color, art, w, h, x):\n    tile = layer.CreateRectangle2(x, 4.0, a, a, 0, 0, 0, 0)\n    tile.Fill.ApplyUniformFill(rgb(color))\n    tile.Outline.SetNoOutline()\n    art.SetSize(w, h)\n    art.CenterX = x + a / 2\n    art.CenterY = 4.0 + a / 2\n    art.OrderToFront()\n    sr = app.CreateShapeRange()\n    sr.Add(tile)\n    sr.Add(art)\n    labels[name] = sr.Group()\nface(\"left\", \"#FF7A1A\", labels[\"blue_star\"], 2.0, 1.9, 1.5)\nface(\"right\", \"#D9621A\", labels[\"pgd_type\"], 2.4, 0.8, 6.2)\nface(\"top\", \"#FFC48A\", labels[\"grad_circle\"], 2.0, 2.0, 11.0)\nresult = labels[\"left\"]",
+       "note": "Setup (script): deletes the box and the zigzag and builds three flat 3.2 in faces, each a coloured square grouped with plate art (star, type, circle)."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "4f467f4a-9350-4d98-8a9a-e077c18f7fd6",
+       "script": "import math\na = 3.2\nw = a * math.cos(math.radians(30))\nfor name, sk, rot in ((\"left\", 30, -30), (\"right\", -30, 30), (\"top\", 30, 30)):\n    g = labels[name]\n    g.Stretch(1.0, 0.86602)\n    g.Skew(sk, 0)\n    g.Rotate(rot)\nX0, Y0 = PW / 2, 1.9\nlabels[\"left\"].RightX = X0\nlabels[\"left\"].BottomY = Y0\nlabels[\"right\"].LeftX = X0\nlabels[\"right\"].BottomY = Y0\nlabels[\"top\"].CenterX = X0\nlabels[\"top\"].BottomY = Y0 + a\nresult = labels[\"top\"]",
+       "note": "Scale vertical 86.602 percent (Shape.Stretch), horizontal skew (Shape.Skew) and rotation (Shape.Rotate) per face: skew 30 / rotate -30 gives the left face, skew -30 / rotate 30 the right face, skew 30 / rotate 30 the top face (signs found with a probe run); the three faces are then moved so their edges meet in a cube."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "12cbcad64636",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.isometric_faces.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.isometric_faces_steps.png",
+      "secs": 2.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Three flat faces (star, PGD type, gradient circle) are sheared, scaled and rotated into the left, right and top faces of an isometric cube that meet cleanly; the circle becomes a correct top-face ellipse and the type runs along the right face.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "12cbcad64636"
+     }
     }
    },
    "manual_steps": [
@@ -259,14 +348,53 @@
        "id": "952e4cc8-4316-4bca-9ad9-9f79cf8574f2",
        "settings": {
         "Type": 4,
-        "VPType": 0,
+        "VPType": 1,
+        "VPX": 10.9,
+        "VPY": 6.0,
         "Shading": 2,
-        "BaseColor": "#6E6E6E",
-        "ShadingColor": "#111111"
+        "BaseColor": "#1E3FA8",
+        "ShadingColor": "#0A1B55"
        },
-       "note": "s.CreateExtrude(4, 0, vpx, vpy, depth, 2, base, shade, 0.0, 45.0, None, False): Back Parallel keeps the depth edges parallel (no taper), the card's choice for isometric looks. VPX / VPY (document units) sit to the side the depth should go. The verified render used Type 0 (Small Back toward a vanishing point); Back Parallel was not render-tested."
+       "note": "Extrude on the blue star: Back Parallel keeps the walls parallel (no taper). With a page-locked vanishing point (VPType 1) the walls run from the shape centre to that point, here 0.9 in right and 0.6 in down; colour shading from a mid blue to navy."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "1b3cd347c173",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "CreateExtrude(4, 1, 10.9, 6.0, 20.0, 2, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823841678144>, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823841671184>, 0.0, 45.0, None, False)"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3, 1 effects]",
+       "(unnamed) [type 11]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.extruded_3d_block.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.extruded_3d_block_steps.png",
+      "secs": 1.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The blue star becomes a solid block with parallel side walls shaded from mid blue to navy running down-right; flat-shaded vector faces as described. Only the star is extruded.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "1b3cd347c173"
+     }
     }
    },
    "manual_steps": [
@@ -332,15 +460,94 @@
       {
        "kind": "cdr_effect",
        "id": "bda9bd40-dfb8-4f1a-8cc0-651ebcccc9f7",
+       "script": "import math\nfor k in (\"grad_circle\", \"pgd_type\"):\n    labels[k].Delete()\nsh = labels[\"blue_star\"]\nsh.ConvertToCurves()\nc = sh.Curve\nstar = [(c.Nodes.Item(i).PositionX, c.Nodes.Item(i).PositionY) for i in range(1, c.Nodes.Count + 1)]\ncx = sum(q[0] for q in star) / len(star)\ncy = sum(q[1] for q in star) / len(star)\nf = 2.3 / sh.SizeWidth\nS = 1.9\n\ndef hit(poly, th):\n    dx, dy = math.cos(th), math.sin(th)\n    best = None\n    for i in range(len(poly)):\n        (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % len(poly)]\n        ex, ey = x2 - x1, y2 - y1\n        den = dx * ey - dy * ex\n        if abs(den) < 1e-12:\n            continue\n        t = ((x1 - cx) * ey - (y1 - cy) * ex) / den\n        u = ((x1 - cx) * dy - (y1 - cy) * dx) / den\n        if t > 0 and -1e-9 <= u <= 1 + 1e-9 and (best is None or t < best):\n            best = t\n    return (cx + best * dx, cy + best * dy)\n\nbox = [(cx - S / 2 / f, cy + S / 2 / f), (cx + S / 2 / f, cy + S / 2 / f), (cx + S / 2 / f, cy - S / 2 / f), (cx - S / 2 / f, cy - S / 2 / f)]\nangs = [math.atan2(y - cy, x - cx) for x, y in star] + [math.atan2(y - cy, x - cx) for x, y in box]\nangs = sorted(set(round(a, 6) for a in angs), key=lambda a: (math.pi / 2 - a) % (2 * math.pi))\nprint(\"nodes per shape:\", len(angs))\n\ndef build(poly, ox, oy, rgbhex):\n    pts = [hit(poly, a) for a in angs]\n    pts = [(ox + (x - cx) * f, oy + (y - cy) * f) for x, y in pts]\n    crv = app.CreateCurve(doc)\n    sp = crv.CreateSubPath(pts[0][0], pts[0][1])\n    for x, y in pts[1:]:\n        sp.AppendLineSegment(x, y)\n    sp.Closed = True\n    shp = layer.CreateCurve(crv)\n    shp.Fill.ApplyUniformFill(rgb(rgbhex))\n    shp.Outline.SetNoOutline()\n    return shp\n\nlabels[\"bstart\"] = build(box, 3.0, 6.4, \"#FF7A1A\")\nlabels[\"bend\"] = build(star, 17.0, 6.4, \"#1E5BFF\")\nlabels[\"orange_box\"].Delete()\nsh.Delete()\nresult = labels[\"bstart\"]",
+       "note": "Setup (script): deletes the circle and the type, and rebuilds the box and the star as two 14-node closed polygons, both clockwise from the top and with a node at the same angle round the centre (the star's 10 corners plus 4 extra collinear nodes on its edges; the box's 4 corners plus 10 extra collinear nodes on its sides), so node k of the box maps to node k of the star and the blend cannot twist. The box is a plain 1.9 in square at the left (orange), the star 2.3 in wide at the right (blue).",
+       "as": "bstart",
        "settings": {
         "Steps": 12,
         "ColorBlendType": 0,
         "Mode": 0,
         "RotateShapes": false
        },
-       "note": "start.CreateBlend(end, 12, 0, 0, 0.0, 0.0, False, None, False, 0, 0, False): Shape = the end object; for a blend along a path pass the curve as Path (not None) and set RotateShapes True. Not render-tested (the card is needs_input: it needs two objects)."
+       "labels": [
+        "bstart",
+        "bend"
+       ]
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "bda9bd40-dfb8-4f1a-8cc0-651ebcccc9f7",
+       "script": "blend = labels[\"bstart\"].CreateBlend(labels[\"bend\"], 12, 0, 0, 0.0, 0.0, False, None, False, 0, 0, False)\nresult = labels[\"bstart\"]",
+       "note": "Blend from the box to the star in 12 steps (Shape.CreateBlend: the square is the start, the star the end): a shape and colour tween from orange to blue. Both ends have 14 matched nodes (see the setup step), so each in-between is a clean in-between shape, not a twist.",
+       "target": "bstart",
+       "settings": {
+        "Steps": 12,
+        "ColorBlendType": 0,
+        "Mode": 0,
+        "RotateShapes": false
+       }
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "bda9bd40-dfb8-4f1a-8cc0-651ebcccc9f7",
+       "script": "a = layer.CreateEllipse2(1.4, 1.6, 0.3)\nb = layer.CreateEllipse2(18.6, 1.6, 0.3)\na.Fill.ApplyUniformFill(rgb(\"#E0006E\"))\nb.Fill.ApplyUniformFill(rgb(\"#FFD400\"))\na.Outline.SetNoOutline()\nb.Outline.SetNoOutline()\nlabels[\"zigzag\"].Outline.SetNoOutline()\na.CreateBlend(b, 30, 0, 0, 0.0, 0.0, False, labels[\"zigzag\"], True, 0, 0, False)\nresult = a",
+       "note": "Blend along a path (script): two small circles, magenta and yellow, are blended in 30 steps along the zigzag curve with RotateShapes on, so a row of circles follows the spine.",
+       "settings": {
+        "Steps": 12,
+        "ColorBlendType": 0,
+        "Mode": 0,
+        "RotateShapes": false
+       }
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "442c4a41c604",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 2, 1 effects]",
+       "(unnamed) [type 10]",
+       "(unnamed) [type 2, 1 effects]",
+       "(unnamed) [type 3, 1 effects]",
+       "(unnamed) [type 10]",
+       "(unnamed) [type 3, 1 effects]",
+       "zigzag [type 3, 1 effects]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.blend_steps.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.blend_steps_steps.png",
+      "secs": 5.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The orange square now tweens cleanly into the blue star over 12 visible steps with no twist (matched node counts), the colour stepping from orange to blue, and 30 circles blend magenta to yellow along the zigzag spine. The earlier twisted-sliver fault is fixed.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "442c4a41c604"
+     }
     }
    },
    "manual_steps": [
@@ -381,6 +588,12 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "for k in (\"orange_box\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    labels[k].Delete()\nstar = labels[\"blue_star\"]\nstar.Fill.ApplyNoFill()\nstar.Outline.Width = 0.03\nstar.Outline.Color.CopyAssign(rgb(\"#1B4F72\"))\nresult = star",
+       "note": "Setup (script): deletes the other shapes and turns the star into an outline-only shape (no fill, 0.03 in outline in dark blue), so the contour makes rings of line."
+      },
+      {
        "kind": "cdr_effect",
        "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
        "settings": {
@@ -391,14 +604,68 @@
         "OutlineColor": "#1B4F72",
         "CornerType": 2
        },
-       "note": "s.CreateContour(...) on a closed shape with an outline and no fill, so the result is rings of line; Offset is the gap between rings in document units (0.08 in), 8 steps inside, round corners. The verified render was Outside (Direction 1), 5 steps, Offset 0.15."
+       "note": "Contour on the star: 8 steps, 0.08 in apart, round corners, outline colour dark blue."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "groups = [layer.Shapes.Item(i) for i in range(1, layer.Shapes.Count + 1) if layer.Shapes.Item(i).Type in (11, 13)]\nresult = groups[0]",
+       "note": "Selects the contour group the effect made."
       },
       {
        "kind": "cdr_menu",
        "id": "d5669070-c0f3-4fc0-b524-e33aeea7925f",
-       "note": "Optional: Ctrl+K separates the contour group from its control object so the rings can be edited as their own curves (the card documents the combined-curve case)."
+       "note": "Break Apart separates the rings from the control star so they are plain curves."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "5c87e29bf306",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateContour(0, 0.08, 8, 0, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823841671744>, None, None, 0, 0, 2, 2, 15.0)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "InvokeItem(d5669070-c0f3-4fc0-b524-e33aeea7925f)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 7]",
+       "blue_star [type 3]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.contour_lines.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.contour_lines_steps.png",
+      "secs": 1.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The star becomes eight evenly spaced inside outline rings with rounded inner corners, the topographic multi-line look, broken apart into plain curves.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5c87e29bf306"
+     }
     },
     "AI": {
      "app": "AI",
@@ -482,9 +749,46 @@
       {
        "kind": "cdr_menu",
        "id": "8d3cb8e7-cc9c-412b-92d2-1205b508ac80",
-       "note": "Object > Create > Pattern Fill: choose Vector, marquee one tile; it is saved as a vector pattern fill (interactive). Applying it by script: Shape.Fill.ApplyPatternFill (unverified)."
+       "script": "for k in (\"orange_box\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    labels[k].Delete()\nbg = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nbg.Fill.ApplyUniformFill(rgb(\"#F6E7C8\"))\nbg.Outline.SetNoOutline()\nbg.OrderToBack()\nstar = labels[\"blue_star\"]\nstar.SetSize(1.1, 1.05)\nstar.LeftX, star.BottomY = 0.7, 9.4\ndot = layer.CreateEllipse2(1.25 + 1.1, 8.3, 0.4)\ndot.Fill.ApplyUniformFill(rgb(\"#FF7A1A\"))\ndot.Outline.SetNoOutline()\ntile = app.CreateShapeRange()\ntile.Add(star)\ntile.Add(dot)\nunit = tile.Group()\nrow = unit.StepAndRepeat(7, 2.5, 0.0)\nrr = app.CreateShapeRange()\nrr.Add(unit)\nrr.AddRange(row)\nband = rr.Group()\nband.StepAndRepeat(3, 0.0, -2.6)\nresult = band",
+       "note": "Live grid (script): a motif (a star with an orange dot) is repeated 7 times across and the row 3 more times down (Shape.StepAndRepeat) over a cream background. The seamless pattern-swatch route (Object > Create > Pattern Fill) is a capture dialog and is not scripted."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "ad813ed7a2b6",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]",
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.pattern_repeat.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.pattern_repeat_steps.png",
+      "secs": 1.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A star-and-dot motif is repeated as an even live grid over a cream background filling the page; the grid route, not a seamless swatch, as the note says.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "ad813ed7a2b6"
+     }
     }
    },
    "manual_steps": [
@@ -555,14 +859,54 @@
       {
        "kind": "cdr_menu",
        "id": "4f467f4a-9350-4d98-8a9a-e077c18f7fd6",
-       "note": "Rotate page: angle 30, Copies 11, anchor on the ring centre. Scripted: Shape.Duplicate then Shape.RotateEx(30 * i, cx, cy) in a loop (unverified)."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "416c9d7d-7ca2-4947-92b7-7c4b8191ca2c",
-       "note": "Optional: Weld the copies into one outline (cutting files, one-colour emblems)."
+       "script": "for k in list(labels):\n    labels[k].Delete()\nlabels.clear()\ncx, cy = PW / 2, PH / 2\ncolors = [\"#FF7A1A\", \"#E0006E\", \"#1E5BFF\"]\nfor i in range(12):\n    petal = layer.CreateEllipse2(cx, cy + 2.1, 0.55, 1.6)\n    petal.Fill.ApplyUniformFill(rgb(colors[i % 3]))\n    petal.Outline.SetNoOutline()\n    petal.RotateEx(30.0 * i, cx, cy)\nhub = layer.CreateEllipse2(cx, cy, 0.7)\nhub.Fill.ApplyUniformFill(rgb(\"#FFD400\"))\nhub.Outline.Width = 0.04\nhub.Outline.Color.CopyAssign(rgb(\"#1A1A1A\"))\nresult = hub",
+       "note": "Radial repeat (script): one petal ellipse is drawn above a centre point and repeated 12 times, each copy rotated 30 degrees more about the centre (Shape.RotateEx), in three alternating colours, with a hub on top. The plate shapes are deleted first."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "909ccd8410cb",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]",
+       "(unnamed) [type 2]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.radial_mirror_repeat.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.radial_mirror_repeat_steps.png",
+      "secs": 3.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Twelve petals rotated 30 degrees apart around a centre in three alternating colours with a yellow hub on top; a clean rosette.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "909ccd8410cb"
+     }
     }
    },
    "manual_steps": [
@@ -622,14 +966,61 @@
       {
        "kind": "cdr_tool",
        "id": "1f16cb33-9819-4fa7-a3cd-5c4d61ba2db2",
-       "note": "Envelope tool on the text, mapping mode Putty, then a property-bar preset or node drags. Scripted: s.CreateEnvelope(3, 2, False) (PresetIndex 3 = circle per the preset render) or s.CreateEnvelopeFromShape(frame, 2, False, 1) to fit a drawn shape; the Envelope effect's render test failed at its old demo and the corrected demo is not re-rendered yet, so check on screen."
+       "script": "e = s.CreateEnvelope(1, 2, False)\nc = e.Envelope.Container\nl, r, b, tp = s.LeftX, s.RightX, s.BottomY, s.TopY\nw = r - l\ntop = c.Segments.Item(2)\ntop.Type = 1\ntop.SetStartingControlPointPosition(l + w * 0.3, tp + 1.3)\ntop.SetEndingControlPointPosition(r - w * 0.3, tp + 1.3)\nbot = c.Segments.Item(4)\nbot.Type = 1\nbot.SetStartingControlPointPosition(r - w * 0.3, b - 1.3)\nbot.SetEndingControlPointPosition(l + w * 0.3, b - 1.3)\ns.Outline.Width = 0.04\ns.Outline.Color.CopyAssign(rgb(\"#1A1A1A\"))\nresult = s",
+       "note": "Envelope on the text, mapping mode Unconstrained: the container's top edge is pulled up and its bottom edge down (curve control points 1.3 in off their ends), so the word swells in the middle like a bulge; a 0.04 in dark outline is added."
       },
       {
        "kind": "cdr_preset",
        "id": "Draw/Presets/Envelope/Envelope1.pst#Envelope1",
-       "note": "The shipped circle envelope outline (badge / seal wrap), picked on the Envelope tool's property bar; no script call applies a .pst preset."
+       "note": "Manual: the shipped circle envelope outline (badge or seal wrap) is a .pst file picked on the Envelope tool's property bar; no script call applies a .pst preset, so the run skips it."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "BULGE",
+      "size": 300,
+      "background": "#F6E7C8",
+      "color": "#E0006E"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "text",
+       "text": "BULGE",
+       "size": 300,
+       "background": "#F6E7C8",
+       "color": "#E0006E"
+      },
+      "plan_hash": "8bcf4ca902c7",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "manual",
+        "note": "cdr_preset steps have no scripted route of their own; give the step a \"script\""
+       }
+      ],
+      "layers": [
+       "type [type 6, 1 effects]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.warp_envelope_type.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.warp_envelope_type_steps.png",
+      "secs": 1.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Partial run: the envelope bulge makes the word swell in the middle with a dark outline, clearly warped. The skipped manual step would add the circle envelope preset for a badge or seal wrap.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "8bcf4ca902c7"
+     }
     }
    },
    "manual_steps": [
@@ -711,24 +1102,64 @@
       {
        "kind": "cdr_tool",
        "id": "0203e4a7-f99a-4531-ae28-4160582d2f54",
-       "note": "Set width, round caps and round corners on Shape.Outline (Width, LineCaps, LineJoin, or Outline.SetProperties) instead of the modal Outline Pen dialog."
+       "script": "for k in (\"orange_box\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    labels[k].Delete()\nstar = labels[\"blue_star\"]\nstar.SetSize(4.4, 4.18)\nstar.CenterX, star.CenterY = PW / 2, PH / 2 - 0.1\nring = layer.CreateEllipse2(PW / 2, PH / 2, 2.3)\nlabels[\"ring\"] = ring\nfor sh in (star, ring):\n    sh.Fill.ApplyNoFill()\n    sh.Outline.Width = 0.14\n    sh.Outline.Color.CopyAssign(rgb(\"#1A1A1A\"))\n    sh.Outline.LineCaps = 1\n    sh.Outline.LineJoin = 1\nresult = star",
+       "note": "Setup (script): deletes the other shapes; the star is scaled up and a ring is drawn round it so the two touch. Both get no fill and a 0.14 in dark outline with round caps and round joins (Outline.Width, LineCaps 1, LineJoin 1)."
       },
       {
        "kind": "cdr_menu",
        "id": "939a8f9c-9b38-4166-bdfc-6a8f007f2dd9",
-       "note": "Round the corners: Shape.Fillet(radius) per curve (or the Corners docker by hand)."
+       "script": "s.Fillet(0.12)\nresult = s",
+       "note": "Fillet rounds each cusp corner of the star's outline path (Shape.Fillet, radius 0.12 in)."
       },
       {
        "kind": "cdr_menu",
        "id": "e64806d9-66ea-4c9c-9325-3744a3da5db6",
-       "note": "Object > Convert Outline to Object: strokes become filled curves of the same width."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "416c9d7d-7ca2-4947-92b7-7c4b8191ca2c",
-       "note": "Weld the pieces of each colour into one curve (shapeA.Weld(target))."
+       "script": "bodies = [layer.Shapes.Item(i) for i in range(1, layer.Shapes.Count + 1)]\nobjs = [sh.Outline.ConvertToObject() for sh in bodies]\nicon = objs[0]\nfor o in objs[1:]:\n    icon = o.Weld(icon)\nicon.Fill.ApplyUniformFill(rgb(\"#1A1A1A\"))\nicon.Outline.SetNoOutline()\nresult = icon",
+       "note": "Outline.ConvertToObject turns the stroke of each remaining shape (the star and the ring) into a filled curve in place and Shape.Weld merges the two into one dark icon curve."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "1172f903d78e",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 3]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.line_art_icon.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.line_art_icon_steps.png",
+      "secs": 1.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The star and a ring are drawn as one even dark stroke weight with rounded corners and joins, then outlined and welded into a single filled icon curve; a clean line-art icon.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "1172f903d78e"
+     }
     }
    },
    "manual_steps": [
@@ -823,40 +1254,107 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Fill",
+       "script": "for k in (\"orange_box\", \"grad_circle\", \"pgd_type\", \"zigzag\"):\n    labels[k].Delete()\n    del labels[k]\ntile = layer.CreateRectangle2(PW / 2 - 3.2, PH / 2 - 3.2, 6.4, 6.4, 0.5, 0.5, 0.5, 0.5)\ntile.Fill.ApplyUniformFill(rgb(\"#F6E7C8\"))\ntile.Outline.SetNoOutline()\ntile.Name = \"tile\"\ntile.OrderToBack()\nicon = labels[\"blue_star\"]\nicon.SetSize(3.2, 3.04)\nicon.CenterX = PW / 2\nicon.CenterY = PH / 2\nlabels[\"tile\"] = tile\nlabels[\"icon\"] = icon\nresult = icon",
+       "note": "Setup (script): deletes the other plate objects, draws a 6.4 in rounded tile at the page centre and moves the star onto it as the icon.",
+       "as": "icon"
+      },
+      {
        "kind": "cdr_effect",
        "id": "952e4cc8-4316-4bca-9ad9-9f79cf8574f2",
        "settings": {
         "Type": 4,
-        "VPType": 0,
+        "VPType": 1,
+        "VPX": 17.0,
+        "VPY": -1.0,
         "Shading": 1,
-        "BaseColor": "#1F3A4D"
+        "BaseColor": "#1B3A74"
        },
-       "note": "The Block Shadow card's scripted stand-in: s.CreateExtrude(4, 0, vpx, vpy, depth, 1, dark, None, 0.0, 45.0, None, False), Back Parallel with one solid side colour; put VPX / VPY far down-right of the icon at 45 degrees. Back Parallel was not render-tested."
+       "note": "Extrude on the icon: Back Parallel, one solid side colour, run 7 in right and 7 in down (45 degrees, page-locked vanishing point) so the walls pass the edge of the tile.",
+       "target": "icon"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "groups = [layer.Shapes.Item(i) for i in range(1, layer.Shapes.Count + 1) if layer.Shapes.Item(i).Type == 11]\nresult = groups[0]",
+       "note": "Selects the extrusion group so the next steps act on the walls."
       },
       {
        "kind": "cdr_menu",
        "id": "d5669070-c0f3-4fc0-b524-e33aeea7925f",
-       "note": "Ctrl+K on the extrusion separates the extrude group from the icon (the card documents the combined-curve case; check the result)."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "4a31123e-06f1-4ba1-993c-391a5f50830f",
-       "note": "Ungroup the extrude faces."
+       "note": "Break Apart turns the extrusion group into curves."
       },
       {
        "kind": "cdr_menu",
        "id": "416c9d7d-7ca2-4947-92b7-7c4b8191ca2c",
-       "note": "Weld the faces into one shadow shape."
+       "note": "Weld merges the wall faces into one shadow shape."
       },
       {
-       "kind": "cdr_effect",
-       "id": "vector:PowerClip",
-       "settings": {
-        "CenterInContainer": 0
-       },
-       "note": "shadow.AddToPowerClip(tile, 0): clip the shadow inside the background tile without moving it (needs_input card: not render-tested)."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "s.AddToPowerClip(labels[\"tile\"], 0)\nlabels[\"icon\"].OrderToFront()\nresult = labels[\"icon\"]",
+       "note": "PowerClip: puts the shadow inside the tile (AddToPowerClip, no centring) and brings the icon in front."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "9c8701ed1d19",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateExtrude(4, 1, 17.0, -1.0, 20.0, 1, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823841667744>, None, 0.0, 45.0, None, False)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "InvokeItem(d5669070-c0f3-4fc0-b524-e33aeea7925f)"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "InvokeItem(416c9d7d-7ca2-4947-92b7-7c4b8191ca2c)"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "blue_star [type 3]",
+       "tile [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.flat_long_shadow.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.flat_long_shadow_steps.png",
+      "secs": 2.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The star sits on a rounded cream tile and casts a hard navy diagonal shadow down-right that is clipped exactly at the tile edge; the classic flat long shadow.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "9c8701ed1d19"
+     }
     }
    },
    "manual_steps": [
@@ -930,14 +1428,56 @@
         "Smooth": false,
         "Local": false
        },
-       "note": "s.CreateZipperDistortion(s.CenterX, s.CenterY, 20, 10, False, False, False): the verified pinking-shear edge; Smooth True rounds the teeth into scallops (variant, not in the render test)."
+       "note": "Zipper distortion on the gradient circle (CreateZipperDistortion at the circle's centre, amplitude 20, frequency 10, Random and Smooth off): sawtooth starburst spikes around the circle.",
+       "target": "grad_circle"
       },
       {
        "kind": "cdr_menu",
        "id": "68000526-6be1-4205-b2e9-6c9dff00f4c5",
-       "note": "Optional: bake the teeth into nodes."
+       "note": "Convert to Curves bakes the teeth into nodes."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "d5f012fa316c",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "CreateZipperDistortion(15.625, 6.354165354330709, 20, 10, False, False, False)"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "InvokeItem(68000526-6be1-4205-b2e9-6c9dff00f4c5)"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2, 1 effects]",
+       "blue_star [type 3]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/vector_illustration.badge_edges.png",
+      "strip": "gallery/recipes/CDR/vector_illustration.badge_edges_steps.png",
+      "secs": 2.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The gradient circle gets an even ring of sawtooth teeth, a starburst price-badge edge. The layer list still shows the circle as an ellipse with a live distortion, so the Convert to Curves step does not appear to have baked it.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "d5f012fa316c"
+     }
     }
    },
    "manual_steps": [

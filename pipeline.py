@@ -41,6 +41,9 @@ STAGES = [  # name, type, what runs it
     ("preset_cards", "agent", "workflows/pgd_preset_cards.js; args " + ARGS % ', "batches": ["ai_preset_18", ...]'),
     ("verify", "agent", "workflows/pgd_verify.js; args " + ARGS % ', "batches": ["ps_filter_01", ...]'),
     ("recipes", "agent", "workflows/pgd_recipes.js; args " + ARGS % ""),
+    ("plans", "live", "run_plan.py run all <APP> (one owner per app) runs every recipe plan in the app and records "
+                      "it; run_plan.py judge writes the verdict; workflows/pgd_plans.js does both; args "
+                      + ARGS % ', "apps": ["PS", "CDR"]'),
     ("docs", "deterministic", "build_docs.py -> PGD.md, and the coverage block of README.md"),
 ]
 ORDER = [s for s, t, _ in STAGES if t == "deterministic"]
@@ -119,6 +122,20 @@ def gather(home=HOME):
                           "sheets": sum(n in sheets for n in bs) if k in PRESET else None,
                           "missing_cards": sorted(n for n in bs if n not in card_files)})
     recipes = sorted(n for n in card_files if n.startswith("recipe_"))
+    import run_plan  # noqa: E402 (plan_hash only: no app)
+    plans = {"total": 0, "run": 0, "judged": 0, "results": Counter(), "verdicts": Counter()}
+    for n in recipes:
+        for c in card_files[n]:
+            for p in (c.get("plans") or {}).values():
+                h = run_plan.plan_hash(p)
+                run, ver = p.get("run") or {}, p.get("verified") or {}
+                plans["total"] += 1
+                if run.get("plan_hash") == h:
+                    plans["run"] += 1
+                    plans["results"][run.get("result")] += 1
+                if ver.get("plan_hash") == h:
+                    plans["judged"] += 1
+                    plans["verdicts"][ver.get("verdict")] += 1
     docs = home / "PGD.md"
     fresh = None
     if docs.exists():
@@ -127,6 +144,7 @@ def gather(home=HOME):
             "harvest_errors": errors, "batches": len(plan), "batches_on_disk": len(disk & set(plan)),
             "card_files": len(card_files), "cards": sum(len(v) for v in cards.values()), "bad_card_files": bad_files,
             "kinds": kinds, "galleries": galleries, "recipes": recipes,
+            "plans": {k: dict(v) if isinstance(v, Counter) else v for k, v in plans.items()},
             "critic": (home / "cards" / "zz_critic.json").exists(), "docs": "fresh" if fresh else
             ("stale" if fresh is False else "missing")}
 
@@ -177,6 +195,9 @@ def stages(s):
     add("verify", judged(lambda k: vis(k) or pre(k)), tot("items", lambda k: vis(k) or pre(k)),
         f"{judged(vis)}/{tot('items', vis)} visual and {judged(pre)}/{tot('items', pre)} preset items have a verdict")
     add("recipes", len(s["recipes"]), 1, f"{len(s['recipes'])} recipe files, critic {'yes' if s['critic'] else 'no'}")
+    pl = s["plans"]
+    add("plans", pl["judged"], pl["total"], f"{pl['run']}/{pl['total']} plans run on their current version "
+        f"{dict(sorted(pl['results'].items()))}, {pl['judged']} judged {dict(sorted(pl['verdicts'].items()))}")
     add("docs", 1 if s["docs"] == "fresh" else 0, 1, f"PGD.md {s['docs']}")
     return rows
 

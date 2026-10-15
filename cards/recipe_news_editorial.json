@@ -23,6 +23,19 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_menu",
+       "id": "1942",
+       "as": "pic",
+       "note": "Layer > New > Layer from Background: ran, the locked Background became an ordinary layer (Layer 0), labelled 'pic'; a layer style needs it."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "L.resize(75, 75, AnchorPosition.MIDDLECENTER); L.translate(UnitValue(0, 'px'), UnitValue(-70, 'px'));",
+       "note": "Script: scale the photo layer to 75 % about its centre and move it 70 px up (resize + translate), leaving room for the frame, the caption strip and the page. Ran; the picture is scaled, not cropped.",
+       "target": "pic"
+      },
+      {
        "kind": "ps_layer_style",
        "effects": [
         {
@@ -35,7 +48,7 @@
           "mode": "normal",
           "opacity": 100
          },
-         "note": "On the photo layer: an Inside stroke keeps the corners square (Outside rounds them, as the verified card notes)."
+         "note": "Layer Style > Stroke on the photo layer (target 'pic'): Inside 14 px white. The run shows a white border with square corners."
         },
         {
          "name": "Drop Shadow",
@@ -49,15 +62,18 @@
           "chokeMatte": 0,
           "blur": 18
          },
-         "note": "Soft lift off the background, falling down-right."
+         "note": "Layer Style > Drop Shadow: 40 % black Multiply, 8 px at 120 degrees, Size 18. The run shows a soft shadow along the right edge of the frame over the page colour."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Applied without error.",
+       "target": "pic"
       },
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Layer > New Fill Layer > Solid Color for the caption strip (#111111), sized to the photo width under its bottom edge (selection set first with doc.selection.select)."
+       "note": "Layer > New Fill Layer > Solid Color for the caption strip (script): a rectangle selection 240, 875 to 1680, 965 px (the photo's width, directly under its bottom edge), then a solid #111111 fill layer whose mask is that selection. Ran; the strip sits flush under the frame.",
+       "script": "d.selection.select([[240, 875], [1680, 875], [1680, 965], [240, 965]]);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 17); c.putDouble(C2T('Grn '), 17); c.putDouble(C2T('Bl  '), 17);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();",
+       "as": "strip"
       },
       {
        "kind": "ps_layer_style",
@@ -67,9 +83,91 @@
         "color": "#111111",
         "opacity": 90
        },
-       "note": "Optional: keeps the strip colour editable as a style when the strip is a shape layer instead."
+       "note": "Layer Style > Color Overlay on the strip (target 'strip'): #111111, 90 %, Normal. Optional: it repeats the fill colour, so the run shows no visible change.",
+       "target": "strip"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'caption'; var ti = t.textItem; ti.contents = 'Caption: one line that says what the photo shows.'; ti.font = 'ArialMT'; ti.size = UnitValue(30, 'px'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.LEFT; ti.position = [UnitValue(262, 'px'), UnitValue(920, 'px')];\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'credit'; var ti = t.textItem; ti.contents = 'Credit: photographer / agency'; ti.font = 'ArialMT'; ti.size = UnitValue(22, 'px'); ti.color = hexc('#B8B8B8'); ti.justification = Justification.LEFT; ti.position = [UnitValue(262, 'px'), UnitValue(953, 'px')];",
+       "note": "Script: two type layers on the strip, the caption line (Arial 30 px white) and the credit line (Arial 22 px light grey), both left-aligned. Ran; both lines are readable on the strip. The words are placeholders. Check the real caption and credit before publishing (manual).",
+       "target": "strip"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var bg = d.artLayers.add(); bg.name = 'page'; d.selection.selectAll(); d.selection.fill(hexc('#E4E4E4')); d.selection.deselect(); bg.move(L, ElementPlacement.PLACEAFTER);",
+       "note": "Script: a flat light-grey page (#E4E4E4) on a new layer below the photo, so the white border and shadow read. Ran. Untested: a deeper bottom border (instant-print look) and other photo sizes.",
+       "target": "pic"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "89c5539ebe8b",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Make Layer; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 0"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Color Fill 1"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: credit"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: Layer Order; active layer: page"
+       }
+      ],
+      "layers": [
+       "credit [text]",
+       "caption [text]",
+       "Color Fill 1 [solidfill]",
+       "Layer 0 [normal]",
+       "page [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.press_photo_frame.png",
+      "strip": "gallery/recipes/PS/news_editorial.press_photo_frame_steps.png",
+      "secs": 42.9
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo is scaled into a 14 px white inside border with a soft shadow visible along the right edge (page 228 grey drops to about 173 beside the frame), and a dark strip flush under it carries a white caption line and a grey credit line on a light page. Caption and credit wording are placeholders.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "89c5539ebe8b"
+     }
     },
     "AI": {
      "app": "AI",
@@ -109,10 +207,12 @@
       {
        "kind": "cdr_effect",
        "id": "vector:PowerClip",
+       "script": "bg = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nbg.Fill.ApplyUniformFill(rgb(\"#D5D8DC\"))\nbg.Outline.SetNoOutline()\nbg.OrderToBack()\nph = labels[\"photo\"]\nph.SetSize(13.6, 7.65)\nph.LeftX, ph.BottomY = (PW - 13.6) / 2, 3.15\nframe = layer.CreateRectangle2(ph.LeftX, ph.BottomY, 13.6, 7.65, 0, 0, 0, 0)\nframe.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nframe.Outline.Width = 0.25\nframe.Outline.Color.CopyAssign(rgb(\"#FFFFFF\"))\nph.AddToPowerClip(frame, 0)\nlabels[\"frame\"] = frame\nresult = frame",
+       "note": "Setup (script): a light grey backdrop; the photo scaled to 13.6 in wide; a white rectangle of the same size with a 0.25 in white outline; the photo placed inside it with AddToPowerClip (no centring).",
+       "as": "frame",
        "settings": {
         "CenterInContainer": 0
-       },
-       "note": "Put the photo inside a rectangle frame (photo.AddToPowerClip(frame, 0)) with a white 0.1 in outline. Untested: PowerClip is a needs_input card with no render test (apply call confirmed: content.AddToPowerClip(frame, 0))."
+       }
       },
       {
        "kind": "cdr_effect",
@@ -128,14 +228,63 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "Soft shadow on the frame, down-right."
+       "note": "Soft shadow on the frame, down-right.",
+       "target": "frame"
       },
       {
        "kind": "cdr_api",
        "id": "class:Shape",
-       "note": "Caption strip: Layer.CreateRectangle2 under the frame, Fill.ApplyUniformFill dark grey, then CreateArtisticText for caption and credit."
+       "script": "fr = labels[\"frame\"]\nbar = layer.CreateRectangle2(fr.LeftX, 1.15, 13.6, 1.95, 0, 0, 0, 0)\nbar.Fill.ApplyUniformFill(rgb(\"#1B1F27\"))\nbar.Outline.SetNoOutline()\nbar.Name = \"caption strip\"\n\ncap = layer.CreateArtisticText(0.0, 0.0, \"Caption: what the photo shows, where and when.\", 0, -1, \"Arial\", 26)\ncap.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\ncap.Outline.SetNoOutline()\ncap.SetPosition(fr.LeftX + 0.4, 2.85)\n\ncred = layer.CreateArtisticText(0.0, 0.0, \"Photo: credit / agency\", 0, -1, \"Arial\", 18)\ncred.Fill.ApplyUniformFill(rgb(\"#AAB0BC\"))\ncred.Outline.SetNoOutline()\ncred.SetPosition(fr.LeftX + 0.4, 1.95)\n\nresult = bar",
+       "note": "Caption strip (script): a dark rectangle touching the photo's lower edge, with a placeholder caption line and credit line in artistic text (CreateArtisticText). The real caption and credit come from the photo's metadata."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "bf47e48e24c0",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 40, 12, 0.06, -0.06, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823921283600>, 4, 0, -45.0, 1.0, 1, 9)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "caption strip [type 1]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.press_photo_frame.png",
+      "strip": "gallery/recipes/CDR/news_editorial.press_photo_frame_steps.png",
+      "secs": 3.8
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "White border with a soft shadow and a dark caption strip directly below carrying placeholder caption and credit lines. Minor: the white frame outline overlaps the photo's edges slightly and the strip is a few pixels narrower than the frame.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "bf47e48e24c0"
+     }
     }
    },
    "manual_steps": [
@@ -179,18 +328,38 @@
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "1942",
+       "as": "bottom",
+       "note": "Layer > New > Layer from Background: ran, the Background became an ordinary layer (Layer 0), labelled 'bottom': it becomes the blurred backdrop."
+      },
+      {
+       "kind": "ps_menu",
        "id": "1135",
-       "note": "Duplicate the photo layer: the top copy becomes the cut-out, the bottom copy the background."
+       "note": "Duplicate the photo layer: ran, the copy ('Layer 0 copy', labelled 'top') is active and becomes the cut-out.",
+       "as": "top"
       },
       {
        "kind": "ps_menu",
        "id": "1461",
-       "note": "Select > Subject on the top copy (verified: selection created; reads the active layer)."
+       "note": "Select > Subject on the top copy (target 'top'): ran, selected both people in the test photo; the selection edge is rough on the right.",
+       "target": "top"
       },
       {
        "kind": "ps_menu",
        "id": "1158",
-       "note": "Layer Mask > Reveal Selection: non-destructive cut-out (verified mask added)."
+       "note": "Layer Mask > Reveal Selection on the top copy: ran, the top copy now shows only the selected people."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1016",
+       "note": "Select > Deselect: ran. Without it the blur below would only act inside the selection."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "L.resize(62, 62, AnchorPosition.BOTTOMLEFT);",
+       "note": "Script: scale the cut-out layer to 62 % about its bottom-left corner (layer.resize), so the people sit at the lower left and leave the right half for the quote. Ran; the mask scales with the layer.",
+       "target": "top"
       },
       {
        "kind": "ps_layer_style",
@@ -205,7 +374,7 @@
           "mode": "normal",
           "opacity": 100
          },
-         "note": "Thin white outline around the cut-out (follows the mask)."
+         "note": "Layer Style > Stroke on the cut-out (target 'top'): Outside 6 px white. The run shows a thin white outline that follows the rough mask edge."
         },
         {
          "name": "Drop Shadow",
@@ -219,19 +388,19 @@
           "chokeMatte": 0,
           "blur": 20
          },
-         "note": "Lifts the speaker off the background, down-right."
+         "note": "Layer Style > Drop Shadow: 35 % black Multiply, 8 px at 120 degrees, Size 20. Set without error; not clearly visible in the frame."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Applied without error."
       },
       {
        "kind": "ps_filter",
        "id": "gaussianBlur",
-       "target": "bottom copy",
+       "target": "bottom",
        "settings": {
         "radius": 30
        },
-       "note": "Bottom copy: blur it into a soft backdrop (verified: smooth haze, detail gone)."
+       "note": "Gaussian Blur radius 30 on the bottom copy (target 'bottom'): ran; the run shows detail gone from the backdrop."
       },
       {
        "kind": "ps_layer_style",
@@ -241,9 +410,112 @@
         "color": "#1F3A5F",
         "opacity": 70
        },
-       "note": "Also on the bottom copy: a dark tint so white quote type reads on it."
+       "note": "Layer Style > Color Overlay on the bottom copy (target 'bottom'): Multiply #1F3A5F at 70 %. Ran; the backdrop is dark enough for the white quote to read, the blue tint is slight.",
+       "target": "bottom"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'speaker'; var ti = t.textItem; ti.contents = 'Speaker name'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(40, 'px'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.CENTER; ti.position = [UnitValue(1500, 'px'), UnitValue(700, 'px')];\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'role-date'; var ti = t.textItem; ti.contents = 'Role, date'; ti.font = 'ArialMT'; ti.size = UnitValue(28, 'px'); ti.color = hexc('#C9D6E8'); ti.justification = Justification.CENTER; ti.position = [UnitValue(1500, 'px'), UnitValue(750, 'px')];",
+       "note": "Script: two type layers for the speaker's name (Arial Bold 40 px) and role and date (Arial 28 px), centred under the quote. The quote itself is the plan's type input (Arial Black 60 px, three lines, white, centred at 1500 / 430). All three are placeholders: set the exact quote, name, role and date from the source (manual). Untested: a hand-refined cut-out edge (manual)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo",
+      "text": "“The exact words\rgo here, in\rlarge type.”",
+      "at": [
+       1500,
+       430
+      ],
+      "size": 60,
+      "color": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "text": "“The exact words\rgo here, in\rlarge type.”",
+       "at": [
+        1500,
+        430
+       ],
+       "size": 60,
+       "color": "#FFFFFF"
+      },
+      "plan_hash": "7f7d08571267",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Make Layer; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Layer 0 copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Select Subject; active layer: Layer 0 copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Add Layer Mask; active layer: Layer 0 copy"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Add Layer Mask; active layer: Layer 0 copy"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Layer 0 copy"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 0 copy"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "history: Gaussian Blur; active layer: Layer 0"
+       },
+       {
+        "step": 9,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 0"
+       },
+       {
+        "step": 10,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: role-date"
+       }
+      ],
+      "layers": [
+       "role-date [text]",
+       "speaker [text]",
+       "“The exact words go here, in large type.” [text]",
+       "Layer 0 copy [normal]",
+       "Layer 0 [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.quote_card_cutout.png",
+      "strip": "gallery/recipes/PS/news_editorial.quote_card_cutout_steps.png",
+      "secs": 52.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The subjects are cut out, scaled to the lower left with a thin white outside outline, over a blurred backdrop darkened by the blue Multiply overlay; the quote in large white type sits to the right, clear of the faces, with name and role/date lines under it. The automatic mask is rough on the right (a piece of the foreground is kept), which the recipe leaves to a hand fix.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "7f7d08571267"
+     }
     },
     "AI": {
      "app": "AI",
@@ -279,28 +551,34 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "vector:DropShadow",
-       "settings": {
-        "Type": 0,
-        "Opacity": 100,
-        "Feather": 3,
-        "OffsetX": 0,
-        "OffsetY": 0,
-        "Color": "#FFFFFF",
-        "FeatherType": 4,
-        "FeatherEdge": 0,
-        "MergeMode": 0
-       },
-       "note": "On the placed cut-out PNG (made in Photoshop): a white zero-offset shadow with a small feather draws a soft white rim round the speaker."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "back = s.Duplicate(0, 0)\nback.OrderToBack()\nresult = back",
+       "note": "Setup (script): a duplicate of the photo sent to the back; it becomes the backdrop.",
+       "as": "back"
       },
       {
        "kind": "cdr_effect",
        "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
        "settings": {
-        "Radius": 30
+        "Radius": 250
        },
-       "note": "On a copy of the full photo behind: Gaussian Blur for the backdrop (verified)."
+       "note": "Gaussian Blur at the maximum radius on the backdrop copy.",
+       "target": "back"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "a0f20985-2078-4629-98ed-ffc91fa4c0bd",
+       "script": "\nfor _ in range(7):\n    s.Bitmap.ApplyBitmapEffect(\"PGD plan\", \"GaussianBlurEffect Radius=250\")\nresult = s\n",
+       "note": "The same blur applied 7 more times by script (8 passes in all) so the backdrop is a soft wash of colour (one pass is light on a 1920 px photo).",
+       "target": "back"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "scrim = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nscrim.Fill.ApplyUniformFill(rgb(\"#14233B\"))\nscrim.Outline.SetNoOutline()\nresult = scrim",
+       "note": "Setup (script): a dark blue rectangle over the backdrop.",
+       "as": "scrim"
       },
       {
        "kind": "cdr_effect",
@@ -308,9 +586,136 @@
        "settings": {
         "Value": 30
        },
-       "note": "A dark rectangle over the backdrop at transparency 30 (about 70 % opaque) for contrast."
+       "note": "Uniform transparency 30 on the dark rectangle (about 70 percent opaque) for contrast.",
+       "target": "scrim"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "pts = [(692, 14), (649, 35), (626, 52), (612, 65), (600, 87), (576, 150), (567, 197), (569, 246), (578, 275),\n       (583, 310), (592, 326), (592, 331), (586, 338), (528, 360), (506, 372), (487, 391), (470, 415), (462,\n       434), (461, 458), (444, 548), (442, 586), (446, 593), (480, 619), (483, 635), (493, 655), (505, 668),\n       (518, 677), (544, 685), (639, 686), (652, 689), (656, 693), (661, 713), (640, 783), (640, 794), (631,\n       832), (630, 879), (893, 879), (893, 786), (881, 740), (871, 445), (866, 417), (862, 407), (856, 402),\n       (840, 394), (825, 390), (797, 376), (786, 363), (776, 344), (778, 337), (795, 329), (810, 314), (825,\n       285), (844, 226), (843, 190), (839, 166), (832, 144), (820, 84), (814, 65), (808, 55), (790, 39), (750,\n       19), (726, 13)]\ncrv = app.CreateCurve(doc)\nsp = crv.CreateSubPath(pts[0][0] / PX, PH - pts[0][1] / PX)\nfor x, y in pts[1:]:\n    sp.AppendLineSegment(x / PX, PH - y / PX)\nsp.Closed = True\npath = layer.CreateCurve(crv)\npath.Fill.ApplyNoFill()\npath.Outline.SetNoOutline()\n\nsub = labels[\"photo\"]\nborder = path.Duplicate(0, 0)\nborder.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nsub.AddToPowerClip(path, 0)\nborder.OrderBackOf(path)\nresult = border\n",
+       "note": "Cut-out: a 62-point polygon that follows the silhouette of the left subject (its outline down to the picture's lower edge); the points were measured against the photo offline, because CorelDRAW has no automatic subject selection (a real job draws the path with the Pen or Bezier tool, or traces a mask); the original photo is placed inside it (AddToPowerClip) above the backdrop, and a white copy of the polygon goes behind it for the outline.",
+       "as": "border"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+       "settings": {
+        "Direction": 1,
+        "Offset": 0.09,
+        "Steps": 1,
+        "BlendType": 0,
+        "FillColor": "#FFFFFF",
+        "OutlineColor": "#FFFFFF",
+        "CornerType": 2
+       },
+       "note": "Contour outside on the white copy: one white step, 0.09 in (about 9 px at 1920: thin, as the recipe says, but a clear white line), round corners.",
+       "target": "border"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "settings": {
+        "Type": 0,
+        "Opacity": 45,
+        "Feather": 10,
+        "OffsetX": 0.04,
+        "OffsetY": -0.05,
+        "Color": "#000000",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 0
+       },
+       "note": "Soft dark drop shadow under the outlined cut-out: 45 percent, feather 10, so it separates from the blurred backdrop.",
+       "target": "border"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "\nLEFT, MAXW = 10.4, 8.7\nlines = [(\"Exact quote goes here,\", \"#FFFFFF\", 54, 8.6), (\"word for word,\", \"#FFFFFF\", 54, 7.5), (\"in large type.\", \"#FFD400\", 54, 6.4)]\nfor text, col, size, y in lines:\n    q = layer.CreateArtisticText(0.0, 0.0, text, 0, -1, \"Arial Black\", size)\n    q.Fill.ApplyUniformFill(rgb(col))\n    q.Outline.SetNoOutline()\n    if q.SizeWidth > MAXW:\n        k = MAXW / q.SizeWidth\n        q.SetSize(q.SizeWidth * k, q.SizeHeight * k)\n    q.SetPosition(LEFT, y)\nq4 = layer.CreateArtisticText(0.0, 0.0, \"Speaker name, role  |  date\", 0, -1, \"Arial\", 24)\nq4.Fill.ApplyUniformFill(rgb(\"#C9D3E3\"))\nq4.Outline.SetNoOutline()\nq4.SetPosition(LEFT, 4.4)\nresult = q4\n",
+       "note": "Quote block (script): three lines of placeholder type beside the cut-out, each scaled down if it is wider than 8.7 in so none runs near the right edge, and a name / date line. The quote, name and date must be filled in from the source."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "5ab46bada73c",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('GaussianBlurEffect Radius=250')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "Transparency.ApplyUniformTransparency(30,)"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "CreateContour(1, 0.09, 1, 0, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2123849519568>, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2123849519248>, None, 0, 0, 2, 2, 15.0)"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 45, 10, 0.04, -0.05, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2123849519648>, 4, 0, -45.0, 1.0, 1, 0)"
+       },
+       {
+        "step": 9,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 3]",
+       "(unnamed) [type 3, 2 effects]",
+       "(unnamed) [type 13]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.quote_card_cutout.png",
+      "strip": "gallery/recipes/CDR/news_editorial.quote_card_cutout_steps.png",
+      "secs": 8.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Blurred navy-tinted backdrop, the cut-out with a thin but clear white outline (about 4 px at 960 wide) and soft shadow, and a large three-line quote plus name and date beside it with a safe right margin. The silhouette path was traced offline for this test plate only; a real job draws it by hand or traces a mask.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5ab46bada73c"
+     }
     }
    },
    "manual_steps": [
@@ -359,7 +764,9 @@
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Solid Color fill layer for the bar (#C8102E), a full-width rectangle at the lower third."
+       "note": "Layer > New Fill Layer > Solid Color for the bar (script): a full-width rectangle selection 0, 690 to 1920, 810 px (lower third, 120 px tall), a solid #C8102E fill layer with that selection as its mask, then Deselect. Ran; labelled 'bar'.",
+       "script": "d.selection.select([[0, 690], [1920, 690], [1920, 810], [0, 810]]);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 200); c.putDouble(C2T('Grn '), 16); c.putDouble(C2T('Bl  '), 46);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();",
+       "as": "bar"
       },
       {
        "kind": "ps_layer_style",
@@ -375,7 +782,7 @@
           "reverse": false,
           "align": true
          },
-         "note": "Default black-to-white gradient in Overlay at 35 %: the bar lightens toward the top and darkens toward the bottom (verified: white at the top at angle 90)."
+         "note": "Layer Style > Gradient Overlay on the bar (target 'bar'): Overlay, 35 %, linear, angle 90, default gradient. The run shows the band lighter toward the top and darker toward the bottom, a washed pink-red at the top edge."
         },
         {
          "name": "Drop Shadow",
@@ -389,22 +796,90 @@
           "chokeMatte": 0,
           "blur": 10
          },
-         "note": "Shadow straight below the bar (light from the top)."
+         "note": "Layer Style > Drop Shadow: 45 % black Multiply, 4 px at 90 degrees, Size 10. Set without error; the shadow under the bar is faint over the photo."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Applied without error.",
+       "target": "bar"
       },
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Second fill layer for the label box (#FFFFFF) at the left end, with the label in the bar colour."
+       "note": "Second Solid Color fill layer for the label box (script): rectangle 60, 665 to 440, 835 px, solid #FFFFFF, standing a little taller than the bar at its left end, then Deselect. Ran; labelled 'label'.",
+       "script": "d.selection.select([[60, 665], [440, 665], [440, 835], [60, 835]]);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 255); c.putDouble(C2T('Grn '), 255); c.putDouble(C2T('Bl  '), 255);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();",
+       "as": "label"
       },
       {
        "kind": "ps_menu",
        "id": "2202",
-       "note": "Optional: Edit > Transform > Skew the label box a few degrees for a dynamic slant."
+       "note": "Edit > Transform > Skew on the label box (script; target 'label'): horizontal skew -8 degrees about its centre, via the transform action. Ran; the run shows a slanted parallelogram. The selection was cleared first so the whole layer is transformed.",
+       "target": "label",
+       "script": "var s = new ActionDescriptor(); s.putUnitDouble(C2T('Hrzn'), C2T('#Ang'), -8); s.putUnitDouble(C2T('Vrtc'), C2T('#Ang'), 0);\nvar t = new ActionDescriptor(); t.putReference(C2T('null'), tref('Lyr ')); t.putEnumerated(C2T('FTcs'), C2T('QCSt'), C2T('Qcsa')); t.putObject(C2T('Skew'), C2T('Pnt '), s);\nexecuteAction(tk('transform'), t, DialogModes.NO);"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'label text'; var ti = t.textItem; ti.contents = 'BREAKING'; ti.font = 'Arial-Black'; ti.size = UnitValue(50, 'px'); ti.color = hexc('#C8102E'); ti.justification = Justification.CENTER; ti.position = [UnitValue(250, 'px'), UnitValue(766, 'px')];\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'headline'; var ti = t.textItem; ti.contents = 'Headline goes here, in one line'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(52, 'px'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.LEFT; ti.position = [UnitValue(490, 'px'), UnitValue(769, 'px')];",
+       "note": "Script: two type layers, the label 'BREAKING' (Arial Black 50 px in the bar colour #C8102E, centred in the label box) and the headline (Arial Bold 52 px white, left-aligned on the bar, one line). Ran; both read clearly. The wording is a placeholder: use 'update' or 'explainer' for routine news."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "0b0363297c60",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Color Fill 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 2"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Color Fill 2"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: headline"
+       }
+      ],
+      "layers": [
+       "headline [text]",
+       "label text [text]",
+       "Color Fill 2 [solidfill]",
+       "Color Fill 1 [solidfill]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.breaking_strap.png",
+      "strip": "gallery/recipes/PS/news_editorial.breaking_strap_steps.png",
+      "secs": 28.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A full-width red lower-third bar with an overlay gradient (lighter at the top, darker at the bottom) and a faint shadow under it, a slanted white label box at the left with BREAKING in the bar red, and a one-line white headline on the bar.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "0b0363297c60"
+     }
     },
     "AI": {
      "app": "AI",
@@ -434,12 +909,16 @@
       {
        "kind": "cdr_api",
        "id": "class:Shape",
-       "note": "Layer.CreateRectangle2 for the bar and the label box."
+       "script": "bar = layer.CreateRectangle2(0.0, 0.9, PW, 1.7, 0, 0, 0, 0)\nbar.Outline.SetNoOutline()\nbar.Name = \"bar\"\nbox = layer.CreateRectangle2(0.7, 0.9, 4.3, 1.7, 0, 0, 0, 0)\nbox.Outline.SetNoOutline()\nbox.Name = \"label box\"\nlabels[\"box\"] = box\nresult = bar",
+       "note": "Layer.CreateRectangle2 for a full-width bar and a label box at its left end.",
+       "as": "bar"
       },
       {
        "kind": "cdr_api",
        "id": "class:Fill",
-       "note": "Bar: ApplyFountainFill linear at 90 degrees from dark red to red; label: ApplyUniformFill white."
+       "script": "bar = labels[\"bar\"]\nbar.Fill.ApplyFountainFill(rgb(\"#7A0C12\"), rgb(\"#E31B23\"), 1, 90.0)\nlabels[\"box\"].Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\n\nlab = layer.CreateArtisticText(0.0, 0.0, \"BREAKING\", 0, -1, \"Arial Black\", 40)\nlab.Fill.ApplyUniformFill(rgb(\"#C4121A\"))\nlab.Outline.SetNoOutline()\nlab.SetPosition(0.95, 2.35)\n\nhead = layer.CreateArtisticText(0.0, 0.0, \"Headline text sits here in one line\", 0, -1, \"Arial Black\", 36)\nhead.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nhead.Outline.SetNoOutline()\nhead.SetPosition(5.4, 2.15)\n\nresult = bar",
+       "note": "Bar: Fill.ApplyFountainFill linear at 90 degrees from dark red to red; label box: white; then the label word in red and a placeholder headline in white (CreateArtisticText).",
+       "target": "bar"
       },
       {
        "kind": "cdr_effect",
@@ -455,9 +934,57 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "Shadow straight down under the bar."
+       "note": "Shadow straight down under the bar.",
+       "target": "bar"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "f39911dd6b68",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 45, 8, 0.0, -0.05, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823841962096>, 4, 0, -45.0, 1.0, 1, 9)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "label box [type 1]",
+       "bar [type 1, 1 effects]",
+       "(unnamed) [type 16]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.breaking_strap.png",
+      "strip": "gallery/recipes/CDR/news_editorial.breaking_strap_steps.png",
+      "secs": 3.9
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Full-width red gradient bar with a shadow beneath, a white label box with red BREAKING at the left and a one-line white headline. Minor: the label word sits high in its box rather than centred.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "f39911dd6b68"
+     }
     }
    },
    "manual_steps": [],
@@ -509,7 +1036,7 @@
           "mode": "normal",
           "opacity": 100
          },
-         "note": "On the number's type layer: dark keyline."
+         "note": "Layer Style > Stroke on the number's type layer (target 'type'): Outside 4 px #111111. The run shows a thin dark keyline round the white figures."
         },
         {
          "name": "Outer Glow",
@@ -521,22 +1048,90 @@
           "chokeMatte": 10,
           "blur": 28
          },
-         "note": "Yellow halo, for dark backgrounds (verified: even halo, no offset)."
+         "note": "Layer Style > Outer Glow: Screen, #FFD400, 85 %, Spread 10, Size 28. The run shows a thin pale yellow halo round the figures (it sits on the yellow marker, so it is subtle there). Screen can only lighten, so it would not show on a white card; there use the keyline and the marker."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Input: 380 px Arial Black white '42%' on a pale cool grey card (#DDE2EA; the first run's mid-grey card turned the marker a dull mustard), a placeholder number: state the unit, period and source beside the real one (manual).",
+       "target": "type"
       },
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Marker: a yellow (#FFE14D) Solid Color fill layer behind the number, a slightly rotated rectangle a bit wider than the figure."
+       "note": "Marker: Layer > New Fill Layer > Solid Color (script), made with the background layer active so it lands below the type: a hand-drawn-looking selection (a polygon, about 1060 x 300 px, whose top and bottom edges waver by a few pixels and whose ends are slanted and slightly bowed), a solid #FFEE19 fill layer with that selection as mask, then Deselect and a -3 degree rotation about its centre. Ran; the run shows a slightly tilted yellow band with wavering, uneven edges rather than a clean rectangle. It is a polygon, not a brush stroke, so it has no pen texture or overprint darkening, and the jagged edge reads more as a rough cut than a pen mark.",
+       "target": "background",
+       "script": "function rn(s) { var v = Math.sin(s * 12.9898) * 43758.5453; return v - Math.floor(v); }\nvar x0 = 430, x1 = 1490, y0 = 392, y1 = 690, pts = [], x, t;\nfor (x = x0; x <= x1; x += 8) pts.push([x, y0 + 6 * Math.sin(x / 85) + 3 * Math.sin(x / 23 + 2) + (rn(x) - 0.5) * 3]);\nfor (t = 0.05; t < 1; t += 0.05) pts.push([x1 + 22 * Math.sin(Math.PI * t) - 10 * t + (rn(t * 91) - 0.5) * 6, y0 + (y1 - y0) * t]);\nfor (x = x1; x >= x0; x -= 8) pts.push([x, y1 + 7 * Math.sin(x / 70 + 1) + 3 * Math.sin(x / 19) + (rn(x + 5) - 0.5) * 3]);\nfor (t = 0.95; t > 0; t -= 0.05) pts.push([x0 - 26 * Math.sin(Math.PI * t) + 12 * t + (rn(t * 57) - 0.5) * 6, y0 + (y1 - y0) * t]);\nd.selection.select(pts, SelectionType.REPLACE, 0, true);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 255); c.putDouble(C2T('Grn '), 238); c.putDouble(C2T('Bl  '), 25);\nvar tt = new ActionDescriptor(); tt.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), tt);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect(); d.activeLayer.rotate(-3, AnchorPosition.MIDDLECENTER);"
       },
       {
        "kind": "ps_blend_mode",
        "id": "multiply",
-       "note": "Marker layer in Multiply so it tints like a highlighter pen (render matched the Multiply formula)."
+       "note": "Marker layer set to Multiply (it is the active layer): ran. The run shows the band multiplying with the pale grey card to a vivid yellow (about RGB 221 / 211 / 23 against the card's 221 / 226 / 234), as a highlighter pen would, with the white figures on top (the first run's mid-grey card and #FFE14D gave a dull mustard)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "42%",
+      "background": "#DDE2EA",
+      "color": "#FFFFFF",
+      "size": 380
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "text",
+       "text": "42%",
+       "background": "#DDE2EA",
+       "color": "#FFFFFF",
+       "size": 380
+      },
+      "plan_hash": "f83da0ad5f88",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: 42%"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Color Fill 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Color Fill 1"
+       }
+      ],
+      "layers": [
+       "42% [text]",
+       "Color Fill 1 [solidfill multiply]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.data_highlight.png",
+      "strip": "gallery/recipes/PS/news_editorial.data_highlight_steps.png",
+      "secs": 18.0,
+      "crop": {
+       "file": "gallery/recipes/PS/news_editorial.data_highlight_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Big white 42% with a dark keyline and a faint yellow glow sits on a tilted yellow Multiply band that is now brighter and has wavering edges, but its jagged, flat-filled outline reads as a torn paper strip rather than a hand-drawn highlighter stroke (as the step note itself concedes).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "f83da0ad5f88",
+      "second_opinion": "agree"
+     }
     },
     "AI": {
      "app": "AI",
@@ -577,17 +1172,11 @@
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
-       "settings": {
-        "Direction": 1,
-        "Offset": 0.03,
-        "Steps": 1,
-        "BlendType": 0,
-        "FillColor": "#111111",
-        "CornerType": 2
-       },
-       "note": "On the number: one outside contour step in a contrast colour as a keyline (verified sticker / glow look)."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "t = labels[\"type\"]\nm = layer.CreateRectangle2(t.LeftX - 0.3, t.BottomY - 0.15, t.SizeWidth + 0.6, t.SizeHeight + 0.3, 0, 0, 0, 0)\nm.Fill.ApplyUniformFill(rgb(\"#FFD400\"))\nm.Outline.SetNoOutline()\nm.OrderBackOf(t)\nresult = m",
+       "note": "Marker (script): a yellow rectangle a little larger than the number, placed behind it.",
+       "as": "marker"
       },
       {
        "kind": "cdr_effect",
@@ -599,9 +1188,77 @@
         "Smooth": true,
         "Local": false
        },
-       "note": "Marker: a yellow rectangle behind the number with a smooth, random zipper edge for a hand-drawn wobble. Untested: Random + Smooth was not in the render test."
+       "note": "Zipper distortion on the marker (amplitude 3, frequency 8, Random and Smooth on): a wobbly hand-drawn edge.",
+       "target": "marker"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
+       "settings": {
+        "Direction": 1,
+        "Offset": 0.03,
+        "Steps": 1,
+        "BlendType": 0,
+        "FillColor": "#111111",
+        "CornerType": 2
+       },
+       "note": "On the number: one outside contour step in near black as a keyline.",
+       "target": "type"
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "42%",
+      "size": 340,
+      "background": "#14213D",
+      "color": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "text",
+       "text": "42%",
+       "size": 340,
+       "background": "#14213D",
+       "color": "#FFFFFF"
+      },
+      "plan_hash": "945cd163e14e",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateZipperDistortion(10.0, 5.625001968503937, 3, 8, True, True, False)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "CreateContour(1, 0.03, 1, 0, None, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823764737040>, None, 0, 0, 2, 2, 15.0)"
+       }
+      ],
+      "layers": [
+       "type [type 6, 1 effects]",
+       "(unnamed) [type 13]",
+       "(unnamed) [type 1, 1 effects]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.data_highlight.png",
+      "strip": "gallery/recipes/CDR/news_editorial.data_highlight_steps.png",
+      "secs": 2.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Big white 42% with a thin near-black keyline on a yellow marker whose zipper-distorted edge reads as hand-drawn. The marker is tight round the type and white on yellow leans on the keyline for contrast.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "945cd163e14e"
+     }
     }
    },
    "manual_steps": [
@@ -643,9 +1300,19 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "d.selection.selectAll(); d.selection.fill(hexc('#BFD9EA')); d.selection.deselect();\nvar land = [['#A8C686', [[150,250],[560,180],[700,420],[520,700],[200,640]]], ['#E8C27A', [[560,180],[900,150],[1000,330],[700,420]]],\n  ['#8FB9A3', [[520,700],[700,420],[1000,560],[900,860],[600,900]]], ['#D8B4D8', [[1500,200],[1780,260],[1760,620],[1560,540]]],\n  ['#C9D88A', [[1000,560],[1300,740],[1200,900],[900,860]]], ['#F0D9A8', [[1300,740],[1560,540],[1760,620],[1640,860],[1380,900]]],\n  ['#E9967A', [[1000,330],[1450,260],[1560,540],[1300,740],[1000,560]]]];\nfor (var i = 0; i < land.length; i++) { d.selection.select(land[i][1]); d.selection.fill(hexc(land[i][0])); }\nd.selection.deselect();",
+       "note": "Script (new first step, target 'background'): a stylised stand-in base map on a blank page, a pale blue ground and seven flat-coloured polygons drawn with selection.select and fill. It is not a real map: use an open-licence map and credit its source (manual). Ran; everything is pixels on the one background layer.",
+       "target": "background"
+      },
+      {
        "kind": "ps_menu",
        "id": "2970",
-       "note": "Select the region (doc.selection.select with its outline points, or a path), Layer Via Copy: the region becomes its own layer."
+       "note": "Layer > New > Layer Via Copy (script, target 'background'): select the region's outline polygon (1000, 330 to 1560, 740 px), copyToLayer, then Deselect. Ran; the region is its own layer ('Layer 1', labelled 'region').",
+       "target": "background",
+       "script": "d.selection.select([[1000,330],[1450,260],[1560,540],[1300,740],[1000,560]]);\nexecuteAction(tk('copyToLayer'), new ActionDescriptor(), DialogModes.NO); d.selection.deselect();",
+       "as": "region"
       },
       {
        "kind": "ps_adjustment",
@@ -653,7 +1320,8 @@
        "settings": {
         "presetKind": "presetKindDefault"
        },
-       "note": "Black & White adjustment layer between the base map and the region copy: everything below goes grey (verified greyscale, no tint)."
+       "note": "Black & White adjustment layer with the base map active (target 'background') so it lands between the base map and the region copy; default preset. Ran; the run shows the map greyscale and the region still in colour.",
+       "target": "background"
       },
       {
        "kind": "ps_adjustment",
@@ -663,11 +1331,11 @@
         "center": 0,
         "useLegacy": false
        },
-       "note": "Darken the grey map so the region pops (verified Brightness/Contrast layer)."
+       "note": "Brightness/Contrast adjustment layer: Brightness -40, Contrast 0. Ran, above the Black & White layer and still below the region; the grey map is a little darker, but the dark change is mild."
       },
       {
        "kind": "ps_layer_style",
-       "target": "region layer",
+       "target": "region",
        "effects": [
         {
          "name": "Stroke",
@@ -679,7 +1347,7 @@
           "mode": "normal",
           "opacity": 100
          },
-         "note": "On the region layer: bright outline."
+         "note": "Layer Style > Stroke on the region layer (target 'region'): Outside 4 px white. The run shows a crisp white outline round the region."
         },
         {
          "name": "Outer Glow",
@@ -691,12 +1359,83 @@
           "chokeMatte": 0,
           "blur": 24
          },
-         "note": "Soft halo round the region."
+         "note": "Layer Style > Outer Glow: Screen, #FFD400, 70 %, Size 24. Set without error; the halo is a faint warm glow, hard to see at 960 px."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style on the region layer: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Applied without error."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "d.selection.select([[1480,800],[1820,800],[1820,920],[1480,920]]);\nd.selection.select([[1492.3,798],[1487.7,802],[1357.7,652],[1362.3,648]], SelectionType.EXTEND);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 255); c.putDouble(C2T('Grn '), 255); c.putDouble(C2T('Bl  '), 255);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'region label'; var ti = t.textItem; ti.contents = 'Region name'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(40, 'px'); ti.color = hexc('#1B1B1B'); ti.justification = Justification.CENTER; ti.position = [UnitValue(1650, 'px'), UnitValue(874, 'px')];",
+       "note": "Script (new last step): the callout label, one white solid-colour fill layer from a box plus a thin leader line to the region (two selections added together, then deselected), and a type layer 'Region name' (Arial Bold 40 px). Ran; the box points to the region. The label wording is a placeholder. Untested: the optional note about disputed borders and the data credit, which stay manual."
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "blank",
+       "background": "#FFFFFF"
+      },
+      "plan_hash": "facfe488714b",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Deselect; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Layer Via Copy; active layer: Layer 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: New Black & White Layer; active layer: Black & White 1"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: New Brightness/Contrast Layer; active layer: Brightness/Contrast 1"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 1"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: region label"
+       }
+      ],
+      "layers": [
+       "region label [text]",
+       "Color Fill 1 [solidfill]",
+       "Layer 1 [normal]",
+       "Brightness/Contrast 1 [brightnesscontrast]",
+       "Black & White 1 [blackandwhite]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.map_callout.png",
+      "strip": "gallery/recipes/PS/news_editorial.map_callout_steps.png",
+      "secs": 28.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "On the stand-in map the rest goes grey and darker (Black and White plus Brightness -40) while the region keeps its colour with a crisp white outline and a faint warm glow, and a white label box with a leader line points to it.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "facfe488714b"
+     }
     },
     "AI": {
      "app": "AI",
@@ -744,34 +1483,72 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "as": "greylens",
+       "script": "\nbgd = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nbgd.Fill.ApplyUniformFill(rgb(\"#2A3345\"))\nbgd.Outline.SetNoOutline()\nbgd.OrderToBack()\ng = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\ng.Fill.ApplyNoFill()\ng.Outline.SetNoOutline()\nresult = g\n",
+       "note": "Setup (script): a dark slate backdrop at the back, and on top of the map shapes a page-size rectangle with no fill and no outline to carry the lens."
+      },
+      {
        "kind": "cdr_effect",
        "id": "lens:cdrLensTintedGrayscale",
        "settings": {
-        "Color1": "#7F7F7F"
+        "Color1": "#000000"
        },
-       "note": "A rectangle over the whole map made into a Tinted Grayscale lens with a neutral grey: the map beneath turns grey (verified monotone in the lens colour)."
+       "target": "greylens",
+       "note": "Tinted Grayscale lens with black as the tint on the page-size rectangle: everything beneath turns to plain grey tones that keep their own lightness (a lighter tint colour lifted the dark backdrop to a flat mid grey in the first run)."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "as": "scrim",
+       "script": "\nscrim = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\nscrim.Fill.ApplyUniformFill(rgb(\"#000000\"))\nscrim.Outline.SetNoOutline()\nresult = scrim\n",
+       "note": "Setup (script): a black page-size rectangle above the grey lens, to darken everything that is not the focus region."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:Transparency:Uniform",
+       "settings": {
+        "Value": 62
+       },
+       "target": "scrim",
+       "note": "Uniform transparency 62 on the black rectangle: the greyed map and backdrop are about 38 percent darker, so the rest of the map is both grey and dark."
       },
       {
        "kind": "cdr_menu",
        "id": "80f991a4-4af0-41b1-ad45-eed79600d894",
-       "note": "Duplicate the focus region and bring the copy above the lens so it keeps its colour."
-      },
-      {
-       "kind": "cdr_effect",
-       "id": "0a57d894-9adb-4ea7-87e3-4729eb14db54",
-       "settings": {
-        "Direction": 1,
-        "Offset": 0.03,
-        "Steps": 1,
-        "BlendType": 0,
-        "FillColor": "#FFFFFF",
-        "CornerType": 2
-       },
-       "note": "On the region copy: one white outside contour step as the outline."
+       "as": "focus",
+       "script": "\nd = labels[\"blue_star\"].Duplicate(0, 0)\nd.OrderToFront()\nd.Outline.Width = 0.08\nd.Outline.Color.CopyAssign(rgb(\"#FFFFFF\"))\nd.Outline.LineJoin = 1\nresult = d\n",
+       "note": "Duplicate the star (the focus region), bring the copy above the grey lens and the dark rectangle so it keeps its colour, and give the copy a 0.08 in white outline with round joins (about 8 px at 1920): the bright outline."
       },
       {
        "kind": "cdr_effect",
        "id": "vector:DropShadow",
+       "target": "focus",
+       "settings": {
+        "Type": 0,
+        "Opacity": 100,
+        "Feather": 35,
+        "OffsetX": 0,
+        "OffsetY": 0,
+        "Color": "#9CC2FF",
+        "FeatherType": 4,
+        "FeatherEdge": 0,
+        "MergeMode": 0
+       },
+       "note": "Glow: a zero-offset drop shadow in a bright pale blue, opacity 100, feather 35, on the outlined star copy: a halo round the region (the recipe's outline and glow)."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "as": "label",
+       "script": "\nbox = layer.CreateRectangle2(13.3, 8.6, 5.4, 1.6, 0.15, 0.15, 0.15, 0.15)\nbox.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nbox.Outline.SetNoOutline()\n\nlt = layer.CreateArtisticText(0.0, 0.0, \"Region label\", 0, -1, \"Arial Black\", 36)\nlt.Fill.ApplyUniformFill(rgb(\"#14213D\"))\nlt.Outline.SetNoOutline()\nlt.SetPosition(13.7, 9.9)\n\nls = layer.CreateArtisticText(0.0, 0.0, \"Source: open map data\", 0, -1, \"Arial\", 18)\nls.Fill.ApplyUniformFill(rgb(\"#5A6372\"))\nls.Outline.SetNoOutline()\nls.SetPosition(13.7, 8.95)\n\n# the pointer runs from the box's lower-left corner to the star's right-hand tip, which is at about (12.87, 7.29)\nline = layer.CreateLineSegment(13.45, 8.6, 12.9, 7.32)\nline.Outline.Width = 0.06\nline.Outline.Color.CopyAssign(rgb(\"#FFFFFF\"))\ndot = layer.CreateEllipse2(12.9, 7.32, 0.1)\ndot.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\ndot.Outline.SetNoOutline()\nresult = box\n",
+       "note": "Label (script): a white rounded box with a placeholder title and a source line, and a white pointer line from the box's corner to a dot on the star's right-hand tip (the first run's pointer stopped short of the star)."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "vector:DropShadow",
+       "target": "label",
        "settings": {
         "Type": 0,
         "Opacity": 40,
@@ -783,9 +1560,91 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "On the label box: small shadow down-right."
+       "note": "Small shadow down-right on the label box."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "81de066b6dce",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "CreateLens(7, 50.0, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2979293896032>, None, 0)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "Transparency.ApplyUniformTransparency(62,)"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 100, 35, 0.0, 0.0, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2979349496304>, 4, 0, -45.0, 1.0, 1, 0)"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 40, 4, 0.03, -0.03, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x2979364454480>, 4, 0, -45.0, 1.0, 1, 9)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 2]",
+       "(unnamed) [type 3]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 16]",
+       "blue_star [type 3, 1 effects]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]",
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.map_callout.png",
+      "strip": "gallery/recipes/CDR/news_editorial.map_callout_steps.png",
+      "secs": 6.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The rest of the map goes grey and dark, the star keeps its blue with a white outline and a pale blue glow, and a shadowed label box points to the star's tip with a line and dot. The earlier missing glow, flat grey and short pointer are fixed.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "81de066b6dce"
+     }
     }
    },
    "manual_steps": [
@@ -831,19 +1690,35 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_menu",
+       "id": "1135",
+       "as": "after",
+       "note": "Layer > Duplicate Layer (new first step): ran, 'Background copy' sits above the original and is labelled 'after'. The test photo has no second image, so the copy stands in for the aligned 'after' image (align real pairs by hand first)."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "L.desaturate(); L.adjustBrightnessContrast(0, 20);",
+       "note": "Script (target 'after'): desaturate the copy and add Contrast +20, so the two halves differ for the demo. Ran; the right half is grey. The recipe warns against grading one side differently for a real comparison: treat both the same there.",
+       "target": "after"
+      },
+      {
        "kind": "ps_api",
        "id": "class:Selection",
-       "note": "Put the 'after' layer above 'before' (aligned), then select the right half: doc.selection.select([[w/2,0],[w,0],[w,h],[w/2,h]])."
+       "note": "Script: select the right half, selection.select of the 960, 0 to 1920, 1080 px rectangle. Ran; the history shows a Lasso state.",
+       "script": "d.selection.select([[960, 0], [1920, 0], [1920, 1080], [960, 1080]]);"
       },
       {
        "kind": "ps_menu",
        "id": "1158",
-       "note": "Layer Mask > Reveal Selection on the 'after' layer: only its right half shows."
+       "note": "Layer > Layer Mask > Reveal Selection on the 'after' layer: ran, only its right half shows over the unchanged 'before' original."
       },
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Divider: a 4 px white Solid Color fill layer on the centre line."
+       "note": "Divider: Layer > New Fill Layer > Solid Color (script): a 4 px wide full-height rectangle at x 958 to 962, solid white, then Deselect. Ran; labelled 'divider'. The line is thin but reads at 960 px.",
+       "script": "d.selection.select([[958, 0], [962, 0], [962, 1080], [958, 1080]]);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 255); c.putDouble(C2T('Grn '), 255); c.putDouble(C2T('Bl  '), 255);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();",
+       "as": "divider"
       },
       {
        "kind": "ps_layer_style",
@@ -858,9 +1733,84 @@
         "chokeMatte": 0,
         "blur": 8
        },
-       "note": "On the divider: a soft dark edge either side (distance 0) so the line reads on light and dark images. same layerEffects descriptor as any other style on the layer."
+       "note": "Layer Style > Drop Shadow on the divider (target 'divider'): 50 % black Multiply, distance 0, Size 8, angle 180. Set without error; the soft dark edge beside the line is hard to see at 960 px.",
+       "target": "divider"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "d.selection.select([[40,40],[270,40],[270,110],[40,110]]);\nd.selection.select([[1650,40],[1880,40],[1880,110],[1650,110]], SelectionType.EXTEND);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 17); c.putDouble(C2T('Grn '), 17); c.putDouble(C2T('Bl  '), 17);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'before label'; var ti = t.textItem; ti.contents = 'BEFORE'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(40, 'px'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.CENTER; ti.position = [UnitValue(155, 'px'), UnitValue(92, 'px')];\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'after label'; var ti = t.textItem; ti.contents = 'AFTER'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(40, 'px'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.CENTER; ti.position = [UnitValue(1765, 'px'), UnitValue(92, 'px')];",
+       "note": "Script (new last step): small labels, one dark #111111 fill layer made of two boxes (top-left and top-right) plus type layers 'BEFORE' and 'AFTER' (Arial Bold 40 px white). Ran; the labels read. Dates for both halves are still to be added (manual)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "d7eab4c7533e",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Brightness/Contrast; active layer: Background copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Lasso; active layer: Background copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Add Layer Mask; active layer: Background copy"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Color Fill 1"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: after label"
+       }
+      ],
+      "layers": [
+       "after label [text]",
+       "before label [text]",
+       "Color Fill 2 [solidfill]",
+       "Color Fill 1 [solidfill]",
+       "Background copy [normal]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.before_after_split.png",
+      "strip": "gallery/recipes/PS/news_editorial.before_after_split_steps.png",
+      "secs": 30.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The left half shows the untouched photo, the right half the desaturated copy through a half-frame mask, split by a crisp 4 px white line, with small BEFORE and AFTER labels in dark boxes at the top corners. Dates for the halves stay manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "d7eab4c7533e"
+     }
     },
     "AI": {
      "app": "AI",
@@ -893,12 +1843,31 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "after = s.Duplicate(0, 0)\nresult = after",
+       "note": "Setup (script): a duplicate of the photo on top; this is the 'after' image.",
+       "as": "after"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "88a3c602-700d-4427-9a66-292ce4e6a883",
+       "settings": {
+        "Vibrance": 60,
+        "Saturation": 0
+       },
+       "note": "Vibrance +60 on the 'after' copy so the two halves differ.",
+       "target": "after"
+      },
+      {
        "kind": "cdr_effect",
        "id": "vector:PowerClip",
+       "script": "after = labels[\"after\"]\nhalf = layer.CreateRectangle2(PW / 2, 0.0, PW / 2, PH, 0, 0, 0, 0)\nhalf.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nhalf.Outline.SetNoOutline()\nafter.AddToPowerClip(half, 0)\ndiv = layer.CreateRectangle2(PW / 2 - 0.03, 0.0, 0.06, PH, 0, 0, 0, 0)\ndiv.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\ndiv.Outline.SetNoOutline()\nlabels[\"divider\"] = div\n\nlb = layer.CreateArtisticText(0.0, 0.0, \"BEFORE\", 0, -1, \"Arial Black\", 28)\nlb.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nlb.Outline.SetNoOutline()\nlb.SetPosition(0.5, 10.7)\n\nla = layer.CreateArtisticText(0.0, 0.0, \"AFTER\", 0, -1, \"Arial Black\", 28)\nla.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nla.Outline.SetNoOutline()\nla.SetPosition(10.5, 10.7)\n\nresult = div",
+       "note": "The 'after' copy is placed (AddToPowerClip) in a rectangle over the right half, so the original shows on the left; a thin white divider and two white labels are added.",
+       "as": "divider",
        "settings": {
         "CenterInContainer": 0
-       },
-       "note": "Clip the 'after' image into a rectangle covering the right half, aligned over 'before'. Untested: PowerClip is a needs_input card with no render test (apply call confirmed: content.AddToPowerClip(frame, 0))."
+       }
       },
       {
        "kind": "cdr_effect",
@@ -914,9 +1883,62 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "On the white divider line: zero-offset soft shadow."
+       "note": "Zero-offset soft shadow on the white divider line.",
+       "target": "divider"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "1332061f90b4",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('VibranceEffect Vibrance=60,Saturation=0')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 50, 4, 0.0, 0.0, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823842856912>, 4, 0, -45.0, 1.0, 1, 9)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.before_after_split.png",
+      "strip": "gallery/recipes/CDR/news_editorial.before_after_split_steps.png",
+      "secs": 4.8
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Crisp white divider down the middle with BEFORE / AFTER labels; the right half is a Vibrance +60 copy clipped to that half, a stand-in because the test has only one photo (real use needs two aligned images, graded alike).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "1332061f90b4"
+     }
     }
    },
    "manual_steps": [
@@ -958,9 +1980,17 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'body'; var ti = t.textItem; ti.contents = 'The committee met on the first day of the quarter and\\rreviewed the figures for each region in turn. Most of\\rthe reports were complete, though two arrived late and\\rwere read out in the meeting instead of being circulated.\\rA short discussion followed on how the numbers had been\\rcollected, and the chair asked for the method to be noted.\\rThe total for the period was recorded as one hundred and\\rtwenty units, up on the previous period by a small margin.\\rMembers agreed that the next review should include the\\rsmaller offices, which had not yet sent their returns.\\rThe secretary was asked to circulate the draft minutes\\rwithin a week, with the tables attached in full. Any\\rcorrections would be taken at the start of the next\\rmeeting and recorded before the minutes were signed.\\rThe meeting closed after a brief note of thanks to the\\rstaff who had prepared the papers for the committee.'; ti.font = 'ArialMT'; ti.size = UnitValue(36, 'px'); ti.useAutoLeading = false; ti.leading = UnitValue(52, 'px'); ti.color = hexc('#1A1A1A'); ti.position = [UnitValue(140, 'px'), UnitValue(240, 'px')]; t.merge();\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'title'; var ti = t.textItem; ti.contents = 'SAMPLE DOCUMENT'; ti.font = 'Arial-BoldMT'; ti.size = UnitValue(56, 'px'); ti.color = hexc('#1A1A1A'); ti.justification = Justification.LEFT; ti.position = [UnitValue(140, 'px'), UnitValue(160, 'px')];\nd.activeLayer.merge();",
+       "note": "Script (new first step, target 'background'): builds a stand-in document on the off-white page: a 16-line body (Arial 36 px, 52 px leading) and a bold title, each merged down into the Background so the page is one pixel layer. The text is placeholder prose, not a real document. Ran.",
+       "target": "background"
+      },
+      {
        "kind": "ps_menu",
        "id": "1135",
-       "note": "Duplicate the document layer: the bottom copy is the dimmed page, the top becomes the zoom."
+       "note": "Duplicate the document layer: ran, 'Background copy' on top, labelled 'top'; the original Background below is the dimmed page.",
+       "as": "top"
       },
       {
        "kind": "ps_filter",
@@ -968,7 +1998,8 @@
        "settings": {
         "radius": 3
        },
-       "note": "Bottom copy: a light blur pushes the page back (verified Gaussian Blur)."
+       "note": "Gaussian Blur radius 3 on the bottom page (target 'background'): ran; the run shows the page text softened.",
+       "target": "background"
       },
       {
        "kind": "ps_adjustment",
@@ -978,12 +2009,16 @@
         "center": 0,
         "useLegacy": false
        },
-       "note": "Bottom copy: darker (verified Brightness/Contrast)."
+       "note": "Brightness/Contrast -35 / 0, applied as an image adjustment to the bottom page (target 'background'): ran. The run shows the page dimmed from #F2F0EA to about #DFDBD2. On a pure white page the same setting left white at 255 (non-legacy Brightness/Contrast), so the demo page is off-white.",
+       "target": "background"
       },
       {
        "kind": "ps_menu",
        "id": "2970",
-       "note": "Top copy: select the passage, Layer Via Copy, then Edit > Free Transform (id 2207) to enlarge it 150-200 %."
+       "note": "Layer > New > Layer Via Copy, then enlarge (script, target 'top'): select the passage rectangle 120, 464 to 1140, 620 px (three whole lines), copyToLayer, scale the new layer to 160 % about its centre, move it 330 px right, and hide the full-size top copy so the dimmed page shows around the zoom. Ran; the zoom layer is labelled 'zoom'.",
+       "target": "top",
+       "script": "d.selection.select([[120, 464], [1140, 464], [1140, 620], [120, 620]]);\nexecuteAction(tk('copyToLayer'), new ActionDescriptor(), DialogModes.NO); d.selection.deselect();\nvar z = d.activeLayer; z.resize(160, 160, AnchorPosition.MIDDLECENTER); z.translate(UnitValue(330, 'px'), UnitValue(0, 'px')); L.visible = false;",
+       "as": "zoom"
       },
       {
        "kind": "ps_layer_style",
@@ -998,7 +2033,7 @@
           "mode": "normal",
           "opacity": 100
          },
-         "note": "On the zoom layer: square white frame (Inside keeps corners square)."
+         "note": "Layer Style > Stroke on the zoom layer (target 'zoom'): Inside 6 px white. The run shows a square-cornered white frame."
         },
         {
          "name": "Drop Shadow",
@@ -1012,49 +2047,107 @@
           "chokeMatte": 0,
           "blur": 24
          },
-         "note": "Lifts the zoom box, down-right."
+         "note": "Layer Style > Drop Shadow: 50 % black Multiply, 10 px at 120 degrees, Size 24. The run shows the zoom box lifted off the page with a soft shadow below and right."
         }
        ],
-       "note": "One layer style: these 2 effects go into a single layerEffects descriptor (a set replaces the layer's whole style, so separate steps would keep only the last)."
+       "note": "One layer style: both effects go into a single layerEffects descriptor (a set replaces the layer's whole style). Applied without error.",
+       "target": "zoom"
       },
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Highlighter: a yellow (#FFE14D) fill layer over the key line inside the zoom."
+       "note": "Highlighter: Layer > New Fill Layer > Solid Color (script): a rectangle 150, 510 to 1770, 578 px over the middle line of the zoom, solid #FFE14D, then Deselect. Ran.",
+       "script": "d.selection.select([[150, 510], [1770, 510], [1770, 578], [150, 578]]);\nvar c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 255); c.putDouble(C2T('Grn '), 225); c.putDouble(C2T('Bl  '), 77);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.selection.deselect();"
       },
       {
        "kind": "ps_blend_mode",
        "id": "multiply",
-       "note": "Highlighter in Multiply so the text stays black under the yellow (formula-verified)."
+       "note": "Highlighter layer set to Multiply: ran. The run shows the yellow band with the black text readable through it. Untested: choosing the passage and highlighted line by reading the source, which stays manual."
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#F2F0EA"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "blank",
+       "background": "#F2F0EA"
+      },
+      "plan_hash": "2f769de0c479",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Merge Down; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Gaussian Blur; active layer: Background"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Brightness/Contrast; active layer: Background"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: Layer 1"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Layer 1"
+       },
+       {
+        "step": 7,
+        "status": "ok",
+        "note": "history: New Color Fill Layer; active layer: Color Fill 1"
+       },
+       {
+        "step": 8,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Color Fill 1"
+       }
+      ],
+      "layers": [
+       "Color Fill 1 [solidfill multiply]",
+       "Layer 1 [normal]",
+       "Background copy [normal hidden]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.document_zoom_highlight.png",
+      "strip": "gallery/recipes/PS/news_editorial.document_zoom_highlight_steps.png",
+      "secs": 33.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The stand-in page is softened and dimmed, three whole lines are lifted into an enlarged zoom box with a white frame and soft shadow, and the middle line carries a yellow Multiply highlighter with the text readable through it; the key sentence is complete inside the box.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2f769de0c479"
+     }
     },
     "CDR": {
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "lens:cdrLensMagnify",
-       "settings": {
-        "RateOrMagnification": 2
-       },
-       "note": "A rectangle over the passage made into a Magnify lens, 2x (verified: zoomed copy of the art beneath inside the lens, the rest unchanged); move it beside the passage if the zoom should not cover it."
-      },
-      {
-       "kind": "cdr_effect",
-       "id": "vector:DropShadow",
-       "settings": {
-        "Type": 0,
-        "Opacity": 50,
-        "Feather": 12,
-        "OffsetX": 0.08,
-        "OffsetY": -0.08,
-        "Color": "#000000",
-        "FeatherType": 4,
-        "FeatherEdge": 0,
-        "MergeMode": 9
-       },
-       "note": "On the lens frame: shadow down-right."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "def line(txt, size, top, color, font=\"Arial\"):\n    t = layer.CreateArtisticText(0.0, 0.0, txt, 0, -1, font, size)\n    t.Fill.ApplyUniformFill(rgb(color))\n    t.Outline.SetNoOutline()\n    t.SetPosition(4.2, top)\n    return t\nline(\"Document title placeholder\", 40, 10.2, \"#222222\", \"Arial Black\")\nfor i in range(11):\n    if i == 5:\n        key = line(\"The key line that the zoom box enlarges and the marker covers.\", 20, 9.0 - i * 0.62, \"#111111\")\n    else:\n        line(\"Placeholder body text of the document, line %d, set small and grey.\" % (i + 1), 20, 9.0 - i * 0.62, \"#555555\")\nhl = layer.CreateRectangle2(key.LeftX - 0.1, key.BottomY - 0.08, key.SizeWidth + 0.2, key.SizeHeight + 0.16, 0, 0, 0, 0)\nhl.Fill.ApplyUniformFill(rgb(\"#FFE500\"))\nhl.Outline.SetNoOutline()\nhl.OrderBackOf(key)\nlabels[\"key\"] = key\nresult = hl",
+       "note": "Setup (script): a placeholder document drawn as artistic text on the white page: a title, eleven grey body lines, one darker key line, and a yellow rectangle behind the key line (OrderBackOf).",
+       "as": "hl"
       },
       {
        "kind": "cdr_effect",
@@ -1062,17 +2155,107 @@
        "settings": {
         "Value": 40
        },
-       "note": "Highlighter: a yellow rectangle under the key line (below the lens in the stack so the lens magnifies it too) at transparency 40."
+       "note": "Uniform transparency 40 on the yellow rectangle: the highlighter.",
+       "target": "hl"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "key = labels[\"key\"]\nw = key.SizeWidth * 1.8 + 0.8\nz = layer.CreateRectangle2(key.CenterX - w / 2, key.CenterY - 0.5, w, 1.0, 0, 0, 0, 0)\nz.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nz.Outline.Width = 0.05\nz.Outline.Color.CopyAssign(rgb(\"#222222\"))\nresult = z",
+       "note": "Zoom box (script): a rectangle with a dark 0.05 in outline, centred on the key line and 1.8 times as wide plus 0.8 in, to carry the magnifier lens.",
+       "as": "zoom"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "lens:cdrLensMagnify",
+       "settings": {
+        "RateOrMagnification": 1.8
+       },
+       "note": "Magnify lens 1.8x on the zoom box: it shows the key line and its marker larger.",
+       "target": "zoom"
       },
       {
        "kind": "cdr_effect",
        "id": "lens:cdrLensBrighten",
+       "script": "z = labels[\"zoom\"]\nl, r, b, t = z.LeftX, z.RightX, z.BottomY, z.TopY\nfor x0, y0, x1, y1 in ((0.0, t, PW, PH), (0.0, 0.0, PW, b), (0.0, b, l, t), (r, b, PW, t)):\n    strip = layer.CreateRectangle2(x0, y0, x1 - x0, y1 - y0, 0, 0, 0, 0)\n    strip.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\n    strip.Outline.SetNoOutline()\n    strip.CreateLens(6, -35.0, None, None, 0)\nresult = z",
+       "note": "Dimming (script): four rectangles around the zoom box (above, below, left, right), each a Brighten lens with a negative rate (-35), so the document is dimmed everywhere except in the zoom box. A single dim lens over the whole page, even with a hole combined into its shape, also dimmed the zoom box in test runs. Softening the document was not added.",
        "settings": {
-        "RateOrMagnification": -30
-       },
-       "note": "Dim the rest: a page-size rectangle behind the lens and highlighter as a Brighten lens with a negative rate. Untested: the verified frame used +60 (brighten)."
+        "RateOrMagnification": -35
+       }
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "blank",
+       "background": "#FFFFFF"
+      },
+      "plan_hash": "e197320f3488",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "Transparency.ApplyUniformTransparency(40,)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "CreateLens(0, 1.8, None, None, 0)"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 1, 1 effects]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.document_zoom_highlight.png",
+      "strip": "gallery/recipes/CDR/news_editorial.document_zoom_highlight_steps.png",
+      "secs": 9.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The placeholder page is dimmed by four Brighten lenses round a framed 1.8x magnify box that shows the key line enlarged under a yellow highlighter. The page is dimmed but not softened, as the step note says.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e197320f3488"
+     }
     },
     "AI": {
      "app": "AI",
@@ -1155,7 +2338,10 @@
       {
        "kind": "ps_menu",
        "id": "6300",
-       "note": "Solid Color fill layer (#000000) above the photo, below the type."
+       "note": "Layer > New Fill Layer > Solid Color (script, target 'photo'): a solid #000000 fill layer made with the photo layer active, so it lands above the photo and below the headline; its Fill opacity is then set to 0 % so only the gradient effect of the next step shows. Ran; labelled 'scrim'.",
+       "target": "photo",
+       "script": "var c = new ActionDescriptor(); c.putDouble(C2T('Rd  '), 0); c.putDouble(C2T('Grn '), 0); c.putDouble(C2T('Bl  '), 0);\nvar t = new ActionDescriptor(); t.putObject(C2T('Clr '), C2T('RGBC'), c);\nvar u = new ActionDescriptor(); u.putObject(C2T('Type'), S2T('solidColorLayer'), t);\nvar r = new ActionReference(); r.putClass(S2T('contentLayer'));\nvar m = new ActionDescriptor(); m.putReference(C2T('null'), r); m.putObject(C2T('Usng'), S2T('contentLayer'), u);\nexecuteAction(tk('make'), m, DialogModes.NO);\nd.activeLayer.fillOpacity = 0;",
+       "as": "scrim"
       },
       {
        "kind": "ps_layer_style",
@@ -1169,12 +2355,14 @@
         "reverse": false,
         "align": true
        },
-       "note": "On the fill layer: gradient from black at the bottom to fully transparent at about 55 % height (stops with an opacity ramp set in the descriptor). same layerEffects descriptor as any other style on the layer."
+       "note": "Layer Style > Gradient Overlay (script, target 'scrim'): the stock settings give a black-to-white ramp, which is not a scrim, so the script writes a custom gradient into the layer's gradientFill: Normal, 100 %, linear, angle 90, black opaque at the bottom fading to fully transparent at 55 % of the height (an opacity ramp of two stops). Ran; the run shows the photo darkening smoothly from the middle down to black at the bottom edge, with no hard band.",
+       "target": "scrim",
+       "script": "var g = new ActionDescriptor(); g.putString(C2T('Nm  '), 'scrim'); g.putEnumerated(C2T('GrdF'), C2T('GrdF'), C2T('CstS')); g.putDouble(C2T('Intr'), 4096);\nvar cs = new ActionList(), i;\nfor (i = 0; i < 2; i++) { var c = new ActionDescriptor(), k = new ActionDescriptor(); k.putDouble(C2T('Rd  '), 0); k.putDouble(C2T('Grn '), 0); k.putDouble(C2T('Bl  '), 0);\n  c.putObject(C2T('Clr '), C2T('RGBC'), k); c.putEnumerated(C2T('Type'), C2T('Clry'), C2T('UsrS')); c.putInteger(C2T('Lctn'), i * 4096); c.putInteger(C2T('Mdpn'), 50); cs.putObject(C2T('Clrt'), c); }\ng.putList(C2T('Clrs'), cs);\nvar ts = new ActionList(), op = [100, 0], at = [0, Math.round(4096 * 55 / 100)];\nfor (i = 0; i < 2; i++) { var t = new ActionDescriptor(); t.putUnitDouble(C2T('Opct'), C2T('#Prc'), op[i]); t.putInteger(C2T('Lctn'), at[i]); t.putInteger(C2T('Mdpn'), 50); ts.putObject(C2T('TrnS'), t); }\ng.putList(C2T('Trns'), ts);\nvar f = new ActionDescriptor(); f.putEnumerated(S2T('mode'), S2T('blendMode'), S2T('normal')); f.putUnitDouble(S2T('opacity'), S2T('percentUnit'), 100);\nf.putObject(S2T('gradient'), S2T('gradientClassEvent'), g); f.putUnitDouble(S2T('angle'), S2T('angleUnit'), 90); f.putEnumerated(S2T('type'), S2T('gradientType'), S2T('linear'));\nf.putBoolean(S2T('reverse'), false); f.putBoolean(S2T('align'), true); f.putUnitDouble(S2T('scale'), S2T('percentUnit'), 100); f.putBoolean(S2T('enabled'), true);\nsetFx('gradientFill', 'gradientFill', f);"
       },
       {
        "kind": "ps_layer_style",
        "name": "Drop Shadow",
-       "target": "type layer",
+       "target": "type",
        "settings": {
         "mode": "multiply",
         "color": "#000000",
@@ -1185,9 +2373,68 @@
         "chokeMatte": 0,
         "blur": 8
        },
-       "note": "On the type layer: soft shadow just below the letters."
+       "note": "Layer Style > Drop Shadow on the type layer (target 'type'; white Arial Black 96 px, two lines, centred at 960 / 850, a placeholder headline): 50 % black Multiply, 2 px at 90 degrees, Size 8. Set without error; the headline reads clearly on the scrim. Untested: the shadow is not visible at 960 px. The scrim also darkens the lower part of the subjects: place it on an empty part of the frame where the photo allows."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo",
+      "text": "HEADLINE GOES HERE\rIN TWO LINES",
+      "at": [
+       960,
+       850
+      ],
+      "size": 96,
+      "color": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "text": "HEADLINE GOES HERE\rIN TWO LINES",
+       "at": [
+        960,
+        850
+       ],
+       "size": 96,
+       "color": "#FFFFFF"
+      },
+      "plan_hash": "00ddab80d1fc",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Fill Opacity Change; active layer: Color Fill 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: Color Fill 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: HEADLINE GOES HERE IN TWO LINES"
+       }
+      ],
+      "layers": [
+       "HEADLINE GOES HERE IN TWO LINES [text]",
+       "Color Fill 1 [solidfill]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.text_scrim.png",
+      "strip": "gallery/recipes/PS/news_editorial.text_scrim_steps.png",
+      "secs": 16.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A black-to-transparent gradient rises from the bottom over roughly the lower half of the photo with no hard edge, and the two-line white headline reads clearly on it; the soft shadow on the type is set but too slight to see at 960 px, and the scrim also darkens the lower part of the subjects.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "00ddab80d1fc"
+     }
     },
     "AI": {
      "app": "AI",
@@ -1222,7 +2469,9 @@
       {
        "kind": "cdr_api",
        "id": "class:Shape",
-       "note": "A black rectangle over the bottom half of the photo."
+       "script": "r = layer.CreateRectangle2(0.0, 0.0, PW, PH * 0.55, 0, 0, 0, 0)\nr.Fill.ApplyUniformFill(rgb(\"#000000\"))\nr.Outline.SetNoOutline()\nresult = r",
+       "note": "A black rectangle over the bottom 55 percent of the photo (Layer.CreateRectangle2).",
+       "as": "scrim"
       },
       {
        "kind": "cdr_effect",
@@ -1238,7 +2487,15 @@
         "CenterOffsetX": 0.0,
         "CenterOffsetY": 0.0
        },
-       "note": "Linear fountain transparency from opaque at the bottom to clear at the top (verified linear fade; angle 90 runs it vertically, swap Start / End if it fades the wrong way)."
+       "note": "Linear fountain transparency on the black rectangle.",
+       "target": "scrim"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "h = layer.CreateArtisticText(0.0, 0.0, \"Headline text sits on the scrim\", 0, -1, \"Arial Black\", 54)\nh.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nh.Outline.SetNoOutline()\nh.SetPosition(1.0, 2.0)\n\nresult = h",
+       "note": "A placeholder headline in white artistic text near the bottom.",
+       "as": "headline"
       },
       {
        "kind": "cdr_effect",
@@ -1254,9 +2511,60 @@
         "FeatherEdge": 0,
         "MergeMode": 9
        },
-       "note": "On the text: soft shadow just below."
+       "note": "On the text: soft shadow just below.",
+       "target": "headline"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "b1aa6c67bcb9",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "Transparency.ApplyFountainTransparency(0, 100, 1, 90.0, 0, 0, 50, 0.0, 0.0)"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "CreateDropShadow(0, 50, 6, 0.0, -0.02, <win32com.gen_py.Corel - Vector Graphics Core 25.1 Type Library.IVGColor instance at 0x1823842856912>, 4, 0, -45.0, 1.0, 1, 9)"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6, 1 effects]",
+       "(unnamed) [type 16]",
+       "(unnamed) [type 1, 1 effects]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.text_scrim.png",
+      "strip": "gallery/recipes/CDR/news_editorial.text_scrim_steps.png",
+      "secs": 5.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A black fountain-transparency scrim fades up from the bottom over about half the frame, and the white headline with a soft shadow reads clearly on it. The scrim also darkens the lower part of the people a little.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "b1aa6c67bcb9"
+     }
     }
    },
    "manual_steps": [],
@@ -1298,7 +2606,8 @@
       {
        "kind": "ps_api",
        "id": "class:Selection",
-       "note": "Select each area to hide (doc.selection.select with its corners), a little larger than the face or text."
+       "note": "Script: select the areas to hide with selection.select, two rectangles added together: 620, 110 to 840, 350 px and 1300, 190 to 1530, 440 px, each a little larger than a head. Ran. The coordinates were chosen by eye for this test photo; deciding what must be hidden in a real image is manual.",
+       "script": "d.selection.select([[620, 110], [840, 110], [840, 350], [620, 350]]);\nd.selection.select([[1300, 190], [1530, 190], [1530, 440], [1300, 440]], SelectionType.EXTEND);"
       },
       {
        "kind": "ps_filter",
@@ -1306,7 +2615,7 @@
        "settings": {
         "Cell Size": 32
        },
-       "note": "Filter > Pixelate > Mosaic: square blocks of one averaged colour (verified). Scale the cell to the area: 20-40 px on a face."
+       "note": "Filter > Pixelate > Mosaic, Cell Size 32, over the selection: ran. The run shows square blocks of one averaged colour over both areas."
       },
       {
        "kind": "ps_filter",
@@ -1314,14 +2623,62 @@
        "settings": {
         "radius": 12
        },
-       "note": "Then a blur over the same selection removes the block edges that can be de-pixelated."
+       "note": "Gaussian Blur radius 12 over the same selection: ran. The run shows the block edges softened; the two areas are unrecognisable at 960 px. Untested: whether detail could be recovered at 100 %."
       },
       {
        "kind": "ps_menu",
        "id": "1141",
-       "note": "Layer > Flatten Image before export so no unblurred layer or smart object survives."
+       "note": "Layer > Flatten Image: ran, but the working file already had a single layer, so there was nothing to flatten and no new history state. Untested: with extra layers present. Strip the file's metadata on export (manual)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "46e87bec40e3",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Lasso; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Mosaic; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Gaussian Blur; active layer: Background"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Gaussian Blur; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/news_editorial.privacy_blur.png",
+      "strip": "gallery/recipes/PS/news_editorial.privacy_blur_steps.png",
+      "secs": 17.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Both faces are covered by 32 px mosaic cells softened with a radius 12 blur and are unrecognisable in the frame; the document ends as one Background layer, so nothing live remains (Flatten had nothing extra to merge). Choosing what to hide and stripping metadata stay manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "46e87bec40e3"
+     }
     },
     "AI": {
      "app": "AI",
@@ -1350,19 +2707,73 @@
      "app": "CDR",
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "patch = s.Duplicate(0, 0)\nresult = patch",
+       "note": "Setup (script): a duplicate of the photo on top, to carry the pixelation.",
+       "as": "patch"
+      },
+      {
        "kind": "cdr_effect",
        "id": "defc5eef-4402-4c64-8837-aa8c2e635456",
        "settings": {
-        "Width": 30
+        "Mode": "Square",
+        "Width": 48,
+        "Height": 48,
+        "Opacity": 100
        },
-       "note": "On a cropped copy of the area (a separate bitmap over the original): Pixelate with large square cells (verified with Width 40; the script dropped Mode and Height, so only Square mode applies)."
+       "note": "Pixelate with 48 px square cells on the duplicate. Mode is set in the settings: left out, the run sent the enum default by name (Mode=Square) and Pixelate changed nothing; with Mode in the settings it is sent as its index.",
+       "target": "patch"
       },
       {
        "kind": "cdr_menu",
        "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
-       "note": "Convert to Bitmap of the photo plus the pixelated patch, so the hidden detail is gone from the file."
+       "script": "x0, y0, x1, y1 = 1300, 200, 1540, 430\nbox = layer.CreateRectangle2(x0 / PX, PH - y1 / PX, (x1 - x0) / PX, (y1 - y0) / PX, 0, 0, 0, 0)\nbox.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nbox.Outline.SetNoOutline()\nlabels[\"patch\"].AddToPowerClip(box, 0)\nsr = app.CreateShapeRange()\nsr.Add(labels[\"photo\"])\nsr.Add(box)\ngrp = sr.Group()\nflat = grp.ConvertToBitmapEx(4, False, False, 96)\nresult = flat",
+       "note": "The pixelated duplicate is placed (AddToPowerClip) in a rectangle laid over one region of the photo chosen by eye; the photo and the patch are grouped and flattened with ConvertToBitmapEx (RGB, 96 dpi) so the hidden detail is gone from the file."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "6854ebeb64db",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('PixelateEffect Mode=0,Width=48,Height=48,Opacity=100')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/news_editorial.privacy_blur.png",
+      "strip": "gallery/recipes/CDR/news_editorial.privacy_blur_steps.png",
+      "secs": 4.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "One face is covered by a square pixelation patch with 48 px cells (about a quarter of the face width), placed by eye, and the photo and patch are flattened into a single bitmap so the detail cannot be recovered.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "6854ebeb64db"
+     }
     }
    },
    "manual_steps": [

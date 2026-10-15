@@ -519,10 +519,12 @@ def refs(sc):
 
 
 # ---------------------------------------------------------------- routes
-def bitmap_card(sc, card, it, ref, probe=True):
+def bitmap_command(it, demo):
+    """the ApplyBitmapEffect command builder for one harvested effect and one set of card values (bitmap_card,
+    and the plan runner tools/cdr/plan_cdr.py) -> (mapped, dropped, base, enum_keys, kv, cmd); cmd(use_base, enum_idx,
+    skip, over) -> the command string"""
     eid = it["extra"]["effect_id"]
     params = it.get("params") or []
-    demo = card.get("demo_settings") or {}
     mapped, dropped = {}, []
     for k, v in demo.items():
         p = find_param(params, k)
@@ -557,6 +559,13 @@ def bitmap_card(sc, card, it, ref, probe=True):
             ck, cv = kv(p, v, enum_idx and k in enum_keys)
             vals[ck] = cv
         return eid + " " + ",".join(f"{k}={v}" for k, v in vals.items())
+
+    return mapped, dropped, base, enum_keys, kv, cmd
+
+
+def bitmap_card(sc, card, it, ref, probe=True):
+    eid = it["extra"]["effect_id"]
+    mapped, dropped, base, enum_keys, kv, cmd = bitmap_command(it, card.get("demo_settings") or {})
 
     def build(c):
         return lambda a: sc.plate("photo")["photo"].Bitmap.ApplyBitmapEffect("PGD gallery", c)

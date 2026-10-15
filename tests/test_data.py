@@ -80,6 +80,20 @@ class Cards(unittest.TestCase):
                 bad += [f"{r['id']}: built_from {i!r} has no card" for i in r.get("built_from") or [] if i not in known]
         self.assertEqual(bad, [])
 
+    def test_enum_cards_use_the_run_time_name(self):
+        """a live probe found Photoshop enums whose scripting-dictionary name is no ExtendScript global
+        (PDFStandardType -> PDFStandard): their cards and the hand-written ps_api cards must not script the old name"""
+        h = load_json(ROOT / "harvest" / "ps" / "ps_api.json")
+        ren = {it["name"]: it["extra"]["js_name"] for it in h["items"] if (it.get("extra") or {}).get("js_name")}
+        self.assertEqual(ren.get("PDFStandardType"), "PDFStandard")
+        cards = {c["id"]: c for n, d in self.files.items() if n.startswith("ps_api") for c in d["cards"]}
+        self.assertIn("PDFStandard.", cards["enum:PDFStandardType"]["how"])
+        import re
+        pat = re.compile(r"\b(" + "|".join(ren) + r")\.[A-Z][A-Z0-9_]+\b")
+        hits = [(cid, k) for cid, c in cards.items() for k, v in c.items()
+                if k != "how" and isinstance(v, str) and pat.search(v)]
+        self.assertEqual(hits, [])
+
     def test_critic_shape(self):
         z = self.files.get("zz_critic")
         if z is None:

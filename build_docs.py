@@ -42,6 +42,11 @@ Plan format: `{"app": "PS", "steps": [{"kind": "ps_filter", "name": "Gaussian Bl
 step replaces the whole style; a step may name its `"target"` layer / object). In code:
 `sys.path.insert(0, "<path to PGD>"); import pgd`.
 
+`python run_plan.py run <recipe> PS|AI|CDR` runs a recipe's plan step by step in the live app on a known input
+document and records what each step did (README "Running plans in the apps"). Each recipe below lists its plan runs:
+complete (every step ran), partial (manual steps skipped), failed, or not run (no run of the plan as it is now), with
+the judge's verdict on the result frame.
+
 Status legend: **current**, obsolete (use the equivalent), hidden, needs_input (needs a selection, path, text, second
 image ...), unusable. Verification: [v] matched its render; [wrong] the original card disagreed with its render and was
 rewritten from the render; [weak] shows too faintly at the tested values; [broken] nothing rendered (often a test limit:
@@ -62,12 +67,29 @@ def load():
     return cards
 
 
+def runs(c):
+    """a recipe's plan runs: ' Runs: PS complete [v], CDR partial, AI not run.' (a run of an older plan version is
+    'not run'; the verdict is shown when it judged the current run)"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from run_plan import plan_hash
+    out = []
+    for app, p in sorted((c.get("plans") or {}).items()):
+        h, r, v = plan_hash(p), p.get("run") or {}, p.get("verified") or {}
+        if r.get("plan_hash") != h:
+            out.append(f"{app} not run")
+            continue
+        vd = v.get("verdict") if v.get("plan_hash") == h else None
+        out.append(f"{app} {r.get('result')}" + (" [v]" if vd == "pass" else f" [{vd}]" if vd else ""))
+    return f" Runs: {', '.join(out)}." if out else ""
+
+
 def line(c):
     vd = (c.get("verified") or {}).get("verdict")
     v = " [v]" if vd == "pass" else f" [{vd}]" if vd in ("weak", "wrong", "broken") else ""
     st = "" if c.get("status") in (None, "current") else f" *({c['status']})*"
     eq = ", ".join(f"{a}: {n}" for a, n in (c.get("equivalents") or {}).items() if n)
-    return f"- **{c.get('name')}**{st}{v}: {(c.get('summary') or '').strip()}{f' (= {eq})' if eq else ''}"
+    run = runs(c) if c.get("kind") == "recipe" else ""
+    return f"- **{c.get('name')}**{st}{v}: {(c.get('summary') or '').strip()}{f' (= {eq})' if eq else ''}{run}"
 
 
 def anchor(t):

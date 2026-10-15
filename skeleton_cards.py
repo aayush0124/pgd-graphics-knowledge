@@ -38,6 +38,19 @@ def clip(s, n):
     return s if len(w) <= 25 else " ".join(w[:n]) + " [...]"
 
 
+def how(it, app, v0):
+    """the scripting line; a live probe (extra.js_name / js_note) overrides the dictionary name where Photoshop's
+    ExtendScript knows the enum under another name (PDFStandardType -> PDFStandard) or not at all"""
+    x = it.get("extra") or {}
+    if x.get("js_name"):
+        return (HOW[app].format(n=x["js_name"], v=v0["name"], val=v0["value"])
+                + f" The scripting dictionary calls it {it['name']}, but at run time the global is {x['js_name']} "
+                  f"(live probe).")
+    if x.get("js_note"):
+        return f"Not an ExtendScript global ({x['js_note']}; live probe). COM / VBScript: the numeric value."
+    return HOW[app].format(n=it["name"], v=v0["name"], val=v0["value"])
+
+
 def enum_card(it, app, kind, users):
     vals = (it.get("extra") or {}).get("values") or []
     desc = clip((it.get("extra") or {}).get("description") or "", 9)  # + up to 15 words of our own around it
@@ -48,7 +61,7 @@ def enum_card(it, app, kind, users):
                        + (f" Taken or returned by {len(u)} members, e.g. {', '.join(u[:4])}." if u else ""),
             "use_for": [f"values for {x}" for x in u[:8]] or [f"named constants of type {it['name']}"],
             "confidence": "high",
-            "how": HOW[app].format(n=it["name"], v=v0["name"], val=v0["value"]),
+            "how": how(it, app, v0),
             "key_members": [{"name": v["name"], "use": f"= {v['value']}" +
                              (f". {clip(v['description'], 22)}" if v.get("description") else "")} for v in vals],
             "used_by": u, "source": "skeleton_cards.py (harvest only)"}

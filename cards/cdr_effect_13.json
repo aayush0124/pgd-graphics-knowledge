@@ -17,7 +17,8 @@
     "brightening a whole bitmap for good: Effects/Adjust/Brightness/Contrast/Intensity is the direct adjustment",
     "high rates wash the area towards flat white and lose detail; 30-60 keeps texture",
     "the lens must be a closed vector shape (harvest: requires closed vector object); an open path cannot carry a lens",
-    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were); check the result"
+    "scripts: CreateLens with this type was not apply-tested in the harvest (other lens types were), but plan runs 2026-10-15 (news_editorial.document_zoom_highlight) ran CreateLens(6, -35.0, None, None, 0) and it dimmed what lay beneath",
+    "a lens on a rectangle with a hole combined into it (ShapeRange.Combine): the lens still acts on the hole; use separate rectangles around the area instead, each with its own lens (four Brighten lenses at rate -35 around a zoom box dimmed the page everywhere except the box) (plan runs 2026-10-15 (news_editorial.document_zoom_highlight))"
    ],
    "confidence": "medium",
    "equivalents": {
@@ -34,7 +35,7 @@
    "params": [
     {
      "name": "RateOrMagnification",
-     "does": "Brighten rate in percent: positive values lighten what is seen through the lens, negative values darken it (sign behaviour from general knowledge of the Lens docker, not tested in this harvest)",
+     "does": "Brighten rate in percent: positive values lighten what is seen through the lens, negative values darken it (a negative rate dims what lies beneath: plan runs 2026-10-15 (news_editorial.document_zoom_highlight) used -35)",
      "typical": "30 to 60 to lighten, -30 to -60 to darken"
     }
    ],
@@ -46,7 +47,7 @@
     "Uniform Transparency on a white box (a softer alternative)",
     "IVGEffectLens.Freeze before handing the file to print"
    ],
-   "scripting": "fx = s.CreateLens(6, 60)  # s = a closed shape over the art; Type 6 = cdrLensBrighten. RateOrMagnification 60 = brighten 60 %; Color1, Color2, ColorMapPalette are not used by Brighten (left at None, None, 0). Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested for this type. UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
+   "scripting": "fx = s.CreateLens(6, 60)  # s = a closed shape over the art; Type 6 = cdrLensBrighten. RateOrMagnification 60 = brighten 60 %; Color1, Color2, ColorMapPalette are not used by Brighten (left at None, None, 0). Returns IVGEffect (type 9); edit later via fx.Lens. Not apply-tested in the harvest for this type; plan runs 2026-10-15 (news_editorial.document_zoom_highlight) ran it with rate -35 (dims). UI: Effects > Lens (FrameWork InvokeItem 1c86e69f-30a5-4a01-85cb-e4a76cca5fd5 opens the Lens settings).",
    "scriptable": "yes",
    "non_destructive": "yes: a live lens. The objects beneath are not changed; moving or reshaping the lens shape updates the view and the settings stay editable through the returned effect's Lens (IVGEffectLens: Type, Rate, Color ...). IVGEffectLens.Freeze bakes the current view into static objects.",
    "cost": "light on vectors; redraw slows when the lens sits over large bitmaps",

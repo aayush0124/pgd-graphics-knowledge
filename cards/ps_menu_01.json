@@ -223,7 +223,9 @@
  ],
  "avoid": [
   "large or structured areas (faces, text, repeated architecture): the synthesis repeats patterns; use Edit/Generative Fill or clone by hand",
-  "selections tight to the object: expand the selection a few pixels first or edges ghost"
+  "selections tight to the object: expand the selection a few pixels first or edges ghost",
+  "layers you do not want sampled: it samples every visible layer, so hide them first (a green, cyan and blue seam appeared where a colour-bar strip stayed visible) (plan runs 2026-10-15 (cutout_social.background_blur))",
+  "a selection on the canvas edge: the command is not available there (plan runs 2026-10-15 (print_prep.bleed_and_crop_marks)); extend the canvas edge another way, for example from stretched copies of the edge pixels"
  ],
  "confidence": "high",
  "equivalents": {},
@@ -540,13 +542,15 @@
  ],
  "avoid": [
   "fills you will recolour later: use a Solid Color or Pattern fill layer (Layer > New Fill Layer) instead",
-  "careful object removal: use Edit/Content-Aware Fill, which has a sampling-area preview"
+  "careful object removal: use Edit/Content-Aware Fill, which has a sampling-area preview",
+  "a '50% Gray' fill from the scripted route: it fills with the foreground colour (a solid black layer came out where neutral grey was meant), so fill the grey by script instead (plan runs 2026-10-15 (retouch_cleanup.dodge_burn))",
+  "Content-Aware on a selection at the canvas edge: Edit > Fill with Content-Aware gave a program error, and the Content-Aware Fill workspace is not available there either (plan runs 2026-10-15 (print_prep.bleed_and_crop_marks))"
  ],
  "confidence": "high",
  "equivalents": {},
  "shortcut": "Shift+F5",
  "scriptable": "yes",
- "script_api": "executeAction(stringIDToTypeID('fill'), desc, DialogModes.NO) with desc: Usng = FlCn FrgC (foreground colour), Opct = 100 (#Prc), Md = BlnM Nrml; verified live. Content-aware variant (unverified): Usng = FlCn contentAware. DOM alternative: app.activeDocument.selection.fill(color, ColorBlendMode.NORMAL, 100, false) (in the PS API harvest, not run).",
+ "script_api": "executeAction(stringIDToTypeID('fill'), desc, DialogModes.NO) with desc: Usng = FlCn FrgC (foreground colour), Opct = 100 (#Prc), Md = BlnM Nrml; verified live. Content-aware variant (unverified): Usng = FlCn contentAware. DOM alternative: app.activeDocument.selection.fill(color, ColorBlendMode.NORMAL, 100, false) (in the PS API harvest, not run there; selection.fill(color) did run in plan runs 2026-10-15 (retouch_cleanup.dodge_burn)). The Contents choices Black, 50% Gray and White are not what the scripted route sends: it fills with the foreground colour, so a plan that expected 50% Gray got a solid black layer (plan runs 2026-10-15 (retouch_cleanup.dodge_burn)). For grey, set Usng to the grey content (not run) or fill by script, which ran: d.selection.selectAll(); d.selection.fill(a SolidColor of 128, 128, 128); d.selection.deselect().",
  "review": {
   "by": "adversarial",
   "changes": "summary: added the harvested 'multi' state, where Fill is also disabled; script_api: DOM call marked harvested but not run. Script fill names checked against the Presets/Deco harvest"

@@ -26,7 +26,7 @@
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters. The plan's input is the test photo with synthetic noise added (Gaussian, sigma 14 levels per channel, so both grain and colour speckle), the damage this recipe removes."
       },
       {
        "kind": "ps_filter",
@@ -36,16 +36,16 @@
         "sharpen": 10,
         "removeJPEGArtifact": false
        },
-       "note": "Filter > Noise > Reduce Noise for the coloured blotches (Reduce Color Noise 45 %). Untested: the noise-free test plate gave it nothing to clean (verdict not_rendered), so this step caps the recipe at medium; Strength / Preserve Details travel in the channelDenoise object, which a plan cannot carry."
+       "note": "Filter > Noise > Reduce Noise: Reduce Color Noise 45 %, Sharpen Details 10 %, Remove JPEG Artifact off. Ran without error. Strength and Preserve Details are channelDenoise object params a plan cannot carry and were not set, so the filter runs at its defaults for those two."
       },
       {
        "kind": "ps_filter",
        "id": "surfaceBlur",
        "settings": {
-        "Radius": 3,
-        "Threshold": 10
+        "Radius": 4,
+        "Threshold": 24
        },
-       "note": "Filter > Blur > Surface Blur, small: averages only similar neighbours, so grain melts while edges stay (the render at 40 / 40 airbrushed flat areas; 3 / 10 is a light clean-up). Mask it off fine texture you want to keep."
+       "note": "Filter > Blur > Surface Blur, Radius 4, Threshold 24 (3 / 10 in the first run, which was too weak for noise this strong): ran. This is the filter that does most of the smoothing."
       },
       {
        "kind": "ps_filter",
@@ -56,10 +56,75 @@
         "Radius": 0.8,
         "Remove": "lensBlur"
        },
-       "note": "Filter > Sharpen > Smart Sharpen, gentle (Amount 60, Radius 0.8, Lens Blur) to restore the edge crispness lost to the clean-up."
+       "note": "Filter > Sharpen > Smart Sharpen, Amount 60, Radius 0.8 px, Remove Lens Blur: ran. Measured at 1:1 on the lower-right 512 x 512 px against the clean test photo: the noisy input's mean absolute error is 10.6 grey levels and the denoised result's is 3.2. In the 1:1 crop the flat colour bars and the grey ramp are smooth and the hairline target keeps its lines. Some fine texture in the foreground is gone, but not waxy. Untested: AI Denoise and Camera Raw Denoise (no script route, manual)."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "noise": 14
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "noise": 14
+       }
+      },
+      "plan_hash": "174fe648e382",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Reduce Noise; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Surface Blur; active layer: Layer 0"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Smart Sharpen; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.denoise.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.denoise_steps.png",
+      "secs": 23.6,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.denoise_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "On the noise-damaged input (sigma 14) the 1:1 crop's error against the clean photo falls from 10.6 to 3.2 levels as the step note says, grain in the flat colour bars drops from about 14 to 1 level, and the hairline target keeps its full contrast. Not waxy (detail stays above the clean original's); the only side effect is a 1 px dark rim beside the white hairlines from Smart Sharpen.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "174fe648e382"
+     }
     },
     "CDR": {
      "steps": [
@@ -69,28 +134,87 @@
        "settings": {
         "Radius": 1
        },
-       "note": "Effects > Noise > Median at its smallest radius: specks vanish, edges stay fairly crisp (large radii turn the image to blobs, as the render showed)."
+       "note": "Median at radius 1 on the noisy photo (the run adds Gaussian noise of 14 levels to the plate): isolated noisy pixels are replaced by their neighbourhood median."
       },
       {
        "kind": "cdr_effect",
        "id": "44e9edef-d6a9-4b93-9838-d41889c4f149",
        "settings": {
-        "Detail": 35
+        "Detail": 15
        },
-       "note": "Effects > Blur > Smart Blur (dialog label Amount, key Detail): smooths low-contrast grain, keeps strong edges (render at 100 airbrushed the wood)."
+       "note": "Smart Blur with amount 15 (the key is Detail): an edge-preserving smoothing for what the median leaves. A first try at 35 left faces and walls waxy, so it was lowered."
       },
       {
        "kind": "cdr_effect",
        "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
        "settings": {
-        "Percentage": 60,
+        "Percentage": 120,
         "Radius": 1,
-        "Threshold": 4
+        "Threshold": 3
        },
-       "note": "Effects > Sharpen > Unsharp Mask, gentle, so edges read crisp again."
+       "note": "Unsharp Mask: 120 percent, radius 1, threshold 3: restores crispness to the edges without sharpening the remaining noise. Measured on the frame: the fine-detail energy falls from 12.1 (noisy input) to 3.4 (clean original 2.7), and the mean error against the clean photo from 5.0 to 2.0 levels."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "noise": 14
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "noise": 14
+       }
+      },
+      "plan_hash": "8fe6db460c0a",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('MedianEffect Radius=1')"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SmartBlurEffect Detail=15')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=120,Radius=1,Threshold=3')"
+       }
+      ],
+      "layers": [
+       "photo_1d239d037e.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.denoise.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.denoise_steps.png",
+      "secs": 4.3,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.denoise_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "At 1:1 the added grain is gone (error against the clean photo 11.0 to 2.8 levels in the photo area, 9.9 to 3.6 on the graphics) while the hairline stripes and bar edges stay sharp; at frame size the subjects' faces and the wall match the clean plate rather than looking waxy, and a faint bright line under the grey ramp is the only sharpening trace.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "8fe6db460c0a"
+     }
     }
    },
    "manual_steps": [
@@ -135,27 +259,89 @@
       {
        "kind": "ps_menu",
        "id": "1030",
-       "note": "Image > Image Size: resample to the final print size at 300 ppi (or the printer's figure); verified live with bicubic."
+       "note": "Image > Image Size (script: resizeImage): 1800 x 1013 px at 300 ppi, bicubic, about 6 x 3.4 in, the print size for this example. The settings-free route carries the probe's 200 px, so the size comes from the script. Ran. The plan's input is the test photo softened with a 2 px Gaussian blur at full size (a soft file), so there is something for the sharpening to restore.",
+       "script": "d.resizeImage(UnitValue(1800, 'px'), UnitValue(1013, 'px'), 300, ResampleMethod.BICUBIC);"
       },
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters."
       },
       {
        "kind": "ps_filter",
        "id": "smartSharpen",
        "settings": {
         "Use Legacy": false,
-        "Amount": 180,
-        "Radius": 1.5,
+        "Amount": 300,
+        "Radius": 2.0,
         "Remove": "lensBlur",
         "More Accurate": true
        },
-       "note": "Filter > Sharpen > Smart Sharpen: Amount 180, Radius 1.5 px at 300 ppi (about 1 px per 200 ppi), Remove Lens Blur, More Accurate on. On screen at 100 % it should look slightly crunchy; the render at 300 / 4 showed what over-sharpened halos look like."
+       "note": "Filter > Sharpen > Smart Sharpen: Amount 300 %, Radius 2.0 px, Remove Lens Blur, More Accurate on (180 % / 1.5 px in the first run was barely visible). At 1:1 the blur is only partly undone (edges stay about 4 px wide and the hairlines win back about a fifth of their contrast); a stronger Unsharp Mask is the untested next try. Judge it on the run's 1:1 detail crop (gallery/recipes/PS/retouch_cleanup.sharpen_print_1to1.png, the document's own pixels); the 960 px frame is a 53 % downsample that hides it."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "blur": 2.0
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "blur": 2.0
+       }
+      },
+      "plan_hash": "4bb7fc79ca85",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Smart Sharpen; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1800x1013 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.sharpen_print.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.sharpen_print_steps.png",
+      "secs": 15.8,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.sharpen_print_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "At 1:1 (1800 x 1013 px) the sharpening beats a plain bicubic resize of the 2 px-blurred file (error against the unblurred photo 8.4 to 6.8 levels, photo detail 2.2 to 6.6 against 7.1 unblurred, no halos), but edges stay about 4 px wide and the hairlines win back only a fifth of their lost contrast. It still looks softer than the original, not the stronger-than-screen print sharpening the recipe and the step note describe (a plain Unsharp Mask 150 % / 2 px does better).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "4bb7fc79ca85",
+      "second_opinion": "agree"
+     }
     },
     "CDR": {
      "steps": [
@@ -163,14 +349,63 @@
        "kind": "cdr_effect",
        "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
        "settings": {
-        "Percentage": 150,
-        "Radius": 2,
+        "Percentage": 220,
+        "Radius": 7,
         "Threshold": 3
        },
-       "note": "Effects > Sharpen > Unsharp Mask on the placed bitmap at its final size: Percentage 150, Radius 2, Threshold 3 spares smooth areas (the render at 300 / 8 / 0 gave wide halos)."
+       "note": "Unsharp Mask: 220 percent, radius 7, threshold 3, on a photo softened by a 2.4 px blur (the run's damage setting). The radius scale is 1-20, so the first run's radius 2 did nothing visible; strong values are right for print (ink spread and paper soften the result), but 300 percent at radius 9 showed halos. Measured on the frame: fine-detail energy rises from 1.9 to 2.3 (the unsoftened photo 2.7) and the error against the unsoftened photo falls from 1.41 to 1.22 levels. At 1:1 the softened stripes and the edges of the lamp are crisp again."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "blur": 2.4
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "blur": 2.4
+       }
+      },
+      "plan_hash": "2f8f45d45efa",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=220,Radius=7,Threshold=3')"
+       }
+      ],
+      "layers": [
+       "photo_5574a74b0d.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.sharpen_print.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.sharpen_print_steps.png",
+      "secs": 3.0,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.sharpen_print_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Visibly crisper at 1:1: the 2.4 px blur's edge transitions halve in width and the error against the unsoftened photo falls (photo 1.98 to 1.49, graphics 23.8 to 19.8 levels). The fine stripes come back only partly, not 'crisp again' as the note says, and the hardest graphic edges carry print-strength halos (about 30 levels overshoot, black clipped), acceptable for output sharpening judged on paper.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2f8f45d45efa"
+     }
     }
    },
    "manual_steps": [
@@ -208,41 +443,162 @@
       {
        "kind": "ps_menu",
        "id": "1030",
-       "note": "Image > Image Size: resample to the output pixel size (e.g. 1080 px wide for a feed post)."
+       "note": "Image > Image Size (script: resizeImage): 1080 px wide, height kept in proportion (608 px), 72 ppi, bicubic: the size of a feed post. The settings-free route carries the probe's 200 px, so the size comes from the script. Ran. The plan's input is the test photo softened with a 1.5 px Gaussian blur at full size (a soft camera file), so there is something for the sharpening to restore.",
+       "script": "d.resizeImage(UnitValue(1080, 'px'), undefined, 72, ResampleMethod.BICUBIC);"
       },
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters."
       },
       {
        "kind": "ps_filter",
        "id": "smartSharpen",
        "settings": {
         "Use Legacy": false,
-        "Amount": 80,
-        "Radius": 0.5,
+        "Amount": 120,
+        "Radius": 0.8,
         "Remove": "lensBlur"
        },
-       "note": "Filter > Sharpen > Smart Sharpen at screen size: Amount 80, Radius 0.5 px, Remove Lens Blur."
+       "note": "Filter > Sharpen > Smart Sharpen at screen size: Amount 120 %, Radius 0.8 px, Remove Lens Blur (80 % / 0.5 px in the first run was nearly invisible). Judge it on the run's 1:1 detail crop (gallery/recipes/PS/retouch_cleanup.sharpen_web_1to1.png, the document's own pixels); the 960 px frame hides sharpening."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "blur": 1.5
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "blur": 1.5
+       }
+      },
+      "plan_hash": "211d98897cec",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Smart Sharpen; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1080x608 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.sharpen_web.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.sharpen_web_steps.png",
+      "secs": 16.5,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.sharpen_web_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "At 1:1 (1080 x 608 px) the light Smart Sharpen is clearly crisper than a plain bicubic downsize of the 1.5 px-blurred file: error against the unblurred photo at the same size 5.1 to 3.6 levels, photo detail 12.7 to 16.0 (unblurred 19.7), and the hairline target wins back about 40 % of the contrast the blur took. Only a 5 % edge overshoot, no halos or ringing.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "211d98897cec"
+     }
     },
     "CDR": {
      "steps": [
       {
+       "kind": "cdr_menu",
+       "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+       "script": "\ns.Bitmap.Resample(1080, 608, True)\ns.SetSize(PW, PH)\ns.SetPosition(0.0, PH)\nprint(\"web size px:\", s.Bitmap.SizeWidth, s.Bitmap.SizeHeight)\nresult = s\n",
+       "note": "Downsize (script): Bitmap.Resample(1080, 608, True) takes the photo to the pixel width of a social feed (resample keeps the resolution, so the object is set back to the page size). The run softens the plate with a 1.4 px blur first, like a photo from a phone."
+      },
+      {
        "kind": "cdr_effect",
        "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
        "settings": {
-        "Percentage": 70,
-        "Radius": 1,
+        "Percentage": 130,
+        "Radius": 3,
         "Threshold": 2
        },
-       "note": "Effects > Sharpen > Unsharp Mask after the bitmap is at its output size: Percentage 70, Radius 1."
+       "note": "Unsharp Mask: 130 percent, radius 3, threshold 2, after the downsize: a light sharpen for the exact size the platform shows; the edges are visibly crisper than the softened source (fine-detail energy 2.34 up to 2.54, the unsoftened photo 2.73). Not sharpened before the resize, as the recipe says."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "blur": 1.4
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "blur": 1.4
+       }
+      },
+      "plan_hash": "ad7a8be4953d",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=130,Radius=3,Threshold=2')"
+       }
+      ],
+      "layers": [
+       "photo_17181ab236.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.sharpen_web.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.sharpen_web_steps.png",
+      "secs": 2.8,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.sharpen_web_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Downsized to 1080 px, then sharpened: at 1:1 the softened stripes and bar edges are clearly crisper than the input (graphics fine-detail energy 2.2 to 3.6, error against the unsoftened plate 15.6 to 13.2 levels) with only a light bright line under the grey ramp, so the earlier 'no visible effect' is fixed.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "ad7a8be4953d"
+     }
     }
    },
    "manual_steps": [
@@ -282,12 +638,12 @@
       {
        "kind": "ps_menu",
        "id": "1135",
-       "note": "Layer > Duplicate Layer: work on a copy above the original."
+       "note": "Layer > Duplicate Layer: ran, 'Background copy' sits above the original and is active."
       },
       {
        "kind": "ps_adjustment",
        "id": "desaturate",
-       "note": "Image > Adjustments > Desaturate on the copy (a pixel layer, so before any smart object conversion): removes the colour fringes High Pass leaves."
+       "note": "Image > Adjustments > Desaturate on the copy (a pixel layer): ran; the copy is grey, so High Pass leaves no colour fringes."
       },
       {
        "kind": "ps_filter",
@@ -295,15 +651,64 @@
        "settings": {
         "Radius": 3
        },
-       "note": "Filter > Other > High Pass, Radius 3: the copy turns flat 50 % grey with only the edges left (as the render showed at 15)."
+       "note": "Filter > Other > High Pass, Radius 3: ran; the copy becomes mid grey with only the edges left."
       },
       {
        "kind": "ps_blend_mode",
        "id": "overlay",
-       "note": "Set the copy to Overlay (Soft Light for a gentler result): grey disappears, edges get contrast. Opacity 50-100 % sets the strength; a layer mask limits it to where you want it."
+       "note": "Copy set to Overlay: ran, the grey disappears and the edges gain contrast; at 960 px the picture's edge detail is 1.77 times the original. Untested: Soft Light, a lower opacity and a mask to limit the strength (manual)."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "e8dc05d55b80",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Desaturate; active layer: Background copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: High Pass; active layer: Background copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Background copy"
+       }
+      ],
+      "layers": [
+       "Background copy [normal overlay]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.high_pass_sharpen.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.high_pass_sharpen_steps.png",
+      "secs": 21.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The Overlay high-pass layer visibly crisps the soft plate: fine edges such as fine radial lines and the bright rims in the foreground read sharper (Laplacian detail 1.77x, strong-edge contrast +20 %), with no glow halos at radius 3 and brightness unchanged.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e8dc05d55b80"
+     }
     }
    },
    "manual_steps": [],
@@ -342,22 +747,78 @@
     "PS": {
      "steps": [
       {
+       "kind": "ps_api",
+       "id": "class:Selection",
+       "script": "d.selection.select([[222, 378], [310, 378], [310, 430], [222, 430]]);",
+       "note": "Script (new first step, a Selection step): select a small object in the background, a rectangle 222, 378 to 310, 430 px around two small dark objects, with selection.select. Chosen by eye for the test photo; selecting the object in a real photo is manual (Lasso or Object Selection Tool). Ran."
+      },
+      {
        "kind": "ps_menu",
        "id": "1109",
-       "note": "With the object selected (by hand, see manual steps), Select > Modify > Expand by 6-10 px so the fill samples clean background beyond the object's edge."
+       "note": "Select > Modify > Expand 8 px (script: selection.expand): ran, so the fill samples clean background beyond the object's edge. The settings-free route carries the probe's 10 px, so the value comes from the script.",
+       "script": "d.selection.expand(UnitValue(8, 'px'));"
       },
       {
        "kind": "ps_menu",
        "id": "1510",
-       "note": "Edit > Content-Aware Fill (executeAction 'cafWorkspace'): verified live, with no settings it applied the workspace defaults and put the fill on a new layer, so the original stays untouched. Needs an active selection."
+       "note": "Edit > Content-Aware Fill (executeAction 'cafWorkspace', workspace defaults): ran and put the fill on a new layer above the original. The run shows the two small objects gone, filled with matching background; the rest of the picture is unchanged. Untested: larger objects and objects over complex structure (the recipe says clone by hand there)."
       },
       {
        "kind": "ps_menu",
        "id": "1016",
-       "note": "Select > Deselect."
+       "note": "Select > Deselect: ran."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "e3931d3f4a2d",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Lasso; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Expand; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Content-Aware Fill; active layer: Background copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Deselect; active layer: Background copy"
+       }
+      ],
+      "layers": [
+       "Background copy [normal]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.object_removal.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.object_removal_steps.png",
+      "secs": 19.2
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The two small dark objects in the selected rectangle are gone, filled with matching wall and ledge texture with no visible seam; every other pixel is unchanged (all changes sit inside a 50 x 30 px box at 960 px).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e3931d3f4a2d"
+     }
     }
    },
    "manual_steps": [
@@ -403,24 +864,30 @@
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters. The plan's input is the test photo with synthetic damage added: 80 dark and light dust specks and hairs and 4 thin light vertical scratches, the damage this recipe removes."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:Selection",
+       "script": "d.selection.selectAll(); d.selection.select([[1170, 1020], [1910, 1020], [1910, 1080], [1170, 1080]], SelectionType.DIMINISH);",
+       "note": "Script (new step): select everything except the line-target box at the bottom right (x 1170 to 1910, y 1020 to 1080). The selection stays active, so the three smart filters below get a filter mask that protects the hairline target (the recipe says to mask fine detail out; with a global filter the first run erased the target's finest lines). Ran."
       },
       {
        "kind": "ps_filter",
        "id": "dustAndScratches",
        "settings": {
-        "radius": 2,
-        "threshold": 15
+        "radius": 5,
+        "threshold": 40
        },
-       "note": "Filter > Noise > Dust & Scratches, Radius 2 / Threshold 15: removes specks that differ from their neighbours; paint the smart-filter mask black where real detail suffers."
+       "note": "Filter > Noise > Dust & Scratches: Radius 5, Threshold 40 (2 / 15 in the first run, on a photo with nothing to remove). Ran. The radius has to be about the size of the specks; the high threshold leaves low-contrast texture alone. The run shows the specks and the scratches gone from the picture and the colour bars. Specks and scratches inside the protected line-target box stay (one scratch still crosses it)."
       },
       {
        "kind": "ps_filter",
        "id": "median",
        "settings": {
-        "radius": 2
+        "radius": 1
        },
-       "note": "Filter > Noise > Median, Radius 2, only for halftone moire from printed originals (skip it for photo scans): smooths the screen pattern."
+       "note": "Filter > Noise > Median, Radius 1 (2 in the first run): ran. The recipe keeps it for halftone moire in printed originals; this photo has none, so here it only softens slightly (skip it for photo scans)."
       },
       {
        "kind": "ps_filter",
@@ -431,10 +898,82 @@
         "Radius": 0.8,
         "Remove": "lensBlur"
        },
-       "note": "Filter > Sharpen > Smart Sharpen, gentle, to bring back edges after the clean-up."
+       "note": "Filter > Sharpen > Smart Sharpen: Amount 70 %, Radius 0.8 px, Remove Lens Blur. Ran. Measured on the photo area at 960 px against the clean test photo: pixels off by more than 40 levels fall from 2183 (damaged input) to 118, while the mean absolute error rises slightly (0.47 to 0.62 levels): the filters soften a little in exchange for removing the specks. The caption text stays legible with slightly rounded corners and the hairline target is intact. A few tiny scratch remnants stay along the colour-bar boundaries. Untested: moire, and painting the smart-filter mask by hand where detail suffers (manual)."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "dust": 80,
+       "scratches": 4
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "dust": 80,
+        "scratches": 4
+       }
+      },
+      "plan_hash": "b6f46ff20713",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Lasso; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Dust & Scratches; active layer: Layer 0"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Median; active layer: Layer 0"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Smart Sharpen; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.scan_cleanup.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.scan_cleanup_steps.png",
+      "secs": 27.4,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.scan_cleanup_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Dust and scratches are clearly removed: in the photo area at 960 px the pixels more than 40 levels off the clean photo fall from about 2,220 to 160 (only tiny specks left), detail stays at the clean photo's level and the masked hairline target is untouched, so the first verdict's lost lines are fixed. Leftovers are small, as the step note says: scratch remnants along the colour-bar boundaries, slightly rounded caption corners and one hair across the protected target.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "b6f46ff20713"
+     }
     },
     "CDR": {
      "steps": [
@@ -442,32 +981,100 @@
        "kind": "cdr_effect",
        "id": "b2e22b39-eb2b-4847-a3ed-fd14b8c79741",
        "settings": {
-        "Radius": 2,
-        "Threshold": 40
+        "Radius": 4,
+        "Threshold": 20
        },
-       "note": "Effects > Correction > Dust and Scratch: Radius 2, Threshold 40 (the render at 10 / 8 smeared everything; a higher threshold spares real detail)."
+       "note": "Dust and Scratch, radius 4, threshold 20, on a photo with synthetic damage (90 dust specks and hairs and 5 long thin scratches, the run's damage setting): the long scratches and almost all the specks are gone; a few of the largest dark dots remain. Radius 8 removed them too but smeared real detail (fine radial detail in the background), which the recipe warns about. At 1:1 the effect also erased the plate's own thin white stripes in the bottom strip, the fine-detail loss the recipe's avoid list names, so a real job masks the effect to the damaged areas."
       },
       {
        "kind": "cdr_effect",
        "id": "9431fae7-3451-4f65-9c80-0f2f91770097",
        "settings": {
-        "Amount": 6,
+        "Amount": 4,
         "OptimizeMode": "Quality"
        },
-       "note": "Effects > Noise > Remove Moire for scans of printed pictures (the plate had no halftone, so only its slight softening was rendered)."
+       "note": "Remove Moire, amount 4, quality mode: the plate has no halftone pattern (a real printed-picture scan would), so this is a light extra smoothing here."
       },
       {
        "kind": "cdr_effect",
        "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
        "settings": {
-        "Percentage": 60,
-        "Radius": 1,
-        "Threshold": 4
+        "Percentage": 120,
+        "Radius": 4,
+        "Threshold": 3
        },
-       "note": "Effects > Sharpen > Unsharp Mask, gentle."
+       "note": "Unsharp Mask: 120 percent, radius 4, threshold 3: restores the crispness the clean-up took away (fine-detail energy 2.8 up to 3.1, clean original 2.7)."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "dust": 90,
+       "scratches": 5
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "dust": 90,
+        "scratches": 5
+       }
+      },
+      "plan_hash": "2132b8175513",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('DustScratchEffect Radius=4,Threshold=20')"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('RemoveMoireEffect OutputResolution=300,Amount=4,OptimizeMode=1')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=120,Radius=4,Threshold=3')"
+       }
+      ],
+      "layers": [
+       "photo_f0597ab915.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.scan_cleanup.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.scan_cleanup_steps.png",
+      "secs": 13.2,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.scan_cleanup_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "In the photo area, grossly wrong pixels against the clean plate drop from about 2,400 to about 350 at frame size (86 percent), and detail at 1:1 stays at the clean level (Laplacian 1.87 against 1.96, the damaged input 2.93), so the dust specks and long scratches really are gone without smearing; a few large dark dots, a faint scratch on the grey ramp and a white dot on the black bar remain. But the unmasked Dust and Scratch merges the bottom strip's hairline stripes into one solid white bar and leaves colour fringes on the swatch edges (error there rises from 0.7 to 10 levels), the fine-detail loss the recipe's avoid list says to mask out. That strip is what pushes the overall mean error up from 0.6 to 3.2 levels.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2132b8175513",
+      "second_opinion": "corrected: the result is not worse than the input. The photo itself is clearly cleaner than the damaged plate and keeps its detail; the fine-line loss in the graphic strip is the recipe's own avoid item (an unmasked Dust and Scratch), which makes it weak, not wrong. The overall mean error rises mainly because of that strip.",
+      "previous": {
+       "verdict": "wrong",
+       "note": "Dust and the long scratches are mostly gone (grossly wrong pixels in the photo area drop about 80 %; a few large dots and a faint scratch on the grey ramp remain), but the unmasked Dust and Scratch merges the plate's hairline stripes into one solid bar and leaves colour fringes on the bar edges, the fine-line loss the recipe warns about; mean error against the clean photo rises from 1.0 to 3.2 levels.",
+       "by": "judge",
+       "date": "2026-10-15"
+      }
+     }
     }
    },
    "manual_steps": [
@@ -512,20 +1119,76 @@
       {
        "kind": "ps_menu",
        "id": "1099",
-       "note": "Layer > New > Layer above the photo."
+       "note": "Layer > New > Layer above the photo: ran, 'Layer 1' is active."
       },
       {
        "kind": "ps_menu",
        "id": "1042",
-       "note": "Edit > Fill with Contents 50 % Gray (the fill descriptor's Usng = 50 % grey instead of the foreground colour), 100 % opacity, Normal."
+       "note": "Edit > Fill with 50 % grey (script): select all, fill #808080, deselect. The harvest route for Edit > Fill ran with the foreground colour and made the layer solid black (see BUGS.md), so the plan fills the grey itself. Ran.",
+       "script": "d.selection.selectAll(); d.selection.fill(hexc('#808080')); d.selection.deselect();"
       },
       {
        "kind": "ps_blend_mode",
        "id": "softLight",
-       "note": "Set the grey layer to Soft Light: 50 % grey is neutral, so nothing changes until you paint (the card lists exactly this use; its frame matched the Soft Light formula)."
+       "note": "Grey layer set to Soft Light: ran. The step frame matches the input, as 50 % grey is neutral."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "d.selection.select(function () { var o = [], i; for (i = 0; i < 48; i++) o.push([705 + 190 * Math.cos(i * Math.PI / 24), 230 + 230 * Math.sin(i * Math.PI / 24)]); return o; }());\nd.selection.feather(60); d.selection.fill(hexc('#FFFFFF'), ColorBlendMode.NORMAL, 20, false);\nd.selection.select([[0, 560], [1920, 560], [1920, 1080], [0, 1080]]); d.selection.feather(120); d.selection.fill(hexc('#000000'), ColorBlendMode.NORMAL, 20, false); d.selection.deselect();",
+       "note": "Script (new step 4): a stand-in for the hand work. Dodge: an ellipse around one head area, feathered 60 px, filled white at 20 %. Burn: the lower half of the frame, feathered 120 px, filled black at 20 %; then Deselect. Ran. The run shows that head area slightly lighter and the lower part slightly darker, the rest unchanged. Real dodging and burning (Dodge / Burn tool or a soft brush at 5 to 10 %) is painted by hand and stays manual."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "338279d8bda5",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: New Layer; active layer: Layer 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Deselect; active layer: Layer 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Blending Change; active layer: Layer 1"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Deselect; active layer: Layer 1"
+       }
+      ],
+      "layers": [
+       "Layer 1 [normal softlight]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.dodge_burn.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.dodge_burn_steps.png",
+      "secs": 18.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The 50 % grey Soft Light layer is neutral as claimed (step 3 matches the input exactly), and the stand-in strokes visibly lighten one head area (about +10 levels) and darken the lower half (about -8 levels) without touching pixels underneath. Local, soft and non-destructive as the summary says.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "338279d8bda5"
+     }
     }
    },
    "manual_steps": [
@@ -566,55 +1229,233 @@
       {
        "kind": "ps_menu",
        "id": "1135",
-       "note": "Layer > Duplicate Layer: work on a copy above the original."
+       "note": "Layer > Duplicate Layer: ran, 'Background copy' sits above the original and is active. The plan's input is the test photo with synthetic sensor noise added (Gaussian, sigma 10 levels), so the skin has grain and small irregularities to even out; the first run's already-soft photo showed no change."
       },
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object on the copy: ran, so the filters that follow are smart filters on the copy."
       },
       {
        "kind": "ps_filter",
        "id": "surfaceBlur",
        "settings": {
-        "Radius": 20,
-        "Threshold": 12
+        "Radius": 24,
+        "Threshold": 36
        },
-       "note": "Filter > Blur > Surface Blur on the copy: flat areas melt, strong edges stay (the card warns that pushed hard it gives plastic skin)."
+       "note": "Filter > Blur > Surface Blur on the copy: Radius 24, Threshold 36 (20 / 12 in the first run). Ran; flat areas melt, strong edges stay."
       },
       {
        "kind": "ps_filter",
        "id": "addNoise",
        "settings": {
-        "noise": 1.5,
+        "noise": 1.0,
         "distort": "gaussianDistribution",
         "monochromatic": true
        },
-       "note": "Filter > Noise > Add Noise as a second smart filter: Gaussian, monochromatic, 1-2 %, so the smoothed areas get back a fine texture."
+       "note": "Filter > Noise > Add Noise as a second smart filter: 1.0 %, Gaussian, monochromatic (1.5 % in the first run). Ran; a little fine texture is added back to the smoothed areas."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "function ell(cx, cy, rx, ry) { var o = [], i; for (i = 0; i < 64; i++) o.push([cx + rx * Math.cos(i * Math.PI / 32), cy + ry * Math.sin(i * Math.PI / 32)]); return o; }\nfunction box(x0, y0, x1, y1) { return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]; }\nd.selection.select(ell(720, 205, 80, 95));\nd.selection.select(box(650, 170, 790, 202), SelectionType.DIMINISH);\nd.selection.select(ell(735, 258, 44, 17), SelectionType.DIMINISH);\nd.selection.select(ell(1415, 335, 85, 100), SelectionType.EXTEND);\nd.selection.select(box(1335, 288, 1505, 348), SelectionType.DIMINISH);\nd.selection.select(ell(1420, 412, 48, 16), SelectionType.DIMINISH);\nd.selection.feather(8);\nexecuteAction(tk('make'), mkMaskDesc('revealSelection'), DialogModes.NO); d.selection.deselect(); L.opacity = 70;",
+       "note": "Script (new step 5): a stand-in for painting the skin mask by hand. Two skin regions chosen by coordinates for this photo (no face detection): an ellipse over each head, minus a horizontal band through the eye and brow area and a small ellipse over the mouth, joined, feathered 8 px and turned into a layer mask with Reveal Selection; the copy's opacity is set to 70 % (60 % in the first run). Ran. Measured on 960 px frame patches of forehead and cheek skin, the high-frequency energy (Laplacian variance) falls to 27 to 35 % of the noisy input's, while a patch outside the mask is unchanged. In a 4 x enlargement the skin is visibly smoother with the eye, brow and mouth areas and the head outline still sharp. The rest of the picture keeps its grain. Painting a proper skin mask is manual."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "noise": 10
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "noise": 10
+       }
+      },
+      "plan_hash": "aa538b8d181b",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: Background copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Convert to Smart Object; active layer: Background copy"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Surface Blur; active layer: Background copy"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Add Noise; active layer: Background copy"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Master Opacity Change; active layer: Background copy"
+       }
+      ],
+      "layers": [
+       "Background copy [smartobject 70%]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.skin_smoothing.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.skin_smoothing_steps.png",
+      "secs": 29.4,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.skin_smoothing_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The masked copy visibly evens out the grain on both subjects' skin: high-frequency energy in forehead and cheek patches falls to 27 to 34 % of the noisy input's, as the step note says, while the eye, brow and mouth areas and everything outside the mask stay unchanged. The added grain keeps texture above the clean original's, so it is not waxy, though cheek shading is softened by about a third.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "aa538b8d181b"
+     }
     },
     "CDR": {
      "steps": [
       {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "smooth = s.Duplicate(0, 0)\nlabels[\"smooth\"] = smooth\nresult = smooth",
+       "note": "Setup (script): a duplicate of the photo on top, to be smoothed.",
+       "as": "smooth",
+       "labels": [
+        "smooth"
+       ]
+      },
+      {
        "kind": "cdr_effect",
        "id": "44e9edef-d6a9-4b93-9838-d41889c4f149",
        "settings": {
-        "Detail": 60
+        "Detail": 80
        },
-       "note": "On a duplicate of the bitmap: Effects > Blur > Smart Blur, edge-preserving smoothing."
+       "note": "Smart Blur (amount 80 of 100) on the duplicate: edge-preserving smoothing that flattens the low-contrast grain of skin while strong edges hold.",
+       "target": "smooth"
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "b08950be-822b-491b-8fa8-74821cef12e8",
+       "settings": {
+        "NoiseMode": "Gaussian",
+        "Level": 8,
+        "Density": 40,
+        "ColorMode": "Intensity"
+       },
+       "note": "Add Noise on the smoothed copy: Gaussian, level 8, density 40: the fine grain added back so the skin does not turn to plastic (the recipe's last step).",
+       "target": "smooth"
       },
       {
        "kind": "cdr_effect",
        "id": "vector:Transparency:Uniform",
        "settings": {
-        "Value": 40
+        "Value": 35
        },
-       "note": "Uniform Transparency 40 on the smoothed copy (about 60 % opacity) so the original texture shows through."
+       "note": "Uniform transparency 35 on the smoothed copy (65 percent opaque, inside the recipe's 40-70 percent): the original texture still shows through.",
+       "target": "smooth"
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "face = [(700, 108), (745, 110), (780, 125), (798, 160), (800, 205), (795, 250), (780, 285), (745, 305), (705, 308), (665, 300),\n        (645, 270), (640, 230), (638, 190), (645, 150), (665, 120)]\ncrv = app.CreateCurve(doc)\nsp = crv.CreateSubPath(face[0][0] / PX, PH - face[0][1] / PX)\nfor x, y in face[1:]:\n    sp.AppendLineSegment(x / PX, PH - y / PX)\nsp.Closed = True\nfor cx, cy, rx, ry in ((682, 176, 34, 22), (762, 180, 32, 21), (740, 258, 50, 17)):\n    crv.AppendSubpathEllipse(cx / PX, PH - cy / PX, rx / PX, ry / PX)\nskin = layer.CreateCurve(crv)\nskin.Fill.ApplyNoFill()\nskin.Outline.SetNoOutline()\ns.AddToPowerClip(skin, 0)\nresult = skin",
+       "note": "Skin mask (script): the smoothed copy is placed (AddToPowerClip) in one compound shape: a face-sized oval (about 160 x 200 px, the skin of one subject) with three holes cut out for the eyes and brows and the mouth, so those stay sharp from the original underneath. The oval and the holes are placed by coordinates for this photo, a stand-in for a hand-drawn skin selection (no face detection in CorelDRAW).",
+       "target": "smooth"
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "noise": 14
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "noise": 14
+       }
+      },
+      "plan_hash": "06fdd5f67ae0",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('SmartBlurEffect Detail=80')"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AddNoiseEffect NoiseMode=0,Level=8,Density=40,ColorMode=0')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "Transparency.ApplyUniformTransparency(35,)"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 3]",
+       "photo_1d239d037e.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.skin_smoothing.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.skin_smoothing_steps.png",
+      "secs": 8.1,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.skin_smoothing_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Inside the face mask of one subject the skin noise falls by more than half (fine-detail energy 3.2 to 1.4, clean 0.8) while the eye and mouth holes are untouched (3.2 to 3.1) and some grain is kept, so it reads as smoother skin, not plastic. The hard-edged holes show as slightly noisier patches, and the other subject's face is not masked.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "06fdd5f67ae0"
+     }
     }
    },
    "manual_steps": [
@@ -658,32 +1499,126 @@
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters. The plan's input is the test photo tilted 2.5 degrees counter-clockwise and scaled up to fill the frame (damage tilt 2.5), so there is a tilt to correct; the first run's level photo was tilted by the correction."
       },
       {
        "kind": "ps_filter",
        "id": "'LnCr'",
        "settings": {
         "Auto Geometric Distortion Correction": false,
-        "Rotation Angle": 1.5,
-        "Vertical Perspective": -15,
+        "Rotation Angle": 2.5,
+        "Vertical Perspective": 0,
         "Horizontal Perspective": 0,
         "Image Size": 100
        },
-       "note": "Filter > Lens Correction: Rotation Angle levels the horizon (sign as in the dialog; rotation was not separated in the render), Vertical Perspective pulls converging verticals upright (the render at -20 keystoned the frame clearly); tune both per photo."
+       "note": "Filter > Lens Correction on the smart object: Rotation Angle 2.5, Vertical Perspective 0, Horizontal Perspective 0, Image Size 100, automatic geometry correction off (the first run used 1.5 degrees and -15 keystone on a level photo). Ran; the angle undoes exactly the 2.5 degrees of tilt and the input has no keystone, so none is applied. Measured on the frame: the top edge of the colour-bar band slopes -2.43 degrees in the tilted input and 0.0 degrees after the correction (the clean photo's is 0.0). The run shows the bars, foreground edges and ramp level again, with no empty wedge: the tilted input had already been scaled to fill the frame, and the correction scales up again (the picture is about 16 % larger than the clean photo in total, so the bottom strips are cropped away and fine detail is softer). Cropping or filling wedges is therefore not needed here; on a photo with real empty corners it stays manual (Crop Tool, Content-Aware Fill)."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "tilt": 2.5
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "tilt": 2.5
+       }
+      },
+      "plan_hash": "e3658e95cb07",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Lens Correction; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.straighten_perspective.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.straighten_perspective_steps.png",
+      "secs": 18.4,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.straighten_perspective_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The tilt is removed: the top edge of the colour bars slopes -2.5 degrees in the input and 0.0 after, the bar boundaries stand vertical and there are no empty wedges. The cost is the expected crop (the picture ends 1.16 times the clean photo's scale, so the caption and line strip fall outside the frame), with detail matching the clean photo enlarged by the same amount.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e3658e95cb07"
+     }
     },
     "CDR": {
      "steps": [
       {
        "kind": "cdr_menu",
        "id": "632996de-c938-44ad-8480-79dfbc70d584",
-       "note": "Bitmaps > Straighten Image: InvokeItem only opens the dialog; align the straightening bar, correct perspective and crop to the result there (no object-model equivalent)."
+       "script": "\nimport math\ntilt = 2.5\ns.Rotate(-tilt)\nk = math.cos(math.radians(tilt)) + (PW / PH) * math.sin(math.radians(tilt))\ns.StretchEx(s.CenterX, s.CenterY, k, k)\npage = layer.CreateRectangle2(0.0, 0.0, PW, PH, 0, 0, 0, 0)\npage.Fill.ApplyNoFill()\npage.Outline.SetNoOutline()\ns.AddToPowerClip(page, 0)\nresult = page\n",
+       "note": "Straighten (script, in place of the Straighten Image dialog): the input is the photo tilted 2.5 degrees counter-clockwise (the run's damage setting), so Shape.Rotate(-2.5) turns it back level. The rotation opens empty wedges at the corners, so StretchEx enlarges the picture by cos + (width / height) x sin of the angle, 1.077, the smallest scale that fills the page again, and AddToPowerClip into a page-size rectangle crops it. The colour bars and the grey ramp at the bottom are level again. Converging verticals (perspective) are not corrected: the dialog's perspective handles have no object-model equivalent."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "tilt": 2.5
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "tilt": 2.5
+       }
+      },
+      "plan_hash": "dfa9134fed18",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.straighten_perspective.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.straighten_perspective_steps.png",
+      "secs": 6.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The 2.5 degree input tilt is removed: the bar row is level in the result (slope -0.06 degrees, 0.3 px residual) with no empty wedges, and sharpness matches a plain bicubic rotate-and-scale of the input. Converging verticals are not corrected (no route), and the 1.077 crop cuts off the plate's bottom type row.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "dfa9134fed18"
+     }
     }
    },
    "manual_steps": [
@@ -725,12 +1660,19 @@
       {
        "kind": "ps_menu",
        "id": "1030",
-       "note": "Image > Image Size: Resample on, enlarge to the target (e.g. 200 %); choose Preserve Details 2.0 in the dialog (the scripted route verified in the harvest used bicubic)."
+       "script": "d.resizeImage(UnitValue(1280, 'px'), undefined, 72, ResampleMethod.BICUBICSHARPER);",
+       "note": "Script (new first step): Image > Image Size to 1280 px wide (bicubic sharper), a stand-in for a small source photo; the recipe starts from one, and the test photo is 1920 px. Ran."
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size (script: resizeImage): 3840 px wide with the height in proportion (3.0 times the 1280 px source, 3840 x 2160), Preserve Details resampling (the script API has no Preserve Details 2.0 member; choose 2.0 in the dialog by hand). The settings-free route carries the probe's 200 px and bicubic, so the size and method come from the script. Ran.",
+       "script": "d.resizeImage(UnitValue(3840, 'px'), undefined, 72, ResampleMethod.PRESERVEDETAILS);"
       },
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters."
       },
       {
        "kind": "ps_filter",
@@ -739,7 +1681,7 @@
         "Radius": 2,
         "Threshold": 8
        },
-       "note": "Filter > Blur > Surface Blur, very light: evens out the resampling noise."
+       "note": "Filter > Blur > Surface Blur, Radius 2, Threshold 8: ran, very light."
       },
       {
        "kind": "ps_filter",
@@ -750,30 +1692,180 @@
         "Radius": 1.2,
         "Remove": "lensBlur"
        },
-       "note": "Filter > Sharpen > Smart Sharpen at the new size, Amount 120, Radius 1.2."
+       "note": "Filter > Sharpen > Smart Sharpen at the new size: Amount 120 %, Radius 1.2 px, Remove Lens Blur. Ran; the document ends at 3840 x 2160 px, and the 1:1 crop is 1024 x 1024 px of the lower-right region. Measured on that crop against the 1920 px original enlarged to the same size: a plain bicubic enlargement of the 1280 px source has a Laplacian detail of 68, the plan's result 199 (the reference is 291), and the mean absolute error against the reference is 2.7 levels for bicubic and 2.4 for the plan. The 1:1 crop shows smooth, clean edges: the colour-bar boundary and hairline target are sharp with no stair-steps or blocking; a faint 1 px overshoot shows along the bar edges; the foreground texture is soft, as expected at 3 times. Untested: AI or Generative Upscale and Camera Raw Super Resolution (credits or no script route, manual)."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "5ff8d57ff2f4",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Surface Blur; active layer: Layer 0"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "history: Smart Sharpen; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 3840x2160 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.upscale.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.upscale_steps.png",
+      "secs": 26.5,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.upscale_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "At 1:1 on the 3840 x 2160 px result the 3x Preserve Details enlargement with its light clean and sharpen is clearly better than plain bicubic from the same 1280 px source: Laplacian detail 63 against 198 (reference 306), hairline-target contrast back to the reference's, error 2.5 to 2.3 levels. Only a faint 1 px overshoot at the colour-bar edges, no stair-steps or blocking.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5ff8d57ff2f4"
+     }
     },
     "CDR": {
      "steps": [
       {
        "kind": "cdr_menu",
        "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
-       "note": "Bitmaps > Resample: the dialog's machine-learning upsampling modes rebuild detail when enlarging. InvokeItem only opens the dialog; ActiveShape.Bitmap.Resample is the unverified object-model route."
+       "script": "s.Bitmap.Resample(480, 270, True)\nresult = s",
+       "note": "Setup (script): Bitmap.Resample(480, 270) shrinks the photo to a small source, the starting point of an upscale. (Resample keeps the resolution, so the object shrinks on the page; the next step brings it back.)"
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+       "script": "s.Bitmap.Resample(960, 540, True)\ns.SetSize(PW, PH)\ns.SetPosition(0.0, PH)\nresult = s",
+       "note": "First doubling: Bitmap.Resample(960, 540) with anti-aliasing (the call has no machine-learning mode, so this is ordinary resampling), and the object is set back to the page size."
       },
       {
        "kind": "cdr_effect",
        "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
        "settings": {
-        "Percentage": 100,
-        "Radius": 1,
+        "Percentage": 160,
+        "Radius": 3,
         "Threshold": 3
        },
-       "note": "Effects > Sharpen > Unsharp Mask after the enlargement."
+       "note": "Unsharp Mask after the first doubling: 160 percent, radius 3, threshold 3: restores the edge contrast the resampling softened before the second doubling."
+      },
+      {
+       "kind": "cdr_menu",
+       "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
+       "script": "s.Bitmap.Resample(1920, 1080, True)\ns.SetSize(PW, PH)\ns.SetPosition(0.0, PH)\nresult = s",
+       "note": "Second doubling: Bitmap.Resample(1920, 1080), the 4x enlargement done in two 2x steps (the recipe's safe route). Still ordinary resampling: no detail is invented."
+      },
+      {
+       "kind": "cdr_effect",
+       "id": "58162f6d-8364-4468-bf10-299bf9aa2981",
+       "settings": {
+        "Percentage": 160,
+        "Radius": 4,
+        "Threshold": 3
+       },
+       "note": "Final Unsharp Mask: 160 percent, radius 4, threshold 3, after the enlargement: the edges are crisp again (radius 1 changed nothing visible in the first run)."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "6efa580da51b",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=160,Radius=3,Threshold=3')"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('UnsharpMaskEffect Percentage=160,Radius=4,Threshold=3')"
+       }
+      ],
+      "layers": [
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.upscale.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.upscale_steps.png",
+      "secs": 3.6,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.upscale_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The 4x enlargement of a 480 px source in two doublings now sharpens visibly: at 1:1 edges and type are crisper than a plain resample of the same source (graphics fine-detail energy 6.7 against about 2) and at frame size it reads like the original; thin colour and bright fringes sit on the hard bar edges, and no detail is invented.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "6efa580da51b"
+     }
     }
    },
    "manual_steps": [
@@ -820,7 +1912,7 @@
         "clarity": 10,
         "dehaze": 35
        },
-       "note": "Clarity and dehaze adjustment layer: Dehaze 35 cuts the haze, Clarity 10 adds midtone bite (the render at 60 / 50 was strongly darker, crisper and more saturated)."
+       "note": "Clarity and dehaze adjustment layer: Clarity 10, Dehaze 35. Ran; at 960 px the picture's edge detail is 1.33 times the original and it is a little darker and more saturated."
       },
       {
        "kind": "ps_adjustment",
@@ -830,7 +1922,7 @@
         "center": 0,
         "useLegacy": false
        },
-       "note": "Brightness/Contrast layer: Brightness +4 if Dehaze made the photo too dark."
+       "note": "Brightness/Contrast adjustment layer: Brightness +4, Contrast 0, non-legacy. Ran without error; a small lift against the darkening."
       },
       {
        "kind": "ps_adjustment",
@@ -842,17 +1934,63 @@
         "vibrance": 10,
         "saturation": 0
        },
-       "note": "Color and vibrance layer: Vibrance +10 for colour that the haze had washed out."
+       "note": "Color and vibrance adjustment layer: Vibrance +10. Ran without error. Untested: the haze itself (the test photo is not hazy), strong Dehaze on skies and masking a sky."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "8cddc836f922",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: New Clarity and dehaze Layer; active layer: Clarity and dehaze 1"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: New Brightness/Contrast Layer; active layer: Brightness/Contrast 1"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: New Color and vibrance Layer; active layer: Color and vibrance 1"
+       }
+      ],
+      "layers": [
+       "Color and vibrance 1 [vibrance]",
+       "Brightness/Contrast 1 [brightnesscontrast]",
+       "Clarity and dehaze 1 [layer]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.dehaze.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.dehaze_steps.png",
+      "secs": 17.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The flat, slightly washed-out plate gains visible depth: deeper colour (saturation about +22 %), darker midtones (about -8 levels) and a little clarity (Laplacian detail 1.33x as claimed), with no dark corners or banding. The plate is not truly hazy, but the effect is what the summary describes.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "8cddc836f922"
+     }
     },
     "CDR": {
      "steps": [
       {
        "kind": "cdr_effect",
        "id": "f9d61ad8-4f99-4ada-b900-d3c4c9b3ca60",
-       "note": "Effects > Adjust > Auto Adjust: stretches each channel to full range, the main dehaze move on a foggy photo."
+       "note": "Auto Adjust. Run: the page changed by 7.44 on average (0-255). The contrast and colour are stronger."
       },
       {
        "kind": "cdr_effect",
@@ -860,7 +1998,8 @@
        "settings": {
         "Level": 0.9
        },
-       "note": "Effects > Adjust > Gamma 0.9: slightly deeper midtones."
+       "note": "Gamma 0.9 through the object model (Shape.ApplyEffectGamma): slightly deeper midtones. The bitmap-effect route ('GammaEffect LevelCompact=0,Level=...') darkened the photo to near black in a first run here (Level was ignored).",
+       "script": "s.ApplyEffectGamma(0.9)\nresult = s"
       },
       {
        "kind": "cdr_effect",
@@ -869,10 +2008,52 @@
         "Vibrance": 20,
         "Saturation": 0
        },
-       "note": "Effects > Adjust > Vibrance +20 for the washed-out colours."
+       "note": "Vibrance +20, saturation 0. Run: the page changed by 2.02 on average (0-255)."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "2344273ff7a0",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('AutoEqualizeEffect ')"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "ApplyBitmapEffect('VibranceEffect Vibrance=20,Saturation=0')"
+       }
+      ],
+      "layers": [
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.dehaze.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.dehaze_steps.png",
+      "secs": 2.6
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Deeper midtones and blacks and noticeably richer colour than the input; the haze-cutting look is clear even on a plate that is not hazy.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "2344273ff7a0"
+     }
     }
    },
    "manual_steps": [],
@@ -912,23 +2093,91 @@
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters."
       },
       {
        "kind": "ps_filter",
        "id": "'LnCr'",
        "settings": {
         "Auto Geometric Distortion Correction": false,
-        "Distort Amount": 5,
-        "Aberration Red-Cyan": 10,
+        "Distort Amount": 0,
+        "Aberration Red-Cyan": 0,
         "Aberration Blue-Yellow": 0,
-        "Vignette Amount": 30,
+        "Vignette Amount": -60,
         "Vignette Midpoint": 50
        },
-       "note": "Filter > Lens Correction, Custom sliders: Distort Amount pulls barrel distortion straight, Aberration Red-Cyan / Blue-Yellow shift the colour channels to remove fringes, a positive Vignette Amount brightens dark corners. Only the vignette (negative) and the perspective sliders were separated in the render, so tune these on screen."
+       "note": "Filter > Lens Correction on the smart object, run backwards to give the test photo a lens fault (it has none): Vignette Amount -60, Midpoint 50, the other sliders 0, automatic geometry correction off. Ran. The step frame shows dark corners: corner brightness falls by about 40 % (150 to 87 in the top left, 164 to 95 in the top right) while the centre stays at 95. Distortion and fringe faults could not be made the same way: Distort Amount up to 25 made no visible change through this route, and non-zero Aberration sliders blurred the round trip (detail 0.7 times), so both stay at 0 here."
+      },
+      {
+       "kind": "ps_filter",
+       "id": "'LnCr'",
+       "settings": {
+        "Auto Geometric Distortion Correction": false,
+        "Distort Amount": 0,
+        "Aberration Red-Cyan": 0,
+        "Aberration Blue-Yellow": 0,
+        "Vignette Amount": 60,
+        "Vignette Midpoint": 50
+       },
+       "note": "Filter > Lens Correction on the smart object, the correction: Vignette Amount +60, Midpoint 50 (the first run's +30 brightened corners that were already bright), Distort and both Aberration sliders 0, automatic geometry correction off. Ran. The run shows the corners back at the original's brightness (top-left 150, top-right 164, bottom-left 105, bottom-right 134, as in the original) and the centre unchanged; mean difference from the original photo is 0.2 levels. The vignette is the only fault corrected here: tune fringes (Aberration sliders) and barrel distortion by eye on a photo that has them, zoomed to 200 % on a corner edge (manual); Camera Raw Optics profile correction (manual) beats slider guessing on photos with lens metadata."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "fb1fffb33f84",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Lens Correction; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Lens Correction; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.lens_faults.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.lens_faults_steps.png",
+      "secs": 19.4,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.lens_faults_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Only the vignette is shown, as a round trip: the plan darkens the corners with Lens Correction (about -50 %) and the inverse slider puts them back within 0.2 levels of the clean photo with detail unchanged, so nothing is over-corrected any more. Colour fringes and barrel distortion are not exercised (the step note says the route could not make them), so two of the recipe's three fixes stay manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "fb1fffb33f84",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [
@@ -966,7 +2215,7 @@
       {
        "kind": "ps_menu",
        "id": "2980",
-       "note": "Layer > Smart Objects > Convert to Smart Object, so the filters that follow are editable smart filters with their own mask."
+       "note": "Layer > Smart Objects > Convert to Smart Object: ran (the label 'photo' now names the converted Layer 0), so the filters that follow are smart filters. The plan's input is the test photo re-saved as a JPEG at quality 10, so it carries 8 x 8 blocking and ringing, the damage this recipe repairs."
       },
       {
        "kind": "ps_filter",
@@ -976,29 +2225,139 @@
         "sharpen": 0,
         "removeJPEGArtifact": true
        },
-       "note": "Filter > Noise > Reduce Noise with Remove JPEG Artifact on and Reduce Color Noise 30 % for the colour smear. Untested: the plate has no JPEG blocks (verdict not_rendered), so this caps the recipe at medium; the render did show Reduce Color Noise 100 % bleeding colour across hard borders, so keep it moderate."
+       "note": "Filter > Noise > Reduce Noise: Reduce Color Noise 30 %, Sharpen Details 0 %, Remove JPEG Artifact on. Ran. Keep Reduce Color Noise moderate, as colour bleeds across hard borders at 100 %."
       },
       {
        "kind": "ps_filter",
        "id": "surfaceBlur",
        "settings": {
-        "Radius": 3,
-        "Threshold": 12
+        "Radius": 4,
+        "Threshold": 18
        },
-       "note": "Filter > Blur > Surface Blur, light: flattens the remaining block edges in smooth areas while real edges stay."
+       "note": "Filter > Blur > Surface Blur, Radius 4, Threshold 18 (3 / 12 in the first run, on a photo with no blocks): ran. Measured at 1:1 on the lower-right 512 x 512 px: the ratio of the brightness step across 8-px block boundaries to the step inside blocks is 1.36 for the damaged input and 0.94 after the two filters (1.22 for the clean photo), and over the photo area at 960 px the mean absolute error against the clean photo falls from 4.5 to 4.0 levels. The flat colour bars stay clean, but the hairline target is smeared (its error against the clean photo rises from about 10 to 19 levels) and the grey ramp keeps its stepped bands and fine texture is a little softer (the 1:1 crop's error is slightly higher, 6.3 against 5.6, because of the softened hairlines). Radius 7 / Threshold 28 smoothed less of the blocking. Untested: a more heavily compressed JPEG, and saving as PNG or high-quality JPEG afterwards."
       }
      ],
-     "app": "PS"
+     "app": "PS",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "jpeg": 10
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "jpeg": 10
+       }
+      },
+      "plan_hash": "7894a4c8bf7e",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Convert to Smart Object; active layer: Layer 0"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Reduce Noise; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Surface Blur; active layer: Layer 0"
+       }
+      ],
+      "layers": [
+       "Layer 0 [smartobject]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/retouch_cleanup.jpeg_artifacts.png",
+      "strip": "gallery/recipes/PS/retouch_cleanup.jpeg_artifacts_steps.png",
+      "secs": 36.6,
+      "crop": {
+       "file": "gallery/recipes/PS/retouch_cleanup.jpeg_artifacts_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "In the photo area the 8 x 8 blocking is clearly smoothed (block-edge ratio 3.9 to 0.95, clean photo 1.1; error 4.9 to 4.3 levels), but the grey ramp keeps its 10-level stepped bands unchanged and the hairline target is smeared, its gaps filling with grey (error 10 to 19 levels), not kept as the step note says. The 1:1 crop as a whole ends slightly worse than the input (5.6 to 6.3).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "7894a4c8bf7e",
+      "second_opinion": "agree"
+     }
     },
     "CDR": {
      "steps": [
       {
        "kind": "cdr_menu",
        "id": "18ae168e-2d47-4321-804b-b260036861f1",
-       "note": "Bitmaps > Remove JPEG Artifacts: CorelDRAW's machine-learning clean-up, applied straight from the menu with no dialog (InvokeItem). No render test exists for menu commands."
+       "note": "Bitmaps > Remove JPEG Artifacts through InvokeItem (no dialog). On the clean plate it changed nothing (mean change 0.01 of 255), which is why the first run was judged broken; on a photo re-saved as JPEG at quality 10 (the run's damage setting) it works: the 8x8 blocking and the ringing round the edges are smoothed (mean change 2.8 levels, error against the clean photo 4.5 down to 3.75). It softens the picture, as the recipe says; it does not rebuild lost texture."
       }
      ],
-     "app": "CDR"
+     "app": "CDR",
+     "input": {
+      "plate": "photo",
+      "damage": {
+       "jpeg": 10
+      }
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo",
+       "damage": {
+        "jpeg": 10
+       }
+      },
+      "plan_hash": "651759cf5f67",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "InvokeItem(18ae168e-2d47-4321-804b-b260036861f1)"
+       }
+      ],
+      "layers": [
+       "photo_86395871ff.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/retouch_cleanup.jpeg_artifacts.png",
+      "strip": "gallery/recipes/CDR/retouch_cleanup.jpeg_artifacts_steps.png",
+      "secs": 6.6,
+      "crop": {
+       "file": "gallery/recipes/CDR/retouch_cleanup.jpeg_artifacts_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "On the quality-10 JPEG the 8x8 blocking is clearly smoothed at 1:1 (block-edge to in-block gradient ratio 3.9 in the input, 1.14 in the result, clean 1.09) and the error against the clean photo falls from 4.95 to 3.88 levels with the hairline stripes kept; the grey ramp still shows faint steps.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "651759cf5f67"
+     }
     }
    },
    "manual_steps": [],

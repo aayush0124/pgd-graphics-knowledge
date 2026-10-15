@@ -606,7 +606,7 @@
    "kind": "cdr_effect",
    "path": "Effects/Art Strokes/Pen & Ink",
    "status": "current",
-   "summary": "Turns the image into a pen-and-ink drawing: Crosshatch builds tones from crossed hatching lines, Stippling from ink dots; Density sets how many lines or dots (darker overall) and Ink pools how far the darkest areas fill into solid ink. The output is expected to be monochrome ink on white, not verified on a render.",
+   "summary": "Turns the image into a pen-and-ink drawing: Crosshatch builds tones from crossed hatching lines, Stippling from ink dots; Density sets how many lines or dots are drawn and Ink pools how far the darkest areas fill into solid ink, which strongly sets how dark the result gets. The output is expected to be monochrome ink on white, not verified on a render.",
    "use_for": [
     "editorial or newspaper-style illustration from a photo",
     "engraving / banknote-style portrait treatment",
@@ -615,7 +615,8 @@
    "avoid": [
     "soft, low-contrast photos give muddy hatching; raise contrast first with Effects/Adjust/Levels",
     "small type and hairlines inside the bitmap turn to noise; keep type as vectors",
-    "clean scalable line art: trace the bitmap to vectors instead of using a bitmap effect"
+    "clean scalable line art: trace the bitmap to vectors instead of using a bitmap effect",
+    "an engraving or banknote line screen: at 1920 px Pen & Ink gave only a grainy stipple, no engraved lines; Bitmap.ConvertToBW with the Halftone render type and the Line halftone makes the line screen (plan runs 2026-10-15 (poster_print.line_engraving))"
    ],
    "confidence": "medium",
    "equivalents": {
@@ -638,12 +639,12 @@
     },
     {
      "name": "Density",
-     "does": "how many lines or dots are drawn; higher = darker, denser drawing",
+     "does": "how many lines or dots are drawn; its effect on darkness on its own is untested (plan runs 2026-10-15 (poster_print.line_engraving) changed it only together with Ink pools)",
      "typical": "50-80"
     },
     {
      "name": "Ink pools",
-     "does": "how far the darkest areas fill into solid ink (0 = none)",
+     "does": "how far the darkest areas fill into solid ink (0 = none); it decides how dark the result gets: 10 left the page almost blank, 100 with Density 100 was heavy, 75 with Density 75 gave black crosshatched ink that follows the tones (plan runs 2026-10-15 (poster_print.line_engraving))",
      "typical": "30-70"
     }
    ],
@@ -657,7 +658,7 @@
     "Effects/Transform/Threshold afterwards for pure black and white",
     "Effects/Camera/Sepia Toning for an antique-ink tint"
    ],
-   "scripting": "shape.Bitmap.ApplyBitmapEffect('Pen & Ink', 'PenInkEffect Style=Crosshatch,Density=50,InkPools=30') on a bitmap shape (cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command)); the command format is proven on 6 other effects but this effect's string was not applied in a test. Menu route: Effects > Art Strokes > Pen & Ink (cdr_guid e1eab0e5-49cc-45ed-b6c2-d0eb33e97939, FrameWork.Automation.InvokeItem; works on bitmaps and vector objects). ApplyBitmapEffect returns OK even when the string or a key is not recognised (the 2026-10-04 audits in this batch: 'DabbleEffect NoSuchKeyRandomize=849.3' and 'PaletteKnifeEffect NoSuchKeySize=42.65' still applied the effect at the stored values), so compare the pixels with a default apply to confirm the values were read.",
+   "scripting": "shape.Bitmap.ApplyBitmapEffect('Pen & Ink', 'PenInkEffect Style=Crosshatch,Density=50,InkPools=30') on a bitmap shape (cdr_com: Shape.Bitmap.ApplyBitmapEffect(UndoString, Command)); the command format is proven on 6 other effects, and plan runs 2026-10-15 (poster_print.line_engraving) applied this effect's string as PenInkEffect Style=0,Density=75,InkPools=75 (Style 0 = Crosshatch). Menu route: Effects > Art Strokes > Pen & Ink (cdr_guid e1eab0e5-49cc-45ed-b6c2-d0eb33e97939, FrameWork.Automation.InvokeItem; works on bitmaps and vector objects). ApplyBitmapEffect returns OK even when the string or a key is not recognised (the 2026-10-04 audits in this batch: 'DabbleEffect NoSuchKeyRandomize=849.3' and 'PaletteKnifeEffect NoSuchKeySize=42.65' still applied the effect at the stored values), so compare the pixels with a default apply to confirm the values were read.",
    "scriptable": "yes",
    "non_destructive": "yes from the menu: CorelDRAW 2024 adds it to the object's effect stack (Properties docker > Effects), on bitmaps and vector objects, editable and removable later; the harvest does not record whether the scripted ApplyBitmapEffect call stacks or bakes the pixels",
    "cost": "moderate: per-pixel bitmap render over the whole object (not timed in the harvest); a live effect on a vector object re-rasterizes whenever the object or the effect changes",

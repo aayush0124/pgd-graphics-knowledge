@@ -321,7 +321,8 @@
     "large Radius with high Percentage when you want a natural result: thick white and dark halos appear around every edge",
     "Threshold 0 on noisy images: grain gets sharpened; raise Threshold",
     "badly blurred or motion-blurred photos: it adds edge contrast, it does not restore focus",
-    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu"
+    "the scripted path works only on a bitmap shape (Shape.Bitmap); convert vector objects to a bitmap first or apply from the menu",
+    "Radius 1-2 on a 1920 px photo: invisible, the 1-20 scale is coarse at this size; use 4-9, and expect halos at Radius 9 with Percentage 300 (plan runs 2026-10-15 (retouch_cleanup.sharpen_print))"
    ],
    "confidence": "high",
    "equivalents": {
@@ -345,7 +346,7 @@
     {
      "name": "Radius",
      "does": "width of the area around each edge that is affected (1-20, default 1; unit not harvested); small = fine detail, large = thick halos and a local-contrast boost",
-     "typical": "1-2 for detail sharpening on sharp images (default 1); 5-10 on soft images or for clarity"
+     "typical": "4-9 on a soft photo at 1920 px (7 with Percentage 220 sharpened a softened photo); 1-2 (default 1) changed nothing visible there, and 9 with Percentage 300 gave halos (plan runs 2026-10-15 (retouch_cleanup.sharpen_print))"
     },
     {
      "name": "Threshold",
@@ -363,7 +364,7 @@
     "a noise-removal effect first on noisy scans",
     "Object > Convert to Bitmap on vector art before the scripted path"
    ],
-   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Unsharp Mask\", \"UnsharpMaskEffect Percentage=300,Radius=8,Threshold=0\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'UnsharpMaskEffect Percentage=<number>,Radius=<number>,Threshold=<number>'). The command format is proven on 6 other effects; this effect's string was not applied in a harvest test. ApplyBitmapEffect does not reject a bad key: in this batch's Sharpen audit 'SharpenEffect NoSuchKeyEdgeLevel=85' still changed the pixels (base_BADKEY 1.33), and the harvest's Pixelate and Invert strings returned OK with no pixel change, so prove a key by applying two different values and comparing, not by a before/after change. Menu route: Application.FrameWork.Automation.InvokeItem \"58162f6d-8364-4468-bf10-299bf9aa2981\" runs the menu command 'Unsharp Mask...', whose ellipsis means it opens the effect's dialog (modal, a person clicks OK), so it is not an unattended route.",
+   "scripting": "On a bitmap shape s (e.g. the imported plate_photo.png): s.Bitmap.ApplyBitmapEffect \"Unsharp Mask\", \"UnsharpMaskEffect Percentage=300,Radius=8,Threshold=0\" (signature Shape.Bitmap.ApplyBitmapEffect(UndoString, Command), template 'UnsharpMaskEffect Percentage=<number>,Radius=<number>,Threshold=<number>'). The command format is proven on 6 other effects, and plan runs 2026-10-15 (retouch_cleanup.sharpen_print) applied this effect's string and sharpened visibly. ApplyBitmapEffect does not reject a bad key: in this batch's Sharpen audit 'SharpenEffect NoSuchKeyEdgeLevel=85' still changed the pixels (base_BADKEY 1.33), and the harvest's Pixelate and Invert strings returned OK with no pixel change, so prove a key by applying two different values and comparing, not by a before/after change. Menu route: Application.FrameWork.Automation.InvokeItem \"58162f6d-8364-4468-bf10-299bf9aa2981\" runs the menu command 'Unsharp Mask...', whose ellipsis means it opens the effect's dialog (modal, a person clicks OK), so it is not an unattended route.",
    "scriptable": "yes",
    "non_destructive": "from the menu yes: CorelDRAW 2024 keeps it in the Properties docker Effects stack (toggle / edit / delete, ApplyOrDeleteEffect:UnsharpMaskEffect), on bitmaps and vector objects; whether the scripted Bitmap.ApplyBitmapEffect path adds a stack entry or bakes pixels was not checked",
    "cost": "light to moderate: a blur plus compare pass whose time grows with Radius; seconds at most on a 1920x1080 plate (estimate, not timed in the harvest)",

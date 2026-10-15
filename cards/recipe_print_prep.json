@@ -26,12 +26,13 @@
       {
        "kind": "ps_menu",
        "id": "2344",
-       "note": "Edit > Color Settings: CMYK working space = the printer's profile, or a regional Prepress preset (app.colorSettings = '<settings name>')."
+       "note": "Edit > Color Settings: not run. It changes the application's colour settings, which this runner never does. Set the CMYK working space to the printer's profile by hand (manual)."
       },
       {
        "kind": "ps_menu",
        "id": "1152",
-       "note": "Select > Color Range > Out Of Gamut (with View > Proof Setup set to that profile) to select the colours that will clip."
+       "note": "Select > Color Range (script): Colors = Out Of Gamut (the 'outOfGamut' enum), Fuzziness 40. Ran; a probe showed a selection spanning most of the frame. It uses the CMYK working space Photoshop already had; View > Proof Setup is a view setting and is not touched. The settings-free route carries the probe's Reds, so the colours come from the script.",
+       "script": "var x = new ActionDescriptor(); x.putInteger(C2T('Fzns'), 40); x.putEnumerated(C2T('Clrs'), C2T('Clrs'), S2T('outOfGamut')); executeAction(tk('colorRange'), x, DialogModes.NO);"
       },
       {
        "kind": "ps_adjustment",
@@ -41,14 +42,63 @@
         "vibrance": -10,
         "saturation": -15
        },
-       "note": "Masked by that selection: lower saturation a little so clipped colours fall back into gamut smoothly. Photoshop adjustment step: not render-verified yet (the Photoshop adjustment gallery is still being built), so its confidence is capped at medium."
+       "note": "Color and vibrance adjustment layer made while that selection is active, so the selection becomes its mask: Vibrance -10, Saturation -15. Ran. The step frame shows the strongest blue, purple and orange test bars toned down."
       },
       {
        "kind": "ps_menu",
        "id": "1213",
-       "note": "Edit > Convert to Profile: destination = the printer's CMYK profile, Intent Relative Colorimetric + Black Point Compensation (Perceptual for very saturated photos). DOM: doc.convertProfile(profile, Intent.RELATIVECOLORIMETRIC, true, false). Run it on a copy: the verified event flattened a layered document."
+       "note": "Edit > Convert to Profile (script: convertProfile): destination U.S. Web Coated (SWOP) v2, Relative Colorimetric, Black Point Compensation on, dither off. The settings-free route carries the probe's Adobe RGB, so the profile comes from the script. Ran; the final frame (converted back to RGB for the PNG) shows the saturated blue and purple bars duller than the input. The run's layer list ends as one Background in CMYK mode: the conversion flattened the layered file, so the vibrance layer is baked in (as the recipe says, run it on a copy and keep the RGB master). Untested: the printer's own profile and Perceptual intent for very saturated photos.",
+       "script": "d.convertProfile('U.S. Web Coated (SWOP) v2', Intent.RELATIVECOLORIMETRIC, true, false);"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "939f140cdf2d",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "manual",
+        "note": "not run: Edit/Color Settings acts outside the document (prints, writes files or changes app settings)"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Color Range; active layer: Background"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: New Color and vibrance Layer; active layer: Color and vibrance 1"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "history: Convert to Profile; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode cmyk, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.cmyk_conversion.png",
+      "strip": "gallery/recipes/PS/print_prep.cmyk_conversion_steps.png",
+      "secs": 18.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Out-of-gamut colours are selected and toned down by a masked Vibrance/Saturation layer (the step frame shows the orange, blue and purple bars softened), then the file is converted once to U.S. Web Coated (SWOP) v2; the run's layer list ends as one Background in CMYK mode. Left to a person: Color Settings, the printer's own profile and a soft proof.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "939f140cdf2d"
+     }
     },
     "AI": {
      "app": "AI",
@@ -71,24 +121,76 @@
       {
        "kind": "cdr_menu",
        "id": "5a54114e-af98-4180-b7c5-a27e3532db1d",
-       "note": "Tools > Color Management: default CMYK profile = the printer's; Preserve pure black and Map gray to CMYK black on (Application.ColorManager.PreservePureBlack / MapGrayToCMYKBlack for scripts)."
+       "note": "Manual, not run: Tools > Color Management changes CorelDRAW's colour-management settings, which this harness must not touch, and the right values are the printer's profile. A person (or a script written for the job, using Application.ColorManager) sets the default CMYK profile and the black options."
       },
       {
        "kind": "cdr_preset",
        "id": "Color/Settings/ColorSettings.xml#Europe Prepress",
-       "note": "A ready prepress colour-settings preset (ISO Coated v2 CMYK); use the North America Prepress one for SWOP-style presses."
+       "note": "Manual, not run: loading a colour-settings preset (here Europe Prepress) also changes colour management, see the step above."
       },
       {
        "kind": "cdr_menu",
        "id": "6ec34929-c4be-4f30-b12e-e10e5fde022f",
-       "note": "Bitmaps > Mode > CMYK Color (32-bit) on each placed photo."
+       "script": "s.Bitmap.ConvertTo(5)\nresult = s",
+       "note": "Bitmap.ConvertTo(5) converts the photo to CMYK colour (32-bit) with the colour settings CorelDRAW already has; the export of the page is RGB again, so the frame shows the CMYK gamut, not separations."
       },
       {
        "kind": "cdr_api",
        "id": "class:Color",
-       "note": "Vector colours: Color.ConvertToCMYK() on each fill / outline colour; Color.IsInGamut flags colours the press cannot reach (unverified)."
+       "script": "for i, (r, g, b) in enumerate(((0, 255, 0), (0, 160, 255), (255, 0, 200))):\n    sw = layer.CreateRectangle2(0.5 + i * 1.5, PH - 1.7, 1.3, 1.2, 0, 0, 0, 0)\n    col = app.CreateRGBColor(r, g, b)\n    col.ConvertToCMYK()\n    sw.Fill.ApplyUniformFill(col)\n    sw.Outline.Width = 0.03\n    sw.Outline.Color.CopyAssign(rgb(\"#FFFFFF\"))\nresult = s",
+       "note": "Vector part (script): three test swatches drawn in saturated RGB (green, azure, magenta) at the top left, each converted with Color.ConvertToCMYK before it is used as the fill. Color.IsInGamut returned False even for converted colours here, so no gamut flagging was done."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "8c447119b2f3",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "manual",
+        "note": "not run: Tools commands open dockers / dialogs or act outside the document; give the step a \"script\""
+       },
+       {
+        "step": 2,
+        "status": "manual",
+        "note": "cdr_preset steps have no scripted route of their own; give the step a \"script\""
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 1]",
+       "(unnamed) [type 1]",
+       "(unnamed) [type 1]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.cmyk_conversion.png",
+      "strip": "gallery/recipes/CDR/print_prep.cmyk_conversion_steps.png",
+      "secs": 3.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Ran: the photo is converted to 32-bit CMYK (the colour bars shift, blue toward indigo) and three saturated RGB swatches are converted before use. Left to a person: picking the printer's profile in Color Management and the soft-proof gamut check.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "8c447119b2f3"
+     }
     }
    },
    "manual_steps": [
@@ -157,19 +259,70 @@
       {
        "kind": "cdr_preset",
        "id": "Color/Palettes/defcmyk.xml#defcmyk",
-       "note": "Use the palette's K100 swatch for text and lines, never its last 400 % swatch."
+       "script": "k100 = app.CreateRGBColor(0, 0, 0)\nk100.CMYKAssign(0, 0, 0, 100)\n\nt1 = layer.CreateArtisticText(0.0, 0.0, \"Body text, rules and barcodes: 100K (C0 M0 Y0 K100)\", 0, -1, \"Arial\", 28)\nt1.Fill.ApplyUniformFill(k100)\nt1.Outline.SetNoOutline()\nt1.SetPosition(1.0, 3.2)\n\nt2 = layer.CreateArtisticText(0.0, 0.0, \"Second line of small text, also 100K.\", 0, -1, \"Arial\", 22)\nt2.Fill.ApplyUniformFill(k100)\nt2.Outline.SetNoOutline()\nt2.SetPosition(1.0, 2.5)\n\nrule = layer.CreateRectangle2(1.0, 1.9, 9.0, 0.014, 0, 0, 0, 0)\nrule.Fill.ApplyUniformFill(k100)\nrule.Outline.SetNoOutline()\nresult = rule",
+       "note": "Pure 100K for the small elements (script, in place of picking the palette swatch): a CMYK colour set with Color.CMYKAssign(0, 0, 0, 100) fills two lines of small text and a thin rule."
       },
       {
        "kind": "cdr_api",
        "id": "class:Color",
-       "note": "Rich black for large areas: Color.CMYKAssign(60, 40, 40, 100) (or the printer's build); keep a named colour style for each black."
+       "script": "rich = app.CreateRGBColor(0, 0, 0)\nrich.CMYKAssign(60, 40, 40, 100)\n\nwhite = app.CreateRGBColor(0, 0, 0)\nwhite.CMYKAssign(0, 0, 0, 0)\n\npanel = layer.CreateRectangle2(1.0, 4.4, 18.0, 5.8, 0, 0, 0, 0)\npanel.Fill.ApplyUniformFill(rich)\npanel.Outline.SetNoOutline()\n\nt3 = layer.CreateArtisticText(0.0, 0.0, \"Large solid area: rich black (C60 M40 Y40 K100)\", 0, -1, \"Arial\", 40)\nt3.Fill.ApplyUniformFill(white)\nt3.Outline.SetNoOutline()\nt3.SetPosition(1.6, 9.2)\n\nresult = panel",
+       "note": "Rich black for the large area (script): Color.CMYKAssign(60, 40, 40, 100) fills an 18 x 5.8 in panel, with a white caption. The two blacks look alike in the RGB export; the difference is in the CMYK values."
       },
       {
        "kind": "cdr_api",
        "id": "class:PrintSeparations",
-       "note": "Separations: AlwaysOverprintBlack = True so 100K objects overprint at output (unverified)."
+       "note": "Manual, not run: the separations option AlwaysOverprintBlack is a print-setup setting that this harness does not change; set it by hand."
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#FFFFFF"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "blank",
+       "background": "#FFFFFF"
+      },
+      "plan_hash": "f6914febc6c8",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "cdr_api steps have no scripted route of their own; give the step a \"script\""
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 1]",
+       "(unnamed) [type 1]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.rich_black_vs_100k.png",
+      "strip": "gallery/recipes/CDR/print_prep.rich_black_vs_100k_steps.png",
+      "secs": 3.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The panel gets C60 M40 Y40 K100 and the small text and rule 100K; the export shows the panel slightly darker and cooler than the text, so the two builds differ. Left to a person: the AlwaysOverprintBlack separations setting and the plate check.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "f6914febc6c8"
+     }
     }
    },
    "manual_steps": [
@@ -228,19 +381,67 @@
       {
        "kind": "cdr_menu",
        "id": "1651a600-66b1-4b83-b8f6-5245a55a15fe",
-       "note": "Object > Overprint Fill on the selected black text and shapes (Shape.OverprintFill = True)."
+       "script": "k100 = app.CreateRGBColor(0, 0, 0)\nk100.CMYKAssign(0, 0, 0, 100)\n\nt = labels[\"pgd_type\"]\nt.Fill.ApplyUniformFill(k100)\nt.OverprintFill = True\nprint(\"overprint fill\", t.OverprintFill)\nresult = t",
+       "note": "Overprint fill (script, Shape.OverprintFill = True): the plate's type is given pure 100K (CMYK 0 0 0 100) and set to overprint its fill. The recipe's last step, View > Simulate Overprints, is a view option of the application window and was left out of this plan so the harness never toggles it; without it the export (and so the frame) shows the shapes as before and the overprint attributes cannot be seen in the frame."
       },
       {
        "kind": "cdr_menu",
        "id": "a86ade3d-a297-47c8-903a-324cabbb81e3",
-       "note": "Object > Overprint Outline on black keylines (Shape.OverprintOutline = True)."
+       "script": "k100 = app.CreateRGBColor(0, 0, 0)\nk100.CMYKAssign(0, 0, 0, 100)\n\nfor k in (\"orange_box\", \"zigzag\"):\n    sh = labels[k]\n    sh.Outline.Color.CopyAssign(k100)\n    sh.OverprintOutline = True\n    print(\"overprint outline\", k, sh.OverprintOutline)\nresult = labels[\"zigzag\"]",
+       "note": "Overprint outline (script, Shape.OverprintOutline = True): the box and zigzag outlines are given 100K and set to overprint."
       },
       {
        "kind": "cdr_menu",
        "id": "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
-       "note": "View > Simulate Overprints (ActiveWindow.ActiveView.SimulateOverprints = True) to check."
+       "note": "View > Simulate Overprints (ActiveWindow.ActiveView.SimulateOverprints = True) to check. View only: it changes the window, not the document, so the runner skips it as manual and no export shows it."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "22714bfca321",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "view only: View/Simulate Overprints changes the window, not the document (an export cannot show it)"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.overprint_setup.png",
+      "strip": "gallery/recipes/CDR/print_prep.overprint_setup_steps.png",
+      "secs": 2.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The run log reads back overprint fill True on the 100K type and overprint outline True on the box and zigzag keylines (an export cannot show overprint). Left to a person: View > Simulate Overprints and the plate check.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "22714bfca321"
+     }
     }
    },
    "manual_steps": [
@@ -280,15 +481,125 @@
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "1030",
+       "note": "Image > Image Size (script: resizeImage with resampling off): 300 ppi, so the pixel count stays 1920 x 1080 and the picture becomes 6.4 x 3.6 in (162.6 x 91.4 mm). The settings-free route carries the probe's 200 px, so the values come from the script. Ran. This sets a print resolution so the 3 mm bleed is a realistic size.",
+       "script": "d.resizeImage(undefined, undefined, 300, ResampleMethod.NONE);"
+      },
+      {
+       "kind": "ps_menu",
+       "id": "1942",
+       "as": "art",
+       "note": "Layer > New > Layer from Background (new step): ran, the artwork is a layer (labelled 'art') so the canvas can grow with a transparent border."
+      },
+      {
+       "kind": "ps_menu",
        "id": "1031",
-       "note": "Image > Canvas Size, Relative: +6 mm width and height (3 mm a side), anchor centre, then extend the background art into the new strip; executeAction 'canvasSize' (verified live)."
+       "note": "Image > Canvas Size (script: resizeCanvas, centre anchor): +6 mm width and height, 3 mm a side (about 35 px at 300 ppi). The settings-free route carries the probe's 500 x 400 px, so the size comes from the script. Ran; the new strip is transparent.",
+       "script": "d.resizeCanvas(UnitValue(d.width.as('mm') + 6, 'mm'), UnitValue(d.height.as('mm') + 6, 'mm'), AnchorPosition.MIDDLECENTER);"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "target": "art",
+       "note": "Script (target 'art'; replaces the stretched copy of the first run, which ghosted the bottom type and showed seams at the trim): for each side the one-pixel edge row or column of the art is copied to its own layer (Layer Via Copy), stretched over the 3 mm bleed (35 px left and top, 36 px right and bottom) and merged back; the four corners are filled the same way from the corner pixel. Content-Aware Fill is not available for a selection on the canvas edge. Ran; the script reports the margins. The run shows the picture's edge colours smeared outward, with no repeated content and no seam at the trim; a smear is a plain extension, so detail near the edge is not continued.",
+       "script": "var b = L.bounds, x0 = Math.round(b[0].as('px')), y0 = Math.round(b[1].as('px')), x1 = Math.round(b[2].as('px')), y1 = Math.round(b[3].as('px'));\nvar W = Math.round(d.width.as('px')), H = Math.round(d.height.as('px')), lm = x0, tm = y0, rm = W - x1, bm = H - y1;\nfunction strip(sx0, sy0, sx1, sy1, px, py, anchor) {\n  d.activeLayer = L; d.selection.select([[sx0, sy0], [sx1, sy0], [sx1, sy1], [sx0, sy1]], SelectionType.REPLACE, 0, false);\n  executeAction(S2T('copyToLayer'), undefined, DialogModes.NO);\n  var p = d.activeLayer; p.resize(px, py, anchor); p.merge(); L = d.activeLayer; }\nstrip(x0, y0, x0 + 1, y1, 100 * (lm + 1), 100, AnchorPosition.MIDDLERIGHT);\nstrip(x1 - 1, y0, x1, y1, 100 * (rm + 1), 100, AnchorPosition.MIDDLELEFT);\nstrip(x0, y0, x1, y0 + 1, 100, 100 * (tm + 1), AnchorPosition.BOTTOMCENTER);\nstrip(x0, y1 - 1, x1, y1, 100, 100 * (bm + 1), AnchorPosition.TOPCENTER);\nstrip(x0, y0, x0 + 1, y0 + 1, 100 * (lm + 1), 100 * (tm + 1), AnchorPosition.BOTTOMRIGHT);\nstrip(x1 - 1, y0, x1, y0 + 1, 100 * (rm + 1), 100 * (tm + 1), AnchorPosition.BOTTOMLEFT);\nstrip(x0, y1 - 1, x0 + 1, y1, 100 * (lm + 1), 100 * (bm + 1), AnchorPosition.TOPRIGHT);\nstrip(x1 - 1, y1 - 1, x1, y1, 100 * (rm + 1), 100 * (bm + 1), AnchorPosition.TOPLEFT);\nd.selection.deselect();\nsay('bleed ' + lm + ' / ' + tm + ' / ' + rm + ' / ' + bm + ' px (left / top / right / bottom), art ' + (x1 - x0) + ' x ' + (y1 - y0) + ' px');\n"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "target": "art",
+       "script": "var S = Math.round(4 * 300 / 25.4), LEN = Math.round(3.5 * 300 / 25.4), tw = 1920, th = 1080;\nvar BL = Math.floor((Math.round(d.width.as('px')) - tw) / 2), BT = Math.floor((Math.round(d.height.as('px')) - th) / 2), B = Math.max(BL, BT);\nd.resizeCanvas(UnitValue(Math.round(d.width.as('px')) + 2 * S, 'px'), UnitValue(Math.round(d.height.as('px')) + 2 * S, 'px'), AnchorPosition.MIDDLECENTER);\nvar pg = d.artLayers.add(); pg.name = 'paper'; d.selection.selectAll(); d.selection.fill(hexc('#FFFFFF')); d.selection.deselect(); pg.move(L, ElementPlacement.PLACEAFTER);\nvar mk = d.artLayers.add(); mk.name = 'crop marks'; d.activeLayer = mk;\nvar X0 = S + BL, Y0 = S + BT;\nfunction box(a, b, c, e) { d.selection.select([[a, b], [c, b], [c, e], [a, e]], SelectionType.REPLACE, 0, false); d.selection.fill(hexc('#000000')); }\nvar xs = [X0, X0 + tw], ys = [Y0, Y0 + th], i;\nfor (i = 0; i < 2; i++) {\n  box(xs[i] - 1, Y0 - B - LEN, xs[i] + 1, Y0 - B); box(xs[i] - 1, Y0 + th + B, xs[i] + 1, Y0 + th + B + LEN);\n  box(X0 - B - LEN, ys[i] - 1, X0 - B, ys[i] + 1); box(X0 + tw + B, ys[i] - 1, X0 + tw + B + LEN, ys[i] + 1); }\nd.selection.deselect();\nsay('canvas ' + d.width.as('px') + ' x ' + d.height.as('px') + ' px; trim box ' + tw + ' x ' + th + ' px at (' + X0 + ', ' + Y0 + '); slug ' + S + ' px; marks ' + LEN + ' px long, 2 px wide, ' + B + ' px off the trim');",
+       "note": "Script (new step, target 'art'): the canvas grows another 4 mm per side (47 px) as a slug, a white 'paper' layer goes under the art, and eight crop marks (black, 2 px wide, 41 px = 3.5 mm long) are drawn on a 'crop marks' layer in the slug, each 35 px (the bleed) away from the trim and centred on a trim line, two per corner. The marks are drawn pixels, a stand-in for the marks a press PDF exporter adds; they sit outside the bleed so trimming removes them. Ran; the script reports canvas 2085 x 1245 px with the 1920 x 1080 px trim box at (82, 82)."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:PDFSaveOptions",
+       "script": "var f = new File(OUT + '/ps_bleed_marks.pdf'); var o = new PDFSaveOptions(); o.layers = false; o.preserveEditing = false;\nd.saveAs(f, o, true);\nif (!f.exists || f.length < 1000) throw new Error('ps_bleed_marks.pdf was not written');\nf.encoding = 'BINARY'; f.open('r'); var s = f.read(); f.close(); var m = s.match(/\\/MediaBox\\s*\\[([^\\]]+)\\]/);\nsay('ps_bleed_marks.pdf ' + f.length + ' bytes' + (m ? '; MediaBox ' + m[1].replace(/\\s+/g, ' ') + ' pt' : '; MediaBox not readable'));",
+       "note": "Script (new step): saveAs a Photoshop PDF (layers off, preserve editing off) into the run's output folder as ps_bleed_marks.pdf. Ran; the script reports the file size and the page size it read back from the PDF: MediaBox 500.4 x 298.8 pt, which is 176.5 x 105.4 mm (the 162.6 x 91.4 mm trim plus 3 mm bleed and 4 mm slug on each side). It is an RGB Photoshop PDF without a PDF/X standard; its marks are the drawn pixels above."
       },
       {
        "kind": "ps_menu",
        "id": "2101",
-       "note": "Crop marks for a Photoshop-only job: File > Print > Printing Marks (Corner Crop Marks); for a press PDF place the image in Illustrator or CorelDRAW and add marks there (Photoshop's PDFSaveOptions has no marks members)."
+       "note": "File > Print > Printing Marks: not run. It sends output to the print system; Photoshop's print dialog is the only place it adds marks, and a script cannot set it. The marks in this plan are drawn in the slug instead (step 5). For marks added by the exporter itself, place the image in Illustrator or CorelDRAW and export a press PDF there (manual). The run is partial because of this step."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "0545333ee79e",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "label photo now names the result (new layer ID); history: Make Layer; active layer: Layer 0"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Canvas Size; active layer: Layer 0"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script says: bleed 35 / 35 / 36 / 36 px (left / top / right / bottom), art 1920 x 1080 px; history: Merge Down; active layer: Layer 0"
+       },
+       {
+        "step": 5,
+        "status": "ok",
+        "note": "script says: canvas 2085 x 1245 px; trim box 1920 x 1080 px at (82, 82); slug 47 px; marks 41 px long, 2 px wide, 35 px off the trim; history: Deselect; active layer: crop marks"
+       },
+       {
+        "step": 6,
+        "status": "ok",
+        "note": "script says: ps_bleed_marks.pdf 833523 bytes; MediaBox 0.0 0.0 500.4 298.8 pt; history: Deselect; active layer: crop marks"
+       },
+       {
+        "step": 7,
+        "status": "manual",
+        "note": "not run: File/Print acts outside the document (prints, writes files or changes app settings)"
+       }
+      ],
+      "layers": [
+       "crop marks [normal]",
+       "Layer 0 [normal]",
+       "paper [normal]",
+       "mode rgb, 2085x1245 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.bleed_and_crop_marks.png",
+      "strip": "gallery/recipes/PS/print_prep.bleed_and_crop_marks_steps.png",
+      "secs": 44.9,
+      "crop": {
+       "file": "gallery/recipes/PS/print_prep.bleed_and_crop_marks_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "The bleed is now right: 35-36 px (3 mm at 300 ppi) of smeared edge colour on every side with no seam or ghosting, and crop marks sit in a slug just outside it. But the one-page RGB PDF (MediaBox 500.4 x 298.8 pt) has no TrimBox, BleedBox or PDF/X marker and its marks are painted pixels, which the recipe itself advises against, so a press-ready PDF still rests on a manual Illustrator / CorelDRAW export.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "0545333ee79e",
+      "second_opinion": "agree"
+     }
     },
     "AI": {
      "app": "AI",
@@ -319,24 +630,58 @@
       {
        "kind": "cdr_api",
        "id": "class:IVGPage",
-       "note": "Bleed is a page / document setting: set ActiveDocument.Unit first, then the Bleed property (0.125 in / 3 mm) (unverified)."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "1e0034de-e3f1-41c1-9fcd-701d647e7a2f",
-       "note": "View > Page > Bleed shows the bleed line: pull the background past it."
+       "script": "page = doc.ActivePage\npage.Bleed = 0.125\nbg = layer.CreateRectangle2(-0.125, -0.125, PW + 0.25, PH + 0.25, 0, 0, 0, 0)\nbg.Fill.ApplyUniformFill(rgb(\"#FFF3D6\"))\nbg.Outline.SetNoOutline()\nbg.OrderToBack()\nprint(\"bleed\", page.Bleed)\nresult = bg",
+       "note": "Page bleed (script): Page.Bleed = 0.125 (document unit inch) and a background rectangle that runs 0.125 in past the page on every side. The export of the page cuts at the trim, so the frame does not show the bleed. The View > Page > Bleed display toggle was left out (display only)."
       },
       {
        "kind": "cdr_api",
        "id": "class:IPDFVBASettings",
-       "note": "PDFSettings.IncludeBleed = True, Bleed (typelib unit 'tens of micron': check on a test export), CropMarks = True."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
-       "note": "File > Publish to PDF (ActiveDocument.PublishToPDF(path))."
+       "script": "import os\nout = \"work/plans/out/print_prep.bleed_and_crop_marks\"\nos.makedirs(out, exist_ok=True)\nps = doc.PDFSettings\nps.Reset()\nps.PublishRange = 1\nps.pdfVersion = 3\nps.IncludeBleed = True\nps.CropMarks = True\nps.EmbedFonts = True\n\npath = os.path.abspath(out + \"/press.pdf\")\ndoc.PublishToPDF(path)\nprint(\"PDF written\", os.path.getsize(path), \"bytes\")\nresult = s",
+       "note": "PDF settings (script): IncludeBleed and CropMarks on, EmbedFonts on, then Document.PublishToPDF writes press.pdf into the plan's output folder. Checked in the file afterwards: one page, TrimBox 20 x 11.25 in (1440 x 810 pt), MediaBox 0.625 in larger on every side (bleed plus room for the marks)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "e29e3c6febea",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]",
+       "(unnamed) [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.bleed_and_crop_marks.png",
+      "strip": "gallery/recipes/CDR/print_prep.bleed_and_crop_marks_steps.png",
+      "secs": 2.6
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Page bleed read back as 0.125 in with the background running past the trim; the PDF has one page, TrimBox 1440 x 810 pt, BleedBox 9 pt and MediaBox 45 pt larger, and a registration-colour separation for the crop marks.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "e29e3c6febea"
+     }
     }
    },
    "manual_steps": [],
@@ -388,19 +733,130 @@
       {
        "kind": "cdr_menu",
        "id": "68000526-6be1-4205-b2e9-6c9dff00f4c5",
-       "note": "On a copy: Object > Convert to Curves on the text (confirmed by the harvest); or at export time PDFSettings.TextAsCurves = True."
+       "script": "copy = s.Duplicate(0, -3.6)\ns.Move(0, 1.0)\ncopy.ConvertToCurves()\ncopy.Fill.ApplyNoFill()\ncopy.Outline.Width = 0.03\ncopy.Outline.Color.CopyAssign(rgb(\"#E4572E\"))\nprint(\"types\", s.Type, copy.Type)\nresult = copy",
+       "note": "Convert to Curves on a copy (script): the text is duplicated 3.6 in lower and the copy gets ConvertToCurves, then no fill and a thin orange outline so its outlines show. The upper text stays live type (shape type 6), the lower one is a curve shape (type 3)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "PGD",
+      "size": 280,
+      "background": "#F2E8D5",
+      "color": "#1A1A1A"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "text",
+       "text": "PGD",
+       "size": 280,
+       "background": "#F2E8D5",
+       "color": "#1A1A1A"
+      },
+      "plan_hash": "5da22e558571",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 3]",
+       "type [type 6]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.outline_text.png",
+      "strip": "gallery/recipes/CDR/print_prep.outline_text_steps.png",
+      "secs": 1.9
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The live type stays above and an outlined copy sits below with its curve outline in orange; the run reads back shape type 6 (text) and 3 (curves).",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "5da22e558571"
+     }
     },
     "PS": {
      "app": "PS",
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "1135",
+       "target": "type",
+       "as": "outlined",
+       "note": "Layer > Duplicate Layer on the type layer (target 'type'; input: 'OUTLINE' in Arial Black 300 px, #1B1B1B on white): ran, 'OUTLINE copy' (labelled 'outlined') is active."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "L.visible = false;",
+       "note": "Script (new step, target 'type'): hide the original live type layer, so a live-type copy stays in the file. Ran.",
+       "target": "type"
+      },
+      {
+       "kind": "ps_menu",
        "id": "1229",
-       "note": "Type > Convert to Shape: the type layer becomes a vector shape layer that stays sharp in a Photoshop PDF (verified live); duplicate and hide the type layer first."
+       "note": "Type > Convert to Shape on the copy (target 'outlined'): ran. The copy becomes a vector shape layer and the frame looks identical to the live type; the run's layer list shows the shape layer next to the hidden type layer. Outlines cannot be turned back into text, so do this on the hand-off copy only. Untested: a Photoshop PDF export to check the edges stay sharp.",
+       "target": "outlined"
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "OUTLINE",
+      "background": "#FFFFFF",
+      "color": "#1B1B1B",
+      "size": 300
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "text",
+       "text": "OUTLINE",
+       "background": "#FFFFFF",
+       "color": "#1B1B1B",
+       "size": 300
+      },
+      "plan_hash": "baedf57924a6",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: OUTLINE copy"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Duplicate Layer; active layer: OUTLINE"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Convert to Shape; active layer: OUTLINE copy"
+       }
+      ],
+      "layers": [
+       "OUTLINE copy [solidfill]",
+       "OUTLINE [text hidden]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.outline_text.png",
+      "strip": "gallery/recipes/PS/print_prep.outline_text_steps.png",
+      "secs": 18.1
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The type layer is duplicated, the original hidden as the live-type copy, and the duplicate converted to a shape; the run's layer list shows the outlined copy as a shape fill layer next to the hidden text layer, and the frame is unchanged.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "baedf57924a6"
+     }
     }
    },
    "manual_steps": [],
@@ -463,36 +919,182 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_layer_style",
+       "effects": [
+        {
+         "name": "Drop Shadow",
+         "settings": {
+          "mode": "multiply",
+          "color": "#000000",
+          "opacity": 50,
+          "useGlobalAngle": false,
+          "localLightingAngle": 120,
+          "distance": 14,
+          "chokeMatte": 0,
+          "blur": 24
+         },
+         "note": "Layer Style > Drop Shadow on the type layer (new step; input: 'FLAT' in Arial Black 380 px, #C8102E on a #D8DDE6 ground): Multiply black 50 %, 14 px at 120 degrees, Size 24. Ran; a soft shadow is visible."
+        },
+        {
+         "name": "Outer Glow",
+         "settings": {
+          "mode": "screen",
+          "color": "#FFFFFF",
+          "opacity": 80,
+          "glowTechnique": "softMatte",
+          "chokeMatte": 0,
+          "blur": 30
+         },
+         "note": "Layer Style > Outer Glow: Screen white 80 %, Size 30. Set without error; the white glow is hardly visible on the pale ground."
+        }
+       ],
+       "target": "type",
+       "note": "One layer style on the type layer: both effects go into a single layerEffects descriptor. Applied without error."
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "L.opacity = 80;",
+       "note": "Script (new step): the type layer's opacity set to 80 %, so there is live transparency to flatten. Ran.",
+       "target": "type"
+      },
+      {
        "kind": "ps_menu",
        "id": "File/Scripts/Flatten All Layer Effects",
-       "note": "Bakes layer styles into pixels first."
+       "note": "File > Scripts > Flatten All Layer Effects: ran (the bundled Photoshop script; history shows 'Flatten All Layer Effects'). It bakes the layer styles into pixels."
       },
       {
        "kind": "ps_menu",
        "id": "1141",
-       "note": "On a duplicate (Image > Duplicate): Layer > Flatten Image (verified live: one Background layer; transparent areas fill with white)."
+       "note": "Layer > Flatten Image: ran, one Background layer is left and the transparency is flat (see the run's layer list). The plan works on the plan's own scratch document, which stands in for the recommended duplicate (Image > Duplicate). Keep transparency live in the master; flatten a copy."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "FLAT",
+      "background": "#D8DDE6",
+      "color": "#C8102E",
+      "size": 380
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "text",
+       "text": "FLAT",
+       "background": "#D8DDE6",
+       "color": "#C8102E",
+       "size": 380
+      },
+      "plan_hash": "4da729c03a8d",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Layer Style; active layer: FLAT"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Master Opacity Change; active layer: FLAT"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Flatten All Layer Effects; active layer: FLAT"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "label type now names the result (new layer ID); history: Flatten Image; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.flatten_transparency.png",
+      "strip": "gallery/recipes/PS/print_prep.flatten_transparency_steps.png",
+      "secs": 33.6
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A drop shadow, an outer glow and 80 % layer opacity are baked by Flatten All Layer Effects and Flatten Image; the run's layer list ends as one Background, and the flattened letters measure the expected 80 % composite of the red over the grey ground, with the shadow kept.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "4da729c03a8d"
+     }
     },
     "CDR": {
      "app": "CDR",
      "steps": [
       {
-       "kind": "cdr_effect",
-       "id": "6dda0e64-c885-47f8-b046-53407834bc58",
-       "note": "On a copy: s.FlattenEffects() bakes live bitmap effects into one bitmap (needs_input card, not render-tested)."
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "labels[\"blue_star\"].CreateDropShadow(0, 60, 15, 0.25, -0.25, rgb(\"#000000\"), 4, 0, -45.0, 1.0, 1, 0)\nlabels[\"grad_circle\"].Transparency.ApplyUniformTransparency(40)\nresult = labels[\"blue_star\"]",
+       "note": "Setup (script): a drop shadow on the star (Normal merge) and a 40 percent uniform transparency on the gradient circle, the live effects to flatten."
       },
       {
        "kind": "cdr_menu",
        "id": "c44919b9-e389-4c0d-8a54-8e6e3fcfade3",
-       "note": "Objects with drop shadows or transparency over spot colours: Convert to Bitmap, CMYK, 300 dpi (Shape.ConvertToBitmapEx; its default is only 72 dpi)."
+       "script": "shadowed = [layer.Shapes.Item(i) for i in range(1, layer.Shapes.Count + 1) if layer.Shapes.Item(i).Type == 16][0]\nstar_bmp = shadowed.ConvertToBitmapEx(5, False, True, 300)\ncircle_bmp = labels[\"grad_circle\"].ConvertToBitmapEx(5, False, True, 300)\nresult = star_bmp",
+       "note": "ConvertToBitmapEx(5, False, True, 300) on the star's shadow group (the shape of type 16 that CreateDropShadow adds, which holds the star and its shadow) and on the transparent circle: CMYK, transparent background, 300 dpi (its default is 72 dpi). Converting the star itself left the shadow out, and the recipe's Shape.FlattenEffects() call turned the shadowed star into a dull indigo shape with no visible shadow, so it is not used."
       },
       {
        "kind": "cdr_api",
        "id": "class:IPDFVBASettings",
-       "note": "Then publish with pdfVersion = pdfVersionPDFX1a."
+       "script": "import os\nout = \"work/plans/out/print_prep.flatten_transparency\"\nos.makedirs(out, exist_ok=True)\nps = doc.PDFSettings\nps.Reset()\nps.PublishRange = 1\nps.pdfVersion = 4\nps.IncludeBleed = False\nps.CropMarks = False\nps.EmbedFonts = True\n\npath = os.path.abspath(out + \"/press.pdf\")\ndoc.PublishToPDF(path)\nprint(\"PDF written\", os.path.getsize(path), \"bytes\")\nresult = s",
+       "note": "PDF settings (script): pdfVersion = pdfVersionPDFX1a, EmbedFonts on, then PublishToPDF writes press.pdf into the plan's output folder. Checked in the file afterwards: one page and a PDF/X-1:2001 marker."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "cf5232338a5d",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 5]",
+       "blue_star [type 3]",
+       "(unnamed) [type 5]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.flatten_transparency.png",
+      "strip": "gallery/recipes/CDR/print_prep.flatten_transparency_steps.png",
+      "secs": 4.6
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The shadowed star and the 40 percent circle become 300 dpi CMYK bitmaps and look unchanged; the PDF is version 1.3 with a PDF/X-1:2001 marker, one page, two images and no soft masks or transparency groups.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "cf5232338a5d"
+     }
     }
    },
    "manual_steps": [],
@@ -547,11 +1149,56 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_menu",
+       "id": "1213",
+       "note": "Edit > Convert to Profile (script, new first step): convertProfile to U.S. Web Coated (SWOP) v2, Relative Colorimetric, Black Point Compensation on. Ran; PDF/X needs a CMYK document with a destination profile, and the RGB test photo would fail or fall back otherwise.",
+       "script": "d.convertProfile('U.S. Web Coated (SWOP) v2', Intent.RELATIVECOLORIMETRIC, true, false);"
+      },
+      {
        "kind": "ps_api",
        "id": "class:PDFSaveOptions",
-       "note": "o.PDFStandard = PDFStandardType.PDFX42008 (or PDFX1A2001); o.preserveEditing = false; o.layers = false; doc.saveAs(file, o, true) on a CMYK document (or set destinationProfile and outputCondition)."
+       "note": "Script on PDFSaveOptions: PDFStandard.PDFX42008, preserveEditing false, layers false, saveAs(file, options, asCopy = true) into the run's output folder as ps_press.pdf. Ran, and the file was written (about 2 MB). Checked by reading the PDF: it carries GTS_PDFXVersion PDF/X-4 and DeviceCMYK image data. The script API names the enum PDFStandard (the card text says PDFStandardType, which does not exist at run time). Untested: PDF/X-1a, setting the output condition by hand, and a preflight in a PDF tool.",
+       "script": "var out = new Folder(OUT); if (!out.exists) out.create();\nvar f = new File(out.fsName + '/ps_press.pdf');\nvar o = new PDFSaveOptions(); o.PDFStandard = PDFStandard.PDFX42008; o.preserveEditing = false; o.layers = false;\nd.saveAs(f, o, true);\nif (!f.exists || f.length < 1000) throw new Error('ps_press.pdf was not written');"
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "68c2e76323f0",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Convert to Profile; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Convert to Profile; active layer: Background"
+       }
+      ],
+      "layers": [
+       "Background [normal]",
+       "mode cmyk, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.pdfx_export.png",
+      "strip": "gallery/recipes/PS/print_prep.pdfx_export_steps.png",
+      "secs": 21.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo is converted to SWOP CMYK and saved as a copy to ps_press.pdf in this run; the PDF bytes carry GTS_PDFXVersion PDF/X-4, an OutputIntent with output condition U.S. Web Coated (SWOP) v2, DeviceCMYK image data and one page. PDF/X-1a is untested.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "68c2e76323f0"
+     }
     },
     "CDR": {
      "app": "CDR",
@@ -559,14 +1206,46 @@
       {
        "kind": "cdr_api",
        "id": "class:IPDFVBASettings",
-       "note": "ActiveDocument.PDFSettings: Reset, pdfVersion = pdfVersionPDFX4 (or pdfVersionPDFX1a), IncludeBleed, CropMarks, EmbedFonts; then ActiveDocument.PublishToPDF(path)."
-      },
-      {
-       "kind": "cdr_menu",
-       "id": "f5f7cfa8-2c29-4316-969a-47113b1c0a67",
-       "note": "Dialog route: File > Publish to PDF with a PDF/X preset; read the Issues tab before saving."
+       "script": "import os\nout = \"work/plans/out/print_prep.pdfx_export\"\nos.makedirs(out, exist_ok=True)\nps = doc.PDFSettings\nps.Reset()\nps.PublishRange = 1\nps.pdfVersion = 10\nps.IncludeBleed = True\nps.CropMarks = True\nps.EmbedFonts = True\ndoc.ActivePage.Bleed = 0.125\npath = os.path.abspath(out + \"/press.pdf\")\ndoc.PublishToPDF(path)\nprint(\"PDF written\", os.path.getsize(path), \"bytes\")\nresult = s",
+       "note": "Press PDF (script): PDFSettings.Reset, pdfVersion = pdfVersionPDFX4, IncludeBleed and CropMarks on after setting Page.Bleed to 0.125 in, EmbedFonts on, then Document.PublishToPDF writes press.pdf into the plan's output folder. The dialog route (File > Publish to PDF, Issues tab) was left out. Checked in the file afterwards: one page (PublishRange = 1, the default also exported the scene's hidden second page), the PDF/X-4 marker is present, TrimBox 20 x 11.25 in, MediaBox 0.625 in larger on every side."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "a83b578fe8bd",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.pdfx_export.png",
+      "strip": "gallery/recipes/CDR/print_prep.pdfx_export_steps.png",
+      "secs": 1.4
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The PDF has one page, a PDF/X-4 marker with an output intent, TrimBox 1440 x 810 pt with bleed and crop-mark room on the MediaBox, and an embedded subset font.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "a83b578fe8bd"
+     }
     }
    },
    "manual_steps": [],
@@ -605,25 +1284,108 @@
      "steps": [
       {
        "kind": "ps_menu",
+       "id": "1213",
+       "note": "Script (stand-in for Proof Colors, now non-destructive): the document is duplicated, the copy is converted to U.S. Web Coated (SWOP) v2 (Relative Colorimetric) and back to RGB, and its flattened layer is dropped onto the original as a layer named 'press proof (stand-in)'. The original Background stays untouched underneath (the first run converted the document's own pixels), so hiding that layer is the 'proof off' view. A real soft proof is a view setting that Photoshop's script API does not expose. Ran; the script reports two layers.",
+       "script": "var pc = d.duplicate('pgd_proof_copy', true); app.activeDocument = pc;\npc.convertProfile('U.S. Web Coated (SWOP) v2', Intent.RELATIVECOLORIMETRIC, true, false);\npc.changeMode(ChangeMode.RGB);\nvar lay = pc.artLayers[0]; lay.name = 'press proof (stand-in)'; lay.duplicate(d, ElementPlacement.PLACEATBEGINNING);\npc.close(SaveOptions.DONOTSAVECHANGES); app.activeDocument = d;\nsay('layers: ' + d.layers.length + ' (original kept, proof copy on top); mode ' + d.mode);"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var proof = d.layers[0], i, vis = [];\nproof.blendMode = BlendMode.DIFFERENCE;\nvar g = new ActionDescriptor(); g.putBoolean(C2T('Dplc'), true); executeAction(C2T('MrgV'), g, DialogModes.NO);\nvar diff = d.activeLayer; proof.blendMode = BlendMode.NORMAL;\nvar t = new ActionDescriptor(); t.putInteger(C2T('Lvl '), 12); executeAction(C2T('Thrs'), t, DialogModes.NO);\nfor (i = 0; i < d.layers.length; i++) { vis.push(d.layers[i].visible); if (d.layers[i] != diff && d.layers[i].name != diff.name) d.layers[i].visible = false; }\nvar s = new ActionDescriptor(); s.putReference(C2T('null'), selRef()); var rc = new ActionReference(); rc.putEnumerated(C2T('Chnl'), C2T('Chnl'), C2T('RGB ')); s.putReference(C2T('T   '), rc); executeAction(C2T('setd'), s, DialogModes.NO);\nvar gw = d.artLayers.add(); gw.name = 'gamut warning (stand-in)'; d.selection.fill(hexc('#7F7F7F')); d.selection.deselect();\ndiff.remove();\nfor (i = 0; i < d.layers.length; i++) d.layers[i].visible = true;\nsay('layers: ' + d.layers.length);",
+       "note": "Script (new step, stand-in for Gamut Warning): the proof layer is set to Difference over the original, the result is stamped to a new layer and thresholded at level 12, that layer's luminosity is loaded as a selection, a grey (#7F7F7F) layer 'gamut warning (stand-in)' is filled through it, and the helper layer is deleted. Ran. The run shows the press proof with the saturated blue, purple and pink test bars covered in flat grey, the colours the SWOP profile cannot hold (the photo itself shows no flagged area); the red, orange, yellow, green and cyan bars are not flagged. Photoshop's own warning uses its own colour and threshold; this one is an approximation."
+      },
+      {
+       "kind": "ps_menu",
        "id": "2803",
-       "note": "View > Proof Setup > Working CMYK (or Custom for the printer's own profile)."
+       "note": "View > Proof Setup > Working CMYK: not run. It is a view setting that changes the window, not the document, and no export can show it. Do it by hand (View > Proof Setup)."
       },
       {
        "kind": "ps_menu",
        "id": "1105",
-       "note": "View > Proof Colors toggles the soft proof."
+       "note": "View > Proof Colors: not run (view only). Toggle it by hand."
       },
       {
        "kind": "ps_menu",
        "id": "1106",
-       "note": "View > Gamut Warning greys the colours the press cannot reach (no confirmed script route)."
+       "note": "View > Gamut Warning: not run (view only, no confirmed script route). Toggle it by hand."
       },
       {
        "kind": "ps_menu",
        "id": "2804",
-       "note": "Optional: Proof Setup > Working Cyan Plate (and the other plates) to inspect single separations."
+       "note": "View > Proof Setup > Working Cyan Plate: not run (view only). Inspect single plates by hand. The run is partial because the proof itself is view-only."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "99f2072d90a6",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script says: layers: 2 (original kept, proof copy on top); mode DocumentMode.RGB; history: Duplicate Layer; active layer: press proof (stand-in)"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script says: layers: 3; history: Delete Layer; active layer: gamut warning (stand-in)"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "view only: View/Proof Setup/Working CMYK changes the window, not the document (an export cannot show it)"
+       },
+       {
+        "step": 4,
+        "status": "manual",
+        "note": "view only: View/Proof Colors changes the window, not the document (an export cannot show it)"
+       },
+       {
+        "step": 5,
+        "status": "manual",
+        "note": "view only: View/Gamut Warning changes the window, not the document (an export cannot show it)"
+       },
+       {
+        "step": 6,
+        "status": "manual",
+        "note": "view only: View/Proof Setup/Working Cyan Plate changes the window, not the document (an export cannot show it)"
+       }
+      ],
+      "layers": [
+       "gamut warning (stand-in) [normal]",
+       "press proof (stand-in) [normal]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.soft_proof.png",
+      "strip": "gallery/recipes/PS/print_prep.soft_proof_steps.png",
+      "secs": 20.8,
+      "crop": {
+       "file": "gallery/recipes/PS/print_prep.soft_proof_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Non-destructive stand-in: the SWOP round-trip proof sits as a layer over the untouched original, and the blue, purple and pink bars SWOP cannot hold are covered in flat grey while the photo (mean change under 1 level) and the in-gamut bars stay clear (the largest unflagged shift, on the orange bar, is about 2 Delta E 2000). The first judge's destructive-conversion complaint is fixed; single-plate views and the real proof toggles stay manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "99f2072d90a6"
+     }
     },
     "AI": {
      "app": "AI",
@@ -651,19 +1413,89 @@
       {
        "kind": "cdr_menu",
        "id": "6495e877-c511-4404-ba0d-4d86fe7c1804",
-       "note": "Color Proofing docker: pick the output profile and turn on the gamut warning."
+       "note": "Manual, not run: the Color Proofing docker chooses the output profile, which changes colour management; this harness must not touch it. The recipe's other steps, View > Proof Colors and View > Simulate Overprints, switch the application window to a proof view and are left out of this plan for the same reason (the harness never toggles view or colour-management settings, and the export that makes the frame would not show them anyway)."
       },
       {
        "kind": "cdr_menu",
        "id": "66dd7512-7f82-5cbf-4cde-87859b10a2c0",
-       "note": "View > Proof Colors (ActiveView.ShowProofColors = True)."
+       "note": "View > Proof Colors (ActiveView.ShowProofColors = True). View only: it changes the window, not the document, so the runner skips it as manual and no export shows it."
       },
       {
        "kind": "cdr_menu",
        "id": "E279D745-67AD-43eb-B179-A8C68BFCFBE2",
-       "note": "View > Simulate Overprints."
+       "note": "View > Simulate Overprints. View only: it changes the window, not the document, so the runner skips it as manual and no export shows it."
+      },
+      {
+       "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "import math\nnames = (\"orange_box\", \"blue_star\", \"grad_circle\", \"pgd_type\", \"zigzag\")\noriginals = [labels[k] for k in names]\ncopies = [labels[k].Duplicate(0, 0) for k in names]\n\ndef proof(c):\n    \"\"\"a colour taken through CorelDRAW's own RGB -> CMYK -> RGB conversion (the gamut of the CMYK profile)\"\"\"\n    d = rgb(\"#%02X%02X%02X\" % (c.RGBRed, c.RGBGreen, c.RGBBlue))\n    d.ConvertToCMYK()\n    d.ConvertToRGB()\n    return d\n\ndef delta(a, b):\n    return math.sqrt((a.RGBRed - b.RGBRed) ** 2 + (a.RGBGreen - b.RGBGreen) ** 2 + (a.RGBBlue - b.RGBBlue) ** 2)\n\nflagged = []\nfor k, sh in zip(names, copies):\n    worst = 0.0\n    try:\n        if sh.Fill.Type == 1:\n            c = sh.Fill.UniformColor\n            d = proof(c)\n            worst = max(worst, delta(c, d))\n            sh.Fill.ApplyUniformFill(d)\n        elif sh.Fill.Type == 2:\n            f = sh.Fill.Fountain\n            for end in (f.StartColor, f.EndColor):\n                d = proof(end)\n                worst = max(worst, delta(end, d))\n                end.CopyAssign(d)\n    except Exception as e:\n        print(\"fill skipped\", k, e)\n    try:\n        if sh.Outline.Type != 0:\n            oc = sh.Outline.Color\n            d = proof(oc)\n            oc.CopyAssign(d)\n    except Exception as e:\n        print(\"outline skipped\", k, e)\n    print(k, \"largest colour shift\", round(worst, 1))\n    if worst > 45:\n        flagged.append(k)\n        sh.Outline.Width = 0.22\n        sh.Outline.Color.CopyAssign(rgb(\"#FF00FF\"))\n\ndef place(items, left):\n    sr = app.CreateShapeRange()\n    for it in items:\n        sr.Add(it)\n    g = sr.Group()\n    k = 8.6 / g.SizeWidth\n    g.SetSize(g.SizeWidth * k, g.SizeHeight * k)\n    g.SetPosition(left, 9.6)\n    return g\n\nplace(originals, 0.7)\nplace(copies, 10.7)\nfor text, x, size, col in ((\"Screen colours (RGB)\", 0.7, 30, \"#1A1A1A\"), (\"Press proof (CMYK, emulated)\", 10.7, 30, \"#1A1A1A\")):\n    t = layer.CreateArtisticText(0.0, 0.0, text, 0, -1, \"Arial Black\", size)\n    t.Fill.ApplyUniformFill(rgb(col))\n    t.Outline.SetNoOutline()\n    t.SetPosition(x, 10.9)\nnote = \"Out-of-gamut colours flagged with a magenta outline: \" + (\", \".join(k.replace(\"_\", \" \") for k in flagged) or \"none\") + \". Each fill is taken RGB to CMYK and back with CorelDRAW's colour engine.\"\nt = layer.CreateArtisticText(0.0, 0.0, note, 0, -1, \"Arial\", 17)\nt.Fill.ApplyUniformFill(rgb(\"#C0007A\"))\nt.Outline.SetNoOutline()\nt.SetPosition(0.7, 4.0)\nt2 = layer.CreateArtisticText(0.0, 0.0, \"This is a stand-in for the View > Proof Colors preview (a window setting that no export shows). It is a preview, not a contract proof.\", 0, -1, \"Arial\", 15)\nt2.Fill.ApplyUniformFill(rgb(\"#1A1A1A\"))\nt2.Outline.SetNoOutline()\nt2.SetPosition(0.7, 3.4)\nresult = None",
+       "note": "Soft-proof emulation (script, the only step that runs): because the Proof Colors view and the Color Proofing docker are not exported, the plate's shapes are duplicated and each solid colour of the duplicate (and each end colour of the gradient) is taken through CorelDRAW's own RGB to CMYK to RGB conversion, which gives the colours the CMYK profile can print. The screen colours are drawn on the left and the press proof on the right; any shape whose colour moved by more than 45 levels is outlined in magenta as the out-of-gamut warning (the vivid blue star moves from #1E5BFF to about #464B98). This is an emulation of what the preview shows, not the preview itself: the real Proof Colors toggle and the single-plate views stay manual."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "8f22ce56ae83",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "manual",
+        "note": "not run: Window commands open dockers / dialogs or act outside the document; give the step a \"script\""
+       },
+       {
+        "step": 2,
+        "status": "manual",
+        "note": "view only: View/Proof Colors changes the window, not the document (an export cannot show it)"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "view only: View/Simulate Overprints changes the window, not the document (an export cannot show it)"
+       },
+       {
+        "step": 4,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 7]",
+       "(unnamed) [type 7]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.soft_proof.png",
+      "strip": "gallery/recipes/CDR/print_prep.soft_proof_steps.png",
+      "secs": 5.7,
+      "crop": {
+       "file": "gallery/recipes/CDR/print_prep.soft_proof_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "The scripted emulation draws screen and press-proof versions side by side through CorelDRAW's RGB to CMYK to RGB conversion and flags the blue star (#1E5BFF to #464B98, read from the frame), a real preview of the press gamut. But the flag is a 45-level shift threshold rather than a gamut test (the orange moves 17 levels unflagged), single plates are not inspected, and the Proof Colors view itself stays manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "8f22ce56ae83",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [],
@@ -723,24 +1555,132 @@
       {
        "kind": "cdr_preset",
        "id": "Color/Palettes/Spot/HKS/HKS_N.xml#HKS N",
-       "note": "Pick the ink from the spot palette (locked palette, one plate per swatch)."
+       "script": "for name, pal, idx in ((\"orange_box\", 23, 780), (\"blue_star\", 23, 820)):\n    c = app.CreateRGBColor(255, 122, 26)\n    c.FixedAssign(pal, idx, 100)\n    labels[name].Fill.ApplyUniformFill(c)\n    print(\"spot\", name, c.IsSpot, c.Name)\nresult = labels[\"orange_box\"]",
+       "note": "Spot colours (script, Color.FixedAssign with palette id 23 = cdrHKS): the box and the star are filled with two swatches of the shipped HKS spot palette (indexes 780 and 820, named 'HKS 06K 100%' and 'HKS 50K 100%'). The palette lists the 86 inks once per tint step, so indexes 1 to 86 are 10 percent tints (a first run with index 10 gave a pale pink) and 775 to 860 are the 100 percent swatches; palette id 23 is the coated K set, there is no separate id for HKS N. IsSpot reads True."
       },
       {
        "kind": "cdr_api",
        "id": "class:IPDFVBASettings",
-       "note": "Keep spots on export: OutputSpotColorsAs (not the hidden SpotColors member)."
+       "script": "import os\nout = \"work/plans/out/print_prep.spot_colours\"\nos.makedirs(out, exist_ok=True)\nps = doc.PDFSettings\nps.Reset()\nps.PublishRange = 1\nps.pdfVersion = 10\nps.IncludeBleed = False\nps.CropMarks = False\nps.EmbedFonts = True\nps.OutputSpotColorsAs = 0\npath = os.path.abspath(out + \"/press.pdf\")\ndoc.PublishToPDF(path)\nprint(\"PDF written\", os.path.getsize(path), \"bytes\")\nresult = s",
+       "note": "PDF settings (script): OutputSpotColorsAs = pdfSpotAsSpot so the spots stay spots, pdfVersion X4, then PublishToPDF writes press.pdf into the plan's output folder. Checked in the file afterwards: one page, PDF/X-4 marker present, two /Separation colour spaces (the two spots)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "86117ed2b247",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.spot_colours.png",
+      "strip": "gallery/recipes/CDR/print_prep.spot_colours_steps.png",
+      "secs": 1.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The box and star are filled with HKS 06K and HKS 50K 100 percent spots (IsSpot read back True), and the PDF/X-4 file carries both as Separation colour spaces. Left to a person: the plate check in separations preview.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "86117ed2b247"
+     }
     },
     "PS": {
      "app": "PS",
      "steps": [
       {
        "kind": "ps_api",
+       "id": "class:Selection",
+       "script": "d.selection.select([[560, 760], [1360, 760], [1360, 860], [560, 860]]);",
+       "note": "Script (new first step, a Selection step; input: 'SPOT' in Arial Black 300 px on white): a rectangle 560, 760 to 1360, 860 px, the area the spot ink will print. Ran."
+      },
+      {
+       "kind": "ps_api",
        "id": "class:Channels",
-       "note": "Spot, white-ink or varnish plate: var c = doc.channels.add(); c.kind = ChannelType.SPOTCOLOR; c.name, c.color, c.opacity (unverified); save as Photoshop PDF with spotColors = true."
+       "note": "Script: add a spot colour channel: ChannelType.SPOTCOLOR, name 'Brand orange spot', colour #FF6A13, solidity 100, filled by storing the selection into it, then Deselect. Ran; the script itself checks the channel exists as a spot channel. The PNG frame cannot show spot plates (the runner's frame is a flattened RGB duplicate), so the frame looks unchanged. A probe run listed the channels as Red, Green, Blue and the spot channel.",
+       "script": "var c = d.channels.add(); c.kind = ChannelType.SPOTCOLOR; c.name = 'Brand orange spot'; c.color = hexc('#FF6A13'); c.opacity = 100; d.selection.store(c); d.selection.deselect();\nif (d.channels.getByName('Brand orange spot').kind != ChannelType.SPOTCOLOR) throw new Error('the spot channel is missing');"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var out = new Folder(OUT); if (!out.exists) out.create();\nvar f = new File(out.fsName + '/ps_spots.pdf');\nvar o = new PDFSaveOptions(); o.spotColors = true; o.layers = false; o.preserveEditing = false;\nd.saveAs(f, o, true);\nif (!f.exists || f.length < 1000) throw new Error('ps_spots.pdf was not written');",
+       "note": "Script (new step): save a copy as a Photoshop PDF with spotColors = true into the run's output folder as ps_spots.pdf (about 95 KB). Ran. Checked by reading the PDF: it contains a /Separation colour space named 'Brand orange spot'. Untested: the other plates and a real colour-book swatch (pick the coated or uncoated book to match the stock; manual)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#FFFFFF",
+      "text": "SPOT",
+      "color": "#1B1B1B",
+      "size": 300
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "blank",
+       "background": "#FFFFFF",
+       "text": "SPOT",
+       "color": "#1B1B1B",
+       "size": 300
+      },
+      "plan_hash": "3fb80fad3de7",
+      "result": "complete",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Lasso; active layer: SPOT"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Deselect; active layer: SPOT"
+       },
+       {
+        "step": 3,
+        "status": "ok",
+        "note": "history: Deselect; active layer: SPOT"
+       }
+      ],
+      "layers": [
+       "SPOT [text]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.spot_colours.png",
+      "strip": "gallery/recipes/PS/print_prep.spot_colours_steps.png",
+      "secs": 20.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "A spot channel named Brand orange spot is added and filled over a band, and the copy saved in this run, ps_spots.pdf, contains a /Separation colour space under that name, so it separates onto its own plate; the frame cannot show it. Left to a person: a colour-book swatch in place of the custom colour, and the plate check.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "3fb80fad3de7"
+     }
     }
    },
    "manual_steps": [
@@ -802,15 +1742,89 @@
      "steps": [
       {
        "kind": "cdr_api",
+       "id": "class:Shape",
+       "script": "for i, (w, label) in enumerate(((0.0005, \"0.036 pt\"), (0.002, \"0.14 pt\"), (0.02, \"1.4 pt\"))):\n    y = 10.75 - i * 0.22\n    ln = layer.CreateLineSegment(1.0, y, 6.0, y)\n    ln.Outline.Width = w\n    ln.Outline.Color.CopyAssign(rgb(\"#E0006E\"))\n    ln.Name = \"rule \" + label\nsamples = [(\"Body text 4 pt\", 4, \"#1A1A1A\"), (\"Body text 5.5 pt\", 5.5, \"#1A1A1A\"), (\"Body text 9 pt\", 9, \"#1A1A1A\")]\nfor i, (text, size, col) in enumerate(samples):\n    t = layer.CreateArtisticText(0.0, 0.0, text, 0, -1, \"Arial\", size)\n    t.Fill.ApplyUniformFill(rgb(col))\n    t.Outline.SetNoOutline()\n    t.SetPosition(7.0, 10.8 - i * 0.25)\n    t.Name = \"type \" + text\nbox = layer.CreateRectangle2(11.0, 10.05, 3.2, 0.9, 0, 0, 0, 0)\nbox.Fill.ApplyUniformFill(rgb(\"#1A1A1A\"))\nbox.Outline.SetNoOutline()\nrev = layer.CreateArtisticText(0.0, 0.0, \"Reversed 5 pt serif\", 0, -1, \"Times New Roman\", 5)\nrev.Fill.ApplyUniformFill(rgb(\"#FFFFFF\"))\nrev.Outline.SetNoOutline()\nrev.SetPosition(11.2, 10.65)\nrev.Name = \"type reversed\"\nresult = None",
+       "note": "Test content (script), drawn above the artwork: three pink rules at 0.036, 0.14 and 1.4 pt, three body-text lines at 4, 5.5 and 9 pt, and a thin light serif line at 5 pt reversed out of a dark box. They are the things the check below has to find; the frame after this step still shows them as drawn."
+      },
+      {
+       "kind": "cdr_api",
        "id": "class:Outline",
-       "note": "Replace Shape.Outline.Width values under 0.25 pt (document units: set ActiveDocument.Unit first)."
+       "script": "\nMIN_W = 0.25 / 72\nMIN_PT = 6.0\nrules_fixed, type_fixed, rev_fixed, rules_n, type_n = [], [], [], 0, 0\nfor i in range(1, layer.Shapes.Count + 1):\n    sh = layer.Shapes.Item(i)\n    try:\n        if sh.Type == 6:\n            type_n += 1\n            story = sh.Text.Story\n            if story.Size < MIN_PT:\n                type_fixed.append((sh.Name, story.Size))\n                story.Size = MIN_PT\n            if sh.Name == \"type reversed\":\n                story.Font = \"Arial Black\"\n                rev_fixed.append(sh.Name)\n        elif sh.CanHaveOutline and sh.Outline.Width:\n            rules_n += 1\n            if sh.Outline.Width < MIN_W:\n                rules_fixed.append((sh.Name, round(sh.Outline.Width * 72, 3)))\n                sh.Outline.Width = MIN_W\n    except Exception as e:\n        print(\"skipped\", sh.Name, e)\nprint(\"rules checked\", rules_n, \"raised to 0.25 pt:\", rules_fixed)\nprint(\"type checked\", type_n, \"raised to 6 pt:\", type_fixed, \"reversed set bold:\", rev_fixed)\nrep = layer.CreateArtisticText(0.0, 0.0, \"Checked %d rules and %d type lines. Raised: %d rules to 0.25 pt, %d lines to 6 pt, %d reversed line set in a bold face.\" % (rules_n, type_n, len(rules_fixed), len(type_fixed), len(rev_fixed)), 0, -1, \"Arial\", 16)\nrep.Fill.ApplyUniformFill(rgb(\"#1A1A1A\"))\nrep.Outline.SetNoOutline()\nrep.SetPosition(1.0, 9.75)\nresult = None\n",
+       "note": "Minimum line and type check (script): every shape with an outline thinner than 0.25 pt (0.25 / 72 in) is raised to 0.25 pt, every text object under 6 pt is set to 6 pt, and the reversed light serif line (a thin face on a dark ground fills in on press) is switched to a heavy face. The run log lists what was changed and a report line is drawn above the artwork. Read back: the 0.036 and 0.14 pt rules were raised, the 1.4 pt rule was left; the 4, 5.5 and 5 pt lines became 6 pt, the 9 pt line was left. At the 960 px frame 6 pt type is only a few pixels tall and the 0.25 pt rules are hairlines; they are right for press, not for this view."
       },
       {
        "kind": "cdr_preset",
        "id": "Custom Data/Preflight Styles/Default Settings.pfs#Default Settings",
-       "note": "Then read the Issues tab of Publish to PDF; its colour-mode checks are off in this default style, switch them on or load the printer's style."
+       "note": "Manual, not run: the preflight style is read in the Issues tab of Publish to PDF (a dialog); the style's colour-mode checks are off in the shipped default, switch them on or load the printer's style by hand."
       }
-     ]
+     ],
+     "input": {
+      "plate": "vector"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "vector"
+      },
+      "plan_hash": "138c96e219b2",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "cdr_preset steps have no scripted route of their own; give the step a \"script\""
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "type reversed [type 6]",
+       "(unnamed) [type 1]",
+       "type Body text 9 pt [type 6]",
+       "type Body text 5.5 pt [type 6]",
+       "type Body text 4 pt [type 6]",
+       "rule 1.4 pt [type 3]",
+       "rule 0.14 pt [type 3]",
+       "rule 0.036 pt [type 3]",
+       "zigzag [type 3]",
+       "pgd_type [type 6]",
+       "grad_circle [type 2]",
+       "blue_star [type 3]",
+       "orange_box [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.min_line_type_sizes.png",
+      "strip": "gallery/recipes/CDR/print_prep.min_line_type_sizes_steps.png",
+      "secs": 5.7,
+      "crop": {
+       "file": "gallery/recipes/CDR/print_prep.min_line_type_sizes_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "Rules and type on the whole layer are now checked: the page report (5 rules, 5 type lines; 2 rules raised to 0.25 pt, 3 lines to 6 pt) matches the frames, where the 4 and 5.5 pt lines grow to 6 pt and the reversed line turns bold. But reversed type is found by its test object's name, not by light-on-dark colours, and four-colour small type is not checked, so the third press minimum is only shown on the labelled sample.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "138c96e219b2",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [],
@@ -849,14 +1863,65 @@
       {
        "kind": "ps_menu",
        "id": "1030",
-       "note": "Image > Image Size with Resample off: set Resolution 300 and read the print size (or set the size and read the ppi); resample (Preserve Details 2.0) only when the ppi is short."
+       "note": "Image > Image Size (script: resizeImage with resampling off): Resolution 300 ppi, so the pixel count is unchanged and the print size is the result. The settings-free route carries the probe's 200 px, so the values come from the script. Ran: 1920 x 1080 px becomes 6.4 x 3.6 in at 300 ppi.",
+       "script": "d.resizeImage(undefined, undefined, 300, ResampleMethod.NONE);"
+      },
+      {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var w = Math.round(d.width.as('in') * 10) / 10, h = Math.round(d.height.as('in') * 10) / 10;\nvar t = d.artLayers.add(); t.kind = LayerKind.TEXT; t.name = 'print size'; var ti = t.textItem; ti.contents = d.width.as('px') + ' x ' + d.height.as('px') + ' px = ' + w + ' x ' + h + ' in at ' + Math.round(d.resolution) + ' ppi'; ti.font = 'ArialMT'; ti.size = UnitValue(30 * 72 / d.resolution, 'pt'); ti.color = hexc('#FFFFFF'); ti.justification = Justification.CENTER; ti.position = [UnitValue(760, 'px'), UnitValue(1058, 'px')];",
+       "note": "Script (new step): a type layer that reads the numbers back, '1920 x 1080 px = 6.4 x 3.6 in at 300 ppi', in the black strip at the bottom of the plate. Ran; the label is visible in the frame. Resample (Preserve Details) only when the ppi is short, and a 72 ppi web image upsampled to 300 ppi has no extra detail."
       },
       {
        "kind": "ps_menu",
        "id": "1191",
-       "note": "View > Print Size to judge the image at roughly its physical size."
+       "note": "View > Print Size: not run. It is a view setting that changes the window, not the document. Check at the physical size by hand. The run is partial because of this step."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "55e57553b45a",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Image Size; active layer: Background"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Edit Type Layer; active layer: print size"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "view only: View/Print Size changes the window, not the document (an export cannot show it)"
+       }
+      ],
+      "layers": [
+       "print size [text]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.image_resolution_check.png",
+      "strip": "gallery/recipes/PS/print_prep.image_resolution_check_steps.png",
+      "secs": 16.0
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "Image Size with resampling off sets 300 ppi without changing the pixels, and a type layer reads the result back in the frame: 1920 x 1080 px = 6.4 x 3.6 in at 300 ppi. View > Print Size is a view toggle left to a person.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "55e57553b45a"
+     }
     },
     "AI": {
      "app": "AI",
@@ -882,14 +1947,58 @@
       {
        "kind": "cdr_menu",
        "id": "3324df3f-e302-4946-8ba9-6b1511700818",
-       "note": "File > Document Properties lists every bitmap with its colour mode: a quick inventory."
+       "note": "Manual, not run: File > Document Properties is a dialog (File/ commands are not run by the harness); it lists each bitmap with its colour mode as an inventory. The script below reads the bitmap's size instead."
       },
       {
        "kind": "cdr_menu",
        "id": "f85cb8c1-b2a5-4f20-becd-be4918557275",
-       "note": "Bitmaps > Resample on bitmaps under the target (Bitmap.Resample, unverified)."
+       "script": "\nbmp = s.Bitmap\npx_w, px_h = bmp.SizeWidth, bmp.SizeHeight\nw_in, h_in = s.SizeWidth, s.SizeHeight\nppi = px_w / w_in\nprint(\"bitmap\", px_w, \"x\", px_h, \"px at\", round(w_in, 2), \"x\", round(h_in, 2), \"in =\", round(ppi, 1), \"ppi\")\nneed = 300.0\nmax_w, max_h = px_w / need, px_h / need\nbig_w = px_w / 150.0\nverdict = \"PASS\" if ppi >= need else \"FAIL\"\nprint(\"300 ppi:\", verdict, \"- largest size at 300 ppi:\", round(max_w, 2), \"x\", round(max_h, 2), \"in; at 150 ppi:\", round(big_w, 2), \"in wide\")\n# no resampling: only the printed size changes. The picture is set to the largest size that still gives 300 ppi\ns.SetSize(max_w, max_h)\ns.SetPosition((PW - max_w) / 2, (PH + max_h) / 2)\nframe = layer.CreateRectangle2((PW - max_w) / 2, (PH - max_h) / 2, max_w, max_h, 0, 0, 0, 0)\nframe.Fill.ApplyNoFill()\nframe.Outline.Width = 0.04\nframe.Outline.Color.CopyAssign(rgb(\"#1FA95B\"))\nlines = [\n    (\"Picture: %d x %d px\" % (px_w, px_h), \"#1A1A1A\", 22),\n    (\"At %.2f in wide: %.0f ppi  %s (needs 300 ppi)\" % (w_in, ppi, verdict), \"#C62828\", 22),\n    (\"Resample off: only the printed size changes\", \"#1A1A1A\", 22),\n    (\"Largest size at 300 ppi: %.1f x %.1f in (green frame)\" % (max_w, max_h), \"#1FA95B\", 22),\n    (\"At 150 ppi (large poster, far viewing): up to %.1f in wide\" % big_w, \"#1A1A1A\", 22),\n]\nfor i, (text, col, size) in enumerate(lines):\n    t = layer.CreateArtisticText(0.0, 0.0, text, 0, -1, \"Arial\", size)\n    t.Fill.ApplyUniformFill(rgb(col))\n    t.Outline.SetNoOutline()\n    t.SetPosition(1.0, 2.6 - i * 0.5)\nresult = s\n",
+       "note": "Check, no resampling (script): ppi = bitmap pixel width / object width in inches. The plate is 1920 px over 20 in = 96 ppi, which fails the 300 ppi rule. The first run resampled it up to 150 ppi, which adds pixels, not detail, as the recipe warns; this version turns Resample off in effect and changes only the printed size: the picture is set to 6.4 x 3.6 in, the largest size that still gives 300 ppi (150 ppi would allow 12.8 in wide), drawn with a green frame, with a report in text under it. The report is written from the measured numbers. The File > Document Properties inventory of every bitmap is a dialog and stays manual."
       }
-     ]
+     ],
+     "input": {
+      "plate": "photo"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "photo"
+      },
+      "plan_hash": "907f38cf6b9e",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "manual",
+        "note": "not run: File commands open dockers / dialogs or act outside the document; give the step a \"script\""
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 1]",
+       "plate_photo.png [type 5]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.image_resolution_check.png",
+      "strip": "gallery/recipes/CDR/print_prep.image_resolution_check_steps.png",
+      "secs": 2.5
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The check reads 1920 px over 20 in = 96 ppi, reports FAIL against 300 ppi and, without resampling, sets the photo to 6.4 x 3.6 in (the largest size at 300 ppi) with the 150 ppi poster limit of 12.8 in; the numbers on the page are correct and the earlier upsampling is gone. It checks the one photo on the page rather than looping over every bitmap, and the Document Properties inventory stays manual.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "907f38cf6b9e"
+     }
     }
    },
    "manual_steps": [],
@@ -941,16 +2050,83 @@
      "app": "PS",
      "steps": [
       {
+       "kind": "ps_api",
+       "id": "class:ArtLayer",
+       "script": "var p = new ActionDescriptor(); p.putPath(C2T('null'), new File(PLATE)); p.putBoolean(S2T('linked'), true); executeAction(S2T('placeEvent'), p, DialogModes.NO);\nd.activeLayer.resize(45, 45, AnchorPosition.MIDDLECENTER); d.activeLayer.translate(UnitValue(0, 'px'), UnitValue(160, 'px'));",
+       "note": "Script (new first step; input: 'PACKAGE' in Arial Black 200 px, centred at the top of a white page): place the test photo as a linked smart object (placeEvent with linked on, from the media folder), scaled to 45 % and moved down. Ran; a probe showed the layer's smart object with linked = true."
+      },
+      {
        "kind": "ps_menu",
        "id": "6346",
-       "note": "Layer > Smart Objects > Embed All Linked (verified live), so the PSD carries its linked files."
+       "note": "Layer > Smart Objects > Embed All Linked: ran (history 'Embed All Linked Smart Objects'). The same probe showed linked = false afterwards, so the PSD now carries the picture."
       },
       {
        "kind": "ps_menu",
        "id": "3092",
-       "note": "Or File > Package to copy the PSD plus a Links folder (no confirmed script route; it was disabled in every harvest state)."
+       "note": "File > Package: not run (it writes a folder of files and was disabled in every harvest state). Package by hand, or send a PDF/X when the printer wants only a PDF. The run is partial because of this step. Untested: fonts in the package (cloud fonts are not copied; outline them)."
       }
-     ]
+     ],
+     "input": {
+      "plate": "blank",
+      "background": "#FFFFFF",
+      "text": "PACKAGE",
+      "color": "#1B1B1B",
+      "size": 200,
+      "at": [
+       960,
+       200
+      ]
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "27.4.0",
+      "input": {
+       "plate": "blank",
+       "background": "#FFFFFF",
+       "text": "PACKAGE",
+       "color": "#1B1B1B",
+       "size": 200,
+       "at": [
+        960,
+        200
+       ]
+      },
+      "plan_hash": "0f2ca4b2ef79",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "ok",
+        "note": "history: Free Transform; active layer: plate_photo"
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "history: Embed All Linked Smart Objects; active layer: plate_photo"
+       },
+       {
+        "step": 3,
+        "status": "manual",
+        "note": "not run: File/Package acts outside the document (prints, writes files or changes app settings)"
+       }
+      ],
+      "layers": [
+       "plate_photo [smartobject]",
+       "PACKAGE [text]",
+       "Background [normal]",
+       "mode rgb, 1920x1080 px"
+      ],
+      "frame": "gallery/recipes/PS/print_prep.package_for_print.png",
+      "strip": "gallery/recipes/PS/print_prep.package_for_print_steps.png",
+      "secs": 17.3
+     },
+     "verified": {
+      "verdict": "pass",
+      "note": "The photo is placed as a linked smart object and Embed All Linked runs (history shows the embed), so the file carries the picture; the layer list shows the smart object. File > Package is left to a person, and the live Arial Black type is not collected, so fonts still need packaging or outlining.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "0f2ca4b2ef79"
+     }
     },
     "CDR": {
      "app": "CDR",
@@ -958,14 +2134,77 @@
       {
        "kind": "cdr_menu",
        "id": "3324df3f-e302-4946-8ba9-6b1511700818",
-       "note": "File > Document Properties: check the font and bitmap inventory."
+       "note": "Manual, not run: File > Document Properties is a dialog (File/ commands are not run by the harness); it lists the fonts and bitmaps used. The script below reads the same facts from the object model."
       },
       {
        "kind": "cdr_api",
        "id": "class:IPDFVBASettings",
-       "note": "Deliver a PDF with EmbedFonts = True (or TextAsCurves) via PublishToPDF; PGD has no card for a collect-for-output command."
+       "script": "\nimport os\nps = doc.PDFSettings\nps.Reset()\nps.PublishRange = 1\nps.pdfVersion = 10\nps.IncludeBleed = False\nps.CropMarks = False\nps.EmbedFonts = True\nps.SubsetFonts = True\npdf = os.path.join(out, \"press.pdf\")\ndoc.PublishToPDF(pdf)\nfonts, linked, embedded = [], 0, 0\nfor i in range(1, layer.Shapes.Count + 1):\n    sh = layer.Shapes.Item(i)\n    if sh.Type == 6:\n        f = sh.Text.Story.Font\n        if f not in fonts:\n            fonts.append(f)\n    elif sh.Type == 5:\n        if sh.Bitmap.ExternallyLinked:\n            sh.Bitmap.ResolveLink()\n            linked += 1\n        else:\n            embedded += 1\npdf_kb = round(os.path.getsize(pdf) / 1024)\nlines = [\"Package list\", \"press.pdf: PDF/X-4, page 1 only, fonts embedded and subset (%d KB)\" % pdf_kb,\n         \"press.cdr: the CorelDRAW file, saved after the links were embedded\",\n         \"Fonts used: \" + \", \".join(fonts) + \" (named only: the font file is not copied, its licence may not allow it)\",\n         \"Images: %d linked (embedded now), %d already embedded\" % (linked, embedded)]\nwith open(os.path.join(out, \"package_list.txt\"), \"w\", encoding=\"utf-8\") as fh:\n    fh.write(chr(10).join(lines) + chr(10))\nfor i, text in enumerate(lines[1:]):\n    t = layer.CreateArtisticText(0.0, 0.0, text, 0, -1, \"Arial\", 15)\n    t.Fill.ApplyUniformFill(rgb(\"#1A1A1A\"))\n    t.Outline.SetNoOutline()\n    t.SetPosition(1.0, 2.5 - i * 0.45)\no = app.CreateStructSaveAsOptions()\no.EmbedICCProfile = True\no.Overwrite = True\ndoc.SaveAs(os.path.join(out, \"press.cdr\"), o)\nprint(\"package written:\", sorted(os.listdir(out)))\nresult = s\n",
+       "note": "Package (script): the PDF/X-4 with fonts embedded and subset (page 1 only) is written into the run's output folder; the script lists the fonts and bitmaps the page uses and embeds any linked bitmap (Bitmap.ResolveLink; none here); a package list (package_list.txt) and a summary on the page record what the package holds; then the document is saved as press.cdr next to the PDF (Document.SaveAs with a StructSaveAsOptions). Read back: the folder holds press.pdf, press.cdr and package_list.txt; the PDF was checked in the file (one page, PDF/X-4 marker, one embedded subset font file). Limits: CorelDRAW's own Collect For Output has no object-model call, so this is a scripted equivalent; the font file itself is not copied (the font is named only, since its licence may not allow redistribution); the saved .cdr also carries the harness scene's hidden masters page."
       }
-     ]
+     ],
+     "input": {
+      "plate": "text",
+      "text": "PGD",
+      "size": 280,
+      "background": "#F2E8D5",
+      "color": "#1A1A1A"
+     },
+     "run": {
+      "date": "2026-10-15",
+      "app_version": "Version 25.1.0.269",
+      "input": {
+       "plate": "text",
+       "text": "PGD",
+       "size": 280,
+       "background": "#F2E8D5",
+       "color": "#1A1A1A"
+      },
+      "plan_hash": "9babb4d1526d",
+      "result": "partial",
+      "steps": [
+       {
+        "step": 1,
+        "status": "manual",
+        "note": "not run: File commands open dockers / dialogs or act outside the document; give the step a \"script\""
+       },
+       {
+        "step": 2,
+        "status": "ok",
+        "note": "script ran"
+       }
+      ],
+      "layers": [
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "(unnamed) [type 6]",
+       "type [type 6]",
+       "background [type 1]"
+      ],
+      "frame": "gallery/recipes/CDR/print_prep.package_for_print.png",
+      "strip": "gallery/recipes/CDR/print_prep.package_for_print_steps.png",
+      "secs": 5.8,
+      "crop": {
+       "file": "gallery/recipes/CDR/print_prep.package_for_print_1to1.png",
+       "box": [
+        1408,
+        568,
+        512,
+        512
+       ],
+       "of": "1920x1080 frame",
+       "scale": "1:1 document pixels"
+      }
+     },
+     "verified": {
+      "verdict": "weak",
+      "note": "The package folder holds press.pdf (read from the file: PDF/X-4 marker, one page, one embedded subset font), press.cdr and package_list.txt, but the font is named only (neither collected nor outlined), the page has no linked images so the link step is untested, and the list omits the Arial of the report lines saved into press.cdr; a leftover CorelDRAW backup of the .cdr also sits in the folder.",
+      "date": "2026-10-15",
+      "by": "judge",
+      "plan_hash": "9babb4d1526d",
+      "second_opinion": "agree"
+     }
     }
    },
    "manual_steps": [],

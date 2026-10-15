@@ -100,13 +100,13 @@
     "soft white oval frame for a portrait, wedding or memorial card",
     "black vignette that pulls attention to the centre of a hero photo",
     "colour-matched frame (Other colour) so a photo melts into a poster background of the same colour",
-    "vintage / old-photo look together with a sepia or tint adjustment"
+    "vintage / old-photo look together with a sepia or tint adjustment",
+    "heavy dark corners on a photo (Offset 150, Fade 80); it also dims the middle, so it is not a subtle edge burn"
    ],
    "avoid": [
     "anything important near the edges (captions, logos; on the vector plate the zigzag and the 'PGD' type along the bottom): it is covered by the frame colour",
-    "a subtle darkening of the corners only: the frame colour is painted over the image rather than darkening it (not render-checked), so use Toolbox/Transparency/Fountain Transparency on a black shape over the photo, or Photoshop's Lens Correction Vignette Amount",
     "an off-centre focus: no position parameter was harvested, so the shape sits centred; PowerClip or a transparency gives control",
-    "scripted runs: defaults and Offset / Fade ranges were not read (the data source exists only while the dialog is open) and this effect's command string was not applied in a test; check the pixels"
+    "a frame colour other than black or white from a script: ColorItem has no command key, so ColorMode=Other cannot get its colour; use a coloured shape with a fountain transparency instead"
    ],
    "confidence": "medium",
    "equivalents": {
@@ -140,8 +140,8 @@
     },
     {
      "name": "Offset",
-     "does": "how far the frame reaches in from the edges, i.e. the size of the clear centre (exact direction and range not harvested)",
-     "typical": "mid-range; compare in the dialog preview"
+     "does": "size of the clear centre, in percent of the picture: 20 leaves a small bright ellipse in a nearly all-frame picture; 150 pushes the frame towards the corners (plan runs 2026-10-15)",
+     "typical": "50 for a strong spotlight ellipse; 150 with Fade 80 takes the corners to near black and still darkens the whole picture by about a quarter (judged on the plan frames)"
     },
     {
      "name": "Fade",
@@ -160,7 +160,7 @@
     "Toolbox/Transparency/Fountain Transparency (a softer, see-through alternative or extra layer)",
     "Object/PowerClip/Place Inside Frame (vignette a photo inside a custom frame shape)"
    ],
-   "scripting": "On a bitmap shape s (Shape.Bitmap): s.Bitmap.ApplyBitmapEffect(\"PGD Vignette\", \"VignetteEffect ColorMode=Black,Shape=Ellipse,Offset=50,Fade=40\") (format from the harvested cmd_template; not applied in a test for this effect; Offset 50 / Fade 40 are guesses because their ranges were not harvested; ColorItem has no command key, so ColorMode=Other cannot get its colour from a script). ApplyBitmapEffect returns OK even for a string it does not apply (the harvest's Pixelate and Invert strings changed no pixels), so compare the pixels before and after. Menu route: FrameWork.Automation.InvokeItem(\"6686b794-2eb0-408e-8f83-ef8d73ac0d99\") opens the effect's dialog on the selection (modal: a person sets the values and presses OK), so it is not an unattended route.",
+   "scripting": "On a bitmap shape s (Shape.Bitmap): s.Bitmap.ApplyBitmapEffect(\"PGD Vignette\", \"VignetteEffect ColorMode=Black,Shape=Ellipse,Offset=50,Fade=40\") (applied in the gallery render and in the plan runs; Offset is the clear area in percent, so 150 with Fade 80 gives near-black corners and a frame about a quarter darker; ColorItem has no command key, so ColorMode=Other cannot get its colour from a script). ApplyBitmapEffect returns OK even for a string it does not apply (the harvest's Pixelate and Invert strings changed no pixels), so compare the pixels before and after. Menu route: FrameWork.Automation.InvokeItem(\"6686b794-2eb0-408e-8f83-ef8d73ac0d99\") opens the effect's dialog on the selection (modal: a person sets the values and presses OK), so it is not an unattended route.",
    "scriptable": "partial",
    "non_destructive": "menu route: yes, CorelDRAW 2024 keeps it in the object's effect stack (Properties docker, ApplyOrDeleteEffect:VignetteEffect; editable or removable); the scripted Bitmap.ApplyBitmapEffect path changed the bitmap's pixels in the harvest tests and undo restored them; whether it also leaves a stack entry was not checked",
    "cost": "light (untimed estimate)",

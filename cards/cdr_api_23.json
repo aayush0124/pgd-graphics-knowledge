@@ -518,7 +518,10 @@
     "AddToSelection / RemoveFromSelection do nothing on the selection shape itself (ActiveSelection, Type cdrSelectionShape).",
     "Weld, Trim, Intersect, ConvertToBitmapEx and Group return a new Shape; keep that reference, the old one may be dead (unverified for every case).",
     "ConvertToBitmapEx and ConvertToBitmap default to 72 dpi; pass 300 or more for print.",
-    "GetPosition, GetSize, GetBoundingBox and GetMatrix return values through ByRef arguments, which late-bound callers (Python win32com) may not receive; read LeftX / SizeWidth / BoundingBox instead (unverified per binding)."
+    "GetPosition, GetSize, GetBoundingBox and GetMatrix return values through ByRef arguments, which late-bound callers (Python win32com) may not receive; read LeftX / SizeWidth / BoundingBox instead (unverified per binding).",
+    "Shape.Duplicate does not copy a live drop shadow (the duplicate reads Effects.Count 0). CreateDropShadow adds a separate group shape (type 16) that holds the shape and its shadow, so Shape.ConvertToBitmapEx on the shape alone leaves the shadow out: convert the type 16 group. Shape.FlattenEffects on a shadowed star gave a dull indigo shape with no shadow (plan runs 2026-10-15 (print_prep.flatten_transparency)).",
+    "Two shadow-type effects on one object replace each other: an inner shadow followed by a drop shadow kept only the drop shadow, so put the second on a duplicate (plan runs 2026-10-15 (text_effects.letterpress)). A drop shadow on a live Contour group follows the inner base shape, not the contour: break the group apart first (plan runs 2026-10-15 (cutout_social.sticker_cutout)).",
+    "Break Apart on an extrusion group leaves a type-7 group of the wall faces: Shape.UngroupAll() splits it (Shape.Ungroup() returned None there), then Shape.Weld(target, False, False) over the faces one after another gives one complete shape, where the Weld menu item kept only part of them (plan runs 2026-10-15 (text_effects.long_shadow))."
    ],
    "example": "Dim s As Shape\nSet s = ActiveLayer.CreateRectangle2(0, 0, 4, 2)\ns.Name = \"badge\"\ns.Fill.ApplyUniformFill CreateRGBColor(255, 200, 0)\ns.SetPositionEx cdrCenter, ActivePage.CenterX, ActivePage.CenterY\ns.CreateDropShadow Opacity:=40, Feather:=12, OffsetX:=0.05, OffsetY:=-0.05",
    "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
@@ -2170,7 +2173,8 @@
     "Saving down to an older Version can drop or alter newer features; KeepAppearance presumably converts them (to curves / bitmaps) so they look the same but are no longer editable (unverified).",
     "SaveAs re-points the open document at the new file; use SaveAsCopy when the working file must stay the same.",
     "Range = cdrSelection with nothing selected saves an empty or unchanged document (unverified).",
-    "Without Overwrite = True an existing target file may raise an error in an unattended script (unverified)."
+    "Without Overwrite = True an existing target file may raise an error in an unattended script (unverified).",
+    "Document.SaveAs(path) without this options object fails: create it with Application.CreateStructSaveAsOptions(), set Overwrite = True (EmbedICCProfile = True also ran) and pass it as the second argument (plan runs 2026-10-15 (print_prep.package_for_print))."
    ],
    "example": "Dim o As StructSaveAsOptions\nSet o = CreateStructSaveAsOptions\no.Filter = cdrCDR\no.Version = cdrVersion19   ' an older CDR version for the client\no.EmbedICCProfile = True\no.Overwrite = True\nActiveDocument.SaveAsCopy \"C:\\out\\client_copy.cdr\", o",
    "source": "cdr_api_23 agent (VGCoreAuto.tlb harvest; coclass members read from the members_on interface)",
