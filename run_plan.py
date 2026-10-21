@@ -5,19 +5,23 @@ every step did. pgd.py check proves a plan is well formed; this proves what it d
     python run_plan.py show <recipe> [APP]                 the compiled steps (offline: what each step will send)
     python run_plan.py run <recipe | family | all | a,b,...> [APP ...] [--force] [--no-record]
                                                            run in Photoshop / Illustrator / CorelDRAW; resumable: a
-                                                           plan whose recorded run matches it is skipped (--force)
-    python run_plan.py strip <recipe> APP                  rebuild the step strip from the saved step frames
-    python run_plan.py get <recipe> APP > plan.json        the plan alone, to edit
-    python run_plan.py put <recipe> APP plan.json          save an edited plan (pgd.py check and a compile pass must
-                                                           accept it)
+                                                           plan whose recorded run matches it is skipped (--force);
+                                                           exit 1 when a plan failed or crashed
+    python run_plan.py strip <recipe | family> APP         rebuild the step strips from the saved step frames
+    python run_plan.py get <recipe> APP [plan.json]        the plan alone, to edit (written to plan.json as UTF-8, or
+                                                           printed: a PowerShell redirect re-encodes it, use the file)
+    python run_plan.py put <recipe> APP plan.json          save an edited plan (pgd.py check, with the plan's default
+                                                           input, and a compile pass must accept it)
     python run_plan.py judge <recipe> APP --verdict pass|weak|wrong|broken --note "..." --by "..."
                                                            the judge's verdict on the current recorded run
     python run_plan.py judge <recipe> APP --second "agree" | "corrected: ..." [--verdict ...]
                                                            an independent second opinion on that verdict
-Every card write takes work/plans/cards.lock, so runs and edits for several apps can go on at once.
+Every card write takes work/plans/cards.lock (an OS lock on the file), so runs and edits for several apps can go on at
+once. App codes may be written in any case. Exit codes: 0 ok, 1 a plan failed / was not saved, 2 usage error.
 
-<recipe> is a recipe id (recipe:text_effects:neon_glow), its key (text_effects.neon_glow) or its exact name. Each app
-backend (tools/<app>/plan_<app>.py) starts its own app and never sends a script to one another client started.
+<recipe> is a recipe id (recipe:text_effects:neon_glow), its key (text_effects.neon_glow) or its exact name; get, put
+and judge take exactly one recipe (a family, 'all' or a comma list is refused). Each app backend
+(tools/<app>/plan_<app>.py) starts its own app and never sends a script to one another client started.
 
 Plan format (pgd.py check_plan validates it): {"app": "PS", "input": {...}, "steps": [step, ...]}.
   input  the document the plan starts from (INPUTS): {"plate": "photo"} | {"plate": "text", "text": "NEON",
@@ -41,12 +45,14 @@ document after every step; transparency over a mid-grey checker in both), <key>_
 document's own pixels, for sharpening / noise / upscale), and the plan's "run" record in its recipe card:
   {"date", "app_version", "input", "plan_hash", "result", "steps": [{"step", "status", "note"}], "layers", "frame",
    "strip"}
-  result: complete (every step ran) | partial (some manual, none failed) | failed (a step errored) | manual (none ran)
+  result: complete (every step ran) | partial (some manual, or a PS / AI step ran without settings it could not send
+          ("unsent"); none failed) | failed (a step errored) | manual (none ran)
 A judge then writes "verified" ({"verdict", "note", "date", "by", "plan_hash"}) from the frame and strip against the
 recipe's summary: pass | weak | wrong | broken. Both carry the plan_hash of the plan's runnable content (notes left
 out): a plan whose input, steps, settings, targets or scripts change no longer matches them; a corrected note does.
+A new run moves the verdict on the run before it to "verified_history": a verdict never outlives the run it judged.
 """
-import argparse, hashlib, importlib.util, json, os, re, sys, time
+import argparse, hashlib, importlib.util, json, os, re, sys, tempfile, time
 from pathlib import Path
 
 CODE = Path(__file__).resolve().parent
@@ -67,7 +73,7 @@ STRIP_CELL, STRIP_COLS, FRAME = (320, 180), 4, (960, 540)
 # right, the colour bars, grey ramp and hairlines), scaled to the document's own size, so sharpening, noise and an
 # upscale can be judged at their real pixels
 DETAIL = (1408, 568, 512, 512)
-UNTRACKED = ("run", "verified")  # plan keys that record a run, not part of what runs
+UNTRACKED = ("run", "verified", "verified_history")  # plan keys that record a run, not part of what runs
 VERDICTS = ("pass", "weak", "wrong", "broken")
 
 
@@ -84,6 +90,7 @@ def plan_input(recipe, app):
     return recipe["plans"][app].get("input") or default_input(recipe, app)
 
 
+# what each kind of damage does (pgd.INPUT_DAMAGE holds the ranges pgd.py check enforces)
 DAMAGE = {"noise": "Gaussian noise, sigma in 0-255 levels (8-20 shows)",
           "dust": "number of dust specks and hairs, dark and light, radius 1-4 px",
           "scratches": "number of thin light scratches",
@@ -176,20 +183,48 @@ def rkey(recipe):
 
 
 def recipes():
+    """every recipe card; a missing cards/ or harvest/ folder or an unreadable card or harvest file is a usage error
+    (exit 2), never a silently shorter list or a plan whose lost steps compile as manual"""
+    bad = pgd.unreadable() + [d + "/" for d in ("cards", "harvest") if not (HOME / d).is_dir()]
+    if bad:
+        _usage(f"{', '.join(bad)} unreadable or missing in PGD_HOME {HOME}")
     return [c for c in pgd.cards() if c.get("kind") == "recipe"]
 
 
+def _usage(msg):
+    """a usage error: the message on stderr, exit 2"""
+    print(f"run_plan.py: {msg}", file=sys.stderr)
+    raise SystemExit(2)
+
+
 def select(what):
-    """a recipe id / key / exact name, a family, or 'all' -> [recipe]"""
+    """a recipe id / key / exact name, a family, 'all', or a comma list of those -> [recipe]. An exact id, key or name
+    is matched first (six recipe names hold a comma)."""
     rs = recipes()
     if what == "all":
         return rs
+    hit = [r for r in rs if what in (r["id"], rkey(r), r["name"])]
+    if hit:
+        return hit
     if "," in what:  # several keys / families in one run (one app session)
         return [r for w in what.split(",") if w.strip() for r in select(w.strip())]
-    hit = [r for r in rs if what in (r["id"], rkey(r), r["name"])] or [r for r in rs if r.get("family") == what]
+    hit = [r for r in rs if r.get("family") == what]
     if not hit:
-        raise SystemExit(f"no recipe or family {what!r} (python run_plan.py list)")
+        _usage(f"no recipe or family {what!r} (python run_plan.py list)")
     return hit
+
+
+def select_one(what, app=None):
+    """exactly one recipe by id, key or exact name (get / put / judge read or write ONE plan); with app, it must have
+    a plan for that app"""
+    hit = [r for r in recipes() if what in (r["id"], rkey(r), r["name"])]
+    if len(hit) != 1:
+        fam = [rkey(r) for r in recipes() if r.get("family") == what]
+        _usage(f"{what!r} names {len(hit)} recipes; give one recipe id, key or exact name"
+               + (f" (family {what}: {', '.join(fam)})" if fam else " (python run_plan.py list)"))
+    if app and app not in hit[0]["plans"]:
+        _usage(f"{hit[0]['id']} has no {app} plan (it has {', '.join(sorted(hit[0]['plans']))})")
+    return hit[0]
 
 
 _BACKENDS = {}
@@ -218,29 +253,38 @@ def compile_plan(recipe, app):
 
 class _Lock:
     """one writer of the recipe card files at a time across processes (runs and edits for several apps go on at
-    once): an O_EXCL lock file, taken over when older than 120 s (a writer holds it for milliseconds)"""
+    once): an OS lock on the first byte of work/plans/cards.lock (msvcrt on Windows, flock elsewhere). The OS drops it
+    when its holder exits or dies, so there is no stale lock to take over, and the file itself is never removed."""
     path = HOME / "work" / "plans" / "cards.lock"
+
+    def _os_lock(self, on):
+        if os.name == "nt":
+            import msvcrt
+            self.f.seek(0)
+            msvcrt.locking(self.f.fileno(), msvcrt.LK_NBLCK if on else msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(self.f.fileno(), (fcntl.LOCK_EX | fcntl.LOCK_NB) if on else fcntl.LOCK_UN)
 
     def __enter__(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.f = open(self.path, "a+b")
         t0 = time.time()
         while True:
             try:
-                os.close(os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+                self._os_lock(True)
                 return self
-            except FileExistsError:
-                try:
-                    if time.time() - self.path.stat().st_mtime > 120:
-                        self.path.unlink(missing_ok=True)
-                        continue
-                except OSError:
-                    pass
+            except OSError:
                 if time.time() - t0 > 300:
+                    self.f.close()
                     raise TimeoutError(f"{self.path} held for 5 min")
-                time.sleep(0.2)
+                time.sleep(0.05)
 
     def __exit__(self, *exc):
-        self.path.unlink(missing_ok=True)
+        try:
+            self._os_lock(False)
+        finally:
+            self.f.close()
 
 
 def update_plan(recipe_id, app, fn):
@@ -252,16 +296,30 @@ def update_plan(recipe_id, app, fn):
                 if c.get("id") == recipe_id:
                     fn(c["plans"][app])
                     tmp = f.with_suffix(".json.tmp")
-                    tmp.write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-                    tmp.replace(f)
+                    # allow_nan=False: a card file is strict JSON (a NaN that slipped past check raises here)
+                    tmp.write_text(json.dumps(doc, indent=1, ensure_ascii=False, allow_nan=False) + "\n",
+                                   encoding="utf-8")
+                    for k in range(50):  # Windows refuses the replace while another process reads the file
+                        try:
+                            tmp.replace(f)
+                            break
+                        except PermissionError:
+                            if k == 49:
+                                raise  # the .tmp stays: nothing is lost
+                            time.sleep(0.05 * (k + 1))
                     pgd.cards.cache_clear()
                     return
     raise KeyError(recipe_id)
 
 
 def record(recipe_id, app, key, value):
-    """plans[app][key] = value in the recipe's card file"""
-    update_plan(recipe_id, app, lambda plan: plan.__setitem__(key, value))
+    """plans[app][key] = value in the recipe's card file. A new "run" moves the verdict on the run before it to
+    verified_history (that verdict judged other frames), so the new run needs a judge again."""
+    def fn(plan):
+        if key == "run" and "verified" in plan:
+            plan.setdefault("verified_history", []).append(plan.pop("verified"))
+        plan[key] = value
+    update_plan(recipe_id, app, fn)
 
 
 def opaque(path):
@@ -300,15 +358,44 @@ def strip(frames, out, captions):
     sheet.save(out)
 
 
-_ABS = re.compile(r"\b[A-Za-z]:[\\/][^\s'\",)\]]*")  # C:\x, C:\\x (a repr), C:/x
+_TAIL = r"[^\s'\",)\]]*"  # the rest of a path token
+_ABS = re.compile(r"\b[A-Za-z]:[\\/]" + _TAIL)  # C:\x, C:\\x (a repr), C:/x
+_UNC = re.compile(r"\\\\[^\\\s'\",)\]]+\\" + _TAIL)  # \\server\share\...
+# /c/Users/x/..., /home/x/...; a name with spaces runs to the next slash (at most 64 characters)
+_POSIX_HOME = re.compile(r"(?<![\w.])/(?:[A-Za-z]/)?(?:Users|home)/(?:[^/\r\n]{1,64}?/)?" + _TAIL)
+# any profile folder, not only this machine's: C:\Users\<name with spaces>\... (the name runs to the next separator)
+_PROFILE = re.compile(r"\b[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\\/\r\n]+?[\\/]" + _TAIL, re.I)
+# spaced system folders: scrubbed through the first file extension, so a preset file named after a client goes too
+# (ponytail: a folder path with no file name falls through to _ABS, which stops at the first space)
+_SYSTEM = re.compile(r"\b[A-Za-z]:[\\/]{1,2}(?:Program Files(?: \(x86\))?|ProgramData)[\\/]{1,2}[^\r\n]{0,260}?"
+                     r"\.\w{2,5}\b", re.I)
+
+
+def _machine_roots():
+    """(prefix, replacement), longest first: the repo folder -> '.', the user profile and temp folders (whose names may
+    hold spaces) -> '<local path>' together with the rest of the path"""
+    roots = {str(HOME): ".", str(CODE): "."}
+    for p in (os.path.expanduser("~"), tempfile.gettempdir(), os.environ.get("TEMP"), os.environ.get("TMP")):
+        if p and len(p) > 3:
+            roots.setdefault(str(p), "<local path>")
+    out = []
+    for root, rep in roots.items():
+        for form in {root, root.replace("\\", "/"), root.replace("\\", "\\\\")}:
+            out.append((form, rep))
+    return sorted(out, key=lambda x: -len(x[0]))
 
 
 def public(text):
-    """run notes are published in the recipe cards: the repo folder becomes '.', any other absolute path '<local path>'"""
+    """run notes are published in the recipe cards: the repo folder becomes '.', the user profile / temp folders and
+    any other absolute, UNC or /c/Users path '<local path>'"""
     text = str(text)
-    for root in {str(HOME), str(CODE)}:
-        for form in (root, root.replace("\\", "/"), root.replace("\\", "\\\\")):
-            text = text.replace(form, ".")
+    for form, rep in _machine_roots():
+        tail = "" if rep == "." else _TAIL
+        text = re.sub(re.escape(form) + tail, lambda m: rep, text, flags=re.I)
+    text = _PROFILE.sub("<local path>", text)
+    text = _SYSTEM.sub("<local path>", text)
+    text = _UNC.sub("<local path>", text)
+    text = _POSIX_HOME.sub("<local path>", text)
     return _ABS.sub("<local path>", text)
 
 
@@ -318,7 +405,7 @@ def result_of(steps):
         return "failed"
     if all(s == "manual" for s in st):
         return "manual"
-    return "partial" if "manual" in st else "complete"
+    return "partial" if "manual" in st or any(s.get("unsent") for s in steps) else "complete"
 
 
 def run_one(sess, recipe, app, do_record=True):
@@ -349,6 +436,8 @@ def run_one(sess, recipe, app, do_record=True):
             t1 = time.time()
             status, note, active = sess.step(cs, labels.get(cs.get("target")), labels)
             rec = {"step": n, "status": status, "note": public(note), "secs": round(time.time() - t1, 1)}
+            if status == "ok" and cs.get("untyped") and app != "CDR":  # PS / AI ran it without some settings
+                rec["unsent"] = True  # (CorelDRAW's gallery-form notes are by design, not a dropped value)
             if cs.get("as") and active is not None:
                 labels[cs["as"]] = active
         steps.append(rec)
@@ -419,16 +508,24 @@ def cmd_show(what, app=None):
 
 
 def cmd_run(what, apps, force=False, do_record=True):
+    """-> 0 when every plan ran (complete, partial or manual), 1 when one failed or crashed, 2 when nothing matched"""
     todo = [(r, a) for r in select(what) for a in r["plans"] if not apps or a in apps]
-    by_app = {}
+    if not todo:
+        _usage(f"no {'/'.join(apps) or 'app'} plan in {what!r} (python run_plan.py list)")
+    by_app, summary = {}, {}
+    photo = (HOME / "media" / "plate_photo.png").exists()
     for r, a in todo:
         plan = r["plans"][a]
         done = (plan.get("run") or {}).get("plan_hash") == plan_hash(plan) and (HOME / plan["run"]["frame"]).exists()
         if done and not force:
             print(f"skip {a} {rkey(r)}: its recorded run matches the plan (--force to run again)")
             continue
+        if plan_input(r, a).get("plate") == "photo" and not photo:  # checked before an app is started
+            print(f"skip {a} {rkey(r)}: media/plate_photo.png is missing (put a 1920x1080 photo at "
+                  "media/test_photo.png and run media/make_plates.py)", flush=True)
+            summary[f"{a} {rkey(r)}"] = "error: media/plate_photo.png missing"
+            continue
         by_app.setdefault(a, []).append(r)
-    summary = {}
     for a, rs in by_app.items():
         sess = backend(a).Session()
         try:
@@ -446,11 +543,13 @@ def cmd_run(what, apps, force=False, do_record=True):
         finally:
             sess.quit()
     print(json.dumps(summary, indent=1))
-    return 0
+    return 1 if any(v == "failed" or str(v).startswith("error:") for v in summary.values()) else 0
 
 
 def cmd_strip(what, app):
     for r in select(what):
+        if app not in r["plans"]:
+            continue
         key, sdir = rkey(r), OUT / app / "steps" / rkey(r)
         run = r["plans"][app].get("run") or {}
         frames, caps = [sdir / "00_input.png"], ["input"]
@@ -461,26 +560,62 @@ def cmd_strip(what, app):
         strip(frames, OUT / app / f"{key}_steps.png", caps)
 
 
-def cmd_get(what, app):
-    """the plan as JSON (run / verified left out): edit it, then put it back"""
-    r = select(what)[0]
-    print(json.dumps({k: v for k, v in r["plans"][app].items() if k not in UNTRACKED}, indent=1, ensure_ascii=False))
+def cmd_get(what, app, out=None):
+    """the plan as JSON (run / verified left out): edit it, then put it back. With out, written there as UTF-8 (no
+    BOM): a shell redirect may re-encode the text (Windows PowerShell writes UTF-16 or the console code page)."""
+    r = select_one(what, app)
+    text = json.dumps({k: v for k, v in r["plans"][app].items() if k not in UNTRACKED}, indent=1, ensure_ascii=False)
+    if out:
+        Path(out).write_text(text + "\n", encoding="utf-8", newline="\n")
+        print(f"wrote {app} plan of {r['id']} to {out}")
+    else:
+        print(text)
+
+
+def _strings(x):
+    if isinstance(x, str):
+        yield x
+    elif isinstance(x, dict):
+        for v in x.values():
+            yield from _strings(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _strings(v)
 
 
 def cmd_put(what, app, path):
     """replace the plan after pgd.check_plan and a compile pass both accept it; its run / verified records stay (they
     go stale by plan_hash when the plan changed)"""
-    r = select(what)[0]
-    new = {k: v for k, v in json.loads(Path(path).read_text(encoding="utf-8")).items() if k not in UNTRACKED}
+    r = select_one(what, app)
+    try:
+        new = json.loads(Path(path).read_bytes())  # UTF-8 (a BOM is fine) or UTF-16 / 32
+    except (OSError, ValueError) as e:
+        print(f"NOT SAVED: cannot read {path} as JSON: {e}")
+        return 1
+    if not isinstance(new, dict):
+        print(f"NOT SAVED: a plan is a JSON object, got {type(new).__name__}")
+        return 1
+    new = {k: v for k, v in new.items() if k not in UNTRACKED}
     new.setdefault("app", app)
-    issues = pgd.check_plan(new)
+    garbled = sorted({s for s in _strings(new) if "\ufffd" in s or "\u0393\u00c7" in s or "\u00e2\u20ac" in s})
+    if new.get("app") != app:
+        issues = [f"plan app is {new.get('app')!r}, this is the {app} slot"]
+    elif garbled:
+        issues = [f"text that was re-encoded on its way here (mojibake or U+FFFD): {garbled[0][:80]!r}; write the plan "
+                  f"with `python run_plan.py get {what} {app} plan.json` and edit that file"]
+    else:
+        # checked as it will run: with the input the runner uses (the family default when the plan names none)
+        issues = pgd.check_plan(dict(new, input=plan_input(dict(r, plans={**r["plans"], app: new}), app)))
+        issues += [f"step {i}: a {app} plan runs only {app} steps (this one is {st.get('kind')})"
+                   for i, st in enumerate(new.get("steps") or [], 1) if isinstance(st, dict) and
+                   (st.get("app", app) != app or not str(st.get("kind") or "").startswith(app.lower() + "_"))]
     try:
         bad = [f"step {s['step']}: {s['error']}" for s in compile_plan(dict(r, plans={**r["plans"], app: new}), app)
                if s.get("error")]
     except Exception as e:  # noqa: BLE001
         bad = [f"compile: {e}"]
     if issues or bad:
-        print("NOT SAVED:\n" + "\n".join(issues + bad))
+        print("NOT SAVED:\n" + "\n".join(dict.fromkeys(issues + bad)))
         return 1
 
     def swap(plan):
@@ -495,8 +630,8 @@ def cmd_put(what, app, path):
 def cmd_judge(what, app, verdict, note, by, second=None):
     """the judge's verdict on the current recorded run, against the recipe's summary. With --second: an independent
     second opinion on that verdict ("agree" or "corrected: ..."); a --verdict given with it replaces the verdict and
-    keeps the first one as verified.previous."""
-    r = select(what)[0]
+    keeps the first one as verified.previous; a new first opinion on the same run keeps the one it replaces there."""
+    r = select_one(what, app)
     plan = r["plans"][app]
     run = plan.get("run") or {}
     if run.get("plan_hash") != plan_hash(plan):
@@ -516,8 +651,13 @@ def cmd_judge(what, app, verdict, note, by, second=None):
         return 0
     if verdict not in VERDICTS:
         raise SystemExit(f"--verdict must be one of {VERDICTS}")
-    record(r["id"], app, "verified", {"verdict": verdict, "note": note, "date": time.strftime("%Y-%m-%d"), "by": by,
-                                      "plan_hash": run["plan_hash"]})
+    if not (note or "").strip() or not (by or "").strip():
+        raise SystemExit("a verdict needs --note (what the frame shows) and --by (who judged)")
+    new = {"verdict": verdict, "note": note, "date": time.strftime("%Y-%m-%d"), "by": by, "plan_hash": run["plan_hash"]}
+    old = plan.get("verified") or {}
+    if old.get("plan_hash") == run["plan_hash"]:
+        new["previous"] = {k: old[k] for k in ("verdict", "note", "by", "date") if k in old}
+    record(r["id"], app, "verified", new)
     print(f"{app} {rkey(r)}: {verdict}")
     return 0
 
@@ -534,20 +674,36 @@ def main(argv):
     ap.add_argument("--by", default="")
     ap.add_argument("--second")
     a = ap.parse_args(argv)
-    if a.cmd == "get":
-        return cmd_get(a.what, a.apps[0].upper()) or 0
-    if a.cmd == "put":
-        return cmd_put(a.what, a.apps[0].upper(), a.apps[1])
-    if a.cmd == "judge":
-        return cmd_judge(a.what, a.apps[0].upper(), a.verdict, a.note, a.by, a.second)
+
+    def app_arg(x):
+        if x.upper() not in APPS:
+            _usage(f"unknown app {x!r}: one of {', '.join(APPS)}")
+        return x.upper()
     if a.cmd == "list":
-        cmd_list((a.what or "").upper() or None)
-    elif a.cmd == "show":
-        cmd_show(a.what, a.apps[0].upper() if a.apps else None)
+        cmd_list(app_arg(a.what) if a.what else None)
+        return 0
+    if not a.what:
+        _usage(f"{a.cmd} needs a recipe{', family, all or a comma list' if a.cmd in ('run', 'show', 'strip') else ''} "
+               "(python run_plan.py list)")
+    # the slots that are apps: every positional of run, the first of the others (put's second is the plan file)
+    n_apps = {"run": len(a.apps), "show": min(len(a.apps), 1)}.get(a.cmd, 1)
+    need = {"get": (1, 2), "put": (2, 2), "judge": (1, 1), "strip": (1, 1), "show": (0, 1), "run": (0, 99)}[a.cmd]
+    if not need[0] <= len(a.apps) <= need[1]:
+        _usage(f"{a.cmd} takes <recipe>{' APP' if need[0] else ' [APP]'}"
+               f"{' plan.json' if a.cmd == 'put' else ' [plan.json]' if a.cmd == 'get' else ''}")
+    apps = [app_arg(x) for x in a.apps[:n_apps]]
+    if a.cmd == "get":
+        return cmd_get(a.what, apps[0], a.apps[1] if len(a.apps) > 1 else None) or 0
+    if a.cmd == "put":
+        return cmd_put(a.what, apps[0], a.apps[1])
+    if a.cmd == "judge":
+        return cmd_judge(a.what, apps[0], a.verdict, a.note, a.by, a.second)
+    if a.cmd == "show":
+        cmd_show(a.what, apps[0] if apps else None)
     elif a.cmd == "run":
-        return cmd_run(a.what or "all", [x.upper() for x in a.apps], a.force, not a.no_record)
+        return cmd_run(a.what, apps, a.force, not a.no_record)
     elif a.cmd == "strip":
-        cmd_strip(a.what, a.apps[0].upper())
+        cmd_strip(a.what, apps[0])
     return 0
 
 

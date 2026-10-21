@@ -25,6 +25,16 @@ CD = Path(r"C:/Program Files/Corel/CorelDRAW Graphics Suite/25")
 PHOTO = ROOT / "media" / "plate_photo.png"
 BG = (222, 222, 222)
 SIZE = 320
+MAX_PREVIEW = 32 << 20  # bytes: a package's preview image is well under 1 MB; a bigger member is refused, not inflated
+
+
+def _zread(z, name):
+    """a zip member, read at most MAX_PREVIEW bytes (z.read() inflates the whole member, whatever its header says)"""
+    with z.open(name) as f:
+        d = f.read(MAX_PREVIEW + 1)
+    if len(d) > MAX_PREVIEW:
+        raise ValueError(f"{name} is over {MAX_PREVIEW >> 20} MB")
+    return d
 
 
 def _file(it):
@@ -135,7 +145,11 @@ def pst_thumb(path):
         i = b.find(b"\x78\x9c", 6 + n)
     if i < 0:
         raise ValueError("no zlib thumbnail in the .pst")
-    return dib_to_image(zlib.decompressobj().decompress(b[i:]))
+    o = zlib.decompressobj()
+    dib = o.decompress(b[i:], 4 << 20)  # the largest shipped thumbnail inflates to 66 KB
+    if not o.eof:
+        raise ValueError("thumbnail stream truncated or over 4 MB")
+    return dib_to_image(dib)
 
 
 def npm_thumb(path):
@@ -280,7 +294,7 @@ def file_phase(st, items):
             elif c == "Template":
                 with zipfile.ZipFile(f) as z:
                     nm = "previews/page1.png" if "previews/page1.png" in z.namelist() else "previews/thumbnail.png"
-                    st.put(it, Image.open(io.BytesIO(z.read(nm))).convert("RGBA"), "file image")
+                    st.put(it, Image.open(io.BytesIO(_zread(z, nm))).convert("RGBA"), "file image")
             elif c in PIL_IMAGE_CATS and Path(f).suffix.lower() != ".cpt":
                 try:
                     im = Image.open(f)
@@ -294,7 +308,7 @@ def file_phase(st, items):
                 # Layer.Import of a sprayer .cdr deadlocked CorelDRAW 2024 twice on 2026-10-04 (UI thread not
                 # responding, CPU and read bytes flat): the package's own page thumbnail is used instead
                 with zipfile.ZipFile(f) as z:
-                    im = Image.open(io.BytesIO(z.read("metadata/thumbnails/page1.bmp"))).convert("RGB")
+                    im = Image.open(io.BytesIO(_zread(z, "metadata/thumbnails/page1.bmp"))).convert("RGB")
                 from PIL import ImageChops
                 bb = ImageChops.difference(im, Image.new("RGB", im.size, (255, 255, 255))).convert("L").point(
                     lambda v: 255 if v > 12 else 0).getbbox()   # the objects sit small on a white page: crop
@@ -312,7 +326,7 @@ def file_phase(st, items):
             elif c == "Fill":
                 with zipfile.ZipFile(f) as z:
                     nm = next(n for n in z.namelist() if n.startswith("previews/"))
-                    st.put(it, Image.open(io.BytesIO(z.read(nm))).convert("RGB"), "embedded thumbnail")
+                    st.put(it, Image.open(io.BytesIO(_zread(z, nm))).convert("RGB"), "embedded thumbnail")
             elif c == "Tone Curve Preset":
                 # .crv = COREL PhotoPaint 8 tone curve: five 266-byte records (10-byte header + 256-entry LUT) end
                 # the file; the first is the master curve (the R/G/B ones are identity in every shipped file).

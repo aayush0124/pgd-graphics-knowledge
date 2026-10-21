@@ -28,6 +28,8 @@ class Workflows(unittest.TestCase):
         self.assertGreaterEqual(len(WF), 9)
 
     def test_static_shape(self):
+        for f in WF + [ROOT / "tests" / "workflow_harness.js"]:  # the launcher refuses a script with a CR in it
+            self.assertNotIn(b"\r", f.read_bytes(), f"{f.name}: CRLF (.gitattributes keeps *.js LF)")
         for f in WF:
             src = f.read_text(encoding="utf-8")
             self.assertTrue(src.startswith("export const meta = {"), f.name)

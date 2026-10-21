@@ -15,14 +15,19 @@ jobs:
     env:
       # card hits fail the scrub test here (locally they are reported and skipped until the cards are cleaned)
       PGD_SCRUB_STRICT: "1"
+      # a missing Pillow / numpy fails tests/test_stress_20261020.py instead of silently skipping the render tests
+      PGD_REQUIRE_DEPS: "1"
       PYTHONUTF8: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
-      # offline: stdlib only, no Adobe / Corel app, no GPU, no secret, no LLM. node (preinstalled on the runners)
-      # parses the workflow scripts; Pillow is not installed, so the contact-sheet test skips.
+      # offline: no Adobe / Corel app, no GPU, no secret, no LLM. node (preinstalled on the runners) parses the
+      # workflow scripts. The tests need only the standard library, but without Pillow and numpy every gallery,
+      # plan-runner and contact-sheet test skips, so CI installs both (the two live opt-in tests still skip).
+      - name: test dependencies
+        run: python -m pip install "pillow==12.3.0" "numpy==2.5.2"
       - name: tests (incl. tests/test_public_scrub.py)
         run: python -m unittest discover -s tests -v
       - name: pipeline status

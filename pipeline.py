@@ -85,7 +85,7 @@ def gather(home=HOME):
             harvest[d["kind"]] = d
     plan = {n: b for d in harvest.values() for n, b in prepare_batches.plan(d)}
     disk = {p.stem for p in (home / "work" / "batches").glob("*.json")}
-    card_files, cards, bad_files = {}, defaultdict(list), {}
+    card_files, cards, bad_files, validated = {}, defaultdict(list), {}, 0
     for cf in sorted((home / "cards").glob("*.json")):
         d = _load(cf)
         if d is None:
@@ -96,6 +96,7 @@ def gather(home=HOME):
             cards[c.get("kind")].append(c)
         b = plan.get(cf.stem)
         if b is not None:
+            validated += 1
             iss = validate_cards.check(b, d.get("cards") or [])
             if iss:
                 bad_files[cf.name] = iss
@@ -142,7 +143,8 @@ def gather(home=HOME):
         fresh = render_docs(home) == docs.read_text(encoding="utf-8")
     return {"home": str(home), "harvest_files": len(harvest), "harvest_kinds": sum(len(v) for v in KINDS.values()),
             "harvest_errors": errors, "batches": len(plan), "batches_on_disk": len(disk & set(plan)),
-            "card_files": len(card_files), "cards": sum(len(v) for v in cards.values()), "bad_card_files": bad_files,
+            "card_files": len(card_files), "validated_card_files": validated,
+            "cards": sum(len(v) for v in cards.values()), "bad_card_files": bad_files,
             "kinds": kinds, "galleries": galleries, "recipes": recipes,
             "plans": {k: dict(v) if isinstance(v, Counter) else v for k, v in plans.items()},
             "critic": (home / "cards" / "zz_critic.json").exists(), "docs": "fresh" if fresh else
@@ -184,9 +186,11 @@ def stages(s):
     add("skeleton", 0 if x_missing else 1, 1, f"{len(x_missing)} API lookup batches without cards")
     add("cards", tot("card_files", std), tot("batches", std),
         f"{tot('card_files', std)}/{tot('batches', std)} non-preset batches carded, {tot('cards', std)} cards")
-    nb = len(s["bad_card_files"])
-    add("validate", s["card_files"] - nb, s["card_files"], f"{s['card_files'] - nb}/{s['card_files']} card files clean",
-        fail=nb > 0)
+    nb, nv = len(s["bad_card_files"]), s["validated_card_files"]
+    # recipe_* and zz_critic have no batch: tests/test_data.py checks their plans and shape instead
+    add("validate", nv - min(nb, nv), nv, f"{nv - min(nb, nv)}/{nv} batch-validated card files clean"
+        + (f" ({s['card_files'] - nv} recipe / critic files are checked by the test suite)" if s["card_files"] > nv
+           else ""), fail=nb > 0)
     add("galleries", len(gal_done), len(gal_need), f"{len(gal_done)}/{len(gal_need)} galleries complete, "
         f"{sum(g['frames'] for g in s['galleries'].values())} frames")
     add("sheets", tot("sheets", pre), tot("batches", pre), f"{tot('sheets', pre)}/{tot('batches', pre)} preset batches")
@@ -254,9 +258,15 @@ def _py(*a):
 
 
 def readme_block(home=HOME):
-    """Rewrite the coverage block of README.md (between the coverage markers) from status."""
-    p = CODE / "README.md"
+    """Rewrite the coverage block of the README.md in `home` (between the coverage markers) from that home's status. A
+    home without README.md is left alone, and so is one without gallery/ or work/batches (a fresh clone: its counts
+    would replace the real ones with zeros)."""
+    home = Path(home)
+    p = home / "README.md"
     if not p.exists():
+        return 0
+    if not (home / "gallery").is_dir() or not (home / "work" / "batches").is_dir():
+        print("README.md coverage block left as it is: this PGD_HOME has no gallery/ or work/batches yet")
         return 0
     t = p.read_text(encoding="utf-8")
     a, b = "<!-- coverage:start -->", "<!-- coverage:end -->"
@@ -301,7 +311,7 @@ def run(stage):
                 rc = max(rc, 10)
         return rc
     if stage == "docs":
-        return _py(CODE / "build_docs.py") or readme_block()
+        return _py(CODE / "build_docs.py") or readme_block(HOME)
     return 1
 
 
@@ -313,6 +323,12 @@ def doctor():
         p = HOME / d
         print(f"  {d:<10} {'present' if p.exists() else 'missing'}")
         ok &= p.exists() or d in ("work", "gallery")
+    live_ok = True  # what the live stages (galleries, plans) need beyond the apps
+    plate = HOME / "media" / "plate_photo.png"
+    print(f"  {'photo plate':<10} {'present' if plate.exists() else 'MISSING'}: media/plate_photo.png"
+          + ("" if plate.exists() else " (put a 1920x1080 photo of your own at media/test_photo.png and run "
+                                       "media/make_plates.py; photo plans and the PS / CDR effect galleries need it)"))
+    live_ok &= plate.exists()
     apps = {"Photoshop 2026": os.environ.get("PGD_PS_EXE") or r"C:\Program Files\Adobe\Adobe Photoshop 2026\Photoshop.exe",
             "Illustrator 2026": os.environ.get("PGD_AI_EXE") or r"C:\Program Files\Adobe\Adobe Illustrator 2026\Support Files"
                                                                r"\Contents\Windows\Illustrator.exe",
@@ -321,12 +337,15 @@ def doctor():
     found = {a: Path(p).exists() for a, p in apps.items()}
     for a, p in apps.items():
         print(f"  {a:<17} {'found' if found[a] else 'not found'}: {p}")
-    for mod in ("PIL", "win32com", "uiautomation", "psutil"):
+    need = {"PIL": "plans, galleries, sheets", "numpy": "plans with damage, PS effect gallery",
+            "win32com": "live stages", "uiautomation": "live stages", "psutil": "live stages"}
+    for mod, what in need.items():
         try:
             __import__(mod)
             print(f"  module {mod:<12} ok")
         except ImportError:
-            print(f"  module {mod:<12} missing ({'live stages only' if mod != 'PIL' else 'sheets stage'})")
+            print(f"  module {mod:<12} missing ({what})")
+            live_ok = False
     print(f"  node {'ok' if shutil.which('node') else 'missing (workflow syntax tests skip)'}")
     hl = CODE / "tools" / "hostlock.py"
     print("  hostlock " + ("tools/hostlock.py (named mutex Global\\aisys_host_<slot>)" if hl.exists() else "MISSING"))
@@ -334,7 +353,7 @@ def doctor():
     print(f"  free RAM {ram if ram is not None else '?'} MB")
     if not ok:
         return 1
-    return 0 if all(found.values()) else 10
+    return 0 if all(found.values()) and live_ok else 10
 
 
 def free_ram_mb():

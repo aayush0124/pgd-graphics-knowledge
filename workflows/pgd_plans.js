@@ -53,7 +53,7 @@ plan of the recipe family "${fam}" run in ${A.name} and produce what its recipe 
 Read first: ${ROOT}/run_plan.py (docstring: plan format, commands), ${ROOT}/${A.backend} (routes, what a script gets),
 pgd.py check_plan's docstring. Commands, from ${ROOT} with PYTHONIOENCODING=utf-8:
   python run_plan.py list ${app} | python run_plan.py show <key> ${app} (MANUAL / PLAN ERROR lines say what is missing)
-  python run_plan.py get <key> ${app} > work/agents/plans_${app.toLowerCase()}/<key>.json ; edit ; python run_plan.py put <key> ${app} <that file>
+  python run_plan.py get <key> ${app} work/agents/plans_${app.toLowerCase()}/<key>.json ; edit ; python run_plan.py put <key> ${app} <that file>
   python run_plan.py run <key> ${app} --force (live; records the run) [--no-record to try]
 Frames: gallery/recipes/${app}/<key>.png (final) and <key>_steps.png (input + every step); LOOK at both after every run.
 Per plan: set "input" explicitly (${A.inputs}); give the step that leaves a layer / object a later step must act on an "as"
@@ -80,7 +80,7 @@ tool, and judge the final frame against the summary:
   weak   the look is there but too faint, partial or off to use as is;
   wrong  something else happened (a step acted on the wrong layer / object, effects replaced each other, the order is off);
   broken nothing useful: steps failed, the frame is unchanged or garbage.
-A "partial" run (manual steps skipped) is judged on what the automated steps produced; say what the manual steps would add.
+A "partial" run (manual steps skipped, or a step marked unsent: a setting was not sent) is judged on what the automated steps produced; say what the manual steps would add.
 Record each: python run_plan.py judge <key> ${app} --verdict <v> --note "<what you saw, one or two sentences>" --by "judge"
 Notes are published: never describe or identify the people in the test photo (only "the subject(s)"). Do not edit plans.
 Return the counts and the non-pass keys.`

@@ -1,6 +1,7 @@
 """PGD: generate PGD.md (the readable guide) from the cards, the harvest and the verification results.
 
-    python build_docs.py [OUT]        default PGD.md next to cards/
+    python build_docs.py [OUT.md]     default PGD.md next to cards/; another existing file is never overwritten
+                                      without --force (python build_docs.py README.md would replace the README)
 """
 import json, os, sys
 from collections import defaultdict
@@ -16,22 +17,23 @@ KIND_TITLES = [
     ("ai_menu", "Illustrator menu commands"), ("ai_preset", "Illustrator presets"), ("ai_api", "Illustrator scripting"),
     ("cdr_effect", "CorelDRAW effects"), ("cdr_tool", "CorelDRAW tools"), ("cdr_menu", "CorelDRAW menu commands"),
     ("cdr_preset", "CorelDRAW presets"), ("cdr_api", "CorelDRAW scripting"),
-    ("recipe", "Recipes (verified looks built from the cards)")]
+    ("recipe", "Recipes (looks built from the cards; each lists its plan runs and their verdicts)")]
 
 HEAD = """# PGD: professional graphics designer knowledge base
 
 PGD is what the design systems know about **Photoshop 2026**, **Illustrator 2026** and **CorelDRAW 2024**. Every item
 below was harvested from the installed apps and their install folders (names, ids, menu paths, every parameter with its
 type, default and range where the app states one), written up as a knowledge card, checked by a validator against that
-harvest, reviewed by an adversarial agent, and (for effects, filters, adjustments, styles and blend modes) rendered on a
-test plate and judged against the frame. Sibling of PVE (After Effects + Premiere).
+harvest, reviewed by an adversarial agent, and (for effects, filters, adjustments, styles, blend modes and presets)
+rendered on a test plate or from the preset's thumbnail and judged against the frame. Sibling of PVE (After Effects +
+Premiere).
 
 ## Using it
 
 ```
 python pgd.py find "neon glow" [PS|AI|CDR]   # search by look / use
 python pgd.py card "Gaussian Blur" PS          # one full card
-python pgd.py equiv "Gaussian Blur"            # the same thing in the other apps
+python pgd.py equiv "Gaussian Blur" [PS]       # the same thing in the other apps
 python pgd.py items CDR "contour"              # raw harvest search (names, ids, paths)
 python pgd.py check plan.json                  # pre-flight a plan of steps
 ```
@@ -44,13 +46,14 @@ step replaces the whole style; a step may name its `"target"` layer / object). I
 
 `python run_plan.py run <recipe> PS|AI|CDR` runs a recipe's plan step by step in the live app on a known input
 document and records what each step did (README "Running plans in the apps"). Each recipe below lists its plan runs:
-complete (every step ran), partial (manual steps skipped), failed, or not run (no run of the plan as it is now), with
+complete (every step ran), partial (manual steps skipped or a setting not sent), failed, or not run (no run of the plan as it is now), with
 the judge's verdict on the result frame.
 
 Status legend: **current**, obsolete (use the equivalent), hidden, needs_input (needs a selection, path, text, second
 image ...), unusable. Verification: [v] matched its render; [wrong] the original card disagreed with its render and was
 rewritten from the render; [weak] shows too faintly at the tested values; [broken] nothing rendered (often a test limit:
-see the card's `verified.note`). Blank = not rendered (tools, menus, presets, scripting).
+see the card's `verified.note`). Blank = no render verdict: tools, menus and scripting are not render-tested by
+design, and an item marked not_rendered has no frame yet.
 
 Files: `harvest/` raw ground truth (`CONTRACT.md` has the format); `cards/` knowledge cards; `gallery/` render test
 frames; `cards/recipe_*.json` combined looks; `cards/zz_critic.json` known gaps.
@@ -92,6 +95,14 @@ def line(c):
     return f"- **{c.get('name')}**{st}{v}: {(c.get('summary') or '').strip()}{f' (= {eq})' if eq else ''}{run}"
 
 
+def critic_text(x):
+    """a critic entry as text: a plain string, or the text of {"gap" | "step" | "weak": ..., "fixed": ...}"""
+    if isinstance(x, str):
+        return x
+    return next((str(x[k]) for k in ("gap", "step", "weak") if x.get(k)),
+                json.dumps({k: v for k, v in x.items() if k != "fixed"}, ensure_ascii=False))
+
+
 def anchor(t):
     return t.lower().replace(" ", "-").replace("(", "").replace(")", "")
 
@@ -117,14 +128,41 @@ def main(dest=None):
     if critic.exists():
         z = json.loads(critic.read_text(encoding="utf-8"))
         out.append("\n## Known gaps (completeness critic)\n")
+        closed = []
         for key in ("gaps", "weak_cards", "doubtful", "next_steps"):
-            if z.get(key):
+            rows = [x for x in z.get(key) or [] if not (isinstance(x, dict) and x.get("fixed"))]
+            closed += [x for x in z.get(key) or [] if isinstance(x, dict) and x.get("fixed")]
+            if rows:
                 out.append(f"\n### {key.replace('_', ' ').capitalize()}\n")
-                out += [f"- {x if isinstance(x, str) else json.dumps(x, ensure_ascii=False)}" for x in z[key]]
+                out += [f"- {critic_text(x)}" for x in rows]
+        if closed:
+            out.append("\n### Closed since the critic wrote them\n")
+            out += [f"- {critic_text(x)} **Fixed:** {x['fixed']}" for x in closed]
     dest = Path(dest or HERE / "PGD.md")
     dest.write_text("\n".join(out) + "\n", encoding="utf-8", newline="\n")
     print(f"{dest.name}: {len(cards)} cards")
 
 
+def cli(argv):
+    if argv and argv[0] in ("-h", "--help"):
+        print(__doc__)
+        return 0
+    force = "--force" in argv
+    args = [a for a in argv if a != "--force"]
+    if len(args) > 1 or args and args[0].startswith("-"):
+        print(f"build_docs.py: unknown arguments {argv}\n{__doc__}", file=sys.stderr)
+        return 2
+    if args:
+        dest = Path(args[0])
+        if dest.suffix.lower() != ".md":
+            print(f"build_docs.py: the guide is Markdown: give a .md path, not {dest}", file=sys.stderr)
+            return 2
+        if dest.exists() and dest.name != "PGD.md" and not force:
+            print(f"build_docs.py: {dest} exists and is not a PGD.md: add --force to overwrite it", file=sys.stderr)
+            return 2
+    main(*args)
+    return 0
+
+
 if __name__ == "__main__":
-    main(*sys.argv[1:2])
+    sys.exit(cli(sys.argv[1:]))

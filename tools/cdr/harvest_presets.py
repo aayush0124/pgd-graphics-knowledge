@@ -75,7 +75,7 @@ def params_from_dict(d, prefix=""):
 # ---------------------------------------------------------------- zip packages (.fill .cdrt .cdss in Content)
 def zcf_meta(z):
     try:
-        m = z.read("META-INF/metadata.xml").decode("utf-8", "replace")
+        m = zread(z, "META-INF/metadata.xml").decode("utf-8", "replace")
     except KeyError:
         return {}
     out = {}
@@ -98,8 +98,21 @@ def strip_ns(root):
     return root
 
 
+MAX_XML = 4 << 20  # bytes: a fill / preset XML is a few KB; a bigger one is refused, not inflated whole
+
+
+def zread(z, name, cap=MAX_XML):
+    """a zip member, read at most cap bytes: z.read() inflates the whole member, whatever its header says (a missing
+    member still raises KeyError)"""
+    with z.open(name) as f:
+        d = f.read(cap + 1)
+    if len(d) > cap:
+        raise ValueError(f"{name} is over {cap >> 20} MB")
+    return d
+
+
 def fill_info(z):
-    x = strip_ns(ET.fromstring(z.read("content/fill.xml")))
+    x = strip_ns(ET.fromstring(zread(z, "content/fill.xml")))
     ftype = x.get("type")
     params, extra = [], {"fill_type": ftype}
     fo = x.find("fountain")
@@ -156,7 +169,7 @@ def scan_content(root, items, seen_user):
                     pages = [n for n in z.namelist() if re.match(r"previews/page\d+\.png$", n)]
                     extra["pages"] = len(pages)
                     try:
-                        c = strip_ns(ET.fromstring(z.read("color/color.xml")))
+                        c = strip_ns(ET.fromstring(zread(z, "color/color.xml")))
                         cm = c.find(".//ColorModel")
                         if cm is not None:
                             extra["color_model"] = cm.text
@@ -166,7 +179,7 @@ def scan_content(root, items, seen_user):
                     ev = "zip package parsed: META-INF/metadata.xml, previews/page*.png count, color/color.xml"
                 else:
                     try:
-                        sty = json.loads(z.read("styles/document.cdss").decode("utf-8-sig"))
+                        sty = json.loads(zread(z, "styles/document.cdss").decode("utf-8-sig"))
                         extra["styles"] = sty
                     except Exception as e:  # noqa: BLE001
                         extra["styles_error"] = str(e)[:120]
@@ -217,6 +230,7 @@ def export_item(f, path):
 
 
 # ---------------------------------------------------------------- Draw/Presets/*.pst (property-bar preset lists)
+MAX_THUMB = 4 << 20  # bytes a .pst thumbnail may inflate to
 PST_KIND = {"Blend": "Blend", "Contour": "Contour", "Distortion": "Distortion", "Envelope": "Envelope",
             "Shadow": "Shadow", "VectorExtrude": "Extrude"}
 
@@ -231,7 +245,9 @@ def pst_info(f):
     clen = struct.unpack_from("<I", b, pos + 12)[0]
     i = b.find(b"\x78\x5e", pos)
     o = zlib.decompressobj()
-    dib = o.decompress(b[i:])
+    dib = o.decompress(b[i:], MAX_THUMB)  # the largest shipped thumbnail inflates to 66 KB
+    if not o.eof:
+        raise ValueError(f"thumbnail stream truncated or over {MAX_THUMB >> 20} MB")
     w, h, planes, bpp = struct.unpack_from("<iiHH", dib, 4)
     return {"class": cls, "class_version": ver, "subtype": sub, "thumbnail": f"{w}x{h} {bpp}-bit DIB (zlib, {clen} bytes)",
             "param_bytes": len(o.unused_data)}

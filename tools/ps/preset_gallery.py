@@ -341,8 +341,10 @@ def shc_curves(path):
     i = b.find(pat)
     while i >= 0:
         j = i
-        while b[j:j + 2] != b"\x00\x00":
+        while j + 1 < len(b) and b[j:j + 2] != b"\x00\x00":
             j += 2
+        if j + 1 >= len(b):
+            raise ValueError(f"{Path(path).name}: unterminated name at byte {i}")
         name = b[i:j].decode("utf-16-be")
         p = j + 2
         _, n = struct.unpack(">HH", b[p:p + 4])

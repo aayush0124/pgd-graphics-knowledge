@@ -52,7 +52,7 @@ DIR = eg.WORK / "plans"  # under the gallery's work folder, so eg.cleanup() clos
 STEP_TIMEOUT = 300
 NO_RUN = ("Window/", "Help/", "Edit/Preferences", "File/Package", "File/Print", "File/Document Setup",
           "File/Save", "File/Export", "File/Close", "File/Open", "File/Place", "File/Scripts")
-MAIN = {"vector": "art", "photo": "photo", "text": "type", "blank": "background"}
+MAIN = pgd.OPEN_ACTIVE["AI"]  # vector -> art, photo -> photo, text -> type, blank -> background
 
 LIB = r'''function byName(n){try{return d.pageItems.getByName(n);}catch(e){return null;}}
 function nameOf(it){if(!it)return "";if(!it.name)it.name="pgd_item_"+d.pageItems.length+"_"+Math.floor(Math.random()*1e6);return it.name;}

@@ -34,6 +34,18 @@ def load(p, default):
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else default
 
 
+def keep_cmd_forms(items, old):
+    """extra.cmd_form is not harvested: it is the bitmap-command form a gallery render proved (recorded from
+    gallery/cdr_effect/index.json; plan_cdr._gallery_forms reads it, so a clone without gallery/ sends the proven form).
+    A re-harvest carries it over by id from the file it replaces."""
+    forms = {it.get("id"): it["extra"]["cmd_form"] for it in (old or {}).get("items") or []
+             if isinstance(it.get("extra"), dict) and it["extra"].get("cmd_form")}
+    for it in items:
+        if it["id"] in forms:
+            it.setdefault("extra", {})["cmd_form"] = forms[it["id"]]
+    return items
+
+
 def caption_guids(ui, ctrls):
     gs = set()
     for c in ctrls:
@@ -264,6 +276,7 @@ def main():
     from vector_effects import vector_items, enrich
     enrich(items, tests)
     items += vector_items(caps, tests)
+    keep_cmd_forms(items, load(OUT, {}))
 
     version = load(WORK / "app_version.json", {}).get("version", "25.1.0.269")
     doc = {"app": "CDR", "kind": "cdr_effect", "app_version": version,

@@ -5,6 +5,10 @@ library entries and the Action Manager terminology item -> cards/<kind>_x<nn>.js
 
 An enum card lists every value and the members that take or return the enum ("used by"), computed from the class
 members in the same API harvest, so a script author can go from a method to the constants it accepts.
+
+Re-running it changes nothing that is already right: the cards are merged by id with the file on disk (fields this
+script does not write, such as "gotchas" with what plan runs and reviews learned, are kept) and a file is written
+only when its content changes.
 """
 import json, os, re
 from collections import defaultdict
@@ -97,8 +101,8 @@ def am_card(it, app, kind):
                         "decoding ScriptListener output"],
             "how": "charIDToTypeID('Xxxx') for 4-character ids, stringIDToTypeID('name') for string ids; this file maps "
                    "Adobe's PITerminology names to them. The full built-in dictionary (every event, class and enum with "
-                   "English labels) was extracted from Photoshop.exe: see harvest/ps/ps_filter.json evidence and "
-                   "work/ps/ps_terminology.json.",
+                   "English labels) was extracted from Photoshop.exe: see harvest/ps/ps_filter.json evidence (the "
+                   "extracted dictionary itself is a local probe file, not shipped: it is the vendor's own data).",
             "key_members": [{"name": c.get("name"), "use": f"{c.get('group', '')} {c.get('id', '')}".strip()}
                             for c in ex.get("constants") or []],
             "source": "skeleton_cards.py (harvest only)"}
@@ -111,12 +115,20 @@ def main():
         app, kind = batch["app"], batch["kind"]
         api = json.loads((HERE / "harvest" / app.lower() / f"{kind}.json").read_text(encoding="utf-8"))["items"]
         users = used_by(api)
+        f = HERE / "cards" / b.name
+        try:
+            old = json.loads(f.read_bytes()) if f.exists() else None
+        except ValueError:
+            old = None
+        keep = {c.get("id"): c for c in (old or {}).get("cards") or []}
         cards = []
         for it in batch["items"]:
             pre = it["id"].split(":")[0]
-            cards.append(enum_card(it, app, kind, users) if pre == "enum" else
-                         lib_card(it, app, kind, api) if pre == "lib" else am_card(it, app, kind))
-        (HERE / "cards" / b.name).write_text(json.dumps({"cards": cards}, indent=1, ensure_ascii=False), encoding="utf-8")
+            c = (enum_card(it, app, kind, users) if pre == "enum" else
+                 lib_card(it, app, kind, api) if pre == "lib" else am_card(it, app, kind))
+            cards.append({**keep.get(c["id"], {}), **c})  # fields this script does not write survive
+        if {"cards": cards} != old:
+            f.write_text(json.dumps({"cards": cards}, indent=1, ensure_ascii=False), encoding="utf-8")
         n += len(cards)
     print(f"{n} skeleton cards")
 

@@ -425,6 +425,8 @@ def sbsar_xml(path):
     h = b[32 + off:32 + off + size]
     if h[0] == 0x17:  # encoded header: one LZMA stream holding the real header
         pos, sizes, co = _streams(b, h[1:])
+        if co[0][1] > 20_000_000:  # _lzma decodes up to the declared size: a lying header must not allocate it
+            raise ValueError(f"encoded 7z header declares {co[0][1]} bytes")
         raw = b[32 + pos:32 + pos + sizes[0]]
         h = raw if co[0][0] is None else _lzma(raw, *co[0])
     assert h[:2] == b"\x01\x04", "no MainStreamsInfo"

@@ -34,7 +34,7 @@ Vector effects / lenses: the typelib Create* call with the card values in harves
 defaults elsewhere, colours via CreateRGBColor, VT_DISPATCH defaults as None); `applied` is read back from the
 effect object where it has a property of that name, `dropped` = keys whose read-back differs from what was sent.
 """
-import argparse, glob, hashlib, json, os, sys, time
+import argparse, glob, hashlib, json, math, os, sys, time
 from pathlib import Path
 
 from PIL import Image, ImageChops
@@ -142,6 +142,8 @@ def truthy(v):
 def fmt(v):
     if isinstance(v, bool):
         return "1" if v else "0"
+    if isinstance(v, float) and not math.isfinite(v):
+        raise ValueError(f"{v!r} is not a finite number")
     if isinstance(v, (int, float)):
         return str(int(v)) if float(v).is_integer() else f"{v:g}"
     return str(v)
@@ -541,12 +543,17 @@ def bitmap_command(it, demo):
     alias = KEY_ALIAS.get(eid, {})
 
     def kv(p, v, idx=False):
-        """-> (command key, command value) for one card param"""
+        """-> (command key, command value) for one card param; a value holding ',' or '=' would add or change other
+        keys of the command, so it is refused (ValueError: the plan runner reports the step as a plan error)"""
         if p["key"] in alias:
             ak, m = alias[p["key"]]
             ev = enum_value(p, v)
-            return ak, fmt(m.get(str(ev if ev is not None else v), v))
-        return p["key"], (enum_index(p, v) if idx else to_cmd_value(p, v))
+            ck, cv = ak, fmt(m.get(str(ev if ev is not None else v), v))
+        else:
+            ck, cv = p["key"], (enum_index(p, v) if idx else to_cmd_value(p, v))
+        if "," in str(cv) or "=" in str(cv):
+            raise ValueError(f'{p["key"]}: "," and "=" cannot travel in an ApplyBitmapEffect command, got {cv!r}')
+        return ck, cv
 
     def cmd(use_base=True, enum_idx=False, skip=(), over=None):
         # NO strip(): a key-less command needs its trailing space ('DesaturateEffect ' applies, 'DesaturateEffect'

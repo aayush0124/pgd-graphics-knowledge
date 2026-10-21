@@ -405,7 +405,7 @@ def call(open_path, body, png=None, save=None, timeout=300):
     res = {}
     if r:
         try:
-            res = json.loads(r)
+            res = json.loads(r, strict=False)  # WRAP leaves tabs / control characters raw in its strings
         except Exception as ex:  # noqa: BLE001
             e = f"bad result {r[:200]}: {ex}"
     if seen:
@@ -503,7 +503,7 @@ def default_simple(p):
     t, v = (p.get("extra") or {}).get("ai_type"), p.get("default")
     if t not in LETTER or v is None or " " in p["key"]:
         return None
-    if t in ("String", "UnicodeString") and (not isinstance(v, str) or not v or " " in v or '"' in v):
+    if t in ("String", "UnicodeString") and (not isinstance(v, str) or not v or any(ch in v for ch in ' "&<>')):
         return None
     return simple_val(t, v)
 
@@ -587,7 +587,9 @@ def plan_effect(ctx, card, it):
             elif x.get("ai_type") in LETTER:
                 ty = x["ai_type"]
                 sv = simple_val(ty, enum_code(p, v) if p.get("enum") else v)
-                if " " in p["key"] or (ty in ("String", "UnicodeString") and (" " in sv or '"' in sv or not sv)):
+                # the Dict data attribute of the LiveEffect XML carries no space, quote or XML special character:
+                # such a string goes by the patched (text) route
+                if " " in p["key"] or (ty in ("String", "UnicodeString") and (not sv or any(ch in sv for ch in ' "&<>'))):
                     pl["text"][p["key"]] = (ty, sv)
                     pl["simple"].pop(p["key"], None)
                 else:

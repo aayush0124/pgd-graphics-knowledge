@@ -8,9 +8,10 @@ Exit 0 = clean, else one issue per line. Checks: one card per batch item (matche
 fields per tier; status / confidence vocabularies; for visual kinds: params[].name and every demo_settings key are real
 harvested params (name or key), values fit the harvested type, range and enum (an object param takes a JSON object or
 list, checked against the app's read-back / declared class members, see check_object); equivalents name real items of
-the other apps; verified verdicts use the vocabulary.
+the other apps; verified verdicts use the vocabulary; a work/ path (gitignored, not shipped) is cited only with
+"(a local file, not shipped)" right after it.
 """
-import json, os, re, sys
+import json, math, os, re, sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -47,9 +48,16 @@ def param_index(item):
     return idx
 
 
+def finite(v):
+    """a real number: int or float, not bool, not NaN / Infinity"""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
 def check_value(n, p, v):
     t = p.get("type")
-    num = isinstance(v, (int, float)) and not isinstance(v, bool)
+    if isinstance(v, float) and not math.isfinite(v):
+        return f"{n}: {v!r} is not a finite number"
+    num = finite(v)
     if t in ("number", "int"):
         if not num:
             return f"{n}: expects a number, got {v!r}"
@@ -63,10 +71,14 @@ def check_value(n, p, v):
             return f"{n}: {v!r} is not one of {sorted(ok - {'None'})[:25]}"
     elif t == "color" and not (isinstance(v, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", v)):
         return f"{n}: expects \"#RRGGBB\", got {v!r}"
-    elif t == "point" and not (isinstance(v, list) and len(v) == 2 and all(isinstance(x, (int, float)) for x in v)):
+    elif t == "point" and not (isinstance(v, list) and len(v) == 2 and all(finite(x) for x in v)):
         return f"{n}: expects [x, y], got {v!r}"
+    elif t == "string" and not isinstance(v, str):
+        return f"{n}: expects a string, got {v!r}"
     elif t == "object":
         return check_object(n, p, v)
+    elif t == "unknown" and (p.get("extra") or {}).get("com_type") == "variant" and num:
+        pass  # a COM variant (CorelDRAW Add Perspective's vanishing points): a number, in document units
     elif t not in SETTABLE:
         return f"{n}: a {t} param cannot be set from a spec"
     if num:
@@ -81,7 +93,9 @@ def check_value(n, p, v):
 def _leaf(n, r, v):
     """v against the app's read-back {t, v, ...} of the same member"""
     t = (r or {}).get("t") if isinstance(r, dict) else None
-    num = isinstance(v, (int, float)) and not isinstance(v, bool)
+    if isinstance(v, float) and not math.isfinite(v):
+        return f"{n}: {v!r} is not a finite number"
+    num = finite(v)
     if t in ("INTEGERTYPE", "LARGEINTEGERTYPE") and not (num and v == int(v)):
         return f"{n}: expects a whole number, got {v!r}"
     if t in ("DOUBLETYPE", "UNITDOUBLE") and not num:
@@ -124,6 +138,28 @@ def _numbers(v):
             yield from _numbers(x)
 
 
+def _declared(n, t, v):
+    """v against a declared Action Manager type: '/integer', '/floatType', '/boolean', '/point', '/channelReference',
+    each optionally a '... /list' of them (class types such as '/curvesAdjustment' are checked by their members)"""
+    parts = (t or "").split()
+    if len(parts) > 1 and parts[-1] == "/list":
+        if not isinstance(v, list):
+            return f"{n}: expects a list (declared {t}), got {v!r}"
+        return next((e for i, x in enumerate(v) if (e := _declared(f"{n}[{i}]", " ".join(parts[:-1]), x))), None)
+    t = parts[0] if parts else ""
+    if t == "/integer" and not (finite(v) and v == int(v)):
+        return f"{n}: expects a whole number (declared {t}), got {v!r}"
+    if t in ("/floatType", "/double", "/unitFloat") and not finite(v):
+        return f"{n}: expects a number (declared {t}), got {v!r}"
+    if t == "/boolean" and not isinstance(v, bool):
+        return f"{n}: expects true/false (declared {t}), got {v!r}"
+    if t == "/point" and not (isinstance(v, list) and len(v) == 2 and all(finite(x) for x in v)):
+        return f"{n}: expects a point [x, y] (declared {t}), got {v!r}"
+    if t == "/channelReference" and not isinstance(v, str):
+        return f"{n}: expects a channel name such as \"composite\" (declared {t}), got {v!r}"
+    return None
+
+
 def check_object(n, p, v):
     """an object / list param (channel matrix, level lists, curve points ...): a JSON object or list, checked against
     the app's read-back of the same key when the harvest has one (members, types, list length), the declared type
@@ -135,6 +171,8 @@ def check_object(n, p, v):
         return f"{n}: expects an object {{member: value}} or a list, got {v!r}"
     if "/list" in decl and not isinstance(v, list):
         return f"{n}: expects a list (declared {decl}), got {v!r}"
+    if any(not math.isfinite(y) for y in _numbers(v)):
+        return f"{n}: holds a number that is not finite, got {v!r}"
     if decl.startswith("/integer") and any(y != int(y) for y in _numbers(v)):
         return f"{n}: expects whole numbers (declared {decl}), got {v!r}"
     e = _shape(n, v, x.get("value"), x.get("members"))
@@ -146,7 +184,32 @@ def check_object(n, p, v):
             return f"{n}: {y} below the harvested minimum {lo}"
         if isinstance(hi, (int, float)) and y > hi + 1e-9:
             return f"{n}: {y} above the harvested maximum {hi}"
+    e = _declared(n, decl, v)  # last, so the messages above keep their wording
+    if e:
+        return e
+    members = x.get("members") or {}
+    for o in v if isinstance(v, list) else [v]:
+        if isinstance(o, dict):
+            e = next((e for k, y in o.items() if k in members and (e := _declared(f"{n}.{k}", members[k], y))), None)
+            if e:
+                return e
     return None
+
+
+_WORK = re.compile(r"(?<![\w./-])work/[^\s'\",;)]*")
+NOT_SHIPPED = "(a local file, not shipped)"
+
+
+def unshipped(x):
+    """work/ paths a card cites without saying '(a local file, not shipped)' right after them (work/ is gitignored, so
+    a clone cannot open them); a plan step's "script" may write there (its run's OUT folder)"""
+    if isinstance(x, dict):
+        return [p for k, v in x.items() if k != "script" for p in unshipped(v)]
+    if isinstance(x, list):
+        return [p for v in x for p in unshipped(v)]
+    if isinstance(x, str):
+        return [m.group(0) for m in _WORK.finditer(x) if not x[m.end():].lstrip().startswith(NOT_SHIPPED)]
+    return []
 
 
 def check(batch, cards):
@@ -182,6 +245,9 @@ def check(batch, cards):
                 fake = [k.get("name") for k in c.get("key_members") or [] if k.get("name") not in real]
                 if fake:
                     issues.append(f"{w}: key_members {fake[:8]} are not harvested members of {it['name']}")
+        work = unshipped(c)
+        if work:
+            issues.append(f"{w}: cites {work[:3]} under work/ (not shipped): add {NOT_SHIPPED!r} after it or drop it")
         v = (c.get("verified") or {}).get("verdict")
         if v and v not in VERDICT:
             issues.append(f"{w}: verified.verdict {v!r} not in {sorted(VERDICT)}")
@@ -281,6 +347,9 @@ def selftest():
                  "equivalents key", "not in the batch"):
         assert want in e, (want, e)
     assert "needs demo_settings" in " ".join(check(b, [dict(good, demo_settings={})]))
+    cite = dict(good, verified={"verdict": "pass", "previous": {"frame": "work/ps/gallery/x.png"}})
+    assert "under work/" in " ".join(check(b, [cite])), check(b, [cite])
+    assert check(b, [dict(good, summary=f"probe in work/ps/p.json {NOT_SHIPPED}; FrameWork/LockToolbars")]) == []
     # object / list params: shape and members from the app's read-back or the declared class
     lv = {"name": "Shadow Levels", "type": "object", "extra": {"value": [{"t": "INTEGERTYPE", "v": 0}] * 3}}
     mx = {"name": "Gray", "type": "object", "extra": {"declared_type": "/channelMatrix", "members": {"red": "/integer", "green": "/integer"}}}

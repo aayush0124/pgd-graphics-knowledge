@@ -21,15 +21,16 @@ ships no vendor preset files, thumbnails, installers or long documentation excer
 
 ## Quick start
 
-Python 3.12+ and the standard library are all the query tools and tests need.
+Python 3.12+ and the standard library are all the query tools and tests need (the tests that render, for the
+galleries, the plan runner and the contact sheets, skip without Pillow and numpy; CI installs both).
 
 ```
 python pgd.py find "gaussian blur"              # search cards by name, look, summary, use
 python pgd.py find "neon glow" PS               # ... in one app; add a kind to narrow further (ps_filter)
 python pgd.py card "Gaussian Blur" PS           # one card in full, by name, id or menu path
-python pgd.py equiv "Gaussian Blur"             # the same effect in the other two apps
+python pgd.py equiv "Gaussian Blur" [PS]        # the same effect in the other two apps (from that app's card)
 python pgd.py items CDR "contour"               # search the raw harvest (names, ids, paths)
-python pgd.py check tests/fixtures/plan_bad.json   # pre-flight a plan: exit 1 and one line per problem
+python pgd.py check tests/fixtures/plan_bad.json   # pre-flight a plan: exit 1 and one line per problem (2: unreadable)
 python pgd.py stats                             # counts per kind and verdict
 python pipeline.py status                       # what is done, per stage and per app / kind
 python -m unittest discover -s tests -v         # offline test suite
@@ -38,13 +39,19 @@ python -m unittest discover -s tests -v         # offline test suite
 In code: `sys.path.insert(0, "<path to PGD>"); import pgd; pgd.find("halftone", app="PS"); pgd.check_plan(plan)`.
 
 A plan is `{"app": "PS", "steps": [{"kind": "ps_filter", "name": "Gaussian Blur", "settings": {"Radius": 12}}]}`
-(a step may carry its own `"app"`; `name` or a harvest `id`; settings by parameter name or key). `check` flags unknown
-or ambiguous items, unknown parameters, wrong types, values outside the harvested range or enum, and items whose card
-says they are hidden / unusable or whose render test failed. It also flags a second whole-style step on the same layer /
-object (a Photoshop layer-style step writes the whole layerEffects set, an Illustrator graphic style replaces the
+(a step may carry its own `"app"`; `name` or a harvest `id`; settings by parameter name or key). `check` holds a plan to a
+closed schema (a key it does not know at plan, step, effect or input level, a missing `steps` list, a value of the wrong
+shape: each is an issue, never a crash) and flags unknown or ambiguous items, a name that contradicts the id, unknown
+parameters, wrong types (a string parameter takes a string, NaN / Infinity are not numbers, object members are checked
+against their declared types), values outside the harvested range or enum, CorelDRAW object-model calls missing a
+parameter the harvest marks required, card or harvest files it could not read, and items whose card says they are
+hidden / unusable or whose render test failed. `check` also flags a second whole-style step on the same layer / object
+(a Photoshop layer-style step writes the whole layerEffects set, an Illustrator graphic style replaces the
 appearance), since a step-by-step run would keep only the last: put several layer effects in ONE step,
 `{"kind": "ps_layer_style", "effects": [{"name": "Stroke", ...}, {"name": "Drop Shadow", ...}]}`, or move the step to
-another layer (Duplicate Layer, a new layer, or a step `"target"` naming the layer it acts on).
+another layer (Duplicate Layer, a new layer, or a step `"target"` naming the layer it acts on). Find ranks a card by
+the query's whole words (name first), effects, tools and menus above presets and presets above API classes (ask for
+those with a kind such as `ps_api`); a render-test pass adds only a small bonus.
 
 ## Running plans in the apps
 
@@ -56,8 +63,8 @@ known input document, and records what every step did:
 python run_plan.py list PS                         # every Photoshop plan: steps with a route / manual, last run, verdict
 python run_plan.py show text_effects.neon_glow PS  # the compiled steps: what each one will send (offline)
 python run_plan.py run text_effects.neon_glow PS   # run it; resumable: "run all PS" skips plans already run as they are
-python run_plan.py get <key> PS > plan.json        # edit a plan, then save it back (check + compile must accept it):
-python run_plan.py put <key> PS plan.json
+python run_plan.py get <key> PS plan.json          # edit the plan (written as UTF-8), then save it back
+python run_plan.py put <key> PS plan.json          # (check with the plan's default input + compile must accept it)
 python run_plan.py judge <key> PS --verdict pass --note "..." --by "judge"
 ```
 
@@ -69,9 +76,13 @@ active) with `"target"` on a later one (act on that label), and `"script"` (the 
 has no route of its own: API classes, tools, menu commands that need values or open a dialog). Steps with no route
 run as "manual": skipped and reported. Each run writes `gallery/recipes/<APP>/<key>.png` (the result) and
 `<key>_steps.png` (the input and the document after every step), and a `run` record in the recipe card
-(`result`: complete / partial / failed / manual, per-step status and notes, the final layer list); a judge adds
+(`result`: complete / partial / failed / manual, per-step status and notes, the final layer list; a Photoshop or
+Illustrator step that ran without a setting it could not send is marked `unsent` and makes the run partial); a judge adds
 `verified` from the frames. A record names the plan version it ran (`plan_hash`, over everything that runs; notes are
-left out), so a plan whose steps changed shows as stale while a corrected note does not.
+left out), so a plan whose steps changed shows as stale while a corrected note does not. A new run moves the verdict
+on the run before it to `verified_history`: a verdict never outlives the frames it judged, so a re-run (a fresh clone
+re-runs every plan whose frame is missing) needs a judge again. `run` exits 1 when a plan failed or crashed; get, put
+and judge take exactly one recipe.
 Backends: `tools/ps/plan_ps.py`, `tools/ai/plan_ai.py`, `tools/cdr/plan_cdr.py`; each reuses its app's effect gallery,
 so a plan step sends exactly what a render-verified card frame sent.
 
@@ -192,7 +203,7 @@ Generated by `python pipeline.py run docs` from `pipeline.py status --markdown`;
 | batches | deterministic | done | 386/386 batches in work/batches |
 | skeleton | deterministic | done | 0 API lookup batches without cards |
 | cards | agent | done | 202/202 non-preset batches carded, 3945 cards |
-| validate | deterministic | done | 395/395 card files clean |
+| validate | deterministic | done | 386/386 batch-validated card files clean (9 recipe / critic files are checked by the test suite) |
 | galleries | live | done | 10/10 galleries complete, 6315 frames |
 | sheets | deterministic | done | 184/184 preset batches |
 | preset_cards | agent | done | 184/184 preset batches carded, 6834 cards |
@@ -228,9 +239,9 @@ Preset batches still without cards: none.
 
 ## Known gaps
 
-- Read the coverage block above for what is still open: stages marked `partial` / `todo`, and the preset batches
-  without cards. The Photoshop effect gallery (filters, adjustments, layer styles, blend modes) is the largest
-  unrendered set, so those cards carry no render verdict yet.
+- Read the coverage block above for what is still open: stages marked `partial` / `todo`, the preset batches
+  without cards, and the `not_rendered` column (the open rendering work, mostly presets). Tools, menus and API cards
+  are not render-tested by design.
 - Harvested items that could not be probed are listed with an `error` field saying why (an item is never dropped).
 - Vendor API descriptions in `harvest/*/*_api.json` are cut to their first 25 words (`[...]` marks the cut); the full
   text is in the vendors' own scripting references.
@@ -242,7 +253,9 @@ Preset batches still without cards: none.
 
 ## Tests
 
-`python -m unittest discover -s tests -v` runs offline (no app, no network, no LLM): every `pgd.py` subcommand,
+`python -m unittest discover -s tests -v` runs offline (no app, no network, no LLM; with Pillow and numpy installed
+the gallery, plan-runner and sheet tests run too, and `PGD_REQUIRE_DEPS=1`, as in CI, makes their absence a failure):
+every `pgd.py` subcommand,
 `check_harvest.py`, the validator (every card file against its batch, built in memory from the harvest), golden
 queries, negative tests for `check`, reproducible docs, the workflow scripts (parsed and dry-run by node through
 `tests/workflow_harness.js`, skipped without node) and `tests/test_public_scrub.py`.

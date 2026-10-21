@@ -40,14 +40,16 @@ STEP_TIMEOUT = 240
 PIDS = HERE.parents[1] / "work" / "cdr" / "plan_run.pids.json"
 NO_RUN = ("File/", "Tools/", "Window/", "Help/", "View/")
 NEEDS_TWO = ("CreateBlend", "AddToPowerClip")
-MAIN = {"photo": "photo", "text": "type", "vector": "blue_star", "blank": "background"}
+MAIN = pgd.OPEN_ACTIVE["CDR"]  # photo -> photo, text -> type, vector -> blue_star, blank -> background
 
 
 def _gallery_forms():
     """card id -> the route its gallery render used: {use_base, enum_idx, skip_enums} for the bitmap command, or
     {"om": True} when the render went through the object-model twin (Shape.ApplyEffectGamma ...: the bitmap command
-    ignored a key)"""
-    out = {}
+    ignored a key). Tracked first: the harvest's extra.cmd_form (recorded from the gallery, so a fresh clone without
+    gallery/ sends the proven form too); then the local gallery/cdr_effect/index.json, when there is one."""
+    out = {i: it["extra"]["cmd_form"] for i, it in (pgd.harvest().get(("CDR", "cdr_effect")) or {}).items()
+           if (it.get("extra") or {}).get("cmd_form")}
     idx = eg.OUT / "index.json"
     for row in json.loads(idx.read_text(encoding="utf-8")) if idx.exists() else []:
         how = row.get("how") or ""
@@ -90,7 +92,12 @@ def _effect_op(st, it):
         global _FORMS
         if _FORMS is None:
             _FORMS = _gallery_forms()
-        form = _FORMS.get(it["id"], {"use_base": True, "enum_idx": False, "skip_enums": False})
+        form, unproven = _FORMS.get(it["id"]), []
+        if form is None:  # no render of this effect recorded a form: enums go by caption, which may be ignored
+            form = {"use_base": True, "enum_idx": False, "skip_enums": False}
+            unproven = [f"{p['key']}: sent by caption, a form no render of this effect proved (it may be ignored)"
+                        for p in it.get("params") or [] if p.get("type") == "enum"
+                        and (p["key"] in settings or p["name"] in settings)]
         if form.get("om") and eid in eg.OM_ROUTES:
             op, unused = _om_op(eid, it, settings)
             return op, None, [f"{k}: Shape.{op['meth']} has no argument for it" for k in unused]
@@ -105,7 +112,7 @@ def _effect_op(st, it):
         skip = tuple(enum_keys) if form["skip_enums"] else ()
         return ({"mode": "bitmap", "cmd": cmd(use_base=form["use_base"], enum_idx=form["enum_idx"], skip=skip)}, None,
                 [f"{k}: no harvested param of this name or key" for k in dropped]
-                + [f"{k}: left out (the gallery form drops enum keys)" for k in skip])
+                + [f"{k}: left out (the gallery form drops enum keys)" for k in skip] + unproven)
     api = (it.get("invoke") or {}).get("cdr_com") or ""
     meth = api.split("(")[0].split(".")[-1]
     if not meth:

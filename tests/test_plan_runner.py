@@ -147,7 +147,11 @@ class CardWrites(unittest.TestCase):
         doc = json.loads((self.tmp / "cards" / "recipe_text_effects.json").read_text(encoding="utf-8"))
         neon = next(c for c in doc["cards"] if c["id"] == "recipe:text_effects:neon_glow")
         self.assertEqual(neon["plans"]["PS"]["input"]["background"], "#141414")
-        self.assertFalse((self.tmp / "work" / "plans" / "cards.lock").exists())
+        r = rp()  # the writer released its lock (an OS lock: the file stays, the lock does not)
+        r.HOME = self.tmp
+        r._Lock.path = self.tmp / "work" / "plans" / "cards.lock"
+        with r._Lock():
+            pass
         j = run("run_plan.py", "judge", "text_effects.neon_glow", "PS", "--verdict", "pass", env=self.env())
         self.assertNotEqual(j.returncode, 0)  # no run of this version to judge
         self.assertIn("no current run", j.stdout + j.stderr)
